@@ -7,11 +7,16 @@ import { DataTable } from "./DataTable";
 import { CHART_TYPES } from "@/lib/mockData";
 import type { CardState, DataRow, ChartType } from "@/lib/mockData";
 
-const ACCENT = "#3B4BDB";
-const BORDER = "#E8E4DC";
-const T2     = "#6B6B66";
-const T3     = "#A8A8A2";
-const BG     = "#FAFAF7";
+/* Editorial Density palette — no indigo, no pure white. */
+const GOLD          = "#B89548";  /* gold-500 — focus/hover/active */
+const NAVY          = "#1B2840";  /* navy-900 */
+const BORDER        = "#D9D3C2";  /* border-subtle */
+const T2            = "#5C6478";  /* text-secondary */
+const T3            = "#8A8B87";  /* text-tertiary */
+const SURFACE       = "#F5F2EA";
+const SURFACE_RAISE = "#FBF9F3";
+const ACCENT        = GOLD;        /* alias for backward-compatible internal usage */
+const BG            = SURFACE_RAISE;
 
 const SPLITTER_H = 8;
 const PCT_MIN    = 20;
@@ -86,7 +91,7 @@ export function ExpandedView({
       {/* ── Header ── */}
       <div
         className="flex items-center justify-between gap-3 border-b px-6 py-[13px] shrink-0 flex-wrap"
-        style={{ borderColor: BORDER, background: "#fff" }}
+        style={{ borderColor: BORDER, background: SURFACE }}
       >
         {/* Left: back + title */}
         <div className="flex items-center gap-3 min-w-0">
@@ -116,8 +121,8 @@ export function ExpandedView({
             )}
             <button
               onClick={() => setTypeDropdown(!typeDropdown)}
-              className="relative z-[2] flex items-center gap-1.5 rounded-lg border px-3 py-[5px] transition-colors duration-200"
-              style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 11, color: T2, borderColor: BORDER, background: BG }}
+              className="relative z-[2] flex items-center gap-1.5 rounded-sm border px-3 py-[5px] transition-colors duration-200"
+              style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 11, color: T2, borderColor: BORDER, background: SURFACE_RAISE }}
             >
               {card.chartType}
               <svg width="8" height="8" viewBox="0 0 8 8" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
@@ -131,8 +136,8 @@ export function ExpandedView({
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: -4, scale: 0.97 }}
                   transition={{ duration: 0.12 }}
-                  className="absolute right-0 top-full mt-1 z-[3] rounded-xl border py-1 bg-white"
-                  style={{ borderColor: BORDER, minWidth: 152 }}
+                  className="absolute right-0 top-full mt-1 z-[3] rounded-sm border py-1"
+                  style={{ borderColor: BORDER, minWidth: 152, background: SURFACE_RAISE }}
                 >
                   {CHART_TYPES.map((type) => (
                     <button
@@ -194,7 +199,7 @@ export function ExpandedView({
             display: "flex",
             flexDirection: "column",
             overflow: "hidden",
-            background: BG,
+            background: SURFACE_RAISE,
             padding: "12px 32px",
           }}
         >
@@ -217,9 +222,9 @@ export function ExpandedView({
             height: SPLITTER_H,
             flexShrink: 0,
             cursor: "row-resize",
-            background: splitterHover ? "rgba(59,75,219,0.08)" : BORDER,
-            borderTop:    `1px solid ${splitterHover ? "rgba(59,75,219,0.3)" : BORDER}`,
-            borderBottom: `1px solid ${splitterHover ? "rgba(59,75,219,0.3)" : BORDER}`,
+            background: splitterHover ? "rgba(184,149,72,0.08)" : BORDER,
+            borderTop:    `1px solid ${splitterHover ? "rgba(184,149,72,0.3)" : BORDER}`,
+            borderBottom: `1px solid ${splitterHover ? "rgba(184,149,72,0.3)" : BORDER}`,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -240,7 +245,7 @@ export function ExpandedView({
         </div>
 
         {/* Table pane */}
-        <div className="flex flex-col min-h-0" style={{ flex: "1 1 0", background: "#fff" }}>
+        <div className="flex flex-col min-h-0" style={{ flex: "1 1 0", background: SURFACE }}>
           <div className="px-6 pt-2 pb-2 shrink-0 border-b" style={{ borderColor: BORDER }}>
             <span
               className="font-mono uppercase tracking-[0.1em]"
@@ -275,17 +280,17 @@ function IconBtn({
       onClick={onClick}
       disabled={disabled}
       title={title}
-      className="flex items-center justify-center rounded-lg border transition-all duration-200"
-      style={{ width: 30, height: 30, color: "#6B6B66", borderColor: BORDER, opacity: disabled ? 0.3 : 1, background: "transparent" }}
+      className="flex items-center justify-center rounded-sm border transition-all duration-200"
+      style={{ width: 30, height: 30, color: T2, borderColor: BORDER, opacity: disabled ? 0.3 : 1, background: "transparent" }}
       onMouseEnter={e => {
         if (!disabled) {
-          e.currentTarget.style.borderColor = ACCENT;
-          e.currentTarget.style.color = ACCENT;
+          e.currentTarget.style.borderColor = GOLD;
+          e.currentTarget.style.color = GOLD;
         }
       }}
       onMouseLeave={e => {
         e.currentTarget.style.borderColor = BORDER;
-        e.currentTarget.style.color = "#6B6B66";
+        e.currentTarget.style.color = T2;
       }}
     >
       {children}

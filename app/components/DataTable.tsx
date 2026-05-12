@@ -54,9 +54,9 @@ function DraggableRow({
   }
 
   const cellCls =
-    "text-[12px] font-mono text-[#0A0A0A] bg-transparent outline-none " +
-    "border border-transparent focus:border-[rgba(59,75,219,0.35)] " +
-    "rounded px-[6px] py-[2px] transition-colors duration-200";
+    "text-[12px] font-mono text-[#1B2840] bg-transparent outline-none " +
+    "border border-transparent focus:border-[rgba(184,149,72,0.5)] " +
+    "rounded-sm px-[6px] py-[2px] transition-colors duration-200";
 
   return (
     <Reorder.Item

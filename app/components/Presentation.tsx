@@ -6,7 +6,7 @@ import { MiniChart } from "./MiniChart";
 
 /* ── Types ─────────────────────────────────────────────── */
 export type VisualStyle = "Wireframe" | "Magazine" | "Modern";
-export type ColorAccent = "Navy" | "Indigo" | "Slate" | "Graphite";
+export type ColorAccent = "Navy" | "Gold" | "Slate" | "Graphite";
 
 export interface SlideState {
   cardId: string;
@@ -21,17 +21,17 @@ export interface SlideState {
   status: string;
 }
 
-/* ── Constants ──────────────────────────────────────────── */
+/* ── Constants — Editorial Density palette only ─────────── */
 const ACCENT_COLOR: Record<ColorAccent, string> = {
-  Navy:     "#1F2A44",
-  Indigo:   "#3B4BDB",
-  Slate:    "#475569",
-  Graphite: "#374151",
+  Navy:     "#1B2840",  /* navy-900 */
+  Gold:     "#B89548",  /* gold-500 — replaces Indigo */
+  Slate:    "#4A5878",  /* navy-500 (warm slate) */
+  Graphite: "#2A3654",  /* navy-700 */
 };
 const STYLE_BG: Record<VisualStyle, string> = {
-  Modern:    "#FFFFFF",
-  Magazine:  "#FFFFFF",
-  Wireframe: "#F7F7F4",
+  Modern:    "#FBF9F3",  /* surface-raised — no pure white */
+  Magazine:  "#FBF9F3",
+  Wireframe: "#F5F2EA",  /* surface */
 };
 const STYLE_HEADLINE_FONT: Record<VisualStyle, string> = {
   Modern:    "Inter, sans-serif",
@@ -39,12 +39,15 @@ const STYLE_HEADLINE_FONT: Record<VisualStyle, string> = {
   Wireframe: "'JetBrains Mono', monospace",
 };
 
-const INDIGO  = "#3B4BDB";
-const BORDER  = "#E8E4DC";
-const T2      = "#6B6B66";
-const T3      = "#A8A8A2";
-const NAVY    = "#1F2A44";
-const GOLD    = "#B8924A";
+/* The system's ONE accent — replaces all prior #3B4BDB NAVY. */
+const GOLD          = "#B89548";  /* gold-500 — active/focus/current */
+const BORDER        = "#D9D3C2";  /* border-subtle */
+const SURFACE       = "#F5F2EA";
+const SURFACE_RAISE = "#FBF9F3";
+const SURFACE_MUTED = "#E5E0D2";
+const T2            = "#5C6478";  /* text-secondary */
+const T3            = "#8A8B87";  /* text-tertiary */
+const NAVY          = "#1B2840";  /* navy-900 — primary structural */
 
 /* ── SlideThumbnail ─────────────────────────────────────── */
 function SlideThumbnail({
@@ -78,10 +81,16 @@ function SlideThumbnail({
       className="shrink-0 cursor-pointer overflow-hidden"
       style={{
         width: 116, height: 76,
-        borderRadius: 4,
-        border: `${isActive ? "1.5px" : "1px"} solid ${isActive ? INDIGO : "#ECECE6"}`,
+        borderRadius: 0,
+        border: `${isActive ? "1.5px" : "1px"} solid ${isActive ? NAVY : "#D9D3C2"}`,
         background: bg,
         transition: "border-color 150ms ease, border-width 150ms ease",
+      }}
+      onMouseEnter={(e) => {
+        if (!isActive) e.currentTarget.style.borderColor = GOLD;
+      }}
+      onMouseLeave={(e) => {
+        if (!isActive) e.currentTarget.style.borderColor = "#D9D3C2";
       }}
     >
       <svg viewBox="0 0 116 76" fill="none" style={{ width: "100%", height: "100%" }}>
@@ -121,20 +130,20 @@ function StyleTile({
   return (
     <button
       onClick={onClick}
-      className="flex-1 rounded-md border overflow-hidden transition-all duration-150"
+      className="flex-1 rounded-sm border overflow-hidden transition-all duration-150"
       style={{
         height: 34,
-        borderColor: active ? INDIGO : BORDER,
-        background: active ? "rgba(59,75,219,0.05)" : "transparent",
+        borderColor: active ? NAVY : BORDER,
+        background: active ? "rgba(27,40,64,0.05)" : "transparent",
       }}
     >
       <svg viewBox="0 0 56 30" fill="none" style={{ width: "100%", height: "100%" }}>
         {style === "Modern" && (
           <>
-            <rect x="5"  y="16" width="8" height="10" rx="1.5" fill={INDIGO} fillOpacity={active ? 0.85 : 0.25} />
-            <rect x="15" y="10" width="8" height="16" rx="1.5" fill={INDIGO} fillOpacity={active ? 0.55 : 0.15} />
-            <rect x="25" y="6"  width="8" height="20" rx="1.5" fill={INDIGO} fillOpacity={active ? 0.75 : 0.2} />
-            <rect x="35" y="12" width="8" height="14" rx="1.5" fill={INDIGO} fillOpacity={active ? 0.45 : 0.12} />
+            <rect x="5"  y="16" width="8" height="10" rx="1.5" fill={NAVY} fillOpacity={active ? 0.85 : 0.25} />
+            <rect x="15" y="10" width="8" height="16" rx="1.5" fill={NAVY} fillOpacity={active ? 0.55 : 0.15} />
+            <rect x="25" y="6"  width="8" height="20" rx="1.5" fill={NAVY} fillOpacity={active ? 0.75 : 0.2} />
+            <rect x="35" y="12" width="8" height="14" rx="1.5" fill={NAVY} fillOpacity={active ? 0.45 : 0.12} />
           </>
         )}
         {style === "Magazine" && (
@@ -155,17 +164,17 @@ function StyleTile({
               ))
             )}
             <rect x="5"  y="14" width="8" height="12" rx="1" fill="none"
-              stroke={active ? INDIGO : T3} strokeWidth="0.85" strokeOpacity={active ? 0.8 : 0.45} />
+              stroke={active ? NAVY : T3} strokeWidth="0.85" strokeOpacity={active ? 0.8 : 0.45} />
             <rect x="15" y="9"  width="8" height="17" rx="1" fill="none"
-              stroke={active ? INDIGO : T3} strokeWidth="0.85" strokeOpacity={active ? 0.8 : 0.45} />
+              stroke={active ? NAVY : T3} strokeWidth="0.85" strokeOpacity={active ? 0.8 : 0.45} />
             <rect x="25" y="17" width="8" height="9"  rx="1" fill="none"
-              stroke={active ? INDIGO : T3} strokeWidth="0.85" strokeOpacity={active ? 0.8 : 0.45} />
+              stroke={active ? NAVY : T3} strokeWidth="0.85" strokeOpacity={active ? 0.8 : 0.45} />
           </>
         )}
         {/* Label */}
         <text x="28" y="30" textAnchor="middle" fontSize="5.5"
           fontFamily="'JetBrains Mono', monospace"
-          fill={active ? INDIGO : T3}
+          fill={active ? NAVY : T3}
           fillOpacity={active ? 1 : 0.7}>
           {style}
         </text>
@@ -206,7 +215,7 @@ function PanelSelect({
             WebkitAppearance: "none" as const,
             background: "#fff",
             border: `1px solid ${BORDER}`,
-            borderRadius: 6,
+            borderRadius: 4,
             fontFamily: "'JetBrains Mono', monospace",
             fontSize: 10,
             color: T2,
@@ -246,8 +255,8 @@ function ToggleSwitch({
     >
       <div style={{ position: "relative", width: 26, height: 14, flexShrink: 0 }}>
         <div style={{
-          position: "absolute", inset: 0, borderRadius: 7,
-          background: checked ? INDIGO : BORDER,
+          position: "absolute", inset: 0, borderRadius: 999,
+          background: checked ? NAVY : BORDER,
           transition: "background 150ms ease",
         }} />
         <div style={{
@@ -341,7 +350,7 @@ function SettingsPanel({
         <PanelSelect
           label="Accent"
           value={slide.colorAccent}
-          options={["Navy", "Indigo", "Slate", "Graphite"]}
+          options={["Navy", "Gold", "Slate", "Graphite"]}
           onChange={v => onUpdate({ colorAccent: v as ColorAccent })}
         />
       </div>
@@ -377,18 +386,19 @@ function SettingsPanel({
       {/* Actions */}
       <div className="flex shrink-0" style={{ gap: 7 }}>
         <button
-          className="flex items-center gap-[5px] rounded-lg border transition-colors duration-150"
+          className="flex items-center gap-[5px] border transition-colors duration-150"
           style={{
             fontFamily: "'JetBrains Mono', monospace",
             fontSize: 11,
             color: T2,
             borderColor: BORDER,
             background: "transparent",
-            padding: "6px 12px",
+            padding: "8px 18px",
+            borderRadius: 999,
             whiteSpace: "nowrap",
             cursor: "pointer",
           }}
-          onMouseEnter={e => (e.currentTarget.style.borderColor = "rgba(31,42,68,0.3)")}
+          onMouseEnter={e => (e.currentTarget.style.borderColor = NAVY)}
           onMouseLeave={e => (e.currentTarget.style.borderColor = BORDER)}
         >
           <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
@@ -397,14 +407,15 @@ function SettingsPanel({
           Add Chart
         </button>
         <button
-          className="flex-1 rounded-lg font-medium transition-opacity duration-150 hover:opacity-85"
+          className="flex-1 font-medium transition-opacity duration-150 hover:opacity-85"
           style={{
             fontFamily: "'JetBrains Mono', monospace",
             fontSize: 11,
-            color: "#fff",
-            background: INDIGO,
+            color: "#F5F2EA",
+            background: NAVY,
             border: "none",
-            padding: "6px 0",
+            padding: "8px 0",
+            borderRadius: 999,
             whiteSpace: "nowrap",
             cursor: "pointer",
           }}
@@ -517,14 +528,14 @@ export function PresentationStrip({
             className="flex items-center justify-center shrink-0 transition-all duration-150"
             style={{
               width: 116, height: 76,
-              borderRadius: 4,
-              border: "1.5px dashed #ECECE6",
+              borderRadius: 0,
+              border: "1.5px dashed #D9D3C2",
               background: "transparent",
               cursor: "pointer",
               color: T3,
             }}
-            onMouseEnter={e => (e.currentTarget.style.borderColor = T3)}
-            onMouseLeave={e => (e.currentTarget.style.borderColor = "#ECECE6")}
+            onMouseEnter={e => (e.currentTarget.style.borderColor = GOLD)}
+            onMouseLeave={e => (e.currentTarget.style.borderColor = "#D9D3C2")}
           >
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor"
               strokeWidth="1.5" strokeLinecap="round">
@@ -537,7 +548,7 @@ export function PresentationStrip({
       {/* ── Right: settings panel ── */}
       <div
         className="flex flex-col overflow-hidden"
-        style={{ flex: "0 0 400px", background: "#FAFAF7" }}
+        style={{ flex: "0 0 400px", background: SURFACE }}
       >
         {activeSlide && activeCard
           ? (
