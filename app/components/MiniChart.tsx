@@ -81,7 +81,7 @@ function MiniColumns({ rows, color, W, H }: { rows: DataRow[]; color: string; W:
           <rect key={i}
             x={r(step * i + step / 2 - barW / 2)}
             y={r(H - 2 - bh)}
-            width={r(barW)} height={r(bh)} rx="1"
+            width={r(barW)} height={r(bh)}
             fill={color}
             fillOpacity={v === Math.max(...data) ? 0.9 : 0.35 + (v / mx) * 0.45}
           />
@@ -118,7 +118,7 @@ function MiniWaterfall({ rows, color, W, H }: { rows: DataRow[]; color: string; 
           <rect key={i}
             x={r(step * i + step / 2 - barW / 2)}
             y={r(Math.min(y1, y2))}
-            width={r(barW)} height={r(bh)} rx="1"
+            width={r(barW)} height={r(bh)}
             fill={color} fillOpacity={b.pos ? 0.75 : 0.45}
           />
         );
@@ -145,7 +145,7 @@ function MiniStacked({ rows, color, W, H }: { rows: DataRow[]; color: string; W:
               const el = (
                 <rect key={j}
                   x={r(xOff)} y={y}
-                  width={bw} height={r(rowH)} rx="1"
+                  width={bw} height={r(rowH)}
                   fill={color} fillOpacity={j === 0 ? 0.85 : 0.45}
                 />
               );
@@ -249,7 +249,7 @@ function MiniTreemap({ rows, color, W, H }: { rows: DataRow[]; color: string; W:
   return (
     <>
       {cells.map((c, i) => (
-        <rect key={i} x={c.x} y={c.y} width={c.w} height={Math.max(2, c.h - 1)} rx="1"
+        <rect key={i} x={c.x} y={c.y} width={c.w} height={Math.max(2, c.h - 1)}
           fill={color} fillOpacity={c.op} />
       ))}
     </>

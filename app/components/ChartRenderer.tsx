@@ -5,11 +5,26 @@ import type { DataRow, ChartType } from "@/lib/mockData";
 
 const r = roundTo;
 
-const NAVY   = "#1F2A44";
-const GOLD   = "#B8924A";
-const BORDER = "#E8E4DC";
-const T2     = "#6B6B66";
-const T3     = "#A8A8A2";
+/* ── Editorial Density palette — fixed categorical order ── */
+const NAVY     = "#1B2840";   /* navy-900 */
+const NAVY_700 = "#2A3654";
+const NAVY_500 = "#4A5878";
+const NAVY_300 = "#8892AA";
+const NAVY_100 = "#B8C2D0";
+const GOLD     = "#B89548";   /* gold-500 — the ONE accent */
+const GOLD_300 = "#C9A961";
+const BORDER   = "#D9D3C2";
+const T2       = "#5C6478";
+const T3       = "#8A8B87";
+
+/* Categorical palette for multi-series charts.
+   FIXED ORDER. Do not shuffle. Do not add colors. */
+const SERIES = [NAVY, NAVY_500, GOLD, NAVY_300, GOLD_300, NAVY_100];
+
+/* Editorial in-chart fonts */
+const SERIF_FAMILY = "'Instrument Serif', 'GT Sectra', 'Fraunces', Georgia, serif";
+const MONO_FAMILY  = "'JetBrains Mono', monospace";
+const SANS_FAMILY  = "Inter, sans-serif";
 
 interface ChartProps {
   rows: DataRow[];
@@ -51,7 +66,8 @@ function LollipopChart({ rows, expanded }: ChartProps) {
   const data   = rows.map(row => row.values[0] ?? 0);
   const labels = rows.map(row => row.label);
   const W = 360, H = expanded ? 220 : 148;
-  const pl = 20, pr = 20, pt = 22, pb = 26;
+  /* 15% denser internal padding vs reference */
+  const pl = 17, pr = 22, pt = 26, pb = 22;
   const plotW = W - pl - pr, plotH = H - pt - pb;
 
   const mn = Math.min(...data), mx = Math.max(...data);
@@ -61,32 +77,38 @@ function LollipopChart({ rows, expanded }: ChartProps) {
 
   const baseline = pt + plotH;
   const lastIdx  = data.length - 1;
-  const minIdx   = data.indexOf(Math.min(...data));
   const step     = Math.max(1, Math.floor(data.length / (expanded ? data.length : 6)));
+
+  /* Spec: stems navy-300 1.5px, dots navy-500 r=5, current dot gold-500 r=8,
+     serif text-data-lg label above current. */
+  const dotR        = expanded ? 5 : 4;
+  const currentDotR = expanded ? 8 : 6;
+  const heroSize    = expanded ? 20 : 14;
 
   return (
     <svg viewBox={`0 0 ${W} ${H}`} fill="none" {...svgAttrs(expanded)}>
       <GridLines pl={pl} pr={W - pr} pt={pt} plotH={plotH} />
       {data.map((v, i) => (
         <line key={i}
-          x1={r(xv(i))} y1={r(yv(v) + 4.5)} x2={r(xv(i))} y2={r(baseline)}
-          stroke={NAVY} strokeWidth={i === lastIdx ? 1.5 : 1}
-          strokeOpacity={i === lastIdx ? 0.75 : i === minIdx ? 0.25 : 0.18} />
+          x1={r(xv(i))} y1={r(yv(v) + dotR)} x2={r(xv(i))} y2={r(baseline)}
+          stroke={NAVY_300} strokeWidth="1.5" />
       ))}
       {data.map((v, i) => (
-        <circle key={i} cx={r(xv(i))} cy={r(yv(v))} r={i === lastIdx ? 4.5 : 3.5}
-          fill={i === lastIdx ? GOLD : NAVY}
-          fillOpacity={i === lastIdx ? 1 : i === minIdx ? 0.55 : 0.3} />
+        <circle key={i} cx={r(xv(i))} cy={r(yv(v))}
+          r={i === lastIdx ? currentDotR : dotR}
+          fill={i === lastIdx ? GOLD : NAVY_500} />
       ))}
+      {/* Serif hero label above current — "the 930 treatment" */}
       {data.length > 0 && (
-        <text x={r(xv(lastIdx))} y={r(yv(data[lastIdx]) - 9)} textAnchor="middle" fontSize="8.5"
-          fontFamily="'JetBrains Mono',monospace" fill={GOLD} fontWeight="500">
+        <text x={r(xv(lastIdx))} y={r(yv(data[lastIdx]) - currentDotR - 6)}
+          textAnchor="middle" fontSize={heroSize}
+          fontFamily={SERIF_FAMILY} fill={GOLD}>
           {data[lastIdx]}
         </text>
       )}
       {labels.map((l, i) => i % step === 0 && (
-        <text key={i} x={r(xv(i))} y={H - 6} textAnchor="middle" fontSize="9"
-          fill={T3} fontFamily="'JetBrains Mono',monospace">{l}</text>
+        <text key={i} x={r(xv(i))} y={H - 6} textAnchor="middle" fontSize="10"
+          fill={T3} fontFamily={MONO_FAMILY} fontWeight="500">{l}</text>
       ))}
     </svg>
   );
@@ -117,12 +139,23 @@ function SplineAreaChart({ rows, expanded }: ChartProps) {
         </linearGradient>
       </defs>
       <GridLines pl={pl} pr={W - pr} pt={pt} plotH={plotH} />
-      {areaD && <path d={areaD} fill="url(#spline-fill)" />}
-      {pd    && <path d={pd} stroke={NAVY} strokeWidth="1.8" strokeOpacity="0.8" strokeLinecap="round" />}
-      {last  && <circle cx={r(last.x)} cy={r(last.y)} r="3.5" fill={GOLD} />}
+      {areaD && <path d={areaD} fill={NAVY_100} fillOpacity="0.4" />}
+      {pd    && <path d={pd} stroke={NAVY} strokeWidth="2" strokeLinecap="round" />}
+      {last && (
+        <>
+          <circle cx={r(last.x)} cy={r(last.y)} r={expanded ? 5 : 4} fill={GOLD} />
+          {data.length > 0 && (
+            <text x={r(last.x)} y={r(last.y - (expanded ? 12 : 9))}
+              textAnchor="middle" fontSize={expanded ? 18 : 13}
+              fontFamily={SERIF_FAMILY} fill={GOLD}>
+              {data[data.length - 1]}
+            </text>
+          )}
+        </>
+      )}
       {labels.map((l, i) => i % step === 0 && (
-        <text key={i} x={r(pts[i]?.x ?? 0)} y={H - 4} textAnchor="middle" fontSize="9"
-          fill={T3} fontFamily="'JetBrains Mono',monospace">{l}</text>
+        <text key={i} x={r(pts[i]?.x ?? 0)} y={H - 4} textAnchor="middle" fontSize="10"
+          fill={T3} fontFamily={MONO_FAMILY} fontWeight="500">{l}</text>
       ))}
     </svg>
   );
@@ -130,10 +163,9 @@ function SplineAreaChart({ rows, expanded }: ChartProps) {
 
 /* ── Donut ────────────────────────────────────────────── */
 function DonutChart({ rows, expanded }: ChartProps) {
-  const CX = 72, CY = 72, OR = 60, IR = 34;
+  /* Stroke 40% of radius: OR=60, IR=36 → ring=24 = 40% */
+  const CX = 72, CY = 72, OR = 60, IR = 36;
   const total  = rows.reduce((s, row) => s + (row.values[0] ?? 0), 0) || 1;
-  const colors = [NAVY, NAVY, GOLD, NAVY, GOLD, NAVY];
-  const opac   = [1.0, 0.62, 1.0, 0.45, 0.80, 0.35];
 
   let angle = -90;
   const slices = rows.map((row, i) => {
@@ -141,7 +173,8 @@ function DonutChart({ rows, expanded }: ChartProps) {
     const start = angle + 1;
     const end   = angle + pct * 360 - 1;
     angle += pct * 360;
-    return { row, start, end, color: colors[i % colors.length], op: opac[i % opac.length] };
+    /* Fixed categorical palette — never shuffled */
+    return { row, start, end, color: SERIES[i % SERIES.length] };
   });
 
   function toRad(deg: number) { return (deg * Math.PI) / 180; }
@@ -162,22 +195,25 @@ function DonutChart({ rows, expanded }: ChartProps) {
   return (
     <svg viewBox="0 0 240 144" fill="none" {...svgAttrs(expanded)}>
       {slices.map((s, i) => (
-        <path key={i} d={arc(s)} fill={s.color} fillOpacity={s.op} />
+        <path key={i} d={arc(s)} fill={s.color} />
       ))}
-      <text x={CX} y={CY - 4} textAnchor="middle" fontSize="18"
-        fontFamily="'JetBrains Mono',monospace" fill={NAVY} fontWeight="500">
+      {/* Hero serif center number — text-hero */}
+      <text x={CX} y={CY + 4} textAnchor="middle" fontSize={expanded ? 36 : 30}
+        fontFamily={SERIF_FAMILY} fill={NAVY}>
         {rows.length}
       </text>
-      <text x={CX} y={CY + 14} textAnchor="middle" fontSize="9"
-        fontFamily="Inter,sans-serif" fill={T2}>channels</text>
+      <text x={CX} y={CY + 19} textAnchor="middle" fontSize="8"
+        fontFamily={MONO_FAMILY} fill={T3}
+        letterSpacing="0.1em">CHANNELS</text>
       {rows.map((row, i) => (
         <g key={i} transform={`translate(${legendX}, ${14 + i * 30})`}>
-          <rect x="0" y="0" width="10" height="3" rx="1.5"
-            fill={colors[i % colors.length]} fillOpacity={opac[i % opac.length]} />
-          <text x="14" y="4" fontSize="9.5" fill={T2} fontFamily="Inter,sans-serif">{row.label}</text>
-          <text x="14" y="17" fontSize="9" fill={colors[i % colors.length]}
-            fillOpacity={opac[i % opac.length]}
-            fontFamily="'JetBrains Mono',monospace">{row.values[0]}%</text>
+          {/* Sharp categorical swatch — no rounded corners */}
+          <rect x="0" y="0" width="10" height="3"
+            fill={SERIES[i % SERIES.length]} />
+          <text x="14" y="4" fontSize="9.5" fill={T2} fontFamily={SANS_FAMILY}>{row.label}</text>
+          <text x="14" y="17" fontSize="13"
+            fill={SERIES[i % SERIES.length]}
+            fontFamily={SERIF_FAMILY}>{row.values[0]}%</text>
         </g>
       ))}
     </svg>
@@ -208,12 +244,12 @@ function CleanColumnsChart({ rows, expanded }: ChartProps) {
         const isMax = v === Math.max(...data);
         return (
           <g key={i}>
-            <rect x={r(x - barW / 2)} y={r(y)} width={r(barW)} height={r(bh)} rx="2"
-              fill={isMax ? GOLD : NAVY}
-              fillOpacity={isMax ? 1 : 0.18 + (v / mx) * 0.55} />
+            {/* Square tops per spec — no rx */}
+            <rect x={r(x - barW / 2)} y={r(y)} width={r(barW)} height={r(bh)}
+              fill={isMax ? GOLD : NAVY_500} />
             {i % bStep === 0 && (
-              <text x={r(x)} y={H - 4} textAnchor="middle" fontSize="9"
-                fill={T3} fontFamily="'JetBrains Mono',monospace">{labels[i]}</text>
+              <text x={r(x)} y={H - 4} textAnchor="middle" fontSize="10"
+                fill={T3} fontFamily={MONO_FAMILY} fontWeight="500">{labels[i]}</text>
             )}
           </g>
         );
@@ -230,17 +266,14 @@ function StackedBarChart({ rows, columns, expanded }: ChartProps) {
   const plotW = W - pl - pr;
 
   const maxTotal = Math.max(...rows.map(row => row.values.reduce((s, v) => s + v, 0)));
-  const seriesColors = [NAVY, NAVY, GOLD];
-  const seriesOpac   = [1.0, 0.55, 0.90];
 
   return (
     <svg viewBox={`0 0 ${W} ${H}`} fill="none" {...svgAttrs(expanded)}>
+      {/* Series legend — fixed categorical palette */}
       {columns.map((col, i) => (
         <g key={i} transform={`translate(${pl + i * 64}, 8)`}>
-          <rect x="0" y="-3" width="8" height="3" rx="1"
-            fill={seriesColors[i % seriesColors.length]}
-            fillOpacity={seriesOpac[i % seriesOpac.length]} />
-          <text x="12" y="0" fontSize="8.5" fill={T2} fontFamily="Inter,sans-serif">{col}</text>
+          <rect x="0" y="-3" width="8" height="3" fill={SERIES[i % SERIES.length]} />
+          <text x="12" y="0" fontSize="8.5" fill={T2} fontFamily={SANS_FAMILY}>{col}</text>
         </g>
       ))}
       {rows.map((row, i) => {
@@ -250,19 +283,19 @@ function StackedBarChart({ rows, columns, expanded }: ChartProps) {
         return (
           <g key={i}>
             <text x={r(pl - 5)} y={r(y + rowH / 2 + 4)} textAnchor="end" fontSize="9.5"
-              fill={T2} fontFamily="Inter,sans-serif">{row.label}</text>
+              fill={T2} fontFamily={SANS_FAMILY}>{row.label}</text>
             {row.values.map((v, j) => {
               const bw = r((v / maxTotal) * plotW);
+              /* Square edges per spec — no rx */
               const rect = (
-                <rect key={j} x={r(xOff)} y={r(y)} width={bw} height={rowH} rx="2"
-                  fill={seriesColors[j % seriesColors.length]}
-                  fillOpacity={seriesOpac[j % seriesOpac.length]} />
+                <rect key={j} x={r(xOff)} y={r(y)} width={bw} height={rowH}
+                  fill={SERIES[j % SERIES.length]} />
               );
               xOff += bw + 1;
               return rect;
             })}
-            <text x={r(xOff + 4)} y={r(y + rowH / 2 + 4)} fontSize="9"
-              fill={T2} fontFamily="'JetBrains Mono',monospace">{total}</text>
+            <text x={r(xOff + 4)} y={r(y + rowH / 2 + 4)} fontSize="11"
+              fill={NAVY} fontFamily={MONO_FAMILY} fontWeight="500">{total}</text>
           </g>
         );
       })}
@@ -319,21 +352,21 @@ function WaterfallChart({ rows, expanded }: ChartProps) {
         const y1 = yv(b.end), y2 = yv(b.start);
         const bh = Math.max(2, Math.abs(y2 - y1));
         const isPos = b.delta >= 0;
-        const color = b.isTot ? NAVY : isPos ? NAVY : GOLD;
-        const opac  = b.isTot ? 0.85 : isPos ? 0.65 : 0.85;
+        /* Endpoints navy-900, gains navy-500, losses gold-500 — square edges */
+        const color = b.isTot ? NAVY : isPos ? NAVY_500 : GOLD;
         return (
           <g key={i}>
-            <rect x={r(x)} y={r(Math.min(y1, y2))} width={r(barW)} height={r(bh)} rx="2"
-              fill={color} fillOpacity={opac} />
+            <rect x={r(x)} y={r(Math.min(y1, y2))} width={r(barW)} height={r(bh)}
+              fill={color} />
             {!b.isTot && Math.abs(y2 - y1) > 12 && (
-              <text x={r(x + barW / 2)} y={r(Math.min(y1, y2) - 4)} textAnchor="middle" fontSize="7.5"
-                fontFamily="'JetBrains Mono',monospace" fill={color} fillOpacity="0.8">
+              <text x={r(x + barW / 2)} y={r(Math.min(y1, y2) - 4)} textAnchor="middle" fontSize="9"
+                fontFamily={MONO_FAMILY} fill={color} fontWeight="500">
                 {b.delta > 0 ? `+${b.delta}` : b.delta}
               </text>
             )}
             {i % bStep === 0 && (
-              <text x={r(x + barW / 2)} y={H - 6} textAnchor="middle" fontSize="8"
-                fill={T3} fontFamily="'JetBrains Mono',monospace">
+              <text x={r(x + barW / 2)} y={H - 6} textAnchor="middle" fontSize="9"
+                fill={T3} fontFamily={MONO_FAMILY} fontWeight="500">
                 {rows[i].label.slice(0, 9)}
               </text>
             )}
@@ -373,13 +406,13 @@ function ScatterPlotChart({ rows, columns, expanded }: ChartProps) {
       {rows.map((row, i) => {
         const cx = xv(row.values[0] ?? 0);
         const cy = yv(row.values[1] ?? 0);
+        /* Highlight first point gold (current/focus); rest navy ramp */
+        const fill = i === 0 ? GOLD : (i % 2 === 0 ? NAVY : NAVY_500);
         return (
           <g key={i}>
-            <circle cx={cx} cy={cy} r="5.5"
-              fill={i === 0 ? GOLD : NAVY}
-              fillOpacity={i === 0 ? 0.9 : 0.38 + (i / rows.length) * 0.3} />
+            <circle cx={cx} cy={cy} r={i === 0 ? 7 : 5.5} fill={fill} />
             {expanded && (
-              <text x={cx + 8} y={cy + 4} fontSize="8" fill={T2} fontFamily="Inter,sans-serif">
+              <text x={cx + 10} y={cy + 4} fontSize="9.5" fill={T2} fontFamily={SANS_FAMILY}>
                 {row.label}
               </text>
             )}
@@ -404,21 +437,25 @@ function TreemapChart({ rows, expanded }: ChartProps) {
   const leftW  = Math.max(60, Math.round(W * (leftTotal / total))) - 1;
   const rightW = W - leftW - 2;
 
-  const colors = [NAVY, GOLD, NAVY, GOLD, NAVY, NAVY, GOLD];
-  const opacs  = [1.0, 1.0, 0.70, 0.72, 0.48, 0.30, 0.55];
+  /* Spec: largest navy-900 (white text), second navy-700, third gold-500
+     (text-primary navy on gold), then navy ramp continues. */
+  const fills = [NAVY, NAVY_700, GOLD, NAVY_500, GOLD_300, NAVY_300, NAVY_100];
+  /* Per-cell text contrast: dark fills → on-dark text, gold-300/navy-100 → navy text */
+  const textOnDark = ["#F5F2EA", "#F5F2EA", NAVY, "#F5F2EA", NAVY, NAVY, NAVY];
 
-  const cells: { x: number; y: number; w: number; h: number; fill: string; op: number; label: string; val: number }[] = [];
+  const cells: { x: number; y: number; w: number; h: number; fill: string; label: string; val: number; tx: string }[] = [];
 
   let ly = 0;
   leftRows.forEach((row, i) => {
     const h = Math.max(18, Math.round((row.values[0] ?? 0) / leftTotal * H));
-    cells.push({ x: 0, y: ly, w: leftW, h, fill: colors[i], op: opacs[i], label: row.label, val: row.values[0] ?? 0 });
+    cells.push({ x: 0, y: ly, w: leftW, h, fill: fills[i], tx: textOnDark[i], label: row.label, val: row.values[0] ?? 0 });
     ly += h + 2;
   });
   let ry = 0;
   rightRows.forEach((row, i) => {
+    const idx = leftN + i;
     const h = Math.max(18, Math.round((row.values[0] ?? 0) / rightTotal * H));
-    cells.push({ x: leftW + 2, y: ry, w: rightW, h, fill: colors[leftN + i], op: opacs[leftN + i], label: row.label, val: row.values[0] ?? 0 });
+    cells.push({ x: leftW + 2, y: ry, w: rightW, h, fill: fills[idx], tx: textOnDark[idx], label: row.label, val: row.values[0] ?? 0 });
     ry += h + 2;
   });
 
@@ -430,16 +467,17 @@ function TreemapChart({ rows, expanded }: ChartProps) {
     <svg viewBox={`0 0 ${W} ${H}`} fill="none" {...svgAttrs(expanded)}>
       {cells.map((c, i) => (
         <g key={i}>
-          <rect x={c.x} y={c.y} width={c.w} height={c.h} rx="3" fill={c.fill} fillOpacity={c.op} />
+          {/* Sharp slab cells — no rx */}
+          <rect x={c.x} y={c.y} width={c.w} height={c.h} fill={c.fill} />
           {c.h >= 22 && (
-            <text x={c.x + 8} y={c.y + (c.h < 40 ? 14 : 18)}
-              fontSize={c.w < 80 ? 9 : 11} fontWeight="500"
-              fill="rgba(255,255,255,0.92)" fontFamily="Inter,sans-serif">{c.label}</text>
+            <text x={c.x + 10} y={c.y + (c.h < 40 ? 15 : 20)}
+              fontSize={c.w < 80 ? 10 : 12} fontWeight="500"
+              fill={c.tx} fontFamily={SANS_FAMILY}>{c.label}</text>
           )}
           {c.h >= 34 && (
-            <text x={c.x + 8} y={c.y + (c.h < 48 ? 26 : 32)}
-              fontSize={c.w < 80 ? 8 : 10}
-              fill="rgba(255,255,255,0.62)" fontFamily="'JetBrains Mono',monospace">{fmtVal(c.val)}</text>
+            <text x={c.x + 10} y={c.y + (c.h < 48 ? 30 : 38)}
+              fontSize={c.w < 80 ? 13 : 16}
+              fill={c.tx} fillOpacity="0.78" fontFamily={SERIF_FAMILY}>{fmtVal(c.val)}</text>
           )}
         </g>
       ))}
