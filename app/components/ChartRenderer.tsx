@@ -5,11 +5,11 @@ import type { DataRow, ChartType } from "@/lib/mockData";
 
 const r = roundTo;
 
-const NAVY = "#1F2A44";
-const GOLD = "#B8924A";
+const NAVY   = "#1F2A44";
+const GOLD   = "#B8924A";
 const BORDER = "#E8E4DC";
-const T2 = "#6B6B66";
-const T3 = "#A8A8A2";
+const T2     = "#6B6B66";
+const T3     = "#A8A8A2";
 
 interface ChartProps {
   rows: DataRow[];
@@ -17,16 +17,30 @@ interface ChartProps {
   expanded?: boolean;
 }
 
+/* ── SVG sizing helper ──────────────────────────────────────
+   Grid cards: w-full h-auto (scales by width, height is natural)
+   Expanded:   fills its flex container with meet scaling
+────────────────────────────────────────────────────────── */
+function svgAttrs(expanded: boolean | undefined) {
+  if (expanded) {
+    return {
+      width:  "100%",
+      height: "100%",
+      preserveAspectRatio: "xMidYMid meet",
+      style: { display: "block" as const },
+    };
+  }
+  return { className: "w-full h-auto" };
+}
+
 function GridLines({ pl, pr, pt, plotH }: { pl: number; pr: number; pt: number; plotH: number }) {
   return (
     <>
       {[0.25, 0.5, 0.75].map((f, i) => (
-        <line
-          key={i}
+        <line key={i}
           x1={pl} y1={r(pt + plotH * (1 - f))}
           x2={pr} y2={r(pt + plotH * (1 - f))}
-          stroke={NAVY} strokeWidth="0.5" strokeOpacity="0.05"
-        />
+          stroke={NAVY} strokeWidth="0.5" strokeOpacity="0.05" />
       ))}
     </>
   );
@@ -34,8 +48,8 @@ function GridLines({ pl, pr, pt, plotH }: { pl: number; pr: number; pt: number; 
 
 /* ── Lollipop ─────────────────────────────────────────── */
 function LollipopChart({ rows, expanded }: ChartProps) {
-  const data   = rows.map((row) => row.values[0] ?? 0);
-  const labels = rows.map((row) => row.label);
+  const data   = rows.map(row => row.values[0] ?? 0);
+  const labels = rows.map(row => row.label);
   const W = 360, H = expanded ? 220 : 148;
   const pl = 20, pr = 20, pt = 22, pb = 26;
   const plotW = W - pl - pr, plotH = H - pt - pb;
@@ -46,12 +60,12 @@ function LollipopChart({ rows, expanded }: ChartProps) {
   const yv = (v: number) => pt + plotH - ((v - mn) / range) * plotH;
 
   const baseline = pt + plotH;
-  const lastIdx = data.length - 1;
-  const minIdx  = data.indexOf(Math.min(...data));
-  const step    = Math.max(1, Math.floor(data.length / (expanded ? data.length : 6)));
+  const lastIdx  = data.length - 1;
+  const minIdx   = data.indexOf(Math.min(...data));
+  const step     = Math.max(1, Math.floor(data.length / (expanded ? data.length : 6)));
 
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} fill="none" className="w-full h-auto">
+    <svg viewBox={`0 0 ${W} ${H}`} fill="none" {...svgAttrs(expanded)}>
       <GridLines pl={pl} pr={W - pr} pt={pt} plotH={plotH} />
       {data.map((v, i) => (
         <line key={i}
@@ -80,8 +94,8 @@ function LollipopChart({ rows, expanded }: ChartProps) {
 
 /* ── Spline Area ──────────────────────────────────────── */
 function SplineAreaChart({ rows, expanded }: ChartProps) {
-  const data   = rows.map((row) => row.values[0] ?? 0);
-  const labels = rows.map((row) => row.label);
+  const data   = rows.map(row => row.values[0] ?? 0);
+  const labels = rows.map(row => row.label);
   const W = 360, H = expanded ? 200 : 140;
   const pl = 8, pr = 8, pt = 16, pb = 20;
   const plotH = H - pt - pb;
@@ -92,13 +106,13 @@ function SplineAreaChart({ rows, expanded }: ChartProps) {
   const areaD = pts.length > 1
     ? `${pd} L ${r(last.x)} ${H - pb} L ${pl} ${H - pb} Z`
     : "";
-  const step  = Math.max(1, Math.floor(data.length / (expanded ? data.length : 6)));
+  const step = Math.max(1, Math.floor(data.length / (expanded ? data.length : 6)));
 
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} fill="none" className="w-full h-auto">
+    <svg viewBox={`0 0 ${W} ${H}`} fill="none" {...svgAttrs(expanded)}>
       <defs>
         <linearGradient id="spline-fill" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={NAVY} stopOpacity="0.14" />
+          <stop offset="0%"   stopColor={NAVY} stopOpacity="0.14" />
           <stop offset="100%" stopColor={NAVY} stopOpacity="0" />
         </linearGradient>
       </defs>
@@ -115,7 +129,7 @@ function SplineAreaChart({ rows, expanded }: ChartProps) {
 }
 
 /* ── Donut ────────────────────────────────────────────── */
-function DonutChart({ rows }: ChartProps) {
+function DonutChart({ rows, expanded }: ChartProps) {
   const CX = 72, CY = 72, OR = 60, IR = 34;
   const total  = rows.reduce((s, row) => s + (row.values[0] ?? 0), 0) || 1;
   const colors = [NAVY, NAVY, GOLD, NAVY, GOLD, NAVY];
@@ -134,20 +148,19 @@ function DonutChart({ rows }: ChartProps) {
   function pt(deg: number, rad: number) {
     return { x: r(CX + rad * Math.cos(toRad(deg))), y: r(CY + rad * Math.sin(toRad(deg))) };
   }
-  function arc(s: (typeof slices)[0]) {
+  function arc(s: typeof slices[0]) {
     if (s.end - s.start >= 358) {
       return `M ${CX} ${CY - OR} A ${OR} ${OR} 0 1 1 ${CX - 0.01} ${CY - OR} Z`;
     }
     const large = s.end - s.start > 180 ? 1 : 0;
     const o1 = pt(s.start, OR), o2 = pt(s.end, OR);
-    const i1 = pt(s.end, IR), i2 = pt(s.start, IR);
+    const i1 = pt(s.end, IR),   i2 = pt(s.start, IR);
     return `M ${o1.x} ${o1.y} A ${OR} ${OR} 0 ${large} 1 ${o2.x} ${o2.y} L ${i1.x} ${i1.y} A ${IR} ${IR} 0 ${large} 0 ${i2.x} ${i2.y} Z`;
   }
 
   const legendX = 148;
-
   return (
-    <svg viewBox="0 0 240 144" fill="none" className="w-full h-auto">
+    <svg viewBox="0 0 240 144" fill="none" {...svgAttrs(expanded)}>
       {slices.map((s, i) => (
         <path key={i} d={arc(s)} fill={s.color} fillOpacity={s.op} />
       ))}
@@ -162,7 +175,8 @@ function DonutChart({ rows }: ChartProps) {
           <rect x="0" y="0" width="10" height="3" rx="1.5"
             fill={colors[i % colors.length]} fillOpacity={opac[i % opac.length]} />
           <text x="14" y="4" fontSize="9.5" fill={T2} fontFamily="Inter,sans-serif">{row.label}</text>
-          <text x="14" y="17" fontSize="9" fill={colors[i % colors.length]} fillOpacity={opac[i % opac.length]}
+          <text x="14" y="17" fontSize="9" fill={colors[i % colors.length]}
+            fillOpacity={opac[i % opac.length]}
             fontFamily="'JetBrains Mono',monospace">{row.values[0]}%</text>
         </g>
       ))}
@@ -172,8 +186,8 @@ function DonutChart({ rows }: ChartProps) {
 
 /* ── Clean Columns ────────────────────────────────────── */
 function CleanColumnsChart({ rows, expanded }: ChartProps) {
-  const data   = rows.map((row) => row.values[0] ?? 0);
-  const labels = rows.map((row) => row.label);
+  const data   = rows.map(row => row.values[0] ?? 0);
+  const labels = rows.map(row => row.label);
   const W = 300, H = expanded ? 200 : 140;
   const pl = 12, pr = 8, pt = 12, pb = 20;
   const plotW = W - pl - pr, plotH = H - pt - pb;
@@ -187,7 +201,7 @@ function CleanColumnsChart({ rows, expanded }: ChartProps) {
   const bStep = Math.max(1, Math.floor(n / (expanded ? n : 6)));
 
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} fill="none" className="w-full h-auto">
+    <svg viewBox={`0 0 ${W} ${H}`} fill="none" {...svgAttrs(expanded)}>
       <GridLines pl={pl} pr={W - pr} pt={pt} plotH={plotH} />
       {data.map((v, i) => {
         const x = xv(i), y = yv(v), bh = pt + plotH - y;
@@ -209,23 +223,23 @@ function CleanColumnsChart({ rows, expanded }: ChartProps) {
 }
 
 /* ── Stacked Horizontal Bar ───────────────────────────── */
-function StackedBarChart({ rows, columns }: ChartProps) {
+function StackedBarChart({ rows, columns, expanded }: ChartProps) {
   const pl = 90, pr = 36, pt = 20, rowH = 22, gap = 14;
   const W = 280;
   const H = pt + rows.length * (rowH + gap) - gap + 10;
   const plotW = W - pl - pr;
 
-  const maxTotal = Math.max(...rows.map((row) => row.values.reduce((s, v) => s + v, 0)));
+  const maxTotal = Math.max(...rows.map(row => row.values.reduce((s, v) => s + v, 0)));
   const seriesColors = [NAVY, NAVY, GOLD];
   const seriesOpac   = [1.0, 0.55, 0.90];
 
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} fill="none" className="w-full h-auto">
-      {/* Series legend */}
+    <svg viewBox={`0 0 ${W} ${H}`} fill="none" {...svgAttrs(expanded)}>
       {columns.map((col, i) => (
         <g key={i} transform={`translate(${pl + i * 64}, 8)`}>
           <rect x="0" y="-3" width="8" height="3" rx="1"
-            fill={seriesColors[i % seriesColors.length]} fillOpacity={seriesOpac[i % seriesOpac.length]} />
+            fill={seriesColors[i % seriesColors.length]}
+            fillOpacity={seriesOpac[i % seriesOpac.length]} />
           <text x="12" y="0" fontSize="8.5" fill={T2} fontFamily="Inter,sans-serif">{col}</text>
         </g>
       ))}
@@ -235,8 +249,8 @@ function StackedBarChart({ rows, columns }: ChartProps) {
         let xOff = pl;
         return (
           <g key={i}>
-            <text x={r(pl - 5)} y={r(y + rowH / 2 + 4)} textAnchor="end" fontSize="9.5" fill={T2}
-              fontFamily="Inter,sans-serif">{row.label}</text>
+            <text x={r(pl - 5)} y={r(y + rowH / 2 + 4)} textAnchor="end" fontSize="9.5"
+              fill={T2} fontFamily="Inter,sans-serif">{row.label}</text>
             {row.values.map((v, j) => {
               const bw = r((v / maxTotal) * plotW);
               const rect = (
@@ -247,8 +261,8 @@ function StackedBarChart({ rows, columns }: ChartProps) {
               xOff += bw + 1;
               return rect;
             })}
-            <text x={r(xOff + 4)} y={r(y + rowH / 2 + 4)} fontSize="9" fill={T2}
-              fontFamily="'JetBrains Mono',monospace">{total}</text>
+            <text x={r(xOff + 4)} y={r(y + rowH / 2 + 4)} fontSize="9"
+              fill={T2} fontFamily="'JetBrains Mono',monospace">{total}</text>
           </g>
         );
       })}
@@ -269,16 +283,14 @@ function WaterfallChart({ rows, expanded }: ChartProps) {
   const bars = rows.map((row, i) => {
     const val = row.values[0] ?? 0;
     if (isEndpoint(i)) {
-      const prev = running;
-      running = val;
+      const prev = running; running = val;
       return { start: 0, end: val, delta: val - prev, isTot: true };
     }
-    const s = running;
-    running += val;
+    const s = running; running += val;
     return { start: Math.min(s, running), end: Math.max(s, running), delta: val, isTot: false };
   });
 
-  const allVals = bars.flatMap((b) => [b.start, b.end]);
+  const allVals = bars.flatMap(b => [b.start, b.end]);
   const mn = Math.min(...allVals, 0), mx = Math.max(...allVals) || 1;
   const range = mx - mn;
 
@@ -289,9 +301,8 @@ function WaterfallChart({ rows, expanded }: ChartProps) {
   const bStep = Math.max(1, Math.floor(n / (expanded ? n : 6)));
 
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} fill="none" className="w-full h-auto">
+    <svg viewBox={`0 0 ${W} ${H}`} fill="none" {...svgAttrs(expanded)}>
       <GridLines pl={pl} pr={W - pr} pt={pt} plotH={plotH} />
-      {/* Connector lines */}
       {bars.map((b, i) => {
         if (i === 0) return null;
         const prev = bars[i - 1];
@@ -307,9 +318,9 @@ function WaterfallChart({ rows, expanded }: ChartProps) {
         const x  = xv(i);
         const y1 = yv(b.end), y2 = yv(b.start);
         const bh = Math.max(2, Math.abs(y2 - y1));
-        const isPos  = b.delta >= 0;
-        const color  = b.isTot ? NAVY : isPos ? NAVY : GOLD;
-        const opac   = b.isTot ? 0.85 : isPos ? 0.65 : 0.85;
+        const isPos = b.delta >= 0;
+        const color = b.isTot ? NAVY : isPos ? NAVY : GOLD;
+        const opac  = b.isTot ? 0.85 : isPos ? 0.65 : 0.85;
         return (
           <g key={i}>
             <rect x={r(x)} y={r(Math.min(y1, y2))} width={r(barW)} height={r(bh)} rx="2"
@@ -339,8 +350,8 @@ function ScatterPlotChart({ rows, columns, expanded }: ChartProps) {
   const pl = 28, pr = 12, pt = 12, pb = 24;
   const plotW = W - pl - pr, plotH = H - pt - pb;
 
-  const xs = rows.map((row) => row.values[0] ?? 0);
-  const ys = rows.map((row) => row.values[1] ?? 0);
+  const xs = rows.map(row => row.values[0] ?? 0);
+  const ys = rows.map(row => row.values[1] ?? 0);
   const xMin = Math.min(...xs), xMax = Math.max(...xs) || 1;
   const yMin = Math.min(...ys), yMax = Math.max(...ys) || 1;
 
@@ -348,7 +359,7 @@ function ScatterPlotChart({ rows, columns, expanded }: ChartProps) {
   const yv = (v: number) => r(pt + plotH - ((v - yMin) / (yMax - yMin || 1)) * plotH);
 
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} fill="none" className="w-full h-auto">
+    <svg viewBox={`0 0 ${W} ${H}`} fill="none" {...svgAttrs(expanded)}>
       <GridLines pl={pl} pr={W - pr} pt={pt} plotH={plotH} />
       <line x1={pl} y1={pt} x2={pl} y2={pt + plotH}
         stroke={NAVY} strokeWidth="0.75" strokeOpacity="0.12" />
@@ -380,11 +391,11 @@ function ScatterPlotChart({ rows, columns, expanded }: ChartProps) {
 }
 
 /* ── Treemap ──────────────────────────────────────────── */
-function TreemapChart({ rows }: ChartProps) {
+function TreemapChart({ rows, expanded }: ChartProps) {
   const W = 342, H = 162;
-  const total   = rows.reduce((s, row) => s + (row.values[0] ?? 0), 0) || 1;
-  const sorted  = [...rows].sort((a, b) => (b.values[0] ?? 0) - (a.values[0] ?? 0));
-  const leftN   = Math.ceil(sorted.length / 2);
+  const total  = rows.reduce((s, row) => s + (row.values[0] ?? 0), 0) || 1;
+  const sorted = [...rows].sort((a, b) => (b.values[0] ?? 0) - (a.values[0] ?? 0));
+  const leftN  = Math.ceil(sorted.length / 2);
   const leftRows  = sorted.slice(0, leftN);
   const rightRows = sorted.slice(leftN);
   const leftTotal  = leftRows.reduce((s, row)  => s + (row.values[0] ?? 0), 0) || 1;
@@ -412,12 +423,11 @@ function TreemapChart({ rows }: ChartProps) {
   });
 
   function fmtVal(v: number) {
-    if (v >= 1) return `$${v.toFixed(1)}M`;
-    return `$${(v * 1000).toFixed(0)}K`;
+    return v >= 1 ? `$${v.toFixed(1)}M` : `$${(v * 1000).toFixed(0)}K`;
   }
 
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} fill="none" className="w-full h-auto">
+    <svg viewBox={`0 0 ${W} ${H}`} fill="none" {...svgAttrs(expanded)}>
       {cells.map((c, i) => (
         <g key={i}>
           <rect x={c.x} y={c.y} width={c.w} height={c.h} rx="3" fill={c.fill} fillOpacity={c.op} />
@@ -439,10 +449,7 @@ function TreemapChart({ rows }: ChartProps) {
 
 /* ── Main dispatcher ──────────────────────────────────── */
 export function ChartRenderer({
-  rows,
-  columns,
-  chartType,
-  expanded,
+  rows, columns, chartType, expanded,
 }: {
   rows: DataRow[];
   columns: string[];

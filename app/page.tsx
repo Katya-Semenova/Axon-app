@@ -10,6 +10,8 @@ import {
 } from "@/lib/mockData";
 import { ChartRenderer } from "@/app/components/ChartRenderer";
 import { ExpandedView } from "@/app/components/ExpandedView";
+import { PresentationStrip } from "@/app/components/Presentation";
+import type { SlideState } from "@/app/components/Presentation";
 
 const r = roundTo;
 
@@ -98,28 +100,6 @@ function ProjectCard({ project, onClick }: { project: Project; onClick: () => vo
   );
 }
 
-/* ── Slide thumbnail ────────────────────────────────── */
-function SlideThumbnail({ card }: { card: CardState }) {
-  const serial = String(card.serial).padStart(2, "0");
-  const headline = card.headline.length > 30
-    ? card.headline.slice(0, 30) + "…"
-    : card.headline;
-  return (
-    <svg viewBox="0 0 116 76" fill="none" style={{ width: "100%", height: "100%" }}>
-      <rect width="116" height="76" fill="#fff" />
-      <text x="6" y="11" fontSize="5.5" fontWeight="600" fill={T3}
-        fontFamily="'JetBrains Mono',monospace" letterSpacing="0.08em">{serial} /</text>
-      <text x="6" y="22" fontSize="6.5" fontWeight="500" fill="#0A0A0A"
-        fontFamily="Inter,sans-serif">{headline}</text>
-      <rect x="6" y="30" width="104" height="34" rx="3" fill={NAVY} fillOpacity="0.05" />
-      <text x="58" y="51" textAnchor="middle" fontSize="7"
-        fontFamily="'JetBrains Mono',monospace" fill={NAVY} fillOpacity="0.4">
-        {card.chartType}
-      </text>
-    </svg>
-  );
-}
-
 /* ── Insight card ───────────────────────────────────── */
 interface InsightCardProps {
   card: CardState;
@@ -133,7 +113,10 @@ function InsightCard({ card, onAdd, onExpand, onChartTypeChange }: InsightCardPr
   const padded = String(card.serial).padStart(2, "0");
 
   return (
-    <div className={`${card.wide ? "sm:col-span-2" : ""} group relative bg-card border border-border rounded-[14px] p-8 transition-colors duration-200 hover:border-[rgba(31,42,68,0.15)]`}>
+    <div
+      className={`${card.wide ? "sm:col-span-2" : ""} group relative bg-card border border-border rounded-[14px] p-8 transition-colors duration-200 hover:border-[rgba(31,42,68,0.15)] cursor-pointer`}
+      onClick={() => onExpand()}
+    >
       {/* Dropdown backdrop */}
       {ddOpen && (
         <div className="fixed inset-0 z-[5]" onClick={() => setDdOpen(false)} />
@@ -144,7 +127,7 @@ function InsightCard({ card, onAdd, onExpand, onChartTypeChange }: InsightCardPr
         <span className="font-mono text-[11px] text-t3 tracking-[0.08em]">{padded} /</span>
         <div className="relative z-[6]">
           <button
-            onClick={() => setDdOpen(!ddOpen)}
+            onClick={(e) => { e.stopPropagation(); setDdOpen(!ddOpen); }}
             className="flex items-center gap-1 text-[11px] text-t2 border border-border rounded-md px-[8px] py-[3px] bg-bg hover:border-[rgba(31,42,68,0.2)] transition-colors duration-200"
           >
             {card.chartType}
@@ -157,7 +140,7 @@ function InsightCard({ card, onAdd, onExpand, onChartTypeChange }: InsightCardPr
               {CHART_TYPES.map((type) => (
                 <button
                   key={type}
-                  onClick={() => { onChartTypeChange(type); setDdOpen(false); }}
+                  onClick={(e) => { e.stopPropagation(); onChartTypeChange(type); setDdOpen(false); }}
                   className="w-full text-left px-3 py-[6px] text-[11px] hover:bg-bg transition-colors"
                   style={{
                     fontFamily: "'JetBrains Mono',monospace",
@@ -181,28 +164,36 @@ function InsightCard({ card, onAdd, onExpand, onChartTypeChange }: InsightCardPr
         <ChartRenderer rows={card.rows} columns={card.columns} chartType={card.chartType} />
       </div>
 
-      {/* Footer */}
-      <div className="flex items-center justify-between">
-        <ConfBar filled={card.confFilled} pct={card.confPct} />
-        {/* Expand icon — now functional */}
-        <button
-          onClick={(e) => { e.stopPropagation(); onExpand(); }}
-          className="w-[26px] h-[26px] rounded-md border border-border flex items-center justify-center text-t3 hover:border-[rgba(31,42,68,0.2)] hover:text-t2 transition-all duration-200"
-          title="Expand"
-        >
-          <svg width="11" height="11" viewBox="0 0 11 11" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
-            <path d="M7 1h3v3M1 7v3h3M10 1L6 5M1 10l4-4" />
-          </svg>
-        </button>
-      </div>
-
-      {/* Hover overlay */}
-      <div className="absolute inset-0 rounded-[14px] opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-gradient-to-t from-white/[0.92] to-transparent flex items-end justify-center pb-5 pointer-events-none group-hover:pointer-events-auto">
+      {/* Hover overlay — z-[1] keeps it below the expand button */}
+      <div className="absolute inset-0 z-[1] rounded-[14px] opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-gradient-to-t from-white/[0.92] to-transparent flex items-end justify-center pb-5 pointer-events-none group-hover:pointer-events-auto">
         <button
           onClick={(e) => { e.stopPropagation(); onAdd(); }}
           className="text-[12px] font-medium font-mono text-primary border border-primary/30 rounded-lg px-4 py-[6px] bg-card hover:bg-[rgba(31,42,68,0.05)] transition-colors duration-200"
         >
           + Add to presentation
+        </button>
+      </div>
+
+      {/* Footer — z-[2] keeps expand icon above the hover overlay */}
+      <div className="relative z-[2] flex items-center justify-between">
+        <ConfBar filled={card.confFilled} pct={card.confPct} />
+        <button
+          onClick={(e) => { e.stopPropagation(); onExpand(); }}
+          className="w-[26px] h-[26px] rounded-md border flex items-center justify-center transition-all duration-200"
+          title="Expand"
+          style={{ color: "#A8A8A2", borderColor: "#E8E4DC" }}
+          onMouseEnter={e => {
+            e.currentTarget.style.color = "#3B4BDB";
+            e.currentTarget.style.borderColor = "rgba(59,75,219,0.35)";
+          }}
+          onMouseLeave={e => {
+            e.currentTarget.style.color = "#A8A8A2";
+            e.currentTarget.style.borderColor = "#E8E4DC";
+          }}
+        >
+          <svg width="11" height="11" viewBox="0 0 11 11" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+            <path d="M7 1h3v3M1 7v3h3M10 1L6 5M1 10l4-4" />
+          </svg>
         </button>
       </div>
     </div>
@@ -401,8 +392,24 @@ function Page2({ onBack }: { onBack: () => void }) {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const expandedCard = expandedId ? cards.find((c) => c.id === expandedId) ?? null : null;
 
-  /* ── Presentation slides (card IDs) ── */
-  const [slides, setSlides] = useState<string[]>(["lollipop", "stacked", "spline"]);
+  /* ── Presentation slides ── */
+  const SLIDE_DEFAULTS = {
+    visualStyle: "Modern" as const,
+    colorAccent: "Navy" as const,
+    showLabels:  true,
+    showGrid:    true,
+    stackedBars: false,
+    aggregation: "Monthly" as const,
+    colorBy:     "Segment",
+    status:      "Paid",
+  };
+
+  const [slides, setSlides] = useState<SlideState[]>(() =>
+    ["lollipop", "stacked", "spline"].flatMap(cardId => {
+      const card = INITIAL_CARDS.find(c => c.id === cardId);
+      return card ? [{ ...SLIDE_DEFAULTS, cardId, chartType: card.chartType }] : [];
+    })
+  );
   const [drawerOpen, setDrawer] = useState(false);
 
   /* ── Handlers ── */
@@ -436,13 +443,23 @@ function Page2({ onBack }: { onBack: () => void }) {
   }
 
   function addSlide(cardId: string) {
-    setSlides((prev) => (prev.includes(cardId) ? prev : [...prev, cardId]));
+    const card = cards.find(c => c.id === cardId);
+    if (!card) return;
+    setSlides(prev =>
+      prev.some(s => s.cardId === cardId)
+        ? prev
+        : [...prev, {
+            cardId, chartType: card.chartType,
+            visualStyle: "Modern" as const, colorAccent: "Navy" as const,
+            showLabels: true, showGrid: true, stackedBars: false,
+            aggregation: "Monthly" as const, colorBy: "Segment", status: "Paid",
+          }]
+    );
   }
 
-  const slideCards = slides.flatMap((id) => {
-    const c = cards.find((x) => x.id === id);
-    return c ? [c] : [];
-  });
+  function updateSlide(cardId: string, update: Partial<SlideState>) {
+    setSlides(prev => prev.map(s => s.cardId === cardId ? { ...s, ...update } : s));
+  }
 
   return (
     <div className="flex h-screen overflow-hidden bg-bg animate-fade-in">
@@ -488,85 +505,80 @@ function Page2({ onBack }: { onBack: () => void }) {
         </div>
 
         {/* Canvas */}
-        <section className="flex-1 min-h-0 overflow-y-auto px-7 pt-7 border-b border-border thin-scroll max-sm:px-4 max-sm:pt-5">
-          <div className="flex items-center justify-between mb-5">
-            <div className="flex items-center gap-[10px]">
-              <span className="font-mono text-[10.5px] uppercase tracking-[0.1em] text-t3">Canvas</span>
-              <span className="font-mono text-[10.5px] text-t3 border border-border rounded-full px-[10px] py-0.5">
-                {cards.length} insights
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              {/* Undo / Redo in canvas header */}
-              <button onClick={undo} disabled={!canUndo} title="Undo"
-                className="w-[30px] h-[30px] rounded-lg border border-border flex items-center justify-center text-t2 disabled:opacity-30 hover:border-[rgba(31,42,68,0.2)] transition-all">
-                <svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M2 5h6a4 4 0 010 8H4M2 5l3-3M2 5l3 3" />
-                </svg>
-              </button>
-              <button onClick={redo} disabled={!canRedo} title="Redo"
-                className="w-[30px] h-[30px] rounded-lg border border-border flex items-center justify-center text-t2 disabled:opacity-30 hover:border-[rgba(31,42,68,0.2)] transition-all">
-                <svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M12 5H6a4 4 0 000 8h4M12 5l-3-3M12 5l-3 3" />
-                </svg>
-              </button>
-              <button className="flex items-center gap-[5px] font-mono text-[11px] text-t2 border border-border rounded-lg px-[10px] py-[5px] bg-card hover:border-[rgba(31,42,68,0.2)] transition-colors duration-200">
-                Filter
-                <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
-                  <path d="M1.5 3h7M3 6h4M4.5 9h1" />
-                </svg>
-              </button>
-            </div>
-          </div>
-
-          {/* Dense grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 [grid-auto-flow:dense] gap-[14px] pb-7">
-            {cards.map((card) => (
-              <InsightCard
-                key={card.id}
-                card={card}
-                onAdd={() => addSlide(card.id)}
-                onExpand={() => setExpandedId(card.id)}
-                onChartTypeChange={(type) => changeCardType(card.id, type)}
+        <section className="flex-1 min-h-0 border-b border-border flex flex-col overflow-hidden">
+          <AnimatePresence>
+            {expandedCard && (
+              <ExpandedView
+                key={expandedCard.id}
+                card={expandedCard}
+                onClose={() => setExpandedId(null)}
+                onRowsChange={(rows) => updateCardRows(expandedCard.id, rows)}
+                onChartTypeChange={(type) => changeCardType(expandedCard.id, type)}
+                onUndo={undo}
+                onRedo={redo}
+                canUndo={canUndo}
+                canRedo={canRedo}
               />
-            ))}
-            <SkeletonCard />
-            <PlaceholderCard />
-            <PlaceholderCard />
-          </div>
+            )}
+          </AnimatePresence>
+          {!expandedCard && (
+            <div className="flex-1 overflow-y-auto px-7 pt-7 thin-scroll max-sm:px-4 max-sm:pt-5">
+              <div className="flex items-center justify-between mb-5">
+                <div className="flex items-center gap-[10px]">
+                  <span className="font-mono text-[10.5px] uppercase tracking-[0.1em] text-t3">Canvas</span>
+                  <span className="font-mono text-[10.5px] text-t3 border border-border rounded-full px-[10px] py-0.5">
+                    {cards.length} insights
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  {/* Undo / Redo in canvas header */}
+                  <button onClick={undo} disabled={!canUndo} title="Undo"
+                    className="w-[30px] h-[30px] rounded-lg border border-border flex items-center justify-center text-t2 disabled:opacity-30 hover:border-[rgba(31,42,68,0.2)] transition-all">
+                    <svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M2 5h6a4 4 0 010 8H4M2 5l3-3M2 5l3 3" />
+                    </svg>
+                  </button>
+                  <button onClick={redo} disabled={!canRedo} title="Redo"
+                    className="w-[30px] h-[30px] rounded-lg border border-border flex items-center justify-center text-t2 disabled:opacity-30 hover:border-[rgba(31,42,68,0.2)] transition-all">
+                    <svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M12 5H6a4 4 0 000 8h4M12 5l-3-3M12 5l-3 3" />
+                    </svg>
+                  </button>
+                  <button className="flex items-center gap-[5px] font-mono text-[11px] text-t2 border border-border rounded-lg px-[10px] py-[5px] bg-card hover:border-[rgba(31,42,68,0.2)] transition-colors duration-200">
+                    Filter
+                    <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+                      <path d="M1.5 3h7M3 6h4M4.5 9h1" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
+              {/* Dense grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 [grid-auto-flow:dense] gap-[14px] pb-7">
+                {cards.map((card) => (
+                  <InsightCard
+                    key={card.id}
+                    card={card}
+                    onAdd={() => addSlide(card.id)}
+                    onExpand={() => setExpandedId(card.id)}
+                    onChartTypeChange={(type) => changeCardType(card.id, type)}
+                  />
+                ))}
+                <SkeletonCard />
+                <PlaceholderCard />
+                <PlaceholderCard />
+              </div>
+            </div>
+          )}
         </section>
 
         {/* Presentation strip */}
-        <section className="h-[170px] shrink-0 px-7 pt-4 pb-5 flex flex-col max-sm:px-4">
-          <div className="flex items-center justify-between mb-[14px] shrink-0">
-            <span className="font-mono text-[10.5px] uppercase tracking-[0.1em] text-t3">Presentation</span>
-            <div className="flex items-center gap-2">
-              <button className="flex items-center gap-[5px] font-mono text-[11.5px] text-t2 border border-border rounded-lg px-[14px] py-[7px] bg-card hover:border-[rgba(31,42,68,0.2)] transition-colors duration-200">
-                Export
-                <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
-                  <path d="M5 2v6M2 7l3 3 3-3" />
-                </svg>
-              </button>
-              <button className="font-mono text-[11.5px] font-medium text-white rounded-lg px-[18px] py-[7px] hover:opacity-85 transition-opacity duration-200"
-                style={{ background: NAVY }}>
-                Present
-              </button>
-            </div>
-          </div>
-          <div className="flex gap-[10px] overflow-x-auto pb-1 thin-scroll">
-            {slideCards.map((card, i) => (
-              <div key={`${card.id}-${i}`}
-                className="w-[116px] min-w-[116px] h-[76px] border border-border rounded-lg bg-card overflow-hidden cursor-pointer hover:border-[rgba(31,42,68,0.18)] transition-colors duration-200 shrink-0">
-                <SlideThumbnail card={card} />
-              </div>
-            ))}
-            <button className="w-[116px] min-w-[116px] h-[76px] border-[1.5px] border-dashed border-border rounded-lg flex items-center justify-center cursor-pointer hover:border-t3 transition-colors duration-200 shrink-0">
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" className="text-t3">
-                <path d="M7 2v10M2 7h10" />
-              </svg>
-            </button>
-          </div>
-        </section>
+        <PresentationStrip
+          slides={slides}
+          cards={cards}
+          onUpdateSlide={updateSlide}
+          onAddSlide={() => {/* open a picker or add last card */}}
+        />
       </div>
 
       {/* Mobile drawer */}
@@ -610,22 +622,6 @@ function Page2({ onBack }: { onBack: () => void }) {
           </button>
         </div>
       </div>
-
-      {/* ── Expanded card overlay ── */}
-      <AnimatePresence>
-        {expandedCard && (
-          <ExpandedView
-            card={expandedCard}
-            onClose={() => setExpandedId(null)}
-            onRowsChange={(rows) => updateCardRows(expandedCard.id, rows)}
-            onChartTypeChange={(type) => changeCardType(expandedCard.id, type)}
-            onUndo={undo}
-            onRedo={redo}
-            canUndo={canUndo}
-            canRedo={canRedo}
-          />
-        )}
-      </AnimatePresence>
 
     </div>
   );
