@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import type { CardState, ChartType } from "@/lib/mockData";
 import { MiniChart } from "./MiniChart";
 
@@ -37,6 +37,12 @@ const STYLE_HEADLINE_FONT: Record<VisualStyle, string> = {
   Modern:    "Inter, sans-serif",
   Magazine:  "'Instrument Serif', Georgia, serif",
   Wireframe: "'JetBrains Mono', monospace",
+};
+
+const LIBRARY_NAME: Record<VisualStyle, string> = {
+  Modern:    "SciChart",
+  Magazine:  "Highcharts",
+  Wireframe: "D3.js",
 };
 
 /* The system's ONE accent — replaces all prior #3B4BDB NAVY. */
@@ -80,7 +86,8 @@ function SlideThumbnail({
       onClick={onClick}
       className="shrink-0 cursor-pointer overflow-hidden"
       style={{
-        width: 116, height: 76,
+        height: "100%",
+        aspectRatio: "116 / 76",
         borderRadius: 0,
         border: `${isActive ? "1.5px" : "1px"} solid ${isActive ? NAVY : "#D9D3C2"}`,
         background: bg,
@@ -132,12 +139,12 @@ function StyleTile({
       onClick={onClick}
       className="flex-1 rounded-sm border overflow-hidden transition-all duration-150"
       style={{
-        height: 34,
+        height: 64,
         borderColor: active ? NAVY : BORDER,
         background: active ? "rgba(27,40,64,0.05)" : "transparent",
       }}
     >
-      <svg viewBox="0 0 56 30" fill="none" style={{ width: "100%", height: "100%" }}>
+      <svg viewBox="0 0 56 56" fill="none" style={{ width: "100%", height: "100%" }}>
         {style === "Modern" && (
           <>
             <rect x="5"  y="16" width="8" height="10" rx="1.5" fill={NAVY} fillOpacity={active ? 0.85 : 0.25} />
@@ -171,19 +178,38 @@ function StyleTile({
               stroke={active ? NAVY : T3} strokeWidth="0.85" strokeOpacity={active ? 0.8 : 0.45} />
           </>
         )}
-        {/* Label */}
-        <text x="28" y="30" textAnchor="middle" fontSize="5.5"
+        {/* Style name — small secondary */}
+        <text x="28" y="36" textAnchor="middle" fontSize="4.5"
           fontFamily="'JetBrains Mono', monospace"
           fill={active ? NAVY : T3}
-          fillOpacity={active ? 1 : 0.7}>
+          fillOpacity={active ? 0.5 : 0.35}>
           {style}
+        </text>
+        {/* Library name — prominent */}
+        <text x="28" y="49" textAnchor="middle" fontSize="6.5"
+          fontWeight="500"
+          fontFamily="'JetBrains Mono', monospace"
+          fill={active ? NAVY : T3}
+          fillOpacity={active ? 1 : 0.65}>
+          {LIBRARY_NAME[style]}
         </text>
       </svg>
     </button>
   );
 }
 
-/* ── PanelSelect ────────────────────────────────────────── */
+/* ── PanelSelect ─────────────────────────────────────────────────────────
+ * Fully custom dropdown built from div / button / ul / li — zero native
+ * <select> or OS chrome anywhere.  The menu uses position:fixed so it
+ * escapes every overflow:hidden ancestor; it opens UPWARD because the
+ * strip lives at the bottom of the viewport.
+ *
+ * Z-index ladder (root stacking context):
+ *   backdrop  99  (fixed, blocks pointer events below the open field)
+ *   wrapper  101  (relative + z-index creates a stacking context so the
+ *                  trigger renders above the backdrop without extra tricks)
+ *   menu     102  (fixed, above both)
+ * ─────────────────────────────────────────────────────────────────────── */
 function PanelSelect({
   label, value, options, onChange,
 }: {
@@ -192,49 +218,152 @@ function PanelSelect({
   options: string[];
   onChange: (v: string) => void;
 }) {
+  const [open, setOpen]         = useState(false);
+  const triggerRef              = useRef<HTMLButtonElement>(null);
+  const [rect, setRect]         = useState<DOMRect | null>(null);
+
+  function handleToggle() {
+    if (triggerRef.current) setRect(triggerRef.current.getBoundingClientRect());
+    setOpen(v => !v);
+  }
+
+  function handleSelect(opt: string) {
+    onChange(opt);
+    setOpen(false);
+  }
+
   return (
-    <div>
+    /* wrapper creates stacking context at z=101 when open */
+    <div style={{ position: "relative", zIndex: open ? 101 : "auto" }}>
+
+      {/* Tiny field label */}
       <div style={{
         fontFamily: "'JetBrains Mono', monospace",
         fontSize: 7.5,
-        letterSpacing: "0.09em",
+        letterSpacing: "0.08em",
         textTransform: "uppercase" as const,
         color: T3,
-        whiteSpace: "nowrap" as const,
         marginBottom: 3,
+        whiteSpace: "nowrap" as const,
       }}>
         {label}
       </div>
-      <div className="relative">
-        <select
-          value={value}
-          onChange={e => onChange(e.target.value)}
+
+      {/* Full-viewport backdrop — closes menu, sits below wrapper (z 99 < 101) */}
+      {open && (
+        <div
+          aria-hidden="true"
           style={{
-            width: "100%",
-            appearance: "none" as const,
-            WebkitAppearance: "none" as const,
-            background: "#fff",
-            border: `1px solid ${BORDER}`,
-            borderRadius: 4,
-            fontFamily: "'JetBrains Mono', monospace",
-            fontSize: 10,
-            color: T2,
-            paddingLeft: 7,
-            paddingRight: 20,
-            paddingTop: 4,
-            paddingBottom: 4,
-            outline: "none",
-            cursor: "pointer",
+            position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
+            zIndex: 99,
+          }}
+          onClick={() => setOpen(false)}
+        />
+      )}
+
+      {/* Trigger button */}
+      <button
+        ref={triggerRef}
+        type="button"
+        onClick={handleToggle}
+        style={{
+          width: "100%",
+          display: "flex",
+          alignItems: "center",
+          gap: 4,
+          background: SURFACE_RAISE,
+          border: `1px solid ${open ? NAVY : BORDER}`,
+          borderRadius: 4,
+          padding: "3px 6px 3px 8px",
+          fontFamily: "'JetBrains Mono', monospace",
+          fontSize: 10,
+          lineHeight: 1.5,
+          color: T2,
+          cursor: "pointer",
+          outline: "none",
+          userSelect: "none" as const,
+          transition: "border-color 150ms",
+        }}
+      >
+        <span style={{
+          flex: 1,
+          textAlign: "left" as const,
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          whiteSpace: "nowrap" as const,
+        }}>
+          {value}
+        </span>
+        <svg
+          width="7" height="7" viewBox="0 0 7 7" fill="none"
+          stroke={T3} strokeWidth="1.3" strokeLinecap="round"
+          style={{
+            flexShrink: 0,
+            transform: open ? "rotate(180deg)" : undefined,
+            transition: "transform 150ms",
           }}
         >
-          {options.map(opt => <option key={opt} value={opt}>{opt}</option>)}
-        </select>
-        <svg width="7" height="7" viewBox="0 0 7 7" fill="none"
-          stroke={T3} strokeWidth="1.3" strokeLinecap="round"
-          style={{ position: "absolute", right: 6, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }}>
           <path d="M1 2.5l2.5 2.5L6 2.5" />
         </svg>
-      </div>
+      </button>
+
+      {/* Menu — position:fixed escapes overflow:hidden parents; opens upward */}
+      {open && rect && (
+        <ul
+          role="listbox"
+          style={{
+            /* bottom of menu = top of trigger − 4 px gap */
+            position: "fixed",
+            bottom: window.innerHeight - rect.top + 4,
+            left: rect.left,
+            minWidth: Math.max(rect.width, 108),
+            zIndex: 102,
+            margin: 0,
+            padding: "4px 0",
+            listStyle: "none",
+            background: SURFACE_RAISE,
+            border: `1px solid ${BORDER}`,
+            borderRadius: 4,
+            boxShadow: "0 2px 10px rgba(27,40,64,0.07)",
+          }}
+        >
+          {options.map(opt => (
+            <li key={opt} role="option" aria-selected={opt === value}
+              style={{ margin: 0, padding: 0 }}>
+              <button
+                type="button"
+                onClick={() => handleSelect(opt)}
+                style={{
+                  display: "block",
+                  width: "100%",
+                  textAlign: "left" as const,
+                  padding: "5px 10px",
+                  fontFamily: "'JetBrains Mono', monospace",
+                  fontSize: 10,
+                  lineHeight: 1.5,
+                  color: opt === value ? NAVY : T2,
+                  fontWeight: opt === value ? 500 : 400,
+                  background: opt === value ? SURFACE_MUTED : "transparent",
+                  border: "none",
+                  cursor: "pointer",
+                  whiteSpace: "nowrap" as const,
+                  outline: "none",
+                  transition: "background 80ms",
+                  userSelect: "none" as const,
+                }}
+                onMouseEnter={e => {
+                  if (opt !== value) e.currentTarget.style.background = SURFACE_MUTED;
+                }}
+                onMouseLeave={e => {
+                  if (opt !== value) e.currentTarget.style.background = "transparent";
+                }}
+              >
+                {opt}
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }
@@ -282,6 +411,13 @@ function ToggleSwitch({
 }
 
 /* ── SettingsPanel ──────────────────────────────────────── */
+/*
+ * Two-column flex-row layout so content never overflows vertically.
+ * Left column: header + dropdowns + actions (width: 284px).
+ * Right column: visualization style tiles + toggles (width: 216px).
+ * The outer wrapper has no fixed width, so it sizes to content (≈ 501px)
+ * and naturally claims that space from the slide strip on its left.
+ */
 function SettingsPanel({
   slide, card, onUpdate,
 }: {
@@ -290,139 +426,164 @@ function SettingsPanel({
   onUpdate: (update: Partial<SlideState>) => void;
 }) {
   const serial = String(card.serial).padStart(2, "0");
+  const mono = "'JetBrains Mono', monospace";
 
   return (
-    <div className="flex flex-col h-full" style={{ padding: "11px 16px 12px" }}>
+    <div style={{ display: "flex", height: "100%" }}>
 
-      {/* Header */}
-      <div className="flex items-center justify-between shrink-0" style={{ marginBottom: 7 }}>
-        <span style={{
-          fontFamily: "'JetBrains Mono', monospace",
-          fontSize: 8.5,
-          letterSpacing: "0.1em",
+      {/* ── Left: header + dropdowns + actions ── */}
+      <div style={{
+        width: 284,
+        flexShrink: 0,
+        display: "flex",
+        flexDirection: "column",
+        padding: "12px 14px",
+        gap: 7,
+      }}>
+
+        {/* Header */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0 }}>
+          <span style={{ fontFamily: mono, fontSize: 8.5, letterSpacing: "0.1em", textTransform: "uppercase" as const, color: T3 }}>
+            Chart Settings
+          </span>
+          <span style={{ fontFamily: mono, fontSize: 8.5, color: T3 }}>
+            {serial} /{" "}
+            <span style={{ color: "#0A0A0A" }}>
+              {card.headline.length > 22 ? card.headline.slice(0, 22) + "…" : card.headline}
+            </span>
+          </span>
+        </div>
+
+        {/* Inputs — 3-col auto-fit within the 256px content area */}
+        <div style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(72px, 1fr))",
+          gap: 8,
+          flexShrink: 0,
+        }}>
+          <PanelSelect
+            label="Status"
+            value={slide.status}
+            options={["All", "Paid", "Pending", "Failed"]}
+            onChange={v => onUpdate({ status: v })}
+          />
+          <PanelSelect
+            label="Aggregation"
+            value={slide.aggregation}
+            options={["Monthly", "Weekly", "Daily"]}
+            onChange={v => onUpdate({ aggregation: v as SlideState["aggregation"] })}
+          />
+          <PanelSelect
+            label="Color By"
+            value={slide.colorBy}
+            options={["Segment", "Category", "Region", "None"]}
+            onChange={v => onUpdate({ colorBy: v })}
+          />
+          <PanelSelect
+            label="Filter"
+            value="All data"
+            options={["All data", "Top 10", "Bottom 10", "Outliers"]}
+            onChange={() => {}}
+          />
+          <PanelSelect
+            label="Accent"
+            value={slide.colorAccent}
+            options={["Navy", "Gold", "Slate", "Graphite"]}
+            onChange={v => onUpdate({ colorAccent: v as ColorAccent })}
+          />
+        </div>
+
+        {/* Spacer — pushes actions to bottom */}
+        <div style={{ flex: 1 }} />
+
+        {/* Actions */}
+        <div style={{ display: "flex", gap: 7, flexShrink: 0 }}>
+          <button
+            className="flex items-center gap-[5px] border transition-colors duration-150"
+            style={{
+              fontFamily: mono,
+              fontSize: 11,
+              color: T2,
+              borderColor: BORDER,
+              background: "transparent",
+              padding: "7px 14px",
+              borderRadius: 999,
+              whiteSpace: "nowrap" as const,
+              cursor: "pointer",
+            }}
+            onMouseEnter={e => (e.currentTarget.style.borderColor = NAVY)}
+            onMouseLeave={e => (e.currentTarget.style.borderColor = BORDER)}
+          >
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+              <path d="M5 1v8M1 5h8" />
+            </svg>
+            Add Chart
+          </button>
+          <button
+            className="flex-1 font-medium transition-opacity duration-150 hover:opacity-85"
+            style={{
+              fontFamily: mono,
+              fontSize: 11,
+              color: "#F5F2EA",
+              background: NAVY,
+              border: "none",
+              padding: "7px 0",
+              borderRadius: 999,
+              whiteSpace: "nowrap" as const,
+              cursor: "pointer",
+            }}
+          >
+            Build Presentation
+          </button>
+        </div>
+      </div>
+
+      {/* ── Divider ── */}
+      <div style={{ width: 1, flexShrink: 0, alignSelf: "stretch", background: BORDER }} />
+
+      {/* ── Right: visualization style ── */}
+      <div style={{
+        width: 216,
+        flexShrink: 0,
+        display: "flex",
+        flexDirection: "column",
+        padding: "12px 14px",
+        gap: 8,
+      }}>
+
+        {/* Sub-header */}
+        <div style={{
+          fontFamily: mono,
+          fontSize: 7.5,
+          letterSpacing: "0.09em",
           textTransform: "uppercase" as const,
           color: T3,
+          flexShrink: 0,
         }}>
-          Chart Settings
-        </span>
-        <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 8.5, color: T3 }}>
-          {serial} /{" "}
-          <span style={{ color: "#0A0A0A" }}>
-            {card.headline.length > 26 ? card.headline.slice(0, 26) + "…" : card.headline}
-          </span>
-        </span>
-      </div>
+          Visualization Style
+        </div>
 
-      {/* Inputs — auto-fit grid: 3 cols when wide, 2 when narrow, never crops */}
-      <div
-        className="shrink-0"
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(100px, 1fr))",
-          gap: 7,
-          marginBottom: 7,
-        }}
-      >
-        <PanelSelect
-          label="Status"
-          value={slide.status}
-          options={["All", "Paid", "Pending", "Failed"]}
-          onChange={v => onUpdate({ status: v })}
-        />
-        <PanelSelect
-          label="Aggregation"
-          value={slide.aggregation}
-          options={["Monthly", "Weekly", "Daily"]}
-          onChange={v => onUpdate({ aggregation: v as SlideState["aggregation"] })}
-        />
-        <PanelSelect
-          label="Color By"
-          value={slide.colorBy}
-          options={["Segment", "Category", "Region", "None"]}
-          onChange={v => onUpdate({ colorBy: v })}
-        />
-        <PanelSelect
-          label="Filter"
-          value="All data"
-          options={["All data", "Top 10", "Bottom 10", "Outliers"]}
-          onChange={() => {}}
-        />
-        <PanelSelect
-          label="Accent"
-          value={slide.colorAccent}
-          options={["Navy", "Gold", "Slate", "Graphite"]}
-          onChange={v => onUpdate({ colorAccent: v as ColorAccent })}
-        />
-      </div>
-
-      {/* Style tiles + Toggles — shared 3-column grid, visually aligned */}
-      <div
-        className="shrink-0"
-        style={{
+        {/* Style tiles — row 1 */}
+        {/* Toggles  — row 2, each aligned under its tile */}
+        <div style={{
           display: "grid",
           gridTemplateColumns: "repeat(3, 1fr)",
           columnGap: 6,
-          rowGap: 5,
-          marginBottom: 7,
-        }}
-      >
-        {/* Row 1: style tiles */}
-        {(["Modern", "Magazine", "Wireframe"] as VisualStyle[]).map(s => (
-          <StyleTile
-            key={s} style={s}
-            active={slide.visualStyle === s}
-            onClick={() => onUpdate({ visualStyle: s })}
-          />
-        ))}
-        {/* Row 2: toggles, aligned under each tile */}
-        <ToggleSwitch label="Labels" checked={slide.showLabels}  onChange={v => onUpdate({ showLabels: v })} />
-        <ToggleSwitch label="Grid"   checked={slide.showGrid}    onChange={v => onUpdate({ showGrid: v })} />
-        <ToggleSwitch label="Stack"  checked={slide.stackedBars} onChange={v => onUpdate({ stackedBars: v })} />
+          rowGap: 8,
+        }}>
+          {(["Modern", "Magazine", "Wireframe"] as VisualStyle[]).map(s => (
+            <StyleTile
+              key={s} style={s}
+              active={slide.visualStyle === s}
+              onClick={() => onUpdate({ visualStyle: s })}
+            />
+          ))}
+          <ToggleSwitch label="Labels" checked={slide.showLabels}  onChange={v => onUpdate({ showLabels: v })} />
+          <ToggleSwitch label="Grid"   checked={slide.showGrid}    onChange={v => onUpdate({ showGrid: v })} />
+          <ToggleSwitch label="Stack"  checked={slide.stackedBars} onChange={v => onUpdate({ stackedBars: v })} />
+        </div>
       </div>
 
-      {/* Spacer */}
-      <div style={{ flex: 1 }} />
-
-      {/* Actions */}
-      <div className="flex shrink-0" style={{ gap: 7 }}>
-        <button
-          className="flex items-center gap-[5px] border transition-colors duration-150"
-          style={{
-            fontFamily: "'JetBrains Mono', monospace",
-            fontSize: 11,
-            color: T2,
-            borderColor: BORDER,
-            background: "transparent",
-            padding: "8px 18px",
-            borderRadius: 999,
-            whiteSpace: "nowrap",
-            cursor: "pointer",
-          }}
-          onMouseEnter={e => (e.currentTarget.style.borderColor = NAVY)}
-          onMouseLeave={e => (e.currentTarget.style.borderColor = BORDER)}
-        >
-          <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
-            <path d="M5 1v8M1 5h8" />
-          </svg>
-          Add Chart
-        </button>
-        <button
-          className="flex-1 font-medium transition-opacity duration-150 hover:opacity-85"
-          style={{
-            fontFamily: "'JetBrains Mono', monospace",
-            fontSize: 11,
-            color: "#F5F2EA",
-            background: NAVY,
-            border: "none",
-            padding: "8px 0",
-            borderRadius: 999,
-            whiteSpace: "nowrap",
-            cursor: "pointer",
-          }}
-        >
-          Build Presentation
-        </button>
-      </div>
     </div>
   );
 }
@@ -463,7 +624,7 @@ export function PresentationStrip({
   return (
     <section
       className="shrink-0 flex border-t"
-      style={{ height: 220, borderColor: BORDER, background: "#fff" }}
+      style={{ height: 214, borderColor: BORDER, background: "#EDE9E0" }}
     >
       {/* ── Left: slide strip ── */}
       <div className="flex flex-col border-r" style={{ flex: "1 1 0", minWidth: 0, borderColor: BORDER }}>
@@ -495,17 +656,18 @@ export function PresentationStrip({
           </div>
         </div>
 
-        {/* Thumbnails */}
+        {/* Thumbnails — items-stretch makes each thumbnail fill the full row height */}
         <div
-          className="flex items-center thin-scroll"
+          className="flex items-stretch thin-scroll"
           style={{
             flex: 1,
             overflowX: "auto",
             overflowY: "hidden",
-            gap: 10,
+            gap: 8,
             paddingLeft: 20,
             paddingRight: 20,
-            paddingBottom: 10,
+            paddingTop: 6,
+            paddingBottom: 6,
           }}
         >
           {slides.map(slide => {
@@ -527,7 +689,8 @@ export function PresentationStrip({
             onClick={onAddSlide}
             className="flex items-center justify-center shrink-0 transition-all duration-150"
             style={{
-              width: 116, height: 76,
+              height: "100%",
+              aspectRatio: "116 / 76",
               borderRadius: 0,
               border: "1.5px dashed #D9D3C2",
               background: "transparent",
@@ -545,10 +708,12 @@ export function PresentationStrip({
         </div>
       </div>
 
-      {/* ── Right: settings panel ── */}
+      {/* ── Right: settings panel ──
+           flex-shrink:0 + no explicit width → panel sizes to its content (~501px),
+           claiming that horizontal space from the slide strip on the left.        ── */}
       <div
-        className="flex flex-col overflow-hidden"
-        style={{ flex: "0 0 400px", background: SURFACE }}
+        className="overflow-hidden"
+        style={{ flexShrink: 0, background: SURFACE }}
       >
         {activeSlide && activeCard
           ? (

@@ -119,7 +119,8 @@ function InsightCard({ card, onAdd, onExpand, onChartTypeChange }: InsightCardPr
 
   return (
     <div
-      className={`${card.wide ? "sm:col-span-2" : ""} group relative bg-card border border-border rounded-none p-7 transition-colors duration-200 hover:border-[rgba(27,40,64,0.25)] cursor-pointer`}
+      className={`${card.wide ? "sm:col-span-2" : ""} group relative border border-border rounded-none p-7 transition-colors duration-200 hover:border-[rgba(27,40,64,0.25)] cursor-pointer`}
+      style={{ background: SURFACE_RAISE }}
       onClick={() => onExpand()}
     >
       {/* Dropdown backdrop */}
@@ -180,7 +181,7 @@ function InsightCard({ card, onAdd, onExpand, onChartTypeChange }: InsightCardPr
       {/* Hover overlay — z-[1] keeps it below the expand button */}
       <div
         className="absolute inset-0 z-[1] opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-end justify-center pb-5 pointer-events-none group-hover:pointer-events-auto"
-        style={{ background: "linear-gradient(to top, rgba(245,242,234,0.95) 30%, transparent)" }}
+        style={{ background: "linear-gradient(to top, rgba(251,249,243,0.95) 30%, transparent)" }}
       >
         <button
           onClick={(e) => { e.stopPropagation(); onAdd(); }}
@@ -221,7 +222,7 @@ function InsightCard({ card, onAdd, onExpand, onChartTypeChange }: InsightCardPr
 
 function SkeletonCard() {
   return (
-    <div className="bg-card border border-border rounded-none p-7">
+    <div className="border border-border rounded-none p-7" style={{ background: SURFACE_RAISE }}>
       <div className="flex items-start justify-between mb-[14px]">
         <div className="shimmer w-8 h-[10px] rounded-sm" />
         <div className="shimmer w-16 h-[22px] rounded-sm" />
