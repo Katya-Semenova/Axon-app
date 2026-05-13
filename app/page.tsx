@@ -27,15 +27,22 @@ const SURFACE_RAISE = "#FBF9F3";
 const SURFACE_MUTED = "#E5E0D2";
 const NAVY_300 = "#8892AA";  /* muted navy — edge / connection lines */
 
-const CARD_W    = 240;
-const CARD_H_EST = 254;  /* estimated card height for initial layout */
-const COL_GAP   = 14;
+const CARD_W     = 240;
+const HERO_W     = 360;              /* Hero Insight — 1.5× standard card width */
+const CARD_H_EST = 254;             /* estimated card height for initial layout */
+const COL_GAP    = 14;
+const HERO_ID    = INITIAL_CARDS[0].id;  /* first card is the primary Hero Insight */
 
-const INITIAL_NODE_POSITIONS: Record<string, { x: number; y: number }> =
-  Object.fromEntries(INITIAL_CARDS.map((card, i) => [
-    card.id,
-    { x: 28 + (i % 4) * (CARD_W + COL_GAP), y: 28 + Math.floor(i / 4) * (CARD_H_EST + 24) },
-  ]));
+const INITIAL_NODE_POSITIONS: Record<string, { x: number; y: number }> = (() => {
+  const p: Record<string, { x: number; y: number }> = {};
+  INITIAL_CARDS.forEach((card, i) => {
+    p[card.id] = { x: 28 + (i % 4) * (CARD_W + COL_GAP), y: 28 + Math.floor(i / 4) * (CARD_H_EST + 24) };
+  });
+  const sk = INITIAL_CARDS.length;
+  p["skeleton-0"]    = { x: 28 + (sk % 4)     * (CARD_W + COL_GAP), y: 28 + Math.floor(sk / 4)     * (CARD_H_EST + 24) };
+  p["placeholder-0"] = { x: 28 + ((sk+1) % 4) * (CARD_W + COL_GAP), y: 28 + Math.floor((sk+1) / 4) * (CARD_H_EST + 24) };
+  return p;
+})();
 
 /* ══════════════════════════════════════════════════════
    LANDING PAGE DATA
@@ -121,27 +128,35 @@ function ProjectCard({ project, onClick }: { project: Project; onClick: () => vo
 interface InsightCardProps {
   card: CardState;
   isDraggingNode?: boolean;
+  isHero?: boolean;
   onExpand: () => void;
   onChartTypeChange: (type: ChartType) => void;
   onOutputPortDown: (e: React.MouseEvent) => void;
   onInputPortUp: (e: React.MouseEvent) => void;
   isConnecting: boolean;
+  onPresentationDragStart?: () => void;
+  onPresentationDragEnd?: () => void;
 }
 
-function InsightCard({ card, isDraggingNode, onExpand, onChartTypeChange,
-  onOutputPortDown, onInputPortUp, isConnecting }: InsightCardProps) {
+function InsightCard({ card, isDraggingNode, isHero, onExpand, onChartTypeChange,
+  onOutputPortDown, onInputPortUp, isConnecting,
+  onPresentationDragStart, onPresentationDragEnd }: InsightCardProps) {
   const [ddOpen, setDdOpen] = useState(false);
   const padded = String(card.serial).padStart(2, "0");
 
   return (
     <div
-      className="group relative border border-border rounded-none p-[14px] transition-colors duration-200 hover:border-[rgba(27,40,64,0.25)]"
+      className="group relative rounded-none p-[14px] transition-colors duration-200"
       data-is-card=""
       style={{
         background: SURFACE_RAISE,
         cursor: isDraggingNode ? "grabbing" : "grab",
         opacity: isDraggingNode ? 0.45 : 1,
-        transition: "opacity 150ms ease",
+        transition: "opacity 150ms ease, box-shadow 150ms ease",
+        border: isHero ? "1.5px solid rgba(184,149,72,0.5)" : `1px solid ${BORDER}`,
+        boxShadow: isHero
+          ? "inset 0 2px 0 rgba(184,149,72,0.28), 0 0 0 3px rgba(184,149,72,0.07)"
+          : "none",
       }}
     >
       {/* Dropdown backdrop — portaled to body so CSS transforms on ancestor don't trap it */}
@@ -205,8 +220,41 @@ function InsightCard({ card, isDraggingNode, onExpand, onChartTypeChange,
       />
 
       {/* Header */}
-      <div className="flex items-start justify-between mb-3">
-        <span className="font-mono text-[11px] text-t3 tracking-[0.08em]">{padded} /</span>
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-[6px]">
+          {/* Grip handle — HTML5 DnD only, isolated from canvas node drag */}
+          <div
+            data-drag-handle="true"
+            draggable
+            title="Drag to presentation"
+            onMouseDown={(e) => e.stopPropagation()}
+            onDragStart={(e) => {
+              e.stopPropagation();
+              e.dataTransfer.setData("text/plain", card.id);
+              e.dataTransfer.effectAllowed = "copy";
+              onPresentationDragStart?.();
+            }}
+            onDragEnd={(e) => { e.stopPropagation(); onPresentationDragEnd?.(); }}
+            style={{ cursor: "grab", color: T3, lineHeight: 0, padding: "2px 1px", flexShrink: 0 }}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = NAVY; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = T3; }}
+          >
+            <svg width="8" height="12" viewBox="0 0 8 12" fill="currentColor">
+              <circle cx="2" cy="2"  r="1.2" /><circle cx="6" cy="2"  r="1.2" />
+              <circle cx="2" cy="6"  r="1.2" /><circle cx="6" cy="6"  r="1.2" />
+              <circle cx="2" cy="10" r="1.2" /><circle cx="6" cy="10" r="1.2" />
+            </svg>
+          </div>
+          <span className="font-mono text-[11px] text-t3 tracking-[0.08em]">{padded} /</span>
+          {isHero && (
+            <span style={{
+              fontFamily: "'JetBrains Mono', monospace", fontSize: 8,
+              letterSpacing: "0.1em", color: GOLD,
+              background: "rgba(184,149,72,0.1)", border: "1px solid rgba(184,149,72,0.25)",
+              padding: "1px 5px", borderRadius: 2,
+            }}>HERO</span>
+          )}
+        </div>
         <div className="relative z-[6]">
           <button
             onClick={(e) => { e.stopPropagation(); setDdOpen(!ddOpen); }}
