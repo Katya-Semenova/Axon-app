@@ -109,6 +109,12 @@ body {
 .thin-scroll::-webkit-scrollbar-track { background: transparent; }
 .thin-scroll::-webkit-scrollbar-thumb { background: #D9D3C2; border-radius: 4px; }
 
+/* ── Slide-strip scrollbar — visible, 5px, palette-matched ── */
+.slide-scroll::-webkit-scrollbar        { height: 5px; width: 5px; }
+.slide-scroll::-webkit-scrollbar-track  { background: rgba(27,40,64,0.04); border-radius: 99px; }
+.slide-scroll::-webkit-scrollbar-thumb  { background: rgba(92,100,120,0.30); border-radius: 99px; }
+.slide-scroll::-webkit-scrollbar-thumb:hover { background: rgba(92,100,120,0.55); }
+
 /* ── Focus override — gold ring, never browser blue ── */
 *:focus-visible {
   outline: 2px solid #B89548;

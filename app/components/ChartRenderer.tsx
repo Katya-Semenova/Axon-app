@@ -77,7 +77,7 @@ function LollipopChart({ rows, expanded }: ChartProps) {
 
   const baseline = pt + plotH;
   const lastIdx  = data.length - 1;
-  const step     = Math.max(1, Math.floor(data.length / (expanded ? data.length : 6)));
+  const step     = Math.max(1, Math.floor(data.length / (expanded ? data.length : 4)));
 
   /* Spec: stems navy-300 1.5px, dots navy-500 r=5, current dot gold-500 r=8,
      serif text-data-lg label above current. */
@@ -128,7 +128,7 @@ function SplineAreaChart({ rows, expanded }: ChartProps) {
   const areaD = pts.length > 1
     ? `${pd} L ${r(last.x)} ${H - pb} L ${pl} ${H - pb} Z`
     : "";
-  const step = Math.max(1, Math.floor(data.length / (expanded ? data.length : 6)));
+  const step = Math.max(1, Math.floor(data.length / (expanded ? data.length : 4)));
 
   return (
     <svg viewBox={`0 0 ${W} ${H}`} fill="none" {...svgAttrs(expanded)}>
@@ -234,7 +234,7 @@ function CleanColumnsChart({ rows, expanded }: ChartProps) {
   const barW = Math.max(4, step * 0.65);
   const xv   = (i: number) => pl + step * i + step / 2;
   const yv   = (v: number) => pt + plotH - (v / mx) * plotH;
-  const bStep = Math.max(1, Math.floor(n / (expanded ? n : 6)));
+  const bStep = Math.max(1, Math.floor(n / (expanded ? n : 4)));
 
   return (
     <svg viewBox={`0 0 ${W} ${H}`} fill="none" {...svgAttrs(expanded)}>
@@ -331,7 +331,7 @@ function WaterfallChart({ rows, expanded }: ChartProps) {
   const step = plotW / n;
   const barW = step * 0.65;
   const xv   = (i: number) => pl + step * i + step / 2 - barW / 2;
-  const bStep = Math.max(1, Math.floor(n / (expanded ? n : 6)));
+  const bStep = Math.max(1, Math.floor(n / (expanded ? n : 4)));
 
   return (
     <svg viewBox={`0 0 ${W} ${H}`} fill="none" {...svgAttrs(expanded)}>
@@ -367,7 +367,7 @@ function WaterfallChart({ rows, expanded }: ChartProps) {
             {i % bStep === 0 && (
               <text x={r(x + barW / 2)} y={H - 6} textAnchor="middle" fontSize="9"
                 fill={T3} fontFamily={MONO_FAMILY} fontWeight="500">
-                {rows[i].label.slice(0, 9)}
+                {rows[i].label.slice(0, 6)}
               </text>
             )}
           </g>

@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { AnimatePresence } from "framer-motion";
 import { makePoints, smoothPath, roundTo } from "@/lib/charts";
 import {
@@ -16,14 +17,25 @@ import type { SlideState } from "@/app/components/Presentation";
 const r = roundTo;
 
 /* ── Colors — Editorial Density palette ──────────────── */
-const NAVY    = "#1B2840";  /* navy-900 — primary structural */
-const GOLD    = "#B89548";  /* gold-500 — sole accent (current/active/focus) */
-const BORDER  = "#D9D3C2";  /* border-subtle */
-const T2      = "#5C6478";  /* text-secondary */
-const T3      = "#8A8B87";  /* text-tertiary */
-const SURFACE = "#F5F2EA";  /* card / nav warm surface (NOT white) */
+const NAVY     = "#1B2840";  /* navy-900 — primary structural */
+const GOLD     = "#B89548";  /* gold-500 — sole accent (current/active/focus) */
+const BORDER   = "#D9D3C2";  /* border-subtle */
+const T2       = "#5C6478";  /* text-secondary */
+const T3       = "#8A8B87";  /* text-tertiary */
+const SURFACE  = "#F5F2EA";  /* card / nav warm surface (NOT white) */
 const SURFACE_RAISE = "#FBF9F3";
 const SURFACE_MUTED = "#E5E0D2";
+const NAVY_300 = "#8892AA";  /* muted navy — edge / connection lines */
+
+const CARD_W    = 240;
+const CARD_H_EST = 254;  /* estimated card height for initial layout */
+const COL_GAP   = 14;
+
+const INITIAL_NODE_POSITIONS: Record<string, { x: number; y: number }> =
+  Object.fromEntries(INITIAL_CARDS.map((card, i) => [
+    card.id,
+    { x: 28 + (i % 4) * (CARD_W + COL_GAP), y: 28 + Math.floor(i / 4) * (CARD_H_EST + 24) },
+  ]));
 
 /* ══════════════════════════════════════════════════════
    LANDING PAGE DATA
@@ -64,7 +76,7 @@ function ConfBar({ filled, total = 5, pct }: { filled: number; total?: number; p
       <span className="text-[10.5px] text-t3">Confidence</span>
       <div className="flex gap-[2px]">
         {Array.from({ length: total }, (_, i) => (
-          <div key={i} className="w-6 h-[3px] rounded-[1px]"
+          <div key={i} className="w-3 h-[3px] rounded-[1px]"
             style={{ background: i < filled ? NAVY : BORDER }} />
         ))}
       </div>
@@ -108,25 +120,89 @@ function ProjectCard({ project, onClick }: { project: Project; onClick: () => vo
 /* ── Insight card ───────────────────────────────────── */
 interface InsightCardProps {
   card: CardState;
-  onAdd: () => void;
+  isDraggingNode?: boolean;
   onExpand: () => void;
   onChartTypeChange: (type: ChartType) => void;
+  onOutputPortDown: (e: React.MouseEvent) => void;
+  onInputPortUp: (e: React.MouseEvent) => void;
+  isConnecting: boolean;
 }
 
-function InsightCard({ card, onAdd, onExpand, onChartTypeChange }: InsightCardProps) {
+function InsightCard({ card, isDraggingNode, onExpand, onChartTypeChange,
+  onOutputPortDown, onInputPortUp, isConnecting }: InsightCardProps) {
   const [ddOpen, setDdOpen] = useState(false);
   const padded = String(card.serial).padStart(2, "0");
 
   return (
     <div
-      className={`${card.wide ? "sm:col-span-2" : ""} group relative border border-border rounded-none p-7 transition-colors duration-200 hover:border-[rgba(27,40,64,0.25)] cursor-pointer`}
-      style={{ background: SURFACE_RAISE }}
-      onClick={() => onExpand()}
+      className="group relative border border-border rounded-none p-[14px] transition-colors duration-200 hover:border-[rgba(27,40,64,0.25)]"
+      data-is-card=""
+      style={{
+        background: SURFACE_RAISE,
+        cursor: isDraggingNode ? "grabbing" : "grab",
+        opacity: isDraggingNode ? 0.45 : 1,
+        transition: "opacity 150ms ease",
+      }}
     >
-      {/* Dropdown backdrop */}
-      {ddOpen && (
-        <div className="fixed inset-0 z-[5]" onClick={() => setDdOpen(false)} />
+      {/* Dropdown backdrop — portaled to body so CSS transforms on ancestor don't trap it */}
+      {ddOpen && createPortal(
+        <div style={{ position: "fixed", inset: 0, zIndex: 5 }} onClick={() => setDdOpen(false)} />,
+        document.body
       )}
+
+      {/* Left input port — always visible, accepts dropped connections */}
+      <div
+        data-port="input"
+        title="Input"
+        className="absolute top-1/2"
+        style={{ left: -5, width: 10, height: 10, transform: "translateY(-50%)", zIndex: 10,
+          borderRadius: "50%", background: BORDER, border: "1.5px solid rgba(27,40,64,0.18)", cursor: "crosshair",
+          transition: "background 120ms ease, box-shadow 120ms ease, transform 120ms ease" }}
+        onMouseDown={(e) => { e.stopPropagation(); e.preventDefault(); }}
+        onMouseUp={(e) => { if (isConnecting) { e.stopPropagation(); onInputPortUp(e); } }}
+        onDragStart={(e) => { e.stopPropagation(); e.preventDefault(); }}
+        onClick={(e) => e.stopPropagation()}
+        onMouseEnter={(e) => {
+          const targeting = isConnecting;
+          e.currentTarget.style.transform = `translateY(-50%) scale(${targeting ? 1.5 : 1.22})`;
+          e.currentTarget.style.background = targeting ? GOLD : NAVY;
+          e.currentTarget.style.borderColor = "transparent";
+          e.currentTarget.style.boxShadow = targeting
+            ? "0 0 0 3px rgba(184,149,72,0.24)"
+            : "0 0 0 2.5px rgba(27,40,64,0.14)";
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.transform = "translateY(-50%)";
+          e.currentTarget.style.background = BORDER;
+          e.currentTarget.style.borderColor = "rgba(27,40,64,0.18)";
+          e.currentTarget.style.boxShadow = "none";
+        }}
+      />
+
+      {/* Right output port — always visible, initiates connections */}
+      <div
+        data-port="output"
+        title="Output"
+        className="absolute top-1/2"
+        style={{ right: -5, width: 10, height: 10, transform: "translateY(-50%)", zIndex: 10,
+          borderRadius: "50%", background: BORDER, border: "1.5px solid rgba(27,40,64,0.18)", cursor: "crosshair",
+          transition: "background 120ms ease, box-shadow 120ms ease, transform 120ms ease" }}
+        onMouseDown={(e) => { e.stopPropagation(); e.preventDefault(); onOutputPortDown(e); }}
+        onDragStart={(e) => { e.stopPropagation(); e.preventDefault(); }}
+        onClick={(e) => e.stopPropagation()}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.transform = "translateY(-50%) scale(1.22)";
+          e.currentTarget.style.background = NAVY;
+          e.currentTarget.style.borderColor = "transparent";
+          e.currentTarget.style.boxShadow = "0 0 0 2.5px rgba(27,40,64,0.14)";
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.transform = "translateY(-50%)";
+          e.currentTarget.style.background = BORDER;
+          e.currentTarget.style.borderColor = "rgba(27,40,64,0.18)";
+          e.currentTarget.style.boxShadow = "none";
+        }}
+      />
 
       {/* Header */}
       <div className="flex items-start justify-between mb-3">
@@ -171,35 +247,19 @@ function InsightCard({ card, onAdd, onExpand, onChartTypeChange }: InsightCardPr
       </div>
 
       {/* Headline */}
-      <div className="text-[13.5px] font-medium text-t1 leading-[1.4] mb-4">{card.headline}</div>
+      <div className="text-[12px] font-medium text-t1 leading-[1.4] mb-2">{card.headline}</div>
 
       {/* Chart — driven by live data */}
-      <div className="w-full mb-4 flex items-center justify-center overflow-hidden">
+      <div className="w-full mb-2 flex items-center justify-center overflow-hidden">
         <ChartRenderer rows={card.rows} columns={card.columns} chartType={card.chartType} />
       </div>
 
-      {/* Hover overlay — z-[1] keeps it below the expand button */}
-      <div
-        className="absolute inset-0 z-[1] opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-end justify-center pb-5 pointer-events-none group-hover:pointer-events-auto"
-        style={{ background: "linear-gradient(to top, rgba(251,249,243,0.95) 30%, transparent)" }}
-      >
-        <button
-          onClick={(e) => { e.stopPropagation(); onAdd(); }}
-          className="text-[12px] font-medium font-mono text-primary border border-primary/40 rounded-pill px-5 py-[6px] transition-colors duration-200"
-          style={{ background: SURFACE_RAISE }}
-          onMouseEnter={(e) => (e.currentTarget.style.background = SURFACE_MUTED)}
-          onMouseLeave={(e) => (e.currentTarget.style.background = SURFACE_RAISE)}
-        >
-          + Add to presentation
-        </button>
-      </div>
-
-      {/* Footer — z-[2] keeps expand icon above the hover overlay */}
-      <div className="relative z-[2] flex items-center justify-between">
+      {/* Footer */}
+      <div className="flex items-center justify-between">
         <ConfBar filled={card.confFilled} pct={card.confPct} />
         <button
           onClick={(e) => { e.stopPropagation(); onExpand(); }}
-          className="w-[26px] h-[26px] rounded-sm border flex items-center justify-center transition-all duration-200"
+          className="w-[26px] h-[26px] shrink-0 rounded-sm border flex items-center justify-center transition-all duration-200"
           title="Expand"
           style={{ color: T3, borderColor: BORDER }}
           onMouseEnter={e => {
@@ -222,14 +282,60 @@ function InsightCard({ card, onAdd, onExpand, onChartTypeChange }: InsightCardPr
 
 function SkeletonCard() {
   return (
-    <div className="border border-border rounded-none p-7" style={{ background: SURFACE_RAISE }}>
-      <div className="flex items-start justify-between mb-[14px]">
+    <div className="group relative border border-border rounded-none p-[14px]" style={{ background: SURFACE_RAISE }}>
+      {/* Left input port — always visible */}
+      <div
+        data-port="input"
+        className="absolute top-1/2"
+        style={{ left: -5, width: 10, height: 10, transform: "translateY(-50%)", zIndex: 10,
+          borderRadius: "50%", background: BORDER, border: "1.5px solid rgba(27,40,64,0.18)", cursor: "crosshair",
+          transition: "background 120ms ease, box-shadow 120ms ease, transform 120ms ease" }}
+        onMouseDown={(e) => { e.stopPropagation(); e.preventDefault(); }}
+        onDragStart={(e) => { e.stopPropagation(); e.preventDefault(); }}
+        onClick={(e) => e.stopPropagation()}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.transform = "translateY(-50%) scale(1.22)";
+          e.currentTarget.style.background = NAVY;
+          e.currentTarget.style.borderColor = "transparent";
+          e.currentTarget.style.boxShadow = "0 0 0 2.5px rgba(27,40,64,0.14)";
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.transform = "translateY(-50%)";
+          e.currentTarget.style.background = BORDER;
+          e.currentTarget.style.borderColor = "rgba(27,40,64,0.18)";
+          e.currentTarget.style.boxShadow = "none";
+        }}
+      />
+      {/* Right output port — always visible */}
+      <div
+        data-port="output"
+        className="absolute top-1/2"
+        style={{ right: -5, width: 10, height: 10, transform: "translateY(-50%)", zIndex: 10,
+          borderRadius: "50%", background: BORDER, border: "1.5px solid rgba(27,40,64,0.18)", cursor: "crosshair",
+          transition: "background 120ms ease, box-shadow 120ms ease, transform 120ms ease" }}
+        onMouseDown={(e) => { e.stopPropagation(); e.preventDefault(); }}
+        onDragStart={(e) => { e.stopPropagation(); e.preventDefault(); }}
+        onClick={(e) => e.stopPropagation()}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.transform = "translateY(-50%) scale(1.22)";
+          e.currentTarget.style.background = NAVY;
+          e.currentTarget.style.borderColor = "transparent";
+          e.currentTarget.style.boxShadow = "0 0 0 2.5px rgba(27,40,64,0.14)";
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.transform = "translateY(-50%)";
+          e.currentTarget.style.background = BORDER;
+          e.currentTarget.style.borderColor = "rgba(27,40,64,0.18)";
+          e.currentTarget.style.boxShadow = "none";
+        }}
+      />
+      <div className="flex items-start justify-between mb-[10px]">
         <div className="shimmer w-8 h-[10px] rounded-sm" />
         <div className="shimmer w-16 h-[22px] rounded-sm" />
       </div>
-      <div className="shimmer w-3/4 h-[13px] rounded-sm mb-2" />
-      <div className="shimmer w-1/2 h-[13px] rounded-sm mb-5" />
-      <div className="shimmer w-full h-[108px] rounded-sm" />
+      <div className="shimmer w-3/4 h-[12px] rounded-sm mb-2" />
+      <div className="shimmer w-1/2 h-[12px] rounded-sm mb-3" />
+      <div className="shimmer w-full h-[80px] rounded-sm" />
       <div className="flex items-center justify-between mt-4">
         <div className="shimmer w-28 h-[10px] rounded-sm" />
         <div className="shimmer w-[26px] h-[26px] rounded-sm" />
@@ -249,7 +355,7 @@ function SkeletonCard() {
 
 function PlaceholderCard() {
   return (
-    <div className="border-[1.5px] border-dashed border-border rounded-none flex items-center justify-center min-h-[240px] cursor-pointer hover:border-[#B89548] transition-all duration-200">
+    <div className="border-[1.5px] border-dashed border-border rounded-none flex items-center justify-center min-h-[140px] cursor-pointer hover:border-[#B89548] transition-all duration-200" data-is-card="">
       <div className="flex flex-col items-center gap-2 text-t3">
         <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" opacity="0.4">
           <path d="M9 3v12M3 9h12" />
@@ -432,6 +538,28 @@ function Page2({ onBack }: { onBack: () => void }) {
     })
   );
   const [drawerOpen, setDrawer] = useState(false);
+  const [draggingCardId, setDraggingCardId] = useState<string | null>(null);
+  const draggingRef = useRef<string | null>(null);
+
+  /* ── Canvas pan / zoom ── */
+  const [canvasTransform, setCanvasTransform] = useState({ x: 0, y: 0, zoom: 1 });
+  const [isPanning, setIsPanning]             = useState(false);
+  const canvasViewportRef = useRef<HTMLDivElement>(null);
+  const panStateRef = useRef({ active: false, startX: 0, startY: 0, originX: 0, originY: 0 });
+
+  /* ── Connections ── */
+  type ConnState = { fromId: string; startX: number; startY: number; mouseX: number; mouseY: number };
+  const [connections, setConnections] = useState<Array<{ id: string; fromId: string; toId: string }>>([]);
+  const [activeConn, setActiveConn]   = useState<ConnState | null>(null);
+  const activeConnRef                 = useRef<ConnState | null>(null);
+  const cardRefs = useRef<Map<string, HTMLDivElement>>(new Map());
+  const worldRef = useRef<HTMLDivElement>(null);
+
+  /* ── Free-form node positions ── */
+  const [nodePositions, setNodePositions] = useState<Record<string, { x: number; y: number }>>(() => ({ ...INITIAL_NODE_POSITIONS }));
+  const [draggingNode, setDraggingNode]   = useState<string | null>(null);
+  const dragNodeRef = useRef<{ id: string; startMouseX: number; startMouseY: number; startNodeX: number; startNodeY: number } | null>(null);
+  const cardHeightRef = useRef<Map<string, number>>(new Map());
 
   /* ── Handlers ── */
   function updateCardRows(id: string, rows: DataRow[]) {
@@ -478,8 +606,162 @@ function Page2({ onBack }: { onBack: () => void }) {
     );
   }
 
+  function handleCardDrop(fromTransfer: string) {
+    const cardId = draggingRef.current ?? fromTransfer ?? null;
+    if (cardId) addSlide(cardId);
+  }
+
+  function removeSlide(cardId: string) {
+    setSlides(prev => prev.filter(s => s.cardId !== cardId));
+  }
+
   function updateSlide(cardId: string, update: Partial<SlideState>) {
     setSlides(prev => prev.map(s => s.cardId === cardId ? { ...s, ...update } : s));
+  }
+
+  /* ── Connection helpers ── */
+  function getPortPosFromState(cardId: string, side: "left" | "right"): { x: number; y: number } | null {
+    const pos = nodePositions[cardId];
+    if (!pos) return null;
+    const h = cardHeightRef.current.get(cardId) ?? CARD_H_EST;
+    return {
+      x: side === "left" ? pos.x : pos.x + CARD_W,
+      y: pos.y + h / 2,
+    };
+  }
+
+  function makeBezier(x1: number, y1: number, x2: number, y2: number): string {
+    const dx = Math.max(40, Math.abs(x2 - x1) * 0.45);
+    return `M ${r(x1)} ${r(y1)} C ${r(x1 + dx)} ${r(y1)} ${r(x2 - dx)} ${r(y2)} ${r(x2)} ${r(y2)}`;
+  }
+
+  function handleOutputPortDown(cardId: string, e: React.MouseEvent) {
+    const from = getPortPosFromState(cardId, "right");
+    if (!from) return;
+    const viewport = canvasViewportRef.current;
+    if (!viewport) return;
+    const vRect = viewport.getBoundingClientRect();
+    const { x: tx, y: ty, zoom } = canvasTransform;
+    const conn: ConnState = {
+      fromId: cardId,
+      startX: from.x,
+      startY: from.y,
+      mouseX: (e.clientX - vRect.left - tx) / zoom,
+      mouseY: (e.clientY - vRect.top - ty) / zoom,
+    };
+    activeConnRef.current = conn;
+    setActiveConn(conn);
+  }
+
+  function handleInputPortUp(toId: string, e: React.MouseEvent) {
+    const conn = activeConnRef.current;
+    if (!conn || conn.fromId === toId) { activeConnRef.current = null; setActiveConn(null); return; }
+    const connId = `${conn.fromId}->${toId}`;
+    setConnections(prev => prev.some(c => c.id === connId) ? prev : [...prev, { id: connId, fromId: conn.fromId, toId }]);
+    activeConnRef.current = null;
+    setActiveConn(null);
+  }
+
+  /* ── Node drag ── */
+  function handleNodeMouseDown(cardId: string, e: React.MouseEvent) {
+    if ((e.target as Element).closest("[data-port], button, input, select, textarea, a")) return;
+    e.stopPropagation();
+    const pos = nodePositions[cardId];
+    if (!pos) return;
+    dragNodeRef.current = {
+      id: cardId,
+      startMouseX: e.clientX,
+      startMouseY: e.clientY,
+      startNodeX: pos.x,
+      startNodeY: pos.y,
+    };
+    setDraggingNode(cardId);
+  }
+
+  /* ── Canvas pan handlers ── */
+  function handleCanvasMouseDown(e: React.MouseEvent<HTMLDivElement>) {
+    const isInteractive = (e.target as Element).closest("button, input, select, textarea, a, [data-is-card]");
+    if (e.button === 0 && isInteractive) return;
+    if (e.button !== 0 && e.button !== 1) return;
+    if (e.button === 1) e.preventDefault();
+    panStateRef.current = {
+      active: true,
+      startX: e.clientX, startY: e.clientY,
+      originX: canvasTransform.x, originY: canvasTransform.y,
+    };
+    setIsPanning(true);
+  }
+
+  function handleCanvasMouseMove(e: React.MouseEvent) {
+    if (panStateRef.current.active) {
+      setCanvasTransform(prev => ({
+        ...prev,
+        x: panStateRef.current.originX + (e.clientX - panStateRef.current.startX),
+        y: panStateRef.current.originY + (e.clientY - panStateRef.current.startY),
+      }));
+    }
+    if (dragNodeRef.current) {
+      const { id, startMouseX, startMouseY, startNodeX, startNodeY } = dragNodeRef.current;
+      const dx = (e.clientX - startMouseX) / canvasTransform.zoom;
+      const dy = (e.clientY - startMouseY) / canvasTransform.zoom;
+      setNodePositions(prev => ({ ...prev, [id]: { x: startNodeX + dx, y: startNodeY + dy } }));
+    }
+    if (activeConnRef.current) {
+      const viewport = canvasViewportRef.current;
+      if (!viewport) return;
+      const vRect = viewport.getBoundingClientRect();
+      const { x: tx, y: ty, zoom } = canvasTransform;
+      const updated: ConnState = {
+        ...activeConnRef.current,
+        mouseX: (e.clientX - vRect.left - tx) / zoom,
+        mouseY: (e.clientY - vRect.top - ty) / zoom,
+      };
+      activeConnRef.current = updated;
+      setActiveConn(updated);
+    }
+  }
+
+  function handleCanvasMouseUp() {
+    panStateRef.current.active = false;
+    setIsPanning(false);
+    dragNodeRef.current = null;
+    setDraggingNode(null);
+    if (activeConnRef.current) { activeConnRef.current = null; setActiveConn(null); }
+  }
+
+  /* Non-passive wheel listener for zoom-to-cursor — re-attaches when expanded view mounts/unmounts */
+  useEffect(() => {
+    const el = canvasViewportRef.current;
+    if (!el) return;
+    const handler = (e: WheelEvent) => {
+      e.preventDefault();
+      const rect = el.getBoundingClientRect();
+      const cx = e.clientX - rect.left;
+      const cy = e.clientY - rect.top;
+      const factor = e.deltaY < 0 ? 1.1 : 1 / 1.1;
+      setCanvasTransform(prev => {
+        const newZoom = Math.min(2.5, Math.max(0.2, prev.zoom * factor));
+        const wx = (cx - prev.x) / prev.zoom;
+        const wy = (cy - prev.y) / prev.zoom;
+        return { zoom: newZoom, x: cx - wx * newZoom, y: cy - wy * newZoom };
+      });
+    };
+    el.addEventListener("wheel", handler, { passive: false });
+    return () => el.removeEventListener("wheel", handler);
+  }, [expandedId]); /* re-run when viewport mounts / unmounts */
+
+  /* Zoom-to-viewport-center helper for HUD buttons */
+  function zoomBy(factor: number) {
+    const el = canvasViewportRef.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const cx = rect.width / 2, cy = rect.height / 2;
+    setCanvasTransform(prev => {
+      const newZoom = Math.min(2.5, Math.max(0.2, prev.zoom * factor));
+      const wx = (cx - prev.x) / prev.zoom;
+      const wy = (cy - prev.y) / prev.zoom;
+      return { zoom: newZoom, x: cx - wx * newZoom, y: cy - wy * newZoom };
+    });
   }
 
   return (
@@ -543,8 +825,12 @@ function Page2({ onBack }: { onBack: () => void }) {
             )}
           </AnimatePresence>
           {!expandedCard && (
-            <div className="flex-1 overflow-y-auto px-7 pt-7 thin-scroll max-sm:px-4 max-sm:pt-5">
-              <div className="flex items-center justify-between mb-5">
+            <>
+              {/* Canvas toolbar — always visible, not transformed */}
+              <div
+                className="flex items-center justify-between shrink-0 border-b border-border px-6 py-[9px]"
+                style={{ background: SURFACE }}
+              >
                 <div className="flex items-center gap-[10px]">
                   <span className="font-mono text-[10.5px] uppercase tracking-[0.1em] text-t3">Canvas</span>
                   <span className="font-mono text-[10.5px] text-t3 rounded-sm px-[8px] py-0.5" style={{ background: SURFACE_MUTED }}>
@@ -552,7 +838,6 @@ function Page2({ onBack }: { onBack: () => void }) {
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
-                  {/* Undo / Redo in canvas header */}
                   <button onClick={undo} disabled={!canUndo} title="Undo"
                     className="w-[30px] h-[30px] rounded-sm border border-border flex items-center justify-center text-t2 disabled:opacity-30 hover:border-[#B89548] hover:text-[#B89548] transition-colors">
                     <svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
@@ -574,22 +859,186 @@ function Page2({ onBack }: { onBack: () => void }) {
                 </div>
               </div>
 
-              {/* Dense grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 [grid-auto-flow:dense] gap-[14px] pb-7">
-                {cards.map((card) => (
-                  <InsightCard
-                    key={card.id}
-                    card={card}
-                    onAdd={() => addSlide(card.id)}
-                    onExpand={() => setExpandedId(card.id)}
-                    onChartTypeChange={(type) => changeCardType(card.id, type)}
-                  />
-                ))}
-                <SkeletonCard />
-                <PlaceholderCard />
-                <PlaceholderCard />
+              {/* Infinite canvas viewport */}
+              <div
+                ref={canvasViewportRef}
+                className="flex-1 relative overflow-hidden"
+                style={{
+                  cursor: activeConn ? "crosshair" : (isPanning || !!draggingNode) ? "grabbing" : "default",
+                  userSelect: isPanning ? "none" : "auto",
+                  background: "#EDE9E0",
+                }}
+                onMouseDown={handleCanvasMouseDown}
+                onMouseMove={handleCanvasMouseMove}
+                onMouseUp={handleCanvasMouseUp}
+                onMouseLeave={handleCanvasMouseUp}
+              >
+                {/* World — CSS-transformed layer */}
+                <div
+                  ref={worldRef}
+                  style={{
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    transformOrigin: "0 0",
+                    transform: `translate(${canvasTransform.x}px, ${canvasTransform.y}px) scale(${canvasTransform.zoom})`,
+                  }}
+                >
+                  {/* Absolute node canvas */}
+                  <div style={{ position: "relative", width: 2400, height: 1600 }}>
+                    {/* SVG edge layer — renders below cards, in world coordinates */}
+                    <svg
+                      style={{
+                        position: "absolute", top: 0, left: 0,
+                        width: "100%", height: "100%",
+                        overflow: "visible", pointerEvents: "none", zIndex: 0,
+                      }}
+                    >
+                      {/* Permanent connections */}
+                      {connections.map(conn => {
+                        const from = getPortPosFromState(conn.fromId, "right");
+                        const to   = getPortPosFromState(conn.toId,   "left");
+                        if (!from || !to) return null;
+                        return (
+                          <path
+                            key={conn.id}
+                            d={makeBezier(from.x, from.y, to.x, to.y)}
+                            fill="none"
+                            stroke={NAVY_300}
+                            strokeWidth="1.5"
+                            strokeLinecap="round"
+                            opacity="0.65"
+                          />
+                        );
+                      })}
+                      {/* Active (drawing) connection — gold dashed */}
+                      {activeConn && (() => {
+                        const from = getPortPosFromState(activeConn.fromId, "right");
+                        if (!from) return null;
+                        return (
+                          <path
+                            d={makeBezier(from.x, from.y, activeConn.mouseX, activeConn.mouseY)}
+                            fill="none"
+                            stroke={GOLD}
+                            strokeWidth="1.5"
+                            strokeLinecap="round"
+                            strokeDasharray="5 3"
+                            opacity="0.8"
+                          />
+                        );
+                      })()}
+                    </svg>
+
+                    {/* Per-card wrapper — absolutely positioned, draggable */}
+                    {cards.map((card) => (
+                      <div
+                        key={card.id}
+                        ref={(el) => {
+                          if (el) {
+                            cardRefs.current.set(card.id, el);
+                            cardHeightRef.current.set(card.id, el.offsetHeight);
+                          } else {
+                            cardRefs.current.delete(card.id);
+                            cardHeightRef.current.delete(card.id);
+                          }
+                        }}
+                        style={{
+                          position: "absolute",
+                          left: nodePositions[card.id]?.x ?? 0,
+                          top: nodePositions[card.id]?.y ?? 0,
+                          width: CARD_W,
+                          zIndex: draggingNode === card.id ? 10 : 1,
+                          userSelect: "none",
+                        }}
+                        onMouseDown={(e) => handleNodeMouseDown(card.id, e)}
+                      >
+                        <InsightCard
+                          card={card}
+                          isDraggingNode={draggingNode === card.id}
+                          onExpand={() => setExpandedId(card.id)}
+                          onChartTypeChange={(type) => changeCardType(card.id, type)}
+                          onOutputPortDown={(e) => handleOutputPortDown(card.id, e)}
+                          onInputPortUp={(e) => handleInputPortUp(card.id, e)}
+                          isConnecting={!!activeConn && activeConn.fromId !== card.id}
+                        />
+                      </div>
+                    ))}
+
+                    {/* Skeleton — positioned after last card row */}
+                    <div style={{
+                      position: "absolute",
+                      left: 28 + (cards.length % 4) * (CARD_W + COL_GAP),
+                      top:  28 + Math.floor(cards.length / 4) * (CARD_H_EST + 24),
+                      width: CARD_W,
+                      zIndex: 1,
+                    }}>
+                      <SkeletonCard />
+                    </div>
+
+                    {/* Placeholder — one slot after skeleton */}
+                    <div style={{
+                      position: "absolute",
+                      left: 28 + ((cards.length + 1) % 4) * (CARD_W + COL_GAP),
+                      top:  28 + Math.floor((cards.length + 1) / 4) * (CARD_H_EST + 24),
+                      width: CARD_W,
+                      zIndex: 1,
+                    }}>
+                      <PlaceholderCard />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Zoom HUD — fixed inside viewport, not transformed */}
+                <div
+                  style={{
+                    position: "absolute",
+                    bottom: 16,
+                    right: 16,
+                    display: "flex",
+                    alignItems: "center",
+                    background: SURFACE,
+                    border: `1px solid ${BORDER}`,
+                    borderRadius: 4,
+                    overflow: "hidden",
+                  }}
+                >
+                  <button
+                    onClick={() => zoomBy(1.2)}
+                    title="Zoom in"
+                    style={{ width: 28, height: 28, display: "flex", alignItems: "center", justifyContent: "center", border: "none", borderRight: `1px solid ${BORDER}`, background: "transparent", cursor: "pointer", color: T2 }}
+                    onMouseEnter={e => { e.currentTarget.style.background = SURFACE_MUTED; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}
+                  >
+                    <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
+                      <path d="M5 1v8M1 5h8" />
+                    </svg>
+                  </button>
+                  <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 10, color: T2, padding: "0 8px", minWidth: 42, textAlign: "center" as const }}>
+                    {Math.round(canvasTransform.zoom * 100)}%
+                  </span>
+                  <button
+                    onClick={() => zoomBy(1 / 1.2)}
+                    title="Zoom out"
+                    style={{ width: 28, height: 28, display: "flex", alignItems: "center", justifyContent: "center", border: "none", borderLeft: `1px solid ${BORDER}`, borderRight: `1px solid ${BORDER}`, background: "transparent", cursor: "pointer", color: T2 }}
+                    onMouseEnter={e => { e.currentTarget.style.background = SURFACE_MUTED; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}
+                  >
+                    <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
+                      <path d="M1 5h8" />
+                    </svg>
+                  </button>
+                  <button
+                    onClick={() => setCanvasTransform({ x: 0, y: 0, zoom: 1 })}
+                    title="Reset view"
+                    style={{ padding: "0 10px", height: 28, display: "flex", alignItems: "center", border: "none", background: "transparent", cursor: "pointer", fontFamily: "'JetBrains Mono',monospace", fontSize: 10, color: T2 }}
+                    onMouseEnter={e => { e.currentTarget.style.background = SURFACE_MUTED; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}
+                  >
+                    Reset
+                  </button>
+                </div>
               </div>
-            </div>
+            </>
           )}
         </section>
 
@@ -599,6 +1048,9 @@ function Page2({ onBack }: { onBack: () => void }) {
           cards={cards}
           onUpdateSlide={updateSlide}
           onAddSlide={() => {/* open a picker or add last card */}}
+          onCardDrop={handleCardDrop}
+          onRemoveSlide={removeSlide}
+          isDraggingCard={!!draggingCardId}
         />
       </div>
 

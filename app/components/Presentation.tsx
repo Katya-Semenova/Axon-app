@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import type { CardState, ChartType } from "@/lib/mockData";
 import { MiniChart } from "./MiniChart";
 
@@ -57,13 +57,16 @@ const NAVY          = "#1B2840";  /* navy-900 — primary structural */
 
 /* ── SlideThumbnail ─────────────────────────────────────── */
 function SlideThumbnail({
-  slide, card, isActive, onClick,
+  slide, card, isActive, onClick, onDelete,
 }: {
   slide: SlideState;
   card: CardState;
   isActive: boolean;
   onClick: () => void;
+  onDelete: () => void;
 }) {
+  const [hovered, setHovered] = useState(false);
+
   const serial      = String(card.serial).padStart(2, "0");
   const headline    = card.headline.length > 28
     ? card.headline.slice(0, 28) + "…" : card.headline;
@@ -83,45 +86,83 @@ function SlideThumbnail({
 
   return (
     <div
-      onClick={onClick}
-      className="shrink-0 cursor-pointer overflow-hidden"
-      style={{
-        height: "100%",
-        aspectRatio: "116 / 76",
-        borderRadius: 0,
-        border: `${isActive ? "1.5px" : "1px"} solid ${isActive ? NAVY : "#D9D3C2"}`,
-        background: bg,
-        transition: "border-color 150ms ease, border-width 150ms ease",
-      }}
-      onMouseEnter={(e) => {
-        if (!isActive) e.currentTarget.style.borderColor = GOLD;
-      }}
-      onMouseLeave={(e) => {
-        if (!isActive) e.currentTarget.style.borderColor = "#D9D3C2";
-      }}
+      style={{ position: "relative", aspectRatio: "116 / 76" }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
     >
-      <svg viewBox="0 0 116 76" fill="none" style={{ width: "100%", height: "100%" }}>
-        <rect width="116" height="76" fill={bg} />
-        {wireDots}
-        <text x="6" y="11" fontSize="5" fontWeight="500" fill={T3}
-          fontFamily="'JetBrains Mono', monospace" letterSpacing="0.08em">
-          {serial} /
-        </text>
-        <text x="6" y={slide.visualStyle === "Magazine" ? 23 : 21}
-          fontSize={slide.visualStyle === "Magazine" ? 7.5 : 6.5}
-          fontWeight={slide.visualStyle === "Magazine" ? "600" : "500"}
-          fill="#0A0A0A" fontFamily={headFont}>
-          {headline}
-        </text>
-        <g transform="translate(6, 30)">
-          <MiniChart
-            rows={card.rows}
-            chartType={slide.chartType}
-            color={accentColor}
-            W={104} H={34}
-          />
-        </g>
-      </svg>
+      {/* Thumbnail body */}
+      <div
+        onClick={onClick}
+        className="cursor-pointer overflow-hidden"
+        style={{
+          width: "100%",
+          height: "100%",
+          borderRadius: 0,
+          border: `${isActive ? "1.5px" : "1px"} solid ${isActive ? NAVY : hovered ? GOLD : "#D9D3C2"}`,
+          background: bg,
+          transition: "border-color 150ms ease, border-width 150ms ease",
+        }}
+      >
+        <svg viewBox="0 0 116 76" fill="none" style={{ width: "100%", height: "100%", display: "block" }}>
+          <rect width="116" height="76" fill={bg} />
+          {wireDots}
+          <text x="6" y="11" fontSize="5" fontWeight="500" fill={T3}
+            fontFamily="'JetBrains Mono', monospace" letterSpacing="0.08em">
+            {serial} /
+          </text>
+          <text x="6" y={slide.visualStyle === "Magazine" ? 23 : 21}
+            fontSize={slide.visualStyle === "Magazine" ? 7.5 : 6.5}
+            fontWeight={slide.visualStyle === "Magazine" ? "600" : "500"}
+            fill="#0A0A0A" fontFamily={headFont}>
+            {headline}
+          </text>
+          <g transform="translate(6, 30)">
+            <MiniChart
+              rows={card.rows}
+              chartType={slide.chartType}
+              color={accentColor}
+              W={104} H={34}
+            />
+          </g>
+        </svg>
+      </div>
+
+      {/* Delete button — fades in on hover */}
+      <button
+        onClick={(e) => { e.stopPropagation(); onDelete(); }}
+        title="Remove slide"
+        style={{
+          position: "absolute",
+          top: 3,
+          right: 3,
+          width: 15,
+          height: 15,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          background: SURFACE_RAISE,
+          border: `1px solid ${BORDER}`,
+          borderRadius: 0,
+          cursor: "pointer",
+          color: T3,
+          padding: 0,
+          opacity: hovered ? 1 : 0,
+          transition: "opacity 150ms ease, color 150ms ease, border-color 150ms ease",
+          zIndex: 2,
+        }}
+        onMouseEnter={e => {
+          e.currentTarget.style.color = "#0A0A0A";
+          e.currentTarget.style.borderColor = NAVY;
+        }}
+        onMouseLeave={e => {
+          e.currentTarget.style.color = T3;
+          e.currentTarget.style.borderColor = BORDER;
+        }}
+      >
+        <svg width="6" height="6" viewBox="0 0 8 8" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+          <path d="M1 1l6 6M7 1L1 7" />
+        </svg>
+      </button>
     </div>
   );
 }
@@ -605,72 +646,141 @@ function EmptyPanel() {
   );
 }
 
+const SLIDES_PER_PAGE = 4;
+
 /* ── PresentationStrip ──────────────────────────────────── */
 interface PresentationStripProps {
   slides: SlideState[];
   cards: CardState[];
   onUpdateSlide: (cardId: string, update: Partial<SlideState>) => void;
   onAddSlide: () => void;
+  onCardDrop: (cardId: string) => void;
+  onRemoveSlide: (cardId: string) => void;
+  isDraggingCard: boolean;
 }
 
 export function PresentationStrip({
-  slides, cards, onUpdateSlide, onAddSlide,
+  slides, cards, onUpdateSlide, onAddSlide, onCardDrop, onRemoveSlide, isDraggingCard,
 }: PresentationStripProps) {
-  const [activeId, setActiveId] = useState<string | null>(slides[0]?.cardId ?? null);
+  const [activeId, setActiveId]     = useState<string | null>(slides[0]?.cardId ?? null);
+  const [isDragOver, setIsDragOver] = useState(false);
+  const [page, setPage]             = useState(0);
+  const dragCounter                 = useRef(0);
+  const prevLenRef                  = useRef(slides.length);
+
+  const totalPages = Math.max(1, Math.ceil(slides.length / SLIDES_PER_PAGE));
+  const safePage   = Math.min(page, totalPages - 1);
+  const pageSlides = slides.slice(safePage * SLIDES_PER_PAGE, (safePage + 1) * SLIDES_PER_PAGE);
+
+  useEffect(() => {
+    if (slides.length > prevLenRef.current) {
+      setPage(Math.floor((slides.length - 1) / SLIDES_PER_PAGE));
+    }
+    prevLenRef.current = slides.length;
+  }, [slides.length]);
+
+  function handleRemove(cardId: string) {
+    onRemoveSlide(cardId);
+    if (activeId === cardId) {
+      const remaining = slides.filter(s => s.cardId !== cardId);
+      setActiveId(remaining[0]?.cardId ?? null);
+    }
+  }
 
   const activeSlide = slides.find(s => s.cardId === activeId) ?? null;
   const activeCard  = activeSlide ? cards.find(c => c.id === activeSlide.cardId) ?? null : null;
 
+  function handleDragEnter(e: React.DragEvent) {
+    e.preventDefault();
+    dragCounter.current++;
+    setIsDragOver(true);
+  }
+
+  function handleDragLeave() {
+    dragCounter.current--;
+    if (dragCounter.current === 0) setIsDragOver(false);
+  }
+
+  function handleDragOver(e: React.DragEvent) {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "copy";
+  }
+
+  function handleDrop(e: React.DragEvent) {
+    e.preventDefault();
+    dragCounter.current = 0;
+    setIsDragOver(false);
+    onCardDrop(e.dataTransfer.getData("text/plain"));
+  }
+
   return (
     <section
       className="shrink-0 flex border-t"
-      style={{ height: 214, borderColor: BORDER, background: "#EDE9E0" }}
+      style={{
+        height: 214,
+        borderColor: isDragOver ? GOLD : isDraggingCard ? "rgba(184,149,72,0.45)" : BORDER,
+        background: "#EDE9E0",
+        transition: "border-color 150ms ease",
+      }}
     >
       {/* ── Left: slide strip ── */}
-      <div className="flex flex-col border-r" style={{ flex: "1 1 0", minWidth: 0, borderColor: BORDER }}>
+      <div
+        className="flex flex-col border-r"
+        style={{
+          flex: "1 1 0",
+          minWidth: 0,
+          borderColor: isDragOver ? GOLD : BORDER,
+          position: "relative",
+          transition: "border-color 150ms ease",
+        }}
+        onDragEnter={handleDragEnter}
+        onDragLeave={handleDragLeave}
+        onDragOver={handleDragOver}
+        onDrop={handleDrop}
+      >
 
         {/* Strip header */}
-        <div className="flex items-center justify-between px-5 shrink-0" style={{ paddingTop: 10, paddingBottom: 6 }}>
-          <div className="flex items-center gap-2">
-            <span style={{
-              fontFamily: "'JetBrains Mono', monospace",
-              fontSize: 10,
-              letterSpacing: "0.1em",
-              textTransform: "uppercase" as const,
-              color: T3,
-            }}>
-              Presentation
-            </span>
-            <span
-              className="font-mono border rounded-full"
-              style={{
-                fontFamily: "'JetBrains Mono', monospace",
-                fontSize: 9,
-                color: T3,
-                borderColor: BORDER,
-                padding: "1px 7px",
-              }}
-            >
-              {slides.length}
-            </span>
-          </div>
+        <div
+          className="flex items-center gap-2 shrink-0"
+          style={{ padding: "10px 20px 6px" }}
+        >
+          <span style={{
+            fontFamily: "'JetBrains Mono', monospace",
+            fontSize: 10,
+            letterSpacing: "0.1em",
+            textTransform: "uppercase" as const,
+            color: T3,
+          }}>
+            Presentation
+          </span>
+          <span style={{
+            fontFamily: "'JetBrains Mono', monospace",
+            fontSize: 9,
+            color: T3,
+            border: `1px solid ${BORDER}`,
+            borderRadius: 999,
+            padding: "1px 7px",
+          }}>
+            {slides.length}
+          </span>
         </div>
 
-        {/* Thumbnails — items-stretch makes each thumbnail fill the full row height */}
+        {/* Thumbnails — paginated grid, 4 per page */}
         <div
-          className="flex items-stretch thin-scroll"
           style={{
             flex: 1,
-            overflowX: "auto",
-            overflowY: "hidden",
+            display: "grid",
+            gridTemplateColumns: "repeat(4, 1fr)",
+            alignContent: "center",
             gap: 8,
             paddingLeft: 20,
             paddingRight: 20,
-            paddingTop: 6,
-            paddingBottom: 6,
+            paddingTop: 8,
+            paddingBottom: 0,
+            overflow: "hidden",
           }}
         >
-          {slides.map(slide => {
+          {pageSlides.map(slide => {
             const card = cards.find(c => c.id === slide.cardId);
             if (!card) return null;
             return (
@@ -680,32 +790,112 @@ export function PresentationStrip({
                 card={card}
                 isActive={activeId === slide.cardId}
                 onClick={() => setActiveId(slide.cardId)}
+                onDelete={() => handleRemove(slide.cardId)}
               />
             );
           })}
+        </div>
 
-          {/* Add slide */}
+        {/* Pagination bar — always visible */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 3,
+            paddingBottom: 8,
+            paddingTop: 4,
+            flexShrink: 0,
+          }}
+        >
           <button
-            onClick={onAddSlide}
-            className="flex items-center justify-center shrink-0 transition-all duration-150"
+            onClick={() => setPage(p => Math.max(0, p - 1))}
             style={{
-              height: "100%",
-              aspectRatio: "116 / 76",
-              borderRadius: 0,
-              border: "1.5px dashed #D9D3C2",
-              background: "transparent",
-              cursor: "pointer",
+              fontFamily: "'JetBrains Mono', monospace",
+              fontSize: 9.5,
               color: T3,
+              background: "none",
+              border: "none",
+              cursor: safePage === 0 ? "default" : "pointer",
+              opacity: safePage === 0 ? 0.35 : 1,
+              pointerEvents: safePage === 0 ? "none" : "auto",
+              padding: "2px 6px",
             }}
-            onMouseEnter={e => (e.currentTarget.style.borderColor = GOLD)}
-            onMouseLeave={e => (e.currentTarget.style.borderColor = "#D9D3C2")}
           >
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor"
-              strokeWidth="1.5" strokeLinecap="round">
-              <path d="M7 2v10M2 7h10" />
-            </svg>
+            ← Prev
+          </button>
+
+          {Array.from({ length: totalPages }, (_, i) => (
+            <button
+              key={i}
+              onClick={() => setPage(i)}
+              style={{
+                fontFamily: "'JetBrains Mono', monospace",
+                fontSize: 9.5,
+                width: 20,
+                height: 20,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                borderRadius: 2,
+                border: "none",
+                cursor: "pointer",
+                background: i === safePage ? NAVY : "transparent",
+                color: i === safePage ? "#F5F2EA" : T3,
+                transition: "background 150ms, color 150ms",
+              }}
+            >
+              {i + 1}
+            </button>
+          ))}
+
+          <button
+            onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
+            style={{
+              fontFamily: "'JetBrains Mono', monospace",
+              fontSize: 9.5,
+              color: T3,
+              background: "none",
+              border: "none",
+              cursor: safePage >= totalPages - 1 ? "default" : "pointer",
+              opacity: safePage >= totalPages - 1 ? 0.35 : 1,
+              pointerEvents: safePage >= totalPages - 1 ? "none" : "auto",
+              padding: "2px 6px",
+            }}
+          >
+            Next →
           </button>
         </div>
+
+        {/* Drop overlay — shown when a canvas card is dragged over the strip */}
+        {isDragOver && (
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              zIndex: 10,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 6,
+              background: "rgba(184,149,72,0.06)",
+              border: `2px dashed ${GOLD}`,
+              pointerEvents: "none",
+            }}
+          >
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke={GOLD} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M9 2v10M4 7l5-5 5 5" />
+              <path d="M2 14h14" />
+            </svg>
+            <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 10.5, color: GOLD, fontWeight: 500 }}>
+              Drop card here
+            </span>
+            <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 9, color: T2 }}>
+              Add insights to build your presentation
+            </span>
+          </div>
+        )}
       </div>
 
       {/* ── Right: settings panel ──
