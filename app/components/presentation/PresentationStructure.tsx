@@ -2,9 +2,9 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useDroppable } from "@dnd-kit/core";
-import { useWorkspaceStore, selectSlides } from "@/lib/store";
-import { MiniChart } from "../MiniChart";
+import { useWorkspaceStore } from "@/lib/store";
 import type { Slide, VisualStyle } from "@/lib/types";
+import { MiniChart } from "../MiniChart";
 import { BORDER, NAVY, GOLD, T3, SURFACE_RAISE } from "../ui/tokens";
 
 const SLIDES_PER_PAGE = 4;
@@ -141,7 +141,9 @@ function NewSlideSlot() {
    slots (DataSet cards can be dropped here via dnd-kit). No settings
    panel — that lives in SlideEditor (Presentation Mode only).           */
 export function PresentationStructure() {
-  const slides       = useWorkspaceStore(selectSlides);
+  const slideOrder   = useWorkspaceStore(s => s.slideOrder);
+  const slidesById   = useWorkspaceStore(s => s.slidesById);
+  const slides       = slideOrder.map(id => slidesById[id]).filter(Boolean) as Slide[];
   const activeSlideId = useWorkspaceStore(s => s.activeSlideId);
   const setActive    = useWorkspaceStore(s => s.setActiveSlide);
   const removeSlide  = useWorkspaceStore(s => s.removeSlide);
