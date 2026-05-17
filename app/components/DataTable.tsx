@@ -1,22 +1,28 @@
 "use client";
 
 import { Reorder, useDragControls } from "framer-motion";
-import type { DataRow } from "@/lib/mockData";
+import type { DataRow, Insight } from "@/lib/types";
 
 const BORDER = "#E8E4DC";
-const T2     = "#6B6B66";
 const T3     = "#A8A8A2";
 
-/* ── column geometry — fixed widths, no flex-1 stretching ── */
-const COL_GRIP  = 22;   // drag handle
-const COL_LABEL = 100;  // label cell
-const COL_VALUE = 96;   // each value cell
-const ROW_GAP   = 8;    // gap between cells
+/* ── column geometry — fixed widths, no flex-1 stretching ─────────────── */
+const COL_GRIP   = 22;
+const COL_LABEL  = 100;
+const COL_VALUE  = 96;
+const COL_SOURCE = 110;
+const ROW_GAP    = 8;
 
 interface DataTableProps {
   columns: string[];
   rows: DataRow[];
   onRowsChange: (rows: DataRow[]) => void;
+  /**
+   * When provided, render a final "DATA SET" column showing
+   * `INSIGHT N` for each row's `sourceInsightId`. Pass `undefined`
+   * (the default) to hide that column entirely.
+   */
+  insightsById?: Record<string, Insight>;
 }
 
 function GripIcon() {
@@ -33,11 +39,12 @@ function GripIcon() {
 }
 
 function DraggableRow({
-  row, columns, onChange,
+  row, columns, onChange, insightsById,
 }: {
   row: DataRow;
   columns: string[];
   onChange: (updated: DataRow) => void;
+  insightsById?: Record<string, Insight>;
 }) {
   const controls = useDragControls();
 
@@ -58,6 +65,10 @@ function DraggableRow({
     "border border-transparent focus:border-[rgba(184,149,72,0.5)] " +
     "rounded-sm px-[6px] py-[2px] transition-colors duration-200";
 
+  const sourceInsight = row.sourceInsightId && insightsById
+    ? insightsById[row.sourceInsightId] ?? null
+    : null;
+
   return (
     <Reorder.Item
       value={row}
@@ -67,7 +78,6 @@ function DraggableRow({
       style={{ background: "#fff", gap: ROW_GAP }}
       whileDrag={{ scale: 1.01, zIndex: 10, position: "relative" }}
     >
-      {/* Drag handle */}
       <div
         onPointerDown={e => controls.start(e)}
         className="cursor-grab active:cursor-grabbing shrink-0 text-[#A8A8A2] hover:text-[#6B6B66] transition-colors select-none flex items-center justify-center"
@@ -77,7 +87,6 @@ function DraggableRow({
         <GripIcon />
       </div>
 
-      {/* Label */}
       <input
         type="text"
         value={row.label}
@@ -86,7 +95,6 @@ function DraggableRow({
         style={{ width: COL_LABEL, flexShrink: 0 }}
       />
 
-      {/* Values — fixed width, no stretching */}
       {row.values.map((v, i) => (
         <input
           key={i}
@@ -97,20 +105,27 @@ function DraggableRow({
           style={{ width: COL_VALUE, flexShrink: 0 }}
         />
       ))}
+
+      {insightsById && (
+        <div
+          className="text-[11px] font-mono"
+          style={{ width: COL_SOURCE, flexShrink: 0, color: sourceInsight ? "#1B2840" : T3 }}
+          title={sourceInsight?.title ?? "no source insight"}
+        >
+          {sourceInsight ? `INSIGHT ${sourceInsight.serial}` : "—"}
+        </div>
+      )}
     </Reorder.Item>
   );
 }
 
-export function DataTable({ columns, rows, onRowsChange }: DataTableProps) {
+export function DataTable({ columns, rows, onRowsChange, insightsById }: DataTableProps) {
   function updateRow(id: string, updated: DataRow) {
     onRowsChange(rows.map(r => (r.id === id ? updated : r)));
   }
 
   return (
-    /* overflow-x-auto keeps it safe on narrow screens;
-       on wide screens the compact fixed-width table sits flush left */
     <div className="overflow-x-auto">
-      {/* Column header */}
       <div
         className="flex items-center border-b border-[#E8E4DC] pb-[6px] pt-[4px]"
         style={{ gap: ROW_GAP }}
@@ -131,15 +146,23 @@ export function DataTable({ columns, rows, onRowsChange }: DataTableProps) {
             {col}
           </div>
         ))}
+        {insightsById && (
+          <div
+            className="text-[10px] font-mono uppercase tracking-[0.08em] text-[#A8A8A2]"
+            style={{ width: COL_SOURCE, flexShrink: 0 }}
+          >
+            Data Set
+          </div>
+        )}
       </div>
 
-      {/* Rows */}
       <Reorder.Group axis="y" values={rows} onReorder={onRowsChange}>
         {rows.map(row => (
           <DraggableRow
             key={row.id}
             row={row}
             columns={columns}
+            insightsById={insightsById}
             onChange={updated => updateRow(row.id, updated)}
           />
         ))}
@@ -147,3 +170,5 @@ export function DataTable({ columns, rows, onRowsChange }: DataTableProps) {
     </div>
   );
 }
+
+void BORDER;
