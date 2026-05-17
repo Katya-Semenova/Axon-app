@@ -57,6 +57,7 @@
   /* ── Radii — STRICT bimodal+pill system ── */
   --radius-none: 0px;
   --radius-sm:   4px;
+  --radius-card: 4px;
   --radius-pill: 999px;
 
   /* ── Typography ── */
