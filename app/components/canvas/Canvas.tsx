@@ -2,7 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import { roundTo } from "@/lib/charts";
-import { useWorkspaceStore, selectInsights, selectDataSets } from "@/lib/store";
+import { useWorkspaceStore } from "@/lib/store";
+import type { Insight, DataSet } from "@/lib/types";
 import { InsightCard } from "./InsightCard";
 import { DataSetCard, DataSetPlaceholder } from "./DataSetCard";
 import { ModeToggle } from "../ui/ModeToggle";
@@ -25,10 +26,21 @@ const r = roundTo;
  * draggable source cards.
  */
 export function Canvas() {
-  const insights      = useWorkspaceStore(selectInsights);
-  const dataSets      = useWorkspaceStore(selectDataSets);
+  /* Read the normalized maps and order arrays — each selector returns a
+     stable object reference that only changes on real mutations, so
+     Object.is comparison in useSyncExternalStore stays quiet. The derived
+     arrays are computed in the component body rather than inside a selector,
+     which avoids the "getSnapshot should be cached" crash that firing
+     .map().filter() inside a selector would cause. */
+  const insightOrder  = useWorkspaceStore(s => s.insightOrder);
+  const insightsById  = useWorkspaceStore(s => s.insightsById);
+  const dataSetOrder  = useWorkspaceStore(s => s.dataSetOrder);
+  const dataSetsById  = useWorkspaceStore(s => s.dataSetsById);
   const connections   = useWorkspaceStore(s => s.connections);
   const nodePositions = useWorkspaceStore(s => s.nodePositions);
+
+  const insights  = insightOrder.map(id => insightsById[id]).filter(Boolean) as Insight[];
+  const dataSets  = dataSetOrder.map(id => dataSetsById[id]).filter(Boolean) as DataSet[];
   const setNodePos    = useWorkspaceStore(s => s.setNodePosition);
   const canvasTransform = useWorkspaceStore(s => s.canvasTransform);
   const setCanvasTransform = useWorkspaceStore(s => s.setCanvasTransform);
