@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { useWorkspaceStore, selectSlides } from "@/lib/store";
+import { useWorkspaceStore } from "@/lib/store";
 import { ChartRenderer } from "../ChartRenderer";
 import { DataTable } from "../DataTable";
 import { MiniChart } from "../MiniChart";
@@ -238,7 +238,9 @@ function SlideThumbnail({ slide, isActive, onClick, onDelete }: {
 
 /* ── SlideEditor — Presentation Mode full-screen ─────────────────────── */
 export function SlideEditor() {
-  const slides           = useWorkspaceStore(selectSlides);
+  const slideOrder       = useWorkspaceStore(s => s.slideOrder);
+  const slidesById       = useWorkspaceStore(s => s.slidesById);
+  const slides           = slideOrder.map(id => slidesById[id]).filter(Boolean) as Slide[];
   const dataSetsById     = useWorkspaceStore(s => s.dataSetsById);
   const insightsById     = useWorkspaceStore(s => s.insightsById);
   const activeSlideId    = useWorkspaceStore(s => s.activeSlideId);

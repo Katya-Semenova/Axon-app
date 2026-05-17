@@ -3,7 +3,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { ChartRenderer } from "../ChartRenderer";
 import { ChartTypeDropdown } from "../ui/ChartTypeDropdown";
-import { useWorkspaceStore, selectInsightsForDataSet } from "@/lib/store";
+import { useWorkspaceStore } from "@/lib/store";
 import type { DataSet, Insight, ChartType } from "@/lib/types";
 import { GOLD, BORDER, T2, T3, SURFACE, SURFACE_RAISE, SURFACE_MUTED } from "../ui/tokens";
 
@@ -166,12 +166,18 @@ function DataSetExpandedView({ dataSet, insights }: {
 }
 
 export function DataSetExpandedViewOverlay() {
-  const expandedId = useWorkspaceStore(s => s.expandedDataSetId);
+  const expandedId   = useWorkspaceStore(s => s.expandedDataSetId);
   const dataSetsById = useWorkspaceStore(s => s.dataSetsById);
-  const dataSet    = expandedId ? dataSetsById[expandedId] ?? null : null;
-  const insights   = useWorkspaceStore(
-    expandedId ? selectInsightsForDataSet(expandedId) : () => []
-  );
+  const connections  = useWorkspaceStore(s => s.connections);
+  const insightsById = useWorkspaceStore(s => s.insightsById);
+
+  const dataSet = expandedId ? dataSetsById[expandedId] ?? null : null;
+  const insights: Insight[] = expandedId
+    ? connections
+        .filter(c => c.toDataSetId === expandedId)
+        .map(c => insightsById[c.fromInsightId])
+        .filter((ins): ins is Insight => ins != null)
+    : [];
 
   return (
     <AnimatePresence>
