@@ -1,12 +1,8 @@
-export type ChartType =
-  | "Lollipop"
-  | "Spline Area"
-  | "Donut"
-  | "Clean Columns"
-  | "Stacked Bar"
-  | "Waterfall"
-  | "Scatter Plot"
-  | "Treemap";
+import type {
+  ChartType, DataRow,
+  Insight, DataSet, Slide, Connection,
+} from "./types";
+export type { ChartType, DataRow };
 
 export const CHART_TYPES: ChartType[] = [
   "Lollipop",
@@ -18,12 +14,6 @@ export const CHART_TYPES: ChartType[] = [
   "Scatter Plot",
   "Treemap",
 ];
-
-export interface DataRow {
-  id: string;
-  label: string;
-  values: number[];
-}
 
 export interface CardState {
   id: string;
@@ -185,3 +175,177 @@ export function adaptRows(rows: DataRow[], targetType: ChartType, targetColumns:
     return { ...r, values: padded };
   });
 }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   New entity hierarchy — Insight / DataSet / Slide
+   ────────────────────────────────────────────────────────────────────────
+   Each Insight is a pure data carrier. DataSets aggregate one or more
+   Insights through Connections and own the visualization. Slides reference
+   one or more DataSets and are edited in Presentation Mode.
+══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Insights — 6 (5 tabular + 1 textual context insight) ──────────────── */
+export const INITIAL_INSIGHTS: Insight[] = [
+  {
+    id: "ins-revenue-monthly",
+    serial: 1,
+    title: "Monthly revenue, FY",
+    kind: "data",
+    data: {
+      columns: ["Revenue (K)"],
+      chartType: "Lollipop",
+      rows: [
+        row("r1",  "Jan", 820), row("r2",  "Feb", 890), row("r3",  "Mar", 940),
+        row("r4",  "Apr", 920), row("r5",  "May", 980), row("r6",  "Jun", 1020),
+        row("r7",  "Jul", 1040), row("r8",  "Aug", 850), row("r9",  "Sep", 790),
+        row("r10", "Oct", 820), row("r11", "Nov", 860), row("r12", "Dec", 930),
+      ],
+    },
+    confFilled: 4, confPct: 91,
+  },
+  {
+    id: "ins-churn-segments",
+    serial: 2,
+    title: "Churn by segment, quarterly",
+    kind: "data",
+    data: {
+      columns: ["Q1", "Q2", "Q3"],
+      chartType: "Stacked Bar",
+      rows: [
+        row("r1", "Mid-market", 38, 42, 31),
+        row("r2", "Enterprise", 27, 29, 23),
+        row("r3", "SMB",        19, 21, 17),
+        row("r4", "Freemium",   11, 13,  9),
+        row("r5", "Annual",      5,  6,  4),
+      ],
+    },
+    confFilled: 5, confPct: 96,
+  },
+  {
+    id: "ins-conversion-channel",
+    serial: 3,
+    title: "Conversion by channel",
+    kind: "data",
+    data: {
+      columns: ["Rate (%)"],
+      chartType: "Donut",
+      rows: [
+        row("r1", "Email",   6.2),
+        row("r2", "Organic", 4.8),
+        row("r3", "Direct",  3.4),
+        row("r4", "Paid",    2.9),
+      ],
+    },
+    confFilled: 4, confPct: 88,
+  },
+  {
+    id: "ins-cohort-retention",
+    serial: 4,
+    title: "Cohort retention curve",
+    kind: "data",
+    data: {
+      columns: ["Retention (%)"],
+      chartType: "Spline Area",
+      rows: [
+        row("r1",  "Month 1",  100), row("r2",  "Month 2",  72),
+        row("r3",  "Month 3",   58), row("r4",  "Month 4",  49),
+        row("r5",  "Month 5",   42), row("r6",  "Month 6",  37),
+        row("r7",  "Month 7",   33), row("r8",  "Month 8",  30),
+        row("r9",  "Month 9",   28), row("r10", "Month 10", 26),
+        row("r11", "Month 11",  25), row("r12", "Month 12", 24),
+      ],
+    },
+    confFilled: 3, confPct: 79,
+  },
+  {
+    id: "ins-mrr-growth",
+    serial: 5,
+    title: "MRR growth trajectory",
+    kind: "data",
+    data: {
+      columns: ["MRR ($K)"],
+      chartType: "Clean Columns",
+      rows: [
+        row("r1",  "Jan", 1050), row("r2",  "Feb", 1080), row("r3",  "Mar", 1100),
+        row("r4",  "Apr", 1140), row("r5",  "May", 1160), row("r6",  "Jun", 1180),
+        row("r7",  "Jul", 1195), row("r8",  "Aug", 1200), row("r9",  "Sep", 1210),
+        row("r10", "Oct", 1190), row("r11", "Nov", 1205), row("r12", "Dec", 1220),
+      ],
+    },
+    confFilled: 5, confPct: 94,
+  },
+  {
+    id: "ins-q3-narrative",
+    serial: 6,
+    title: "Q3 churn narrative",
+    kind: "text",
+    text:
+      "Mid-market accounts drove 71% of Q3 churn. Two clusters: long-tenure customers " +
+      "downgrading to lower SKUs, and 90-day actives lapsing after onboarding gaps. " +
+      "Conversion held above goal everywhere except Paid.",
+    confFilled: 3, confPct: 74,
+  },
+];
+
+/* ── DataSets — two aggregate groupings, mirroring the wireframe ───────── */
+export const INITIAL_DATASETS: DataSet[] = [
+  {
+    id: "ds-revenue-headline",
+    serial: 1,
+    title: "Revenue contracted 18% in Q3 — mid-market churn led",
+    chartType: "Lollipop",
+    columns: ["Rate (%)"],
+    wide: true,
+    rows: [
+      row("r1", "Email",   6.2),
+      row("r2", "Organic", 4.8),
+      row("r3", "Direct",  3.4),
+      row("r4", "Paid",    2.9),
+    ].map((r, i) => ({
+      ...r,
+      sourceInsightId: ["ins-revenue-monthly", "ins-conversion-channel", "ins-q3-narrative", "ins-conversion-channel"][i],
+    })),
+  },
+  {
+    id: "ds-retention-mix",
+    serial: 2,
+    title: "Retention & growth mix",
+    chartType: "Spline Area",
+    columns: ["Retention (%)"],
+    wide: true,
+    rows: [
+      row("r1", "Month 1",  100),
+      row("r2", "Month 3",   58),
+      row("r3", "Month 6",   37),
+      row("r4", "Month 12",  24),
+    ].map((r) => ({ ...r, sourceInsightId: "ins-cohort-retention" })),
+  },
+];
+
+/* ── Connections — Insight outputs feeding DataSet inputs ──────────────── */
+export const INITIAL_CONNECTIONS: Connection[] = [
+  { id: "c1", fromInsightId: "ins-revenue-monthly",    toDataSetId: "ds-revenue-headline" },
+  { id: "c2", fromInsightId: "ins-conversion-channel", toDataSetId: "ds-revenue-headline" },
+  { id: "c3", fromInsightId: "ins-q3-narrative",       toDataSetId: "ds-revenue-headline" },
+  { id: "c4", fromInsightId: "ins-cohort-retention",   toDataSetId: "ds-retention-mix" },
+  { id: "c5", fromInsightId: "ins-mrr-growth",         toDataSetId: "ds-retention-mix" },
+  { id: "c6", fromInsightId: "ins-churn-segments",     toDataSetId: "ds-retention-mix" },
+];
+
+/* ── Slides — three, matching the existing presentation defaults ───────── */
+const SLIDE_DEFAULTS = {
+  status: "Paid",
+  aggregation: "Monthly" as const,
+  colorBy: "Segment",
+  filter: "All data",
+  colorAccent: "Navy" as const,
+  visualStyle: "Modern" as const,
+  showLabels: true,
+  showGrid: true,
+  stackedBars: false,
+};
+
+export const INITIAL_SLIDES: Slide[] = [
+  { id: "slide-1", serial: 1, dataSetIds: ["ds-revenue-headline"], ...SLIDE_DEFAULTS },
+  { id: "slide-2", serial: 2, dataSetIds: ["ds-retention-mix"],    ...SLIDE_DEFAULTS },
+];
