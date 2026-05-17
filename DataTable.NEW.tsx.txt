@@ -156,7 +156,7 @@ export function DataTable({ columns, rows, onRowsChange, insightsById }: DataTab
         )}
       </div>
 
-      <Reorder.Group axis="y" values={rows} onReorder={onRowsChange} style={{ position: "relative", padding: 0, margin: 0, listStyle: "none" }}>
+      <Reorder.Group axis="y" values={rows} onReorder={onRowsChange}>
         {rows.map(row => (
           <DraggableRow
             key={row.id}

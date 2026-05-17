@@ -17,7 +17,7 @@ export const SURFACE_MUTED = "#E5E0D2";
 export const CANVAS_BG     = "#EDE9E0";
 
 /* Card / spacing constants — used by the canvas layout maths. */
-export const CARD_W     = 240;
+export const CARD_W     = 200;   /* insight card width (reduced for compact layout) */
 export const HERO_W     = 360;
-export const CARD_H_EST = 254;
+export const CARD_H_EST = 130;   /* realistic insight card height estimate */
 export const COL_GAP    = 14;

@@ -3,12 +3,13 @@
 import { useState, useRef } from "react";
 import { useWorkspaceStore } from "@/lib/store";
 import { ChartRenderer } from "../ChartRenderer";
-import { DataTable } from "../DataTable";
 import { MiniChart } from "../MiniChart";
+import { ModeToggle } from "../ui/ModeToggle";
+import { ChartTypeDropdown } from "../ui/ChartTypeDropdown";
 import type { Slide, VisualStyle, ColorAccent } from "@/lib/types";
 import { BORDER, NAVY, GOLD, T2, T3, SURFACE, SURFACE_RAISE, SURFACE_MUTED } from "../ui/tokens";
 
-/* ── Palette constants not in tokens ────────────────────────────────────── */
+/* ── Palette constants ───────────────────────────────────────────────────── */
 const ACCENT_COLOR: Record<ColorAccent, string> = {
   Navy:     "#1B2840",
   Gold:     "#B89548",
@@ -236,26 +237,30 @@ function SlideThumbnail({ slide, isActive, onClick, onDelete }: {
   );
 }
 
-/* ── SlideEditor — Presentation Mode full-screen ─────────────────────── */
+/* ── SlideEditor — Presentation Mode full-screen ─────────────────────────
+   Layout: sticky toolbar (ModeToggle + chart type) → large slide preview
+   (flex-1) → bottom strip (slide thumbnails + viz style, fixed 200px).
+   The data-table middle zone from the original design is intentionally
+   removed: DataSet rows are edited in Data Mode via InsightExpandedView.  */
 export function SlideEditor() {
-  const slideOrder       = useWorkspaceStore(s => s.slideOrder);
-  const slidesById       = useWorkspaceStore(s => s.slidesById);
-  const slides           = slideOrder.map(id => slidesById[id]).filter(Boolean) as Slide[];
-  const dataSetsById     = useWorkspaceStore(s => s.dataSetsById);
-  const insightsById     = useWorkspaceStore(s => s.insightsById);
-  const activeSlideId    = useWorkspaceStore(s => s.activeSlideId);
-  const setActiveSlide   = useWorkspaceStore(s => s.setActiveSlide);
-  const updateSlide      = useWorkspaceStore(s => s.updateSlide);
-  const removeSlide      = useWorkspaceStore(s => s.removeSlide);
+  const slideOrder          = useWorkspaceStore(s => s.slideOrder);
+  const slidesById          = useWorkspaceStore(s => s.slidesById);
+  const slides              = slideOrder.map(id => slidesById[id]).filter(Boolean) as Slide[];
+  const dataSetsById        = useWorkspaceStore(s => s.dataSetsById);
+  const activeSlideId       = useWorkspaceStore(s => s.activeSlideId);
+  const setActiveSlide      = useWorkspaceStore(s => s.setActiveSlide);
+  const updateSlide         = useWorkspaceStore(s => s.updateSlide);
+  const removeSlide         = useWorkspaceStore(s => s.removeSlide);
+  const updateDsChartType   = useWorkspaceStore(s => s.updateDataSetChartType);
 
   const [page, setPage] = useState(0);
 
   const activeSlide = activeSlideId ? slides.find(s => s.id === activeSlideId) ?? slides[0] ?? null : slides[0] ?? null;
   const activeDs    = activeSlide?.dataSetIds[0] ? dataSetsById[activeSlide.dataSetIds[0]] : null;
 
-  const totalPages  = Math.max(1, Math.ceil(slides.length / SLIDES_PER_PAGE));
-  const safePage    = Math.min(page, totalPages - 1);
-  const pageSlides  = slides.slice(safePage * SLIDES_PER_PAGE, (safePage + 1) * SLIDES_PER_PAGE);
+  const totalPages = Math.max(1, Math.ceil(slides.length / SLIDES_PER_PAGE));
+  const safePage   = Math.min(page, totalPages - 1);
+  const pageSlides = slides.slice(safePage * SLIDES_PER_PAGE, (safePage + 1) * SLIDES_PER_PAGE);
 
   const serial = activeSlide ? String(activeSlide.serial).padStart(2, "0") : "01";
 
@@ -268,21 +273,53 @@ export function SlideEditor() {
   return (
     <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
 
-      {/* ── Top: large slide preview ── */}
+      {/* ── Toolbar — always visible; contains mode toggle so user can return ── */}
       <div
-        className="shrink-0 flex flex-col border-b"
-        style={{ height: "42%", minHeight: 220, background: activeSlide ? STYLE_BG[activeSlide.visualStyle] : SURFACE_RAISE, borderColor: BORDER }}
+        className="flex items-center justify-between shrink-0 border-b px-6 py-[9px]"
+        style={{ background: SURFACE, borderColor: BORDER }}
+      >
+        <div className="flex items-center gap-3 min-w-0">
+          <span style={{ fontFamily: mono, fontSize: 10.5, letterSpacing: "0.1em", textTransform: "uppercase" as const, color: T3, flexShrink: 0 }}>
+            Presentation
+          </span>
+          {activeSlide && (
+            <>
+              <span style={{ color: BORDER, fontSize: 10, flexShrink: 0 }}>|</span>
+              <span className="truncate" style={{ fontFamily: mono, fontSize: 10.5, color: T3 }}>
+                {serial} / {activeDs?.title
+                  ? (activeDs.title.length > 34 ? activeDs.title.slice(0, 34) + "…" : activeDs.title)
+                  : "—"}
+              </span>
+            </>
+          )}
+        </div>
+        <div className="flex items-center gap-3 shrink-0">
+          {activeDs && (
+            <ChartTypeDropdown
+              value={activeDs.chartType}
+              onChange={(type) => updateDsChartType(activeDs.id, type)}
+            />
+          )}
+          <ModeToggle />
+        </div>
+      </div>
+
+      {/* ── Large slide preview — fills all remaining space above the strip ── */}
+      <div
+        className="flex-1 min-h-0 flex flex-col overflow-hidden"
+        style={{ background: activeSlide ? STYLE_BG[activeSlide.visualStyle] : SURFACE_RAISE }}
       >
         {activeSlide && activeDs ? (
-          <div className="flex flex-col flex-1 min-h-0 px-10 py-6">
-            {/* Slide header */}
-            <div className="flex items-center gap-3 mb-3 shrink-0">
+          <div className="flex flex-col flex-1 min-h-0 px-10 py-8">
+            <div className="flex items-baseline gap-3 mb-4 shrink-0">
               <span style={{ fontFamily: mono, fontSize: 11, color: T3 }}>{serial} /</span>
-              <span className="text-[15px] font-medium truncate" style={{ color: "#0A0A0A", fontFamily: STYLE_HEADLINE_FONT[activeSlide.visualStyle] }}>
+              <span
+                className="text-[15px] font-medium truncate"
+                style={{ color: "#0A0A0A", fontFamily: STYLE_HEADLINE_FONT[activeSlide.visualStyle] }}
+              >
                 {activeDs.title}
               </span>
             </div>
-            {/* Chart */}
             <div className="flex-1 min-h-0">
               <ChartRenderer
                 rows={activeDs.rows}
@@ -295,111 +332,37 @@ export function SlideEditor() {
         ) : (
           <div className="flex-1 flex items-center justify-center">
             <span style={{ fontFamily: mono, fontSize: 11, color: T3 }}>
-              {slides.length === 0 ? "No slides yet — drag a Data Set into the presentation strip." : "Select a slide below."}
+              {slides.length === 0
+                ? "No slides yet — switch to Data Mode and drag a Data Set into the strip below."
+                : "Select a slide below."}
             </span>
           </div>
         )}
       </div>
 
-      {/* ── Middle: data table (⅔) + chart settings (⅓) ── */}
-      <div className="shrink-0 flex border-b overflow-hidden" style={{ height: "33%", minHeight: 180, borderColor: BORDER }}>
-
-        {/* Data table */}
-        <div className="flex flex-col min-h-0 overflow-hidden border-r" style={{ flex: "2 1 0", borderColor: BORDER }}>
-          <div className="px-5 pt-2 pb-1 shrink-0 border-b flex items-center gap-3" style={{ borderColor: BORDER, background: SURFACE }}>
-            <span style={{ fontFamily: mono, fontSize: 9, letterSpacing: "0.1em", textTransform: "uppercase", color: T3 }}>
-              Data
-            </span>
-            {activeDs && (
-              <span style={{ fontFamily: mono, fontSize: 9, color: T3 }}>
-                {activeDs.title.length > 30 ? activeDs.title.slice(0, 30) + "…" : activeDs.title}
-              </span>
-            )}
-          </div>
-          <div className="flex-1 overflow-y-auto thin-scroll px-4 pb-2 pt-1">
-            {activeDs ? (
-              <DataTable
-                columns={activeDs.columns}
-                rows={activeDs.rows}
-                onRowsChange={() => {
-                  /* DataSet rows aren't directly editable here; they're aggregated.
-                     To edit data, open the source Insight's expanded view. */
-                }}
-                insightsById={insightsById}
-              />
-            ) : (
-              <div className="flex items-center justify-center h-full">
-                <span style={{ fontFamily: mono, fontSize: 10, color: T3 }}>No data set selected</span>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Chart settings */}
-        <div className="flex flex-col shrink-0 overflow-hidden" style={{ width: 220, background: SURFACE }}>
-          <div className="px-4 pt-2 pb-1 shrink-0 border-b" style={{ borderColor: BORDER }}>
-            <span style={{ fontFamily: mono, fontSize: 8.5, letterSpacing: "0.1em", textTransform: "uppercase", color: T3 }}>Chart Settings</span>
-          </div>
-          <div className="flex-1 overflow-y-auto thin-scroll px-4 py-3">
-            {activeSlide ? (
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 8 }}>
-                <PanelSelect
-                  label="Status"
-                  value={activeSlide.status}
-                  options={["All", "Paid", "Pending", "Failed"]}
-                  onChange={v => updateSlide(activeSlide.id, { status: v })}
-                />
-                <PanelSelect
-                  label="Aggregation"
-                  value={activeSlide.aggregation}
-                  options={["Monthly", "Weekly", "Daily"]}
-                  onChange={v => updateSlide(activeSlide.id, { aggregation: v as Slide["aggregation"] })}
-                />
-                <PanelSelect
-                  label="Color By"
-                  value={activeSlide.colorBy}
-                  options={["Segment", "Category", "Region", "None"]}
-                  onChange={v => updateSlide(activeSlide.id, { colorBy: v })}
-                />
-                <PanelSelect
-                  label="Filter"
-                  value={activeSlide.filter}
-                  options={["All data", "Top 10", "Bottom 10", "Outliers"]}
-                  onChange={v => updateSlide(activeSlide.id, { filter: v })}
-                />
-                <PanelSelect
-                  label="Accent"
-                  value={activeSlide.colorAccent}
-                  options={["Navy", "Gold", "Slate", "Graphite"]}
-                  onChange={v => updateSlide(activeSlide.id, { colorAccent: v as ColorAccent })}
-                />
-              </div>
-            ) : (
-              <span style={{ fontFamily: mono, fontSize: 10, color: T3 }}>Select a slide</span>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* ── Bottom: thumbnail strip (left) + viz style (right) ── */}
-      <div className="flex-1 min-h-0 flex overflow-hidden" style={{ background: "#EDE9E0" }}>
-
-        {/* Slide strip */}
+      {/* ── Bottom strip: thumbnail rail (left) + viz style panel (right) ── */}
+      <div
+        className="shrink-0 flex border-t overflow-hidden"
+        style={{ height: 200, background: "#EDE9E0", borderColor: BORDER }}
+      >
+        {/* Slide thumbnails */}
         <div className="flex flex-col flex-1 min-w-0 border-r overflow-hidden" style={{ borderColor: BORDER }}>
-          {/* Strip header */}
           <div className="flex items-center gap-2 shrink-0 px-5 pt-2 pb-1">
-            <span style={{ fontFamily: mono, fontSize: 9.5, letterSpacing: "0.1em", textTransform: "uppercase", color: T3 }}>Presentation</span>
+            <span style={{ fontFamily: mono, fontSize: 9.5, letterSpacing: "0.1em", textTransform: "uppercase" as const, color: T3 }}>Slides</span>
             <span style={{ fontFamily: mono, fontSize: 9, color: T3, border: `1px solid ${BORDER}`, borderRadius: 999, padding: "1px 7px" }}>
               {slides.length}
             </span>
           </div>
 
-          {/* Thumbnails */}
           <div style={{
-            flex: 1, display: "grid",
+            flex: 1,
+            display: "grid",
             gridTemplateColumns: "repeat(4, 1fr)",
             alignContent: "center",
-            gap: 8, paddingLeft: 20, paddingRight: 20, paddingTop: 4, overflow: "hidden",
+            gap: 8,
+            paddingLeft: 20, paddingRight: 20,
+            paddingTop: 4, paddingBottom: 6,
+            overflow: "hidden",
           }}>
             {pageSlides.map(slide => (
               <SlideThumbnail
@@ -412,7 +375,6 @@ export function SlideEditor() {
             ))}
           </div>
 
-          {/* Pagination */}
           <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 3, padding: "4px 0 6px", flexShrink: 0 }}>
             <button onClick={() => setPage(p => Math.max(0, p - 1))}
               style={{ fontFamily: mono, fontSize: 9.5, color: T3, background: "none", border: "none", cursor: safePage === 0 ? "default" : "pointer", opacity: safePage === 0 ? 0.35 : 1, padding: "2px 6px" }}>
@@ -438,10 +400,10 @@ export function SlideEditor() {
           </div>
         </div>
 
-        {/* Viz style + Build */}
+        {/* Viz style + build */}
         <div className="flex flex-col shrink-0 overflow-hidden" style={{ width: 220, background: SURFACE }}>
           <div className="px-4 pt-2 pb-1 shrink-0 border-b" style={{ borderColor: BORDER }}>
-            <span style={{ fontFamily: mono, fontSize: 8.5, letterSpacing: "0.09em", textTransform: "uppercase", color: T3 }}>Visualization Style</span>
+            <span style={{ fontFamily: mono, fontSize: 8.5, letterSpacing: "0.09em", textTransform: "uppercase" as const, color: T3 }}>Visualization Style</span>
           </div>
           <div className="flex-1 overflow-y-auto thin-scroll px-4 py-3 flex flex-col gap-4">
             {activeSlide ? (
@@ -455,6 +417,23 @@ export function SlideEditor() {
                   <ToggleSwitch label="Grid"   checked={activeSlide.showGrid}    onChange={v => updateSlide(activeSlide.id, { showGrid: v })} />
                   <ToggleSwitch label="Stack"  checked={activeSlide.stackedBars} onChange={v => updateSlide(activeSlide.id, { stackedBars: v })} />
                 </div>
+
+                {/* Slide-level chart settings */}
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 8 }}>
+                  <PanelSelect
+                    label="Accent"
+                    value={activeSlide.colorAccent}
+                    options={["Navy", "Gold", "Slate", "Graphite"]}
+                    onChange={v => updateSlide(activeSlide.id, { colorAccent: v as ColorAccent })}
+                  />
+                  <PanelSelect
+                    label="Aggregation"
+                    value={activeSlide.aggregation}
+                    options={["Monthly", "Weekly", "Daily"]}
+                    onChange={v => updateSlide(activeSlide.id, { aggregation: v as Slide["aggregation"] })}
+                  />
+                </div>
+
                 <button
                   className="w-full font-medium transition-opacity duration-150 hover:opacity-85"
                   style={{
@@ -475,4 +454,3 @@ export function SlideEditor() {
     </div>
   );
 }
-

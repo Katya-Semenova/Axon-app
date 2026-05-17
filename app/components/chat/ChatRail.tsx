@@ -16,9 +16,9 @@ function ChatTextarea({ placeholder }: { placeholder: string }) {
     <textarea
       ref={ref}
       onInput={expand}
-      rows={1}
+      rows={2}
       placeholder={placeholder}
-      className="flex-1 border border-border rounded-sm px-3 py-2 text-[13.5px] font-sans text-t1 resize-none outline-none transition-colors duration-200 placeholder:text-t3 min-h-[38px] max-h-[120px] leading-relaxed"
+      className="flex-1 border border-border rounded-sm px-3 py-2 text-[13.5px] font-sans text-t1 resize-none outline-none transition-colors duration-200 placeholder:text-t3 min-h-[76px] max-h-[160px] leading-relaxed"
       style={{ background: SURFACE_MUTED }}
     />
   );

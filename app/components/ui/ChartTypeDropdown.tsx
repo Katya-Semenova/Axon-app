@@ -1,30 +1,35 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { createPortal } from "react-dom";
 import { CHART_TYPES } from "@/lib/mockData";
 import type { ChartType } from "@/lib/types";
 import { NAVY, T2, BORDER, SURFACE_RAISE, SURFACE_MUTED } from "./tokens";
 
-/**
- * Compact chart-type selector used in card headers and in the slide
- * editor's slide header. Portals its backdrop to `document.body` so an
- * ancestor CSS transform (canvas pan/zoom) can't trap clicks behind it.
- */
 export function ChartTypeDropdown({
   value, onChange, mounted = true,
 }: {
   value: ChartType;
   onChange: (type: ChartType) => void;
-  /** Disable the portal during SSR / before client mount. */
   mounted?: boolean;
 }) {
   const [open, setOpen] = useState(false);
+  const [triggerRect, setTriggerRect] = useState<DOMRect | null>(null);
+  const btnRef = useRef<HTMLButtonElement>(null);
+
+  function handleToggle(e: React.MouseEvent) {
+    e.stopPropagation();
+    if (!open && btnRef.current) {
+      setTriggerRect(btnRef.current.getBoundingClientRect());
+    }
+    setOpen(v => !v);
+  }
 
   return (
-    <div className="relative z-[6]">
+    <div>
       <button
-        onClick={(e) => { e.stopPropagation(); setOpen(!open); }}
+        ref={btnRef}
+        onClick={handleToggle}
         className="flex items-center gap-1 text-[11px] text-t2 border border-border rounded-sm px-[8px] py-[3px] hover:border-[rgba(27,40,64,0.3)] transition-colors duration-200"
         style={{ background: SURFACE_RAISE, fontFamily: "'JetBrains Mono', monospace" }}
       >
@@ -35,37 +40,54 @@ export function ChartTypeDropdown({
       </button>
 
       {open && mounted && createPortal(
-        <div style={{ position: "fixed", inset: 0, zIndex: 5 }} onClick={() => setOpen(false)} />,
-        document.body
-      )}
-
-      {open && (
-        <div
-          className="absolute right-0 top-full mt-1 z-[7] border border-border rounded-sm py-1 min-w-[152px]"
-          style={{ background: SURFACE_RAISE }}
-        >
-          {CHART_TYPES.map((type) => (
-            <button
-              key={type}
-              onClick={(e) => { e.stopPropagation(); onChange(type); setOpen(false); }}
-              className="w-full text-left px-3 py-[6px] text-[11px] transition-colors"
+        <>
+          {/* Backdrop — closes the menu; sits below the list */}
+          <div
+            style={{ position: "fixed", inset: 0, zIndex: 9998 }}
+            onClick={() => setOpen(false)}
+          />
+          {/* List — portaled to body so canvas overflow:hidden can't clip it */}
+          {triggerRect && (
+            <div
               style={{
-                fontFamily: "'JetBrains Mono',monospace",
-                color: type === value ? NAVY : T2,
-                fontWeight: type === value ? 500 : 400,
-                background: type === value ? SURFACE_MUTED : "transparent",
-              }}
-              onMouseEnter={(e) => {
-                if (type !== value) e.currentTarget.style.background = SURFACE_MUTED;
-              }}
-              onMouseLeave={(e) => {
-                if (type !== value) e.currentTarget.style.background = "transparent";
+                position: "fixed",
+                top: triggerRect.bottom + 4,
+                right: window.innerWidth - triggerRect.right,
+                zIndex: 9999,
+                border: `1px solid ${BORDER}`,
+                borderRadius: 2,
+                padding: "4px 0",
+                minWidth: 152,
+                background: SURFACE_RAISE,
+                boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
               }}
             >
-              {type}
-            </button>
-          ))}
-        </div>
+              {CHART_TYPES.map((type) => (
+                <button
+                  key={type}
+                  onClick={(e) => { e.stopPropagation(); onChange(type); setOpen(false); }}
+                  className="w-full text-left px-3 py-[6px] text-[11px] transition-colors"
+                  style={{
+                    fontFamily: "'JetBrains Mono',monospace",
+                    color: type === value ? NAVY : T2,
+                    fontWeight: type === value ? 500 : 400,
+                    background: type === value ? SURFACE_MUTED : "transparent",
+                    display: "block",
+                  }}
+                  onMouseEnter={(e) => {
+                    if (type !== value) e.currentTarget.style.background = SURFACE_MUTED;
+                  }}
+                  onMouseLeave={(e) => {
+                    if (type !== value) e.currentTarget.style.background = "transparent";
+                  }}
+                >
+                  {type}
+                </button>
+              ))}
+            </div>
+          )}
+        </>,
+        document.body
       )}
     </div>
   );

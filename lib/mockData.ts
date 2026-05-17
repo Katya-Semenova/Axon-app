@@ -287,50 +287,11 @@ export const INITIAL_INSIGHTS: Insight[] = [
   },
 ];
 
-/* ── DataSets — two aggregate groupings, mirroring the wireframe ───────── */
-export const INITIAL_DATASETS: DataSet[] = [
-  {
-    id: "ds-revenue-headline",
-    serial: 1,
-    title: "Revenue contracted 18% in Q3 — mid-market churn led",
-    chartType: "Lollipop",
-    columns: ["Rate (%)"],
-    wide: true,
-    rows: [
-      row("r1", "Email",   6.2),
-      row("r2", "Organic", 4.8),
-      row("r3", "Direct",  3.4),
-      row("r4", "Paid",    2.9),
-    ].map((r, i) => ({
-      ...r,
-      sourceInsightId: ["ins-revenue-monthly", "ins-conversion-channel", "ins-q3-narrative", "ins-conversion-channel"][i],
-    })),
-  },
-  {
-    id: "ds-retention-mix",
-    serial: 2,
-    title: "Retention & growth mix",
-    chartType: "Spline Area",
-    columns: ["Retention (%)"],
-    wide: true,
-    rows: [
-      row("r1", "Month 1",  100),
-      row("r2", "Month 3",   58),
-      row("r3", "Month 6",   37),
-      row("r4", "Month 12",  24),
-    ].map((r) => ({ ...r, sourceInsightId: "ins-cohort-retention" })),
-  },
-];
+/* ── DataSets — start empty; created dynamically by the user on the canvas ─ */
+export const INITIAL_DATASETS: DataSet[] = [];
 
-/* ── Connections — Insight outputs feeding DataSet inputs ──────────────── */
-export const INITIAL_CONNECTIONS: Connection[] = [
-  { id: "c1", fromInsightId: "ins-revenue-monthly",    toDataSetId: "ds-revenue-headline" },
-  { id: "c2", fromInsightId: "ins-conversion-channel", toDataSetId: "ds-revenue-headline" },
-  { id: "c3", fromInsightId: "ins-q3-narrative",       toDataSetId: "ds-revenue-headline" },
-  { id: "c4", fromInsightId: "ins-cohort-retention",   toDataSetId: "ds-retention-mix" },
-  { id: "c5", fromInsightId: "ins-mrr-growth",         toDataSetId: "ds-retention-mix" },
-  { id: "c6", fromInsightId: "ins-churn-segments",     toDataSetId: "ds-retention-mix" },
-];
+/* ── Connections — drawn by the user on the canvas; empty on startup ────── */
+export const INITIAL_CONNECTIONS: Connection[] = [];
 
 /* ── Slides — three, matching the existing presentation defaults ───────── */
 const SLIDE_DEFAULTS = {
@@ -345,7 +306,7 @@ const SLIDE_DEFAULTS = {
   stackedBars: false,
 };
 
+/* ── Slides — one empty default slide on startup ───────────────────────── */
 export const INITIAL_SLIDES: Slide[] = [
-  { id: "slide-1", serial: 1, dataSetIds: ["ds-revenue-headline"], ...SLIDE_DEFAULTS },
-  { id: "slide-2", serial: 2, dataSetIds: ["ds-retention-mix"],    ...SLIDE_DEFAULTS },
+  { id: "slide-default", serial: 1, dataSetIds: [], ...SLIDE_DEFAULTS },
 ];

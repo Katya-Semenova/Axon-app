@@ -21,7 +21,9 @@ const STYLE_HEADLINE_FONT: Record<VisualStyle, string> = {
   Wireframe: "'JetBrains Mono', monospace",
 };
 
-/* ── Droppable slide slot ─────────────────────────────────────────────── */
+/* ── SlideSlot ────────────────────────────────────────────────────────────
+   Shows either a fully populated thumbnail (has a linked DataSet) or an
+   "empty" dashed-border state (no dataSetIds yet) with a drop-here hint.  */
 function SlideSlot({ slide, isActive, onClick, onDelete }: {
   slide: Slide;
   isActive: boolean;
@@ -31,14 +33,15 @@ function SlideSlot({ slide, isActive, onClick, onDelete }: {
   const [hovered, setHovered] = useState(false);
   const dataSetsById = useWorkspaceStore(s => s.dataSetsById);
   const ds           = slide.dataSetIds[0] ? dataSetsById[slide.dataSetIds[0]] : null;
+  const isEmpty      = !ds || ds.rows.length === 0;
 
   const { setNodeRef, isOver } = useDroppable({
-    id: `slide-slot:${slide.id}`,
+    id:   `slide-slot:${slide.id}`,
     data: { type: "slide-slot", slideId: slide.id },
   });
 
   const serial   = String(slide.serial).padStart(2, "0");
-  const headline = (ds?.title ?? "Untitled").slice(0, 28) + ((ds?.title ?? "").length > 28 ? "…" : "");
+  const headline = ds ? (ds.title.length > 28 ? ds.title.slice(0, 28) + "…" : ds.title) : "Empty slide";
   const bg       = STYLE_BG[slide.visualStyle];
   const headFont = STYLE_HEADLINE_FONT[slide.visualStyle];
 
@@ -49,6 +52,10 @@ function SlideSlot({ slide, isActive, onClick, onDelete }: {
         ))
       ).flat()
     : null;
+
+  const borderColor = isOver ? GOLD : isActive ? NAVY : hovered ? GOLD : BORDER;
+  const borderWidth = isOver ? "2px" : isActive ? "1.5px" : "1px";
+  const borderStyle = isEmpty && !isOver ? "dashed" : "solid";
 
   return (
     <div
@@ -62,26 +69,40 @@ function SlideSlot({ slide, isActive, onClick, onDelete }: {
         className="cursor-pointer overflow-hidden"
         style={{
           width: "100%", height: "100%", borderRadius: 0,
-          border: `${isActive ? "1.5px" : "1px"} solid ${isOver ? GOLD : isActive ? NAVY : hovered ? GOLD : BORDER}`,
-          background: isOver ? "rgba(184,149,72,0.06)" : bg,
-          transition: "border-color 150ms ease, background 150ms ease",
+          border: `${borderWidth} ${borderStyle} ${borderColor}`,
+          background: isOver ? "rgba(184,149,72,0.13)" : bg,
+          boxShadow: isOver ? `inset 0 0 0 1px rgba(184,149,72,0.25)` : "none",
+          transition: "border-color 120ms ease, background 120ms ease, box-shadow 120ms ease",
         }}
       >
         <svg viewBox="0 0 116 76" fill="none" style={{ width: "100%", height: "100%", display: "block" }}>
           <rect width="116" height="76" fill={bg} />
           {wireDots}
           <text x="6" y="11" fontSize="5" fontWeight="500" fill={T3} fontFamily={mono} letterSpacing="0.08em">{serial} /</text>
-          <text x="6" y={slide.visualStyle === "Magazine" ? 23 : 21}
-            fontSize={slide.visualStyle === "Magazine" ? 7.5 : 6.5}
-            fontWeight={slide.visualStyle === "Magazine" ? "600" : "500"}
-            fill="#0A0A0A" fontFamily={headFont}>{headline}</text>
-          {ds && (
-            <g transform="translate(6, 30)">
-              <MiniChart rows={ds.rows} chartType={ds.chartType} color={NAVY} W={104} H={34} />
-            </g>
+          {isEmpty ? (
+            <>
+              <text x="58" y="36" textAnchor="middle" fontSize="6" fill={T3} fontFamily={mono} fillOpacity="0.7">
+                {isOver ? "Drop here" : "Drop a Data Set"}
+              </text>
+              <text x="58" y="45" textAnchor="middle" fontSize="5.5" fill={T3} fontFamily={mono} fillOpacity="0.5">to populate</text>
+            </>
+          ) : (
+            <>
+              <text x="6" y={slide.visualStyle === "Magazine" ? 23 : 21}
+                fontSize={slide.visualStyle === "Magazine" ? 7.5 : 6.5}
+                fontWeight={slide.visualStyle === "Magazine" ? "600" : "500"}
+                fill="#0A0A0A" fontFamily={headFont}>{headline}</text>
+              {ds && ds.rows.length > 0 && (
+                <g transform="translate(6, 30)">
+                  <MiniChart rows={ds.rows} chartType={ds.chartType} color={NAVY} W={104} H={34} />
+                </g>
+              )}
+            </>
           )}
         </svg>
       </div>
+
+      {/* Delete button */}
       <button
         onClick={(e) => { e.stopPropagation(); onDelete(); }}
         title="Remove slide"
@@ -90,7 +111,7 @@ function SlideSlot({ slide, isActive, onClick, onDelete }: {
           display: "flex", alignItems: "center", justifyContent: "center",
           background: SURFACE_RAISE, border: `1px solid ${BORDER}`,
           borderRadius: 0, cursor: "pointer", color: T3, padding: 0,
-          opacity: hovered ? 1 : 0, transition: "opacity 150ms ease",
+          opacity: hovered || isEmpty ? 1 : 0, transition: "opacity 150ms ease",
           zIndex: 2,
         }}
         onMouseEnter={e => { e.currentTarget.style.color = "#0A0A0A"; e.currentTarget.style.borderColor = NAVY; }}
@@ -104,54 +125,59 @@ function SlideSlot({ slide, isActive, onClick, onDelete }: {
   );
 }
 
-/* ── "+ SLIDE" droppable placeholder ─────────────────────────────────── */
-function NewSlideSlot() {
+/* ── "+ NEW SLIDE" slot ───────────────────────────────────────────────────
+   Clicking adds an empty slide; dropping a DataSet creates a new slide with
+   that DataSet bound (handled by handleDragEnd in page.tsx).               */
+function NewSlideSlot({ onClick }: { onClick: () => void }) {
+  const [hovered, setHovered] = useState(false);
   const { setNodeRef, isOver } = useDroppable({
-    id: "slide-slot:new",
+    id:   "slide-slot:new",
     data: { type: "slide-slot", slideId: null },
   });
+
+  const accent = isOver || hovered ? GOLD : T3;
 
   return (
     <div
       ref={setNodeRef}
+      onClick={onClick}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
       style={{
         aspectRatio: "116 / 76",
-        border: `1.5px dashed ${isOver ? GOLD : BORDER}`,
-        background: isOver ? "rgba(184,149,72,0.06)" : "transparent",
+        border: `1.5px dashed ${accent}`,
+        background: isOver || hovered ? "rgba(184,149,72,0.06)" : "transparent",
         borderRadius: 0,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
+        display: "flex", alignItems: "center", justifyContent: "center",
         transition: "border-color 150ms ease, background 150ms ease",
-        cursor: "default",
+        cursor: "pointer",
       }}
     >
-      <div className="flex flex-col items-center gap-1" style={{ color: isOver ? GOLD : T3 }}>
+      <div className="flex flex-col items-center gap-1" style={{ color: accent, transition: "color 150ms" }}>
         <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
           <path d="M6 2v8M2 6h8" />
         </svg>
-        <span style={{ fontFamily: mono, fontSize: 8, letterSpacing: "0.08em" }}>+ SLIDE</span>
+        <span style={{ fontFamily: mono, fontSize: 8, letterSpacing: "0.08em" }}>
+          {isOver ? "Drop here" : "+ NEW SLIDE"}
+        </span>
       </div>
     </div>
   );
 }
 
-/* ── PresentationStructure ─────────────────────────────────────────────
-   Bottom strip in Data Mode: paginated slide thumbnails with droppable
-   slots (DataSet cards can be dropped here via dnd-kit). No settings
-   panel — that lives in SlideEditor (Presentation Mode only).           */
+/* ── PresentationStructure ────────────────────────────────────────────────
+   Bottom strip in Data Mode: paginated slide thumbnails.                  */
 export function PresentationStructure() {
-  const slideOrder   = useWorkspaceStore(s => s.slideOrder);
-  const slidesById   = useWorkspaceStore(s => s.slidesById);
-  const slides       = slideOrder.map(id => slidesById[id]).filter(Boolean) as Slide[];
+  const slideOrder    = useWorkspaceStore(s => s.slideOrder);
+  const slidesById    = useWorkspaceStore(s => s.slidesById);
+  const slides        = slideOrder.map(id => slidesById[id]).filter(Boolean) as Slide[];
   const activeSlideId = useWorkspaceStore(s => s.activeSlideId);
-  const setActive    = useWorkspaceStore(s => s.setActiveSlide);
-  const removeSlide  = useWorkspaceStore(s => s.removeSlide);
+  const setActive     = useWorkspaceStore(s => s.setActiveSlide);
+  const removeSlide   = useWorkspaceStore(s => s.removeSlide);
+  const addEmptySlide = useWorkspaceStore(s => s.addEmptySlide);
 
-  const [page, setPage]         = useState(0);
-  const [isDragOver, setIsDragOver] = useState(false);
-  const dragCounter             = useRef(0);
-  const prevLenRef              = useRef(slides.length);
+  const [page, setPage] = useState(0);
+  const prevLenRef      = useRef(slides.length);
 
   const totalPages = Math.max(1, Math.ceil(slides.length / SLIDES_PER_PAGE));
   const safePage   = Math.min(page, totalPages - 1);
@@ -172,36 +198,17 @@ export function PresentationStructure() {
     }
   }
 
-  function handleDragEnter(e: React.DragEvent) {
-    e.preventDefault();
-    dragCounter.current++;
-    setIsDragOver(true);
-  }
-  function handleDragLeave() {
-    dragCounter.current--;
-    if (dragCounter.current === 0) setIsDragOver(false);
-  }
-  function handleDragOver(e: React.DragEvent) {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = "copy";
-  }
-
   return (
     <section
       className="shrink-0 flex border-t"
       style={{
-        height: 136,
-        borderColor: isDragOver ? GOLD : BORDER,
+        height: 164,
+        borderColor: BORDER,
         background: "#EDE9E0",
-        transition: "border-color 150ms ease",
       }}
-      onDragEnter={handleDragEnter}
-      onDragLeave={handleDragLeave}
-      onDragOver={handleDragOver}
-      onDrop={(e) => { e.preventDefault(); dragCounter.current = 0; setIsDragOver(false); }}
     >
-      {/* Strip header */}
       <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
+        {/* Header */}
         <div className="flex items-center gap-2 shrink-0 px-5 pt-2 pb-1">
           <span style={{ fontFamily: mono, fontSize: 10, letterSpacing: "0.1em", textTransform: "uppercase", color: T3 }}>Presentation</span>
           <span style={{ fontFamily: mono, fontSize: 9, color: T3, border: `1px solid ${BORDER}`, borderRadius: 999, padding: "1px 7px" }}>
@@ -209,38 +216,35 @@ export function PresentationStructure() {
           </span>
         </div>
 
-        {/* Thumbnails */}
-        <div
-          style={{
-            flex: 1,
-            display: "grid",
-            gridTemplateColumns: "repeat(4, 1fr)",
-            alignContent: "center",
-            gap: 8,
-            paddingLeft: 20,
-            paddingRight: 20,
-            paddingTop: 4,
-            paddingBottom: 0,
-            overflow: "hidden",
-          }}
-        >
+        {/* Thumbnails row — fixed-width items prevent aspect-ratio overflow */}
+        <div style={{
+          flex: 1, display: "flex",
+          alignItems: "center",
+          gap: 8,
+          paddingLeft: 20, paddingRight: 20,
+          paddingTop: 4, paddingBottom: 6,
+          overflow: "hidden",
+        }}>
           {pageSlides.map(slide => (
-            <SlideSlot
-              key={slide.id}
-              slide={slide}
-              isActive={activeSlideId === slide.id}
-              onClick={() => setActive(slide.id)}
-              onDelete={() => handleRemove(slide.id)}
-            />
+            <div key={slide.id} style={{ width: 116, flexShrink: 0 }}>
+              <SlideSlot
+                slide={slide}
+                isActive={activeSlideId === slide.id}
+                onClick={() => setActive(slide.id)}
+                onDelete={() => handleRemove(slide.id)}
+              />
+            </div>
           ))}
-          {/* Show "+ SLIDE" slot if last page and fewer than 4 thumbnails */}
+          {/* "+ NEW SLIDE" always visible on last page */}
           {safePage === totalPages - 1 && pageSlides.length < SLIDES_PER_PAGE && (
-            <NewSlideSlot />
+            <div style={{ width: 116, flexShrink: 0 }}>
+              <NewSlideSlot onClick={addEmptySlide} />
+            </div>
           )}
         </div>
 
         {/* Pagination */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 3, padding: "4px 0 6px", flexShrink: 0 }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 3, padding: "3px 0 5px", flexShrink: 0 }}>
           <button onClick={() => setPage(p => Math.max(0, p - 1))}
             style={{ fontFamily: mono, fontSize: 9.5, color: T3, background: "none", border: "none", cursor: safePage === 0 ? "default" : "pointer", opacity: safePage === 0 ? 0.35 : 1, padding: "2px 6px" }}>
             ← Prev
@@ -267,4 +271,3 @@ export function PresentationStructure() {
     </section>
   );
 }
-
