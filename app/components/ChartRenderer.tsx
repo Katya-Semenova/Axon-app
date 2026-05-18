@@ -6,22 +6,19 @@ import type { DataRow, ChartType } from "@/lib/mockData";
 const r = roundTo;
 
 /* ── Editorial Density palette — fixed categorical order ── */
-const NAVY     = "#1B2840";   /* navy-900 */
+const NAVY     = "#1B2840";
 const NAVY_700 = "#2A3654";
 const NAVY_500 = "#4A5878";
 const NAVY_300 = "#8892AA";
 const NAVY_100 = "#B8C2D0";
-const GOLD     = "#B89548";   /* gold-500 — the ONE accent */
+const GOLD     = "#B89548";
 const GOLD_300 = "#C9A961";
 const BORDER   = "#D9D3C2";
 const T2       = "#5C6478";
 const T3       = "#8A8B87";
 
-/* Categorical palette for multi-series charts.
-   FIXED ORDER. Do not shuffle. Do not add colors. */
 const SERIES = [NAVY, NAVY_500, GOLD, NAVY_300, GOLD_300, NAVY_100];
 
-/* Editorial in-chart fonts */
 const SERIF_FAMILY = "'Instrument Serif', 'GT Sectra', 'Fraunces', Georgia, serif";
 const MONO_FAMILY  = "'JetBrains Mono', monospace";
 const SANS_FAMILY  = "Inter, sans-serif";
@@ -30,20 +27,27 @@ interface ChartProps {
   rows: DataRow[];
   columns: string[];
   expanded?: boolean;
+  /** When provided by ChartFill's ResizeObserver, charts use these exact pixel dims. */
+  containerWidth?: number;
+  containerHeight?: number;
 }
 
-/* ── SVG sizing helper ──────────────────────────────────────
-   Grid cards: w-full h-auto (scales by width, height is natural)
-   Expanded:   fills its flex container with meet scaling
-────────────────────────────────────────────────────────── */
-function svgAttrs(expanded: boolean | undefined) {
+/* Computes minimum label step to avoid X-axis overlap.
+   Uses ~6.5px/char for JetBrains Mono at 10px + 8px inter-label gap. */
+function labelStep(n: number, plotW: number, labels: string[]): number {
+  const maxLen  = Math.max(...labels.map(l => l.length), 1);
+  const approxW = maxLen * 6.5 + 8;
+  const fits    = Math.max(1, Math.floor(plotW / approxW));
+  return Math.max(1, Math.ceil(n / fits));
+}
+
+/* SVG sizing: explicit pixel dims from ResizeObserver > expanded % fill > card h-auto */
+function svgAttrs(containerWidth?: number, containerHeight?: number, expanded?: boolean) {
+  if (containerWidth && containerHeight) {
+    return { width: containerWidth, height: containerHeight, style: { display: "block" as const } };
+  }
   if (expanded) {
-    return {
-      width:  "100%",
-      height: "100%",
-      preserveAspectRatio: "xMidYMid meet",
-      style: { display: "block" as const },
-    };
+    return { width: "100%", height: "100%", preserveAspectRatio: "xMidYMid meet", style: { display: "block" as const } };
   }
   return { className: "w-full h-auto" };
 }
@@ -62,11 +66,11 @@ function GridLines({ pl, pr, pt, plotH }: { pl: number; pr: number; pt: number; 
 }
 
 /* ── Lollipop ─────────────────────────────────────────── */
-function LollipopChart({ rows, expanded }: ChartProps) {
+function LollipopChart({ rows, expanded, containerWidth, containerHeight }: ChartProps) {
   const data   = rows.map(row => row.values[0] ?? 0);
   const labels = rows.map(row => row.label);
-  const W = 360, H = expanded ? 220 : 148;
-  /* 15% denser internal padding vs reference */
+  const W = containerWidth ?? 360;
+  const H = containerHeight ?? (expanded ? 220 : 148);
   const pl = 17, pr = 22, pt = 26, pb = 22;
   const plotW = W - pl - pr, plotH = H - pt - pb;
 
@@ -77,16 +81,14 @@ function LollipopChart({ rows, expanded }: ChartProps) {
 
   const baseline = pt + plotH;
   const lastIdx  = data.length - 1;
-  const step     = Math.max(1, Math.floor(data.length / (expanded ? data.length : 4)));
+  const step     = expanded ? labelStep(data.length, plotW, labels) : Math.max(1, Math.floor(data.length / 4));
 
-  /* Spec: stems navy-300 1.5px, dots navy-500 r=5, current dot gold-500 r=8,
-     serif text-data-lg label above current. */
   const dotR        = expanded ? 5 : 4;
   const currentDotR = expanded ? 8 : 6;
   const heroSize    = expanded ? 20 : 14;
 
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} fill="none" {...svgAttrs(expanded)}>
+    <svg viewBox={`0 0 ${W} ${H}`} fill="none" {...svgAttrs(containerWidth, containerHeight, expanded)}>
       <GridLines pl={pl} pr={W - pr} pt={pt} plotH={plotH} />
       {data.map((v, i) => (
         <line key={i}
@@ -98,7 +100,6 @@ function LollipopChart({ rows, expanded }: ChartProps) {
           r={i === lastIdx ? currentDotR : dotR}
           fill={i === lastIdx ? GOLD : NAVY_500} />
       ))}
-      {/* Serif hero label above current — "the 930 treatment" */}
       {data.length > 0 && (
         <text x={r(xv(lastIdx))} y={r(yv(data[lastIdx]) - currentDotR - 6)}
           textAnchor="middle" fontSize={heroSize}
@@ -115,11 +116,13 @@ function LollipopChart({ rows, expanded }: ChartProps) {
 }
 
 /* ── Spline Area ──────────────────────────────────────── */
-function SplineAreaChart({ rows, expanded }: ChartProps) {
+function SplineAreaChart({ rows, expanded, containerWidth, containerHeight }: ChartProps) {
   const data   = rows.map(row => row.values[0] ?? 0);
   const labels = rows.map(row => row.label);
-  const W = 360, H = expanded ? 200 : 140;
+  const W = containerWidth ?? 360;
+  const H = containerHeight ?? (expanded ? 200 : 140);
   const pl = 8, pr = 8, pt = 16, pb = 20;
+  const plotW = W - pl - pr;
   const plotH = H - pt - pb;
 
   const pts   = makePoints(data, pl, W - pr, pt, H - pb);
@@ -128,10 +131,10 @@ function SplineAreaChart({ rows, expanded }: ChartProps) {
   const areaD = pts.length > 1
     ? `${pd} L ${r(last.x)} ${H - pb} L ${pl} ${H - pb} Z`
     : "";
-  const step = Math.max(1, Math.floor(data.length / (expanded ? data.length : 4)));
+  const step = expanded ? labelStep(data.length, plotW, labels) : Math.max(1, Math.floor(data.length / 4));
 
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} fill="none" {...svgAttrs(expanded)}>
+    <svg viewBox={`0 0 ${W} ${H}`} fill="none" {...svgAttrs(containerWidth, containerHeight, expanded)}>
       <defs>
         <linearGradient id="spline-fill" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%"   stopColor={NAVY} stopOpacity="0.14" />
@@ -162,10 +165,23 @@ function SplineAreaChart({ rows, expanded }: ChartProps) {
 }
 
 /* ── Donut ────────────────────────────────────────────── */
-function DonutChart({ rows, expanded }: ChartProps) {
-  /* Stroke 40% of radius: OR=60, IR=36 → ring=24 = 40% */
-  const CX = 72, CY = 72, OR = 60, IR = 36;
-  const total  = rows.reduce((s, row) => s + (row.values[0] ?? 0), 0) || 1;
+function DonutChart({ rows, expanded, containerWidth, containerHeight }: ChartProps) {
+  const W = containerWidth ?? 240;
+  const H = containerHeight ?? 144;
+
+  /* Split: donut gets 62%, legend gets 38% */
+  const legendColW   = Math.round(W * 0.38);
+  const donutColW    = W - legendColW;
+  const vMargin      = 10;
+  const maxR         = Math.min(donutColW * 0.40, (H - vMargin * 2) / 2);
+  const OR           = Math.max(30, maxR);
+  const IR           = OR * 0.58;
+  const CX           = donutColW / 2;
+  const CY           = H / 2;
+  const legendX      = donutColW + 8;
+  const legendAvailW = legendColW - 10;
+
+  const total = rows.reduce((s, row) => s + (row.values[0] ?? 0), 0) || 1;
 
   let angle = -90;
   const slices = rows.map((row, i) => {
@@ -173,7 +189,6 @@ function DonutChart({ rows, expanded }: ChartProps) {
     const start = angle + 1;
     const end   = angle + pct * 360 - 1;
     angle += pct * 360;
-    /* Fixed categorical palette — never shuffled */
     return { row, start, end, color: SERIES[i % SERIES.length] };
   });
 
@@ -191,40 +206,52 @@ function DonutChart({ rows, expanded }: ChartProps) {
     return `M ${o1.x} ${o1.y} A ${OR} ${OR} 0 ${large} 1 ${o2.x} ${o2.y} L ${i1.x} ${i1.y} A ${IR} ${IR} 0 ${large} 0 ${i2.x} ${i2.y} Z`;
   }
 
-  const legendX = 148;
+  /* Legend sizing — proper text-sized rows */
+  const n         = rows.length;
+  const rowH      = Math.min(28, Math.max(16, (H - 16) / Math.max(n, 1)));
+  const fSize     = Math.max(11, Math.min(14, rowH - 3));
+  const markerS   = Math.max(8, fSize - 2);
+  const startY    = Math.max(8, (H - n * rowH) / 2);
+  const valW      = fSize * 2.8;
+  const maxChars  = Math.max(5, Math.floor((legendAvailW - markerS - 8 - valW) / (fSize * 0.54)));
+
   return (
-    <svg viewBox="0 0 240 144" fill="none" {...svgAttrs(expanded)}>
+    <svg viewBox={`0 0 ${W} ${H}`} fill="none" {...svgAttrs(containerWidth, containerHeight, expanded)}>
       {slices.map((s, i) => (
         <path key={i} d={arc(s)} fill={s.color} />
       ))}
-      {/* Hero serif center number — text-hero */}
-      <text x={CX} y={CY + 4} textAnchor="middle" fontSize={expanded ? 36 : 30}
-        fontFamily={SERIF_FAMILY} fill={NAVY}>
+      <text x={CX} y={CY + 5} textAnchor="middle"
+        fontSize={Math.max(16, OR * 0.5)} fontFamily={SERIF_FAMILY} fill={NAVY}>
         {rows.length}
       </text>
-      <text x={CX} y={CY + 19} textAnchor="middle" fontSize="8"
-        fontFamily={MONO_FAMILY} fill={T3}
-        letterSpacing="0.1em">CHANNELS</text>
-      {rows.map((row, i) => (
-        <g key={i} transform={`translate(${legendX}, ${14 + i * 30})`}>
-          {/* Sharp categorical swatch — no rounded corners */}
-          <rect x="0" y="0" width="10" height="3"
-            fill={SERIES[i % SERIES.length]} />
-          <text x="14" y="4" fontSize="9.5" fill={T2} fontFamily={SANS_FAMILY}>{row.label}</text>
-          <text x="14" y="17" fontSize="13"
-            fill={SERIES[i % SERIES.length]}
-            fontFamily={SERIF_FAMILY}>{row.values[0]}%</text>
-        </g>
-      ))}
+      <text x={CX} y={CY + Math.max(16, OR * 0.5) + 10} textAnchor="middle" fontSize="7.5"
+        fontFamily={MONO_FAMILY} fill={T3} letterSpacing="0.08em">CHANNELS</text>
+      {rows.map((row, i) => {
+        const label = row.label.length > maxChars ? row.label.slice(0, maxChars - 1) + "…" : row.label;
+        const y = startY + i * rowH;
+        return (
+          <g key={i} transform={`translate(${legendX}, ${y})`}>
+            <rect x="0" y={rowH * 0.1} width={markerS} height={markerS * 0.65} rx="1" fill={SERIES[i % SERIES.length]} />
+            <text x={markerS + 5} y={rowH * 0.72} fontSize={fSize} fill={T2} fontFamily={SANS_FAMILY}>
+              {label}
+            </text>
+            <text x={legendAvailW} y={rowH * 0.72} textAnchor="end" fontSize={fSize}
+              fill={NAVY} fontFamily={MONO_FAMILY} fontWeight="500">
+              {row.values[0]}%
+            </text>
+          </g>
+        );
+      })}
     </svg>
   );
 }
 
 /* ── Clean Columns ────────────────────────────────────── */
-function CleanColumnsChart({ rows, expanded }: ChartProps) {
+function CleanColumnsChart({ rows, expanded, containerWidth, containerHeight }: ChartProps) {
   const data   = rows.map(row => row.values[0] ?? 0);
   const labels = rows.map(row => row.label);
-  const W = 300, H = expanded ? 200 : 140;
+  const W = containerWidth ?? 300;
+  const H = containerHeight ?? (expanded ? 200 : 140);
   const pl = 12, pr = 8, pt = 12, pb = 20;
   const plotW = W - pl - pr, plotH = H - pt - pb;
 
@@ -234,17 +261,16 @@ function CleanColumnsChart({ rows, expanded }: ChartProps) {
   const barW = Math.max(4, step * 0.65);
   const xv   = (i: number) => pl + step * i + step / 2;
   const yv   = (v: number) => pt + plotH - (v / mx) * plotH;
-  const bStep = Math.max(1, Math.floor(n / (expanded ? n : 4)));
+  const bStep = expanded ? labelStep(n, plotW, labels) : Math.max(1, Math.floor(n / 4));
 
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} fill="none" {...svgAttrs(expanded)}>
+    <svg viewBox={`0 0 ${W} ${H}`} fill="none" {...svgAttrs(containerWidth, containerHeight, expanded)}>
       <GridLines pl={pl} pr={W - pr} pt={pt} plotH={plotH} />
       {data.map((v, i) => {
         const x = xv(i), y = yv(v), bh = pt + plotH - y;
         const isMax = v === Math.max(...data);
         return (
           <g key={i}>
-            {/* Square tops per spec — no rx */}
             <rect x={r(x - barW / 2)} y={r(y)} width={r(barW)} height={r(bh)}
               fill={isMax ? GOLD : NAVY_500} />
             {i % bStep === 0 && (
@@ -259,21 +285,20 @@ function CleanColumnsChart({ rows, expanded }: ChartProps) {
 }
 
 /* ── Stacked Horizontal Bar ───────────────────────────── */
-function StackedBarChart({ rows, columns, expanded }: ChartProps) {
-  const pl = 90, pr = 36, pt = 20, rowH = 22, gap = 14;
-  const W = 280;
-  const H = pt + rows.length * (rowH + gap) - gap + 10;
+function StackedBarChart({ rows, columns, expanded, containerWidth, containerHeight }: ChartProps) {
+  const pl = 90, pr = 36, pt = 26, rowH = 22, gap = 14;
+  const W = containerWidth ?? 280;
+  const H = containerHeight ?? (pt + rows.length * (rowH + gap) - gap + 10);
   const plotW = W - pl - pr;
 
   const maxTotal = Math.max(...rows.map(row => row.values.reduce((s, v) => s + v, 0)));
 
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} fill="none" {...svgAttrs(expanded)}>
-      {/* Series legend — fixed categorical palette */}
+    <svg viewBox={`0 0 ${W} ${H}`} fill="none" {...svgAttrs(containerWidth, containerHeight, expanded)}>
       {columns.map((col, i) => (
-        <g key={i} transform={`translate(${pl + i * 64}, 8)`}>
-          <rect x="0" y="-3" width="8" height="3" fill={SERIES[i % SERIES.length]} />
-          <text x="12" y="0" fontSize="8.5" fill={T2} fontFamily={SANS_FAMILY}>{col}</text>
+        <g key={i} transform={`translate(${pl + i * 72}, 12)`}>
+          <rect x="0" y="-7" width="10" height="6" rx="1" fill={SERIES[i % SERIES.length]} />
+          <text x="14" y="0" fontSize="11" fill={T2} fontFamily={SANS_FAMILY}>{col}</text>
         </g>
       ))}
       {rows.map((row, i) => {
@@ -286,7 +311,6 @@ function StackedBarChart({ rows, columns, expanded }: ChartProps) {
               fill={T2} fontFamily={SANS_FAMILY}>{row.label}</text>
             {row.values.map((v, j) => {
               const bw = r((v / maxTotal) * plotW);
-              /* Square edges per spec — no rx */
               const rect = (
                 <rect key={j} x={r(xOff)} y={r(y)} width={bw} height={rowH}
                   fill={SERIES[j % SERIES.length]} />
@@ -304,8 +328,9 @@ function StackedBarChart({ rows, columns, expanded }: ChartProps) {
 }
 
 /* ── Waterfall ────────────────────────────────────────── */
-function WaterfallChart({ rows, expanded }: ChartProps) {
-  const W = 320, H = expanded ? 200 : 152;
+function WaterfallChart({ rows, expanded, containerWidth, containerHeight }: ChartProps) {
+  const W = containerWidth ?? 320;
+  const H = containerHeight ?? (expanded ? 200 : 152);
   const pl = 20, pr = 12, pt = 16, pb = 24;
   const plotW = W - pl - pr, plotH = H - pt - pb;
   const n = rows.length;
@@ -331,10 +356,11 @@ function WaterfallChart({ rows, expanded }: ChartProps) {
   const step = plotW / n;
   const barW = step * 0.65;
   const xv   = (i: number) => pl + step * i + step / 2 - barW / 2;
-  const bStep = Math.max(1, Math.floor(n / (expanded ? n : 4)));
+  const wfLabels = rows.map(row => row.label.slice(0, 6));
+  const bStep    = expanded ? labelStep(n, plotW, wfLabels) : Math.max(1, Math.floor(n / 4));
 
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} fill="none" {...svgAttrs(expanded)}>
+    <svg viewBox={`0 0 ${W} ${H}`} fill="none" {...svgAttrs(containerWidth, containerHeight, expanded)}>
       <GridLines pl={pl} pr={W - pr} pt={pt} plotH={plotH} />
       {bars.map((b, i) => {
         if (i === 0) return null;
@@ -352,7 +378,6 @@ function WaterfallChart({ rows, expanded }: ChartProps) {
         const y1 = yv(b.end), y2 = yv(b.start);
         const bh = Math.max(2, Math.abs(y2 - y1));
         const isPos = b.delta >= 0;
-        /* Endpoints navy-900, gains navy-500, losses gold-500 — square edges */
         const color = b.isTot ? NAVY : isPos ? NAVY_500 : GOLD;
         return (
           <g key={i}>
@@ -378,8 +403,9 @@ function WaterfallChart({ rows, expanded }: ChartProps) {
 }
 
 /* ── Scatter Plot ─────────────────────────────────────── */
-function ScatterPlotChart({ rows, columns, expanded }: ChartProps) {
-  const W = 280, H = expanded ? 220 : 160;
+function ScatterPlotChart({ rows, columns, expanded, containerWidth, containerHeight }: ChartProps) {
+  const W = containerWidth ?? 280;
+  const H = containerHeight ?? (expanded ? 220 : 160);
   const pl = 28, pr = 12, pt = 12, pb = 24;
   const plotW = W - pl - pr, plotH = H - pt - pb;
 
@@ -392,7 +418,7 @@ function ScatterPlotChart({ rows, columns, expanded }: ChartProps) {
   const yv = (v: number) => r(pt + plotH - ((v - yMin) / (yMax - yMin || 1)) * plotH);
 
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} fill="none" {...svgAttrs(expanded)}>
+    <svg viewBox={`0 0 ${W} ${H}`} fill="none" {...svgAttrs(containerWidth, containerHeight, expanded)}>
       <GridLines pl={pl} pr={W - pr} pt={pt} plotH={plotH} />
       <line x1={pl} y1={pt} x2={pl} y2={pt + plotH}
         stroke={NAVY} strokeWidth="0.75" strokeOpacity="0.12" />
@@ -406,7 +432,6 @@ function ScatterPlotChart({ rows, columns, expanded }: ChartProps) {
       {rows.map((row, i) => {
         const cx = xv(row.values[0] ?? 0);
         const cy = yv(row.values[1] ?? 0);
-        /* Highlight first point gold (current/focus); rest navy ramp */
         const fill = i === 0 ? GOLD : (i % 2 === 0 ? NAVY : NAVY_500);
         return (
           <g key={i}>
@@ -424,8 +449,9 @@ function ScatterPlotChart({ rows, columns, expanded }: ChartProps) {
 }
 
 /* ── Treemap ──────────────────────────────────────────── */
-function TreemapChart({ rows, expanded }: ChartProps) {
-  const W = 342, H = 162;
+function TreemapChart({ rows, expanded, containerWidth, containerHeight }: ChartProps) {
+  const W = containerWidth ?? 342;
+  const H = containerHeight ?? 162;
   const total  = rows.reduce((s, row) => s + (row.values[0] ?? 0), 0) || 1;
   const sorted = [...rows].sort((a, b) => (b.values[0] ?? 0) - (a.values[0] ?? 0));
   const leftN  = Math.ceil(sorted.length / 2);
@@ -437,10 +463,7 @@ function TreemapChart({ rows, expanded }: ChartProps) {
   const leftW  = Math.max(60, Math.round(W * (leftTotal / total))) - 1;
   const rightW = W - leftW - 2;
 
-  /* Spec: largest navy-900 (white text), second navy-700, third gold-500
-     (text-primary navy on gold), then navy ramp continues. */
   const fills = [NAVY, NAVY_700, GOLD, NAVY_500, GOLD_300, NAVY_300, NAVY_100];
-  /* Per-cell text contrast: dark fills → on-dark text, gold-300/navy-100 → navy text */
   const textOnDark = ["#F5F2EA", "#F5F2EA", NAVY, "#F5F2EA", NAVY, NAVY, NAVY];
 
   const cells: { x: number; y: number; w: number; h: number; fill: string; label: string; val: number; tx: string }[] = [];
@@ -464,10 +487,9 @@ function TreemapChart({ rows, expanded }: ChartProps) {
   }
 
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} fill="none" {...svgAttrs(expanded)}>
+    <svg viewBox={`0 0 ${W} ${H}`} fill="none" {...svgAttrs(containerWidth, containerHeight, expanded)}>
       {cells.map((c, i) => (
         <g key={i}>
-          {/* Sharp slab cells — no rx */}
           <rect x={c.x} y={c.y} width={c.w} height={c.h} fill={c.fill} />
           {c.h >= 22 && (
             <text x={c.x + 10} y={c.y + (c.h < 40 ? 15 : 20)}
@@ -487,14 +509,16 @@ function TreemapChart({ rows, expanded }: ChartProps) {
 
 /* ── Main dispatcher ──────────────────────────────────── */
 export function ChartRenderer({
-  rows, columns, chartType, expanded,
+  rows, columns, chartType, expanded, containerWidth, containerHeight,
 }: {
   rows: DataRow[];
   columns: string[];
   chartType: ChartType;
   expanded?: boolean;
+  containerWidth?: number;
+  containerHeight?: number;
 }) {
-  const props = { rows, columns, expanded };
+  const props = { rows, columns, expanded, containerWidth, containerHeight };
   switch (chartType) {
     case "Lollipop":      return <LollipopChart {...props} />;
     case "Spline Area":   return <SplineAreaChart {...props} />;

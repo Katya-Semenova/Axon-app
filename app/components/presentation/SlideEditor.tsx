@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useWorkspaceStore } from "@/lib/store";
-import { ChartRenderer } from "../ChartRenderer";
+import { ChartFill } from "../ChartFill";
 import { MiniChart } from "../MiniChart";
 import { ModeToggle } from "../ui/ModeToggle";
 import { ChartTypeDropdown } from "../ui/ChartTypeDropdown";
+import { DataTable } from "../DataTable";
 import type { Slide, VisualStyle, ColorAccent } from "@/lib/types";
 import { BORDER, NAVY, GOLD, T2, T3, SURFACE, SURFACE_RAISE, SURFACE_MUTED } from "../ui/tokens";
 
@@ -34,6 +35,22 @@ const LIBRARY_NAME: Record<VisualStyle, string> = {
 
 const SLIDES_PER_PAGE = 4;
 const mono = "'JetBrains Mono', monospace";
+
+/* ── Smart pagination ────────────────────────────────────────────────────── */
+function buildPages(current: number, total: number): (number | "...")[] {
+  if (total <= 7) return Array.from({ length: total }, (_, i) => i);
+  const show = new Set<number>([0, 1, total - 2, total - 1]);
+  for (let i = current - 1; i <= current + 1; i++) {
+    if (i >= 0 && i < total) show.add(i);
+  }
+  const sorted = Array.from(show).sort((a, b) => a - b);
+  const result: (number | "...")[] = [];
+  sorted.forEach((p, idx) => {
+    if (idx > 0 && p > sorted[idx - 1] + 1) result.push("...");
+    result.push(p);
+  });
+  return result;
+}
 
 /* ── PanelSelect ─────────────────────────────────────────────────────────── */
 function PanelSelect({ label, value, options, onChange }: {
@@ -238,31 +255,75 @@ function SlideThumbnail({ slide, isActive, onClick, onDelete }: {
 }
 
 /* ── SlideEditor — Presentation Mode full-screen ─────────────────────────
-   Layout: sticky toolbar (ModeToggle + chart type) → large slide preview
-   (flex-1) → bottom strip (slide thumbnails + viz style, fixed 200px).
-   The data-table middle zone from the original design is intentionally
-   removed: DataSet rows are edited in Data Mode via InsightExpandedView.  */
+   Layout (top → bottom):
+     1. Sticky toolbar — ModeToggle only (chart type moved into card)
+     2. Slide card — bordered container: header (2-line title + chart dropdown)
+                     + resizable body (chart panel / splitter / data+settings)
+     3. Bottom strip — thumbnail rail (excl. active) + Viz Style + Build CTA   */
 export function SlideEditor() {
-  const slideOrder          = useWorkspaceStore(s => s.slideOrder);
-  const slidesById          = useWorkspaceStore(s => s.slidesById);
-  const slides              = slideOrder.map(id => slidesById[id]).filter(Boolean) as Slide[];
-  const dataSetsById        = useWorkspaceStore(s => s.dataSetsById);
-  const activeSlideId       = useWorkspaceStore(s => s.activeSlideId);
-  const setActiveSlide      = useWorkspaceStore(s => s.setActiveSlide);
-  const updateSlide         = useWorkspaceStore(s => s.updateSlide);
-  const removeSlide         = useWorkspaceStore(s => s.removeSlide);
-  const updateDsChartType   = useWorkspaceStore(s => s.updateDataSetChartType);
+  const setMode           = useWorkspaceStore(s => s.setMode);
+  const clearBuildMessages = useWorkspaceStore(s => s.clearBuildMessages);
+  const slideOrder        = useWorkspaceStore(s => s.slideOrder);
+  const slidesById        = useWorkspaceStore(s => s.slidesById);
+  const slides            = slideOrder.map(id => slidesById[id]).filter(Boolean) as Slide[];
+  const dataSetsById      = useWorkspaceStore(s => s.dataSetsById);
+  const insightsById      = useWorkspaceStore(s => s.insightsById);
+  const connections       = useWorkspaceStore(s => s.connections);
+  const activeSlideId     = useWorkspaceStore(s => s.activeSlideId);
+  const setActiveSlide    = useWorkspaceStore(s => s.setActiveSlide);
+  const updateSlide       = useWorkspaceStore(s => s.updateSlide);
+  const removeSlide       = useWorkspaceStore(s => s.removeSlide);
+  const updateDsChartType = useWorkspaceStore(s => s.updateDataSetChartType);
+  const updateDsRows      = useWorkspaceStore(s => s.updateDataSetRows);
 
   const [page, setPage] = useState(0);
 
+  /* ── Resizable chart / data-panel split ── */
+  const [chartH, setChartH] = useState(280);
+  const dragState = useRef<{ startY: number; startH: number } | null>(null);
+
+  useEffect(() => {
+    const onMouseMove = (e: MouseEvent) => {
+      if (!dragState.current) return;
+      const delta = e.clientY - dragState.current.startY;
+      setChartH(Math.max(120, Math.min(520, dragState.current.startH + delta)));
+    };
+    const onMouseUp = () => { dragState.current = null; };
+    window.addEventListener("mousemove", onMouseMove);
+    window.addEventListener("mouseup",   onMouseUp);
+    return () => {
+      window.removeEventListener("mousemove", onMouseMove);
+      window.removeEventListener("mouseup",   onMouseUp);
+    };
+  }, []);
+
+  function handleSplitterDown(e: React.MouseEvent) {
+    e.preventDefault();
+    dragState.current = { startY: e.clientY, startH: chartH };
+  }
+
+  /* ── Derived ── */
   const activeSlide = activeSlideId ? slides.find(s => s.id === activeSlideId) ?? slides[0] ?? null : slides[0] ?? null;
   const activeDs    = activeSlide?.dataSetIds[0] ? dataSetsById[activeSlide.dataSetIds[0]] : null;
+  const serial      = activeSlide ? String(activeSlide.serial).padStart(2, "0") : "01";
 
-  const totalPages = Math.max(1, Math.ceil(slides.length / SLIDES_PER_PAGE));
-  const safePage   = Math.min(page, totalPages - 1);
-  const pageSlides = slides.slice(safePage * SLIDES_PER_PAGE, (safePage + 1) * SLIDES_PER_PAGE);
+  /* Insights connected to the active DataSet — for DataTable DATA SET column */
+  const slideInsightsById: Record<string, import("@/lib/types").Insight> = {};
+  if (activeDs) {
+    connections
+      .filter(c => c.toDataSetId === activeDs.id)
+      .forEach(c => {
+        const ins = insightsById[c.fromInsightId];
+        if (ins) slideInsightsById[c.fromInsightId] = ins;
+      });
+  }
 
-  const serial = activeSlide ? String(activeSlide.serial).padStart(2, "0") : "01";
+  /* ── Pagination ── */
+  const totalPages   = Math.max(1, Math.ceil(slides.length / SLIDES_PER_PAGE));
+  const safePage     = Math.min(page, totalPages - 1);
+  const pageSlides   = slides.slice(safePage * SLIDES_PER_PAGE, (safePage + 1) * SLIDES_PER_PAGE);
+  /* Exclude the active slide from the preview strip (spec §8) */
+  const thumbnailSlides = pageSlides.filter(s => s.id !== activeSlideId);
 
   function handleRemove(id: string) {
     removeSlide(id);
@@ -270,10 +331,12 @@ export function SlideEditor() {
     setActiveSlide(remaining[0]?.id ?? null);
   }
 
+  const slideBg = activeSlide ? STYLE_BG[activeSlide.visualStyle] : SURFACE_RAISE;
+
   return (
     <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
 
-      {/* ── Toolbar — always visible; contains mode toggle so user can return ── */}
+      {/* ── Toolbar ── */}
       <div
         className="flex items-center justify-between shrink-0 border-b px-6 py-[9px]"
         style={{ background: SURFACE, borderColor: BORDER }}
@@ -293,40 +356,185 @@ export function SlideEditor() {
             </>
           )}
         </div>
-        <div className="flex items-center gap-3 shrink-0">
-          {activeDs && (
-            <ChartTypeDropdown
-              value={activeDs.chartType}
-              onChange={(type) => updateDsChartType(activeDs.id, type)}
-            />
-          )}
-          <ModeToggle />
-        </div>
+        <ModeToggle />
       </div>
 
-      {/* ── Large slide preview — fills all remaining space above the strip ── */}
+      {/* ── Slide card — centred, fills remaining space above strip ── */}
       <div
-        className="flex-1 min-h-0 flex flex-col overflow-hidden"
-        style={{ background: activeSlide ? STYLE_BG[activeSlide.visualStyle] : SURFACE_RAISE }}
+        className="flex-1 min-h-0 overflow-hidden"
+        style={{ background: SURFACE_RAISE, padding: "20px 32px", display: "flex", justifyContent: "center" }}
       >
         {activeSlide && activeDs ? (
-          <div className="flex flex-col flex-1 min-h-0 px-10 py-8">
-            <div className="flex items-baseline gap-3 mb-4 shrink-0">
-              <span style={{ fontFamily: mono, fontSize: 11, color: T3 }}>{serial} /</span>
-              <span
-                className="text-[15px] font-medium truncate"
-                style={{ color: "#0A0A0A", fontFamily: STYLE_HEADLINE_FONT[activeSlide.visualStyle] }}
-              >
-                {activeDs.title}
-              </span>
+          <div style={{
+            width: "100%", maxWidth: 940,
+            height: "100%",          /* explicit height so card doesn't push strip */
+            display: "flex", flexDirection: "column",
+            border: `1px solid ${BORDER}`,
+            background: slideBg,
+            overflow: "hidden",      /* clip card content within the card */
+          }}>
+
+            {/* ── Card header: 2-line title + chart-type dropdown ── */}
+            <div style={{
+              padding: "14px 24px 12px",
+              borderBottom: `1px solid ${BORDER}`,
+              flexShrink: 0,
+              display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16,
+              background: slideBg,
+            }}>
+              <div style={{ minWidth: 0, flex: 1 }}>
+                {/* Line 1: serial / title */}
+                <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
+                  <span style={{ fontFamily: mono, fontSize: 11, color: T3, flexShrink: 0 }}>{serial} /</span>
+                  <span style={{
+                    fontFamily: STYLE_HEADLINE_FONT[activeSlide.visualStyle],
+                    fontSize: 15, fontWeight: 500, color: "#0A0A0A",
+                    overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                  }}>
+                    {activeDs.title}
+                  </span>
+                </div>
+                {/* Line 2: narrative subtitle */}
+                <div style={{ marginTop: 4 }}>
+                  <span style={{
+                    fontFamily: STYLE_HEADLINE_FONT[activeSlide.visualStyle],
+                    fontSize: 12, fontWeight: 400,
+                    color: T2,
+                    fontStyle: activeSlide.visualStyle === "Magazine" ? "italic" : "normal",
+                  }}>
+                    {activeSlide.narrative || "Revenue contracted 18% in Q3 — mid-market churn led"}
+                  </span>
+                </div>
+              </div>
+              {/* Chart type dropdown — per-slide, in the card */}
+              <div style={{ flexShrink: 0 }}>
+                <ChartTypeDropdown
+                  value={activeDs.chartType}
+                  onChange={(type) => updateDsChartType(activeDs.id, type)}
+                />
+              </div>
             </div>
-            <div className="flex-1 min-h-0">
-              <ChartRenderer
-                rows={activeDs.rows}
-                columns={activeDs.columns}
-                chartType={activeDs.chartType}
-                expanded
-              />
+
+            {/* ── Card body: resizable chart / splitter / data+settings ── */}
+            <div style={{ flex: 1, minHeight: 0, overflow: "hidden", display: "flex", flexDirection: "column" }}>
+
+              {/* Chart panel — flexBasis drives the drag-resize; flexShrink:1 lets
+                  it compress on small screens rather than pushing the strip off */}
+              <div style={{
+                flexBasis: chartH, flexShrink: 1, flexGrow: 0, minHeight: 100, overflow: "hidden",
+                padding: "12px 32px 8px",
+                background: slideBg,
+                display: "flex", flexDirection: "column",
+              }}>
+                <div style={{ flex: 1, minHeight: 0, maxWidth: 820, width: "100%", margin: "0 auto" }}>
+                  <ChartFill
+                    rows={activeDs.rows}
+                    columns={activeDs.columns}
+                    chartType={activeDs.chartType}
+                    expanded
+                  />
+                </div>
+              </div>
+
+              {/* Splitter handle */}
+              <div
+                onMouseDown={handleSplitterDown}
+                title="Drag to resize"
+                style={{
+                  height: 10, flexShrink: 0,
+                  cursor: "row-resize",
+                  background: slideBg,
+                  borderTop:    `1px solid ${BORDER}`,
+                  borderBottom: `1px solid ${BORDER}`,
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  userSelect: "none",
+                }}
+                onMouseEnter={e => { e.currentTarget.style.background = "rgba(184,149,72,0.07)"; }}
+                onMouseLeave={e => { e.currentTarget.style.background = slideBg; }}
+              >
+                <svg width="24" height="6" viewBox="0 0 24 6" fill="none">
+                  {[0, 8, 16].map(x => (
+                    <circle key={x} cx={x + 4} cy="3" r="1.5" fill={T3} fillOpacity="0.5" />
+                  ))}
+                </svg>
+              </div>
+
+              {/* Data + Chart Settings panel */}
+              <div style={{ flex: 1, minHeight: 80, overflow: "hidden", display: "flex" }}>
+
+                {/* Left column — DataTable */}
+                <div style={{
+                  flex: 1, minWidth: 0,
+                  borderRight: `1px solid ${BORDER}`,
+                  display: "flex", flexDirection: "column",
+                  overflow: "hidden",
+                }}>
+                  <div style={{
+                    padding: "7px 16px 6px",
+                    borderBottom: `1px solid ${BORDER}`,
+                    flexShrink: 0,
+                    background: "rgba(27,40,64,0.03)",
+                  }}>
+                    <span style={{ fontFamily: mono, fontSize: 8.5, letterSpacing: "0.08em", textTransform: "uppercase" as const, color: T3 }}>
+                      DATA — EDIT TO CORRECT AGGREGATION ERRORS
+                    </span>
+                  </div>
+                  <div style={{ flex: 1, overflowY: "auto" }} className="thin-scroll">
+                    {activeDs.rows.length === 0 ? (
+                      <div style={{
+                        fontFamily: mono, fontSize: 11, color: T3,
+                        padding: "20px 16px", textAlign: "center",
+                      }}>
+                        No data — wire an Insight to this Data Set on the canvas.
+                      </div>
+                    ) : (
+                      <DataTable
+                        columns={activeDs.columns}
+                        rows={activeDs.rows}
+                        onRowsChange={(rows) => updateDsRows(activeDs.id, rows)}
+                        insightsById={Object.keys(slideInsightsById).length > 0 ? slideInsightsById : undefined}
+                      />
+                    )}
+                  </div>
+                </div>
+
+                {/* Right column — Chart Settings */}
+                <div style={{
+                  width: 248, flexShrink: 0,
+                  display: "flex", flexDirection: "column",
+                  overflow: "hidden",
+                }}>
+                  <div style={{
+                    padding: "7px 16px 6px",
+                    borderBottom: `1px solid ${BORDER}`,
+                    flexShrink: 0,
+                    background: "rgba(27,40,64,0.03)",
+                  }}>
+                    <span style={{ fontFamily: mono, fontSize: 8.5, letterSpacing: "0.08em", textTransform: "uppercase" as const, color: T3 }}>
+                      CHART SETTINGS
+                    </span>
+                  </div>
+                  <div style={{ flex: 1, overflowY: "auto", padding: "12px 16px 16px", display: "flex", flexDirection: "column", gap: 10 }} className="thin-scroll">
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                      <PanelSelect label="Status"      value={activeSlide.status}
+                        options={["Paid", "Organic", "Direct", "Email"]}
+                        onChange={v => updateSlide(activeSlide.id, { status: v })} />
+                      <PanelSelect label="Aggregation" value={activeSlide.aggregation}
+                        options={["Monthly", "Weekly", "Daily"]}
+                        onChange={v => updateSlide(activeSlide.id, { aggregation: v as Slide["aggregation"] })} />
+                      <PanelSelect label="Color By"    value={activeSlide.colorBy}
+                        options={["Segment", "Region", "Product", "Channel"]}
+                        onChange={v => updateSlide(activeSlide.id, { colorBy: v })} />
+                      <PanelSelect label="Filter"      value={activeSlide.filter}
+                        options={["All data", "Paid only", "Organic only", "Last 30d"]}
+                        onChange={v => updateSlide(activeSlide.id, { filter: v })} />
+                    </div>
+                    <PanelSelect label="Accent" value={activeSlide.colorAccent}
+                      options={["Navy", "Gold", "Slate", "Graphite"]}
+                      onChange={v => updateSlide(activeSlide.id, { colorAccent: v as ColorAccent })} />
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         ) : (
@@ -343,9 +551,9 @@ export function SlideEditor() {
       {/* ── Bottom strip: thumbnail rail (left) + viz style panel (right) ── */}
       <div
         className="shrink-0 flex border-t overflow-hidden"
-        style={{ height: 200, background: "#EDE9E0", borderColor: BORDER }}
+        style={{ height: 200, minHeight: 180, background: "#EDE9E0", borderColor: BORDER }}
       >
-        {/* Slide thumbnails */}
+        {/* Slide thumbnails — active slide excluded from preview */}
         <div className="flex flex-col flex-1 min-w-0 border-r overflow-hidden" style={{ borderColor: BORDER }}>
           <div className="flex items-center gap-2 shrink-0 px-5 pt-2 pb-1">
             <span style={{ fontFamily: mono, fontSize: 9.5, letterSpacing: "0.1em", textTransform: "uppercase" as const, color: T3 }}>Slides</span>
@@ -364,91 +572,75 @@ export function SlideEditor() {
             paddingTop: 4, paddingBottom: 6,
             overflow: "hidden",
           }}>
-            {pageSlides.map(slide => (
+            {thumbnailSlides.map(slide => (
               <SlideThumbnail
                 key={slide.id}
                 slide={slide}
-                isActive={activeSlide?.id === slide.id}
+                isActive={false}
                 onClick={() => setActiveSlide(slide.id)}
                 onDelete={() => handleRemove(slide.id)}
               />
             ))}
           </div>
 
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 3, padding: "4px 0 6px", flexShrink: 0 }}>
-            <button onClick={() => setPage(p => Math.max(0, p - 1))}
-              style={{ fontFamily: mono, fontSize: 9.5, color: T3, background: "none", border: "none", cursor: safePage === 0 ? "default" : "pointer", opacity: safePage === 0 ? 0.35 : 1, padding: "2px 6px" }}>
-              ← Prev
-            </button>
-            {Array.from({ length: totalPages }, (_, i) => (
-              <button key={i} onClick={() => setPage(i)}
-                style={{
-                  fontFamily: mono, fontSize: 9.5, width: 20, height: 20,
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  borderRadius: 2, border: "none", cursor: "pointer",
-                  background: i === safePage ? NAVY : "transparent",
-                  color: i === safePage ? "#F5F2EA" : T3,
-                  transition: "background 150ms, color 150ms",
-                }}>
-                {i + 1}
-              </button>
-            ))}
-            <button onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
-              style={{ fontFamily: mono, fontSize: 9.5, color: T3, background: "none", border: "none", cursor: safePage >= totalPages - 1 ? "default" : "pointer", opacity: safePage >= totalPages - 1 ? 0.35 : 1, padding: "2px 6px" }}>
-              Next →
-            </button>
+          {/* Smart paginator — centred, "1  2  ..  12" style */}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 2, padding: "4px 0 6px", flexShrink: 0 }}>
+            {buildPages(safePage, totalPages).map((p, i) =>
+              p === "..." ? (
+                <span key={`dots-${i}`} style={{ fontFamily: mono, fontSize: 9.5, color: T3, padding: "0 2px", lineHeight: "20px" }}>…</span>
+              ) : (
+                <button key={p} onClick={() => setPage(p as number)}
+                  style={{
+                    fontFamily: mono, fontSize: 9.5, width: 20, height: 20,
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    borderRadius: 2, border: "none", cursor: "pointer",
+                    background: p === safePage ? NAVY : "transparent",
+                    color: p === safePage ? "#F5F2EA" : T3,
+                    transition: "background 150ms, color 150ms",
+                  }}>
+                  {(p as number) + 1}
+                </button>
+              )
+            )}
           </div>
         </div>
 
-        {/* Viz style + build */}
+        {/* Viz style — StyleTiles + Toggles only; Accent/Aggregation live in Chart Settings */}
         <div className="flex flex-col shrink-0 overflow-hidden" style={{ width: 220, background: SURFACE }}>
           <div className="px-4 pt-2 pb-1 shrink-0 border-b" style={{ borderColor: BORDER }}>
             <span style={{ fontFamily: mono, fontSize: 8.5, letterSpacing: "0.09em", textTransform: "uppercase" as const, color: T3 }}>Visualization Style</span>
           </div>
-          <div className="flex-1 overflow-y-auto thin-scroll px-4 py-3 flex flex-col gap-4">
+          <div className="flex-1 overflow-y-auto thin-scroll px-4 py-3">
             {activeSlide ? (
-              <>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", columnGap: 6, rowGap: 8 }}>
-                  {(["Modern", "Magazine", "Wireframe"] as VisualStyle[]).map(s => (
-                    <StyleTile key={s} style={s} active={activeSlide.visualStyle === s}
-                      onClick={() => updateSlide(activeSlide.id, { visualStyle: s })} />
-                  ))}
-                  <ToggleSwitch label="Labels" checked={activeSlide.showLabels}  onChange={v => updateSlide(activeSlide.id, { showLabels: v })} />
-                  <ToggleSwitch label="Grid"   checked={activeSlide.showGrid}    onChange={v => updateSlide(activeSlide.id, { showGrid: v })} />
-                  <ToggleSwitch label="Stack"  checked={activeSlide.stackedBars} onChange={v => updateSlide(activeSlide.id, { stackedBars: v })} />
-                </div>
-
-                {/* Slide-level chart settings */}
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 8 }}>
-                  <PanelSelect
-                    label="Accent"
-                    value={activeSlide.colorAccent}
-                    options={["Navy", "Gold", "Slate", "Graphite"]}
-                    onChange={v => updateSlide(activeSlide.id, { colorAccent: v as ColorAccent })}
-                  />
-                  <PanelSelect
-                    label="Aggregation"
-                    value={activeSlide.aggregation}
-                    options={["Monthly", "Weekly", "Daily"]}
-                    onChange={v => updateSlide(activeSlide.id, { aggregation: v as Slide["aggregation"] })}
-                  />
-                </div>
-
-                <button
-                  className="w-full font-medium transition-opacity duration-150 hover:opacity-85"
-                  style={{
-                    fontFamily: mono, fontSize: 11, color: "#F5F2EA",
-                    background: NAVY, border: "none",
-                    padding: "8px 0", borderRadius: 999,
-                    cursor: "pointer", whiteSpace: "nowrap",
-                  }}>
-                  Build Presentation
-                </button>
-              </>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", columnGap: 6, rowGap: 8 }}>
+                {(["Modern", "Magazine", "Wireframe"] as VisualStyle[]).map(s => (
+                  <StyleTile key={s} style={s} active={activeSlide.visualStyle === s}
+                    onClick={() => updateSlide(activeSlide.id, { visualStyle: s })} />
+                ))}
+                <ToggleSwitch label="Labels" checked={activeSlide.showLabels}  onChange={v => updateSlide(activeSlide.id, { showLabels: v })} />
+                <ToggleSwitch label="Grid"   checked={activeSlide.showGrid}    onChange={v => updateSlide(activeSlide.id, { showGrid: v })} />
+                <ToggleSwitch label="Stack"  checked={activeSlide.stackedBars} onChange={v => updateSlide(activeSlide.id, { stackedBars: v })} />
+              </div>
             ) : (
               <span style={{ fontFamily: mono, fontSize: 10, color: T3 }}>Select a slide</span>
             )}
           </div>
+          {/* Build Presentation CTA — pinned to bottom of panel */}
+          {activeSlide && (
+            <div className="px-4 pb-4 pt-2 shrink-0">
+              <button
+                onClick={() => { clearBuildMessages(); setMode("build"); }}
+                className="w-full font-medium transition-opacity duration-150 hover:opacity-85"
+                style={{
+                  fontFamily: mono, fontSize: 11, color: "#F5F2EA",
+                  background: NAVY, border: "none",
+                  padding: "8px 0", borderRadius: 0,
+                  cursor: "pointer", whiteSpace: "nowrap",
+                }}>
+                Build Presentation
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>

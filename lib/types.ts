@@ -105,6 +105,8 @@ export interface Slide {
   serial: number;
   /** DataSets shown on this slide, in display order. */
   dataSetIds: string[];
+  /** One-liner narrative subtitle shown below the title in the slide card. */
+  narrative?: string;
 
   /* ── chart settings panel ─────────────────────────────────────────── */
   status: string;
@@ -136,7 +138,19 @@ export interface Connection {
 
 /* ── Mode ──────────────────────────────────────────────────────────────── */
 
-export type Mode = "data" | "presentation";
+export type Mode = "data" | "presentation" | "build";
+
+/* ── Build-mode types ──────────────────────────────────────────────────── */
+
+export type BuildAudience = "CEO" | "Board" | "Team" | "Investor" | "Custom";
+export type BuildTone = "Formal" | "Neutral" | "Casual";
+
+export interface BuildMessage {
+  id: string;
+  role: "axon" | "user";
+  content: string;
+  streaming?: boolean;
+}
 
 /* ── Canvas node positions ─────────────────────────────────────────────── */
 

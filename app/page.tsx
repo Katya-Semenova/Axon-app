@@ -14,6 +14,7 @@ import { InsightExpandedViewOverlay } from "@/app/components/canvas/InsightExpan
 import { DataSetExpandedViewOverlay } from "@/app/components/canvas/DataSetExpandedView";
 import { SlideEditor } from "@/app/components/presentation/SlideEditor";
 import { PresentationStructure } from "@/app/components/presentation/PresentationStructure";
+import { BuildMode } from "@/app/components/build/BuildMode";
 
 /* ── Modifier: pin the DragOverlay top-left to the live cursor position.
    Without this, dnd-kit anchors the overlay at the draggable element's
@@ -83,7 +84,7 @@ function Page2({ onBack }: { onBack: () => void }) {
   const activeDs = activeDragDataSetId ? dataSetsById[activeDragDataSetId] : null;
 
   return (
-    <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+    <DndContext sensors={sensors} modifiers={[snapToPointer]} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
       <div className="flex h-screen overflow-hidden bg-bg animate-fade-in">
         <ChatRail onBack={onBack} />
 
@@ -105,7 +106,9 @@ function Page2({ onBack }: { onBack: () => void }) {
         <div className="flex-1 min-w-0 relative flex flex-col h-screen overflow-hidden">
           {mode === "data"
             ? <Canvas />
-            : <SlideEditor />
+            : mode === "presentation"
+            ? <SlideEditor />
+            : <BuildMode />
           }
           {mode === "data" && <PresentationStructure />}
 
@@ -116,7 +119,7 @@ function Page2({ onBack }: { onBack: () => void }) {
       </div>
 
       {/* Drag ghost — pinned to cursor via snapToPointer modifier */}
-      <DragOverlay dropAnimation={null} modifiers={[snapToPointer]}>
+      <DragOverlay dropAnimation={null}>
         {activeDs ? (
           <div style={{
             display: "inline-flex", alignItems: "center", gap: 7,

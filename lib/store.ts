@@ -8,6 +8,7 @@ import type {
   Insight, DataSet, Slide, Connection, Mode,
   NodePositionMap, WorkspaceSnapshot,
   ChartType, DataRow,
+  BuildAudience, BuildTone, BuildMessage,
 } from "./types";
 
 /* ── Canvas layout constants ───────────────────────────────────────────── */
@@ -137,6 +138,12 @@ interface WorkspaceStateShape extends WorkspaceSnapshot {
   activeSlideId:     string | null;
   nodePositions:     NodePositionMap;
   canvasTransform:   { x: number; y: number; zoom: number };
+
+  /* ── Build mode ─ */
+  buildAudience:  BuildAudience;
+  buildTone:      BuildTone;
+  buildNarration: boolean;
+  buildMessages:  BuildMessage[];
 }
 
 interface WorkspaceActions {
@@ -156,6 +163,7 @@ interface WorkspaceActions {
 
   addDataSet:            () => string;
   removeDataSet:         (id: string) => void;
+  updateDataSetRows:     (id: string, rows: DataRow[]) => void;
   updateDataSetChartType: (id: string, type: ChartType) => void;
   setExpandedDataSet:    (id: string | null) => void;
 
@@ -171,6 +179,14 @@ interface WorkspaceActions {
 
   setNodePosition:    (id: string, x: number, y: number) => void;
   setCanvasTransform: (t: { x: number; y: number; zoom: number }) => void;
+
+  /* ── Build mode ─ */
+  setBuildAudience:     (a: BuildAudience) => void;
+  setBuildTone:         (t: BuildTone) => void;
+  toggleBuildNarration: () => void;
+  addBuildMessage:      (msg: BuildMessage) => void;
+  updateBuildMessage:   (id: string, update: Partial<BuildMessage>) => void;
+  clearBuildMessages:   () => void;
 }
 
 export type WorkspaceStore = WorkspaceStateShape & WorkspaceActions;
@@ -183,6 +199,7 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => {
   function commit(mutate: Mutator) {
     set((state) => {
       const patch = mutate(state);
+      if (Object.keys(patch).length === 0) return state;
       const next  = { ...state, ...patch };
       const snap  = snapshotFrom(next);
       const trimmed = state.history.slice(0, state.historyIdx + 1);
@@ -204,6 +221,11 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => {
     nodePositions:     seedNodePositions(),
     /* Slightly zoomed-out so all 6 insight cards are visible on startup. */
     canvasTransform:   { x: 20, y: 20, zoom: 0.85 },
+
+    buildAudience:  "CEO",
+    buildTone:      "Neutral",
+    buildNarration: false,
+    buildMessages:  [],
 
     /* ── history ─ */
     undo: () => {
@@ -290,6 +312,12 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => {
       };
     }),
 
+    updateDataSetRows: (id, rows) => commit((s) => {
+      const ds = s.dataSetsById[id];
+      if (!ds) return {};
+      return { dataSetsById: { ...s.dataSetsById, [id]: { ...ds, rows } } };
+    }),
+
     updateDataSetChartType: (id, type) => commit((s) => {
       const ds = s.dataSetsById[id];
       if (!ds) return {};
@@ -341,7 +369,7 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => {
       const id     = `slide-${Date.now().toString(36)}`;
       const serial = s.slideOrder.length + 1;
       const slide: Slide = {
-        id, serial, dataSetIds: [],
+        id, serial, dataSetIds: [], narrative: "",
         status: "Paid", aggregation: "Monthly", colorBy: "Segment",
         filter: "All data", colorAccent: "Navy", visualStyle: "Modern",
         showLabels: true, showGrid: true, stackedBars: false,
@@ -353,15 +381,10 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => {
     }),
 
     addSlideWithDataSet: (dataSetId, atIndex) => commit((s) => {
-      const existing = s.slideOrder
-        .map(id => s.slidesById[id])
-        .find(sl => sl.dataSetIds.includes(dataSetId));
-      if (existing) return {};
-
       const id     = `slide-${Date.now().toString(36)}`;
       const serial = s.slideOrder.length + 1;
       const slide: Slide = {
-        id, serial, dataSetIds: [dataSetId],
+        id, serial, dataSetIds: [dataSetId], narrative: "",
         status: "Paid", aggregation: "Monthly", colorBy: "Segment",
         filter: "All data", colorAccent: "Navy", visualStyle: "Modern",
         showLabels: true, showGrid: true, stackedBars: false,
@@ -405,6 +428,16 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => {
 
     /* ── canvas ─ */
     setCanvasTransform: (canvasTransform) => set({ canvasTransform }),
+
+    /* ── build mode ─ */
+    setBuildAudience:     (buildAudience) => set({ buildAudience }),
+    setBuildTone:         (buildTone)     => set({ buildTone }),
+    toggleBuildNarration: ()              => set((s) => ({ buildNarration: !s.buildNarration })),
+    addBuildMessage: (msg) => set((s) => ({ buildMessages: [...s.buildMessages, msg] })),
+    updateBuildMessage: (id, update) => set((s) => ({
+      buildMessages: s.buildMessages.map(m => m.id === id ? { ...m, ...update } : m),
+    })),
+    clearBuildMessages: () => set({ buildMessages: [] }),
   };
 });
 
