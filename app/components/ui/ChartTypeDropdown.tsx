@@ -2,8 +2,8 @@
 
 import { useState, useRef } from "react";
 import { createPortal } from "react-dom";
-import { CHART_TYPE_GROUPS, type ChartType } from "@/lib/types";
-import { NAVY, T2, T3, BORDER, SURFACE_RAISE, SURFACE_MUTED } from "./tokens";
+import { ACTIVE_CHART_TYPES, type ChartType } from "@/lib/types";
+import { NAVY, T2, BORDER, SURFACE_RAISE, SURFACE_MUTED } from "./tokens";
 
 export function ChartTypeDropdown({
   value, onChange, mounted = true,
@@ -64,48 +64,30 @@ export function ChartTypeDropdown({
               }}
               className="thin-scroll"
             >
-              {CHART_TYPE_GROUPS.map(({ group, types }, gi) => (
-                <div key={group}>
-                  {/* Group header — small uppercase mono caption */}
-                  <div
-                    style={{
-                      padding: gi === 0 ? "5px 12px 4px" : "8px 12px 4px",
-                      fontFamily: "'JetBrains Mono', monospace",
-                      fontSize: 8.5,
-                      letterSpacing: "0.11em",
-                      textTransform: "uppercase",
-                      color: T3,
-                      userSelect: "none",
-                    }}
-                  >
-                    {group}
-                  </div>
-                  {/* Group items */}
-                  {types.map((type) => (
-                    <button
-                      key={type}
-                      onClick={(e) => { e.stopPropagation(); onChange(type); setOpen(false); }}
-                      className="w-full text-left transition-colors"
-                      style={{
-                        padding: "5px 12px 5px 18px",
-                        fontFamily: "'JetBrains Mono',monospace",
-                        fontSize: 11,
-                        color: type === value ? NAVY : T2,
-                        fontWeight: type === value ? 500 : 400,
-                        background: type === value ? SURFACE_MUTED : "transparent",
-                        display: "block",
-                      }}
-                      onMouseEnter={(e) => {
-                        if (type !== value) e.currentTarget.style.background = SURFACE_MUTED;
-                      }}
-                      onMouseLeave={(e) => {
-                        if (type !== value) e.currentTarget.style.background = "transparent";
-                      }}
-                    >
-                      {type}
-                    </button>
-                  ))}
-                </div>
+              {/* Flat list — 8 active chart types, no group headers (round-4). */}
+              {ACTIVE_CHART_TYPES.map((type) => (
+                <button
+                  key={type}
+                  onClick={(e) => { e.stopPropagation(); onChange(type); setOpen(false); }}
+                  className="w-full text-left transition-colors"
+                  style={{
+                    padding: "6px 12px",
+                    fontFamily: "'JetBrains Mono',monospace",
+                    fontSize: 11,
+                    color: type === value ? NAVY : T2,
+                    fontWeight: type === value ? 500 : 400,
+                    background: type === value ? SURFACE_MUTED : "transparent",
+                    display: "block",
+                  }}
+                  onMouseEnter={(e) => {
+                    if (type !== value) e.currentTarget.style.background = SURFACE_MUTED;
+                  }}
+                  onMouseLeave={(e) => {
+                    if (type !== value) e.currentTarget.style.background = "transparent";
+                  }}
+                >
+                  {type}
+                </button>
               ))}
             </div>
           )}

@@ -12,47 +12,49 @@
 
 /* ── Chart types & data rows — owned by `types`, re-exported from mockData ─ */
 
-/* ── ChartType — 14 types, grouped by family in the picker ──────────────
-   Groups (dropdown render order):
-     Comparison   — Bar, Stacked Bar, Lollipop, Bullet, Radar
-     Trend        — Line, Area, Waterfall
-     Composition  — Donut, Treemap, Sankey
-     Distribution — Scatter, Heatmap, Box Plot
-   Legacy names ("Spline Area", "Clean Columns", "Scatter Plot") still
-   resolve in ChartFill so existing data sets render — they're just no
-   longer offered in the picker. */
+/* ── ChartType — narrowed to 8 active types per round-4 spec ──────────────
+   The picker offers exactly these 8, no groupings, flat list:
+     1. Treemap          5. Stacked Bar
+     2. Lollipop         6. Heatmap
+     3. Dot Matrix       7. Radar
+     4. Scatter          8. Donut
+
+   Legacy names (Bar, Line, Area, Waterfall, Sankey, Bullet, Box Plot,
+   "Spline Area", "Clean Columns", "Scatter Plot") stay in the union so
+   existing data sets continue to resolve — they're just not offered in
+   the dropdown. */
 export type ChartType =
-  /* Comparison */
-  | "Bar"
-  | "Stacked Bar"
+  /* Active 8 — exposed in dropdown */
+  | "Treemap"
   | "Lollipop"
-  | "Bullet"
+  | "Dot Matrix"
+  | "Scatter"
+  | "Stacked Bar"
+  | "Heatmap"
   | "Radar"
-  /* Trend */
+  | "Donut"
+  /* Legacy — still resolve, never offered */
+  | "Bar"
   | "Line"
   | "Area"
   | "Waterfall"
-  /* Composition */
-  | "Donut"
-  | "Treemap"
   | "Sankey"
-  /* Distribution */
-  | "Scatter"
-  | "Heatmap"
+  | "Bullet"
   | "Box Plot"
-  /* legacy — still render but not offered in dropdown */
   | "Spline Area"
   | "Clean Columns"
   | "Scatter Plot";
 
-export type ChartTypeGroup = "Comparison" | "Trend" | "Composition" | "Distribution";
-
-/* Grouped picker data — single source of truth for the dropdown. */
-export const CHART_TYPE_GROUPS: { group: ChartTypeGroup; types: ChartType[] }[] = [
-  { group: "Comparison",   types: ["Bar", "Stacked Bar", "Lollipop", "Bullet", "Radar"] },
-  { group: "Trend",        types: ["Line", "Area", "Waterfall"] },
-  { group: "Composition",  types: ["Donut", "Treemap", "Sankey"] },
-  { group: "Distribution", types: ["Scatter", "Heatmap", "Box Plot"] },
+/* The 8 types in dropdown order — single source of truth. */
+export const ACTIVE_CHART_TYPES: ChartType[] = [
+  "Treemap",
+  "Lollipop",
+  "Dot Matrix",
+  "Scatter",
+  "Stacked Bar",
+  "Heatmap",
+  "Radar",
+  "Donut",
 ];
 
 export interface DataRow {

@@ -13,19 +13,28 @@ interface MiniChartProps {
   H?: number;
 }
 
-/* Returns SVG children — embed with <g transform="translate(x,y)"><MiniChart .../></g> */
+/* Returns SVG children — embed with <g transform="translate(x,y)"><MiniChart .../></g>
+   Round-4: 8 active types — Treemap, Lollipop, Dot Matrix, Scatter, Stacked
+   Bar, Heatmap, Radar, Donut. Legacy mappings retained for back-compat. */
 export function MiniChart({ rows, chartType, color, W = 104, H = 34 }: MiniChartProps) {
   switch (chartType) {
-    case "Spline Area":  return <MiniSpline rows={rows} color={color} W={W} H={H} />;
+    /* Active 8 */
+    case "Treemap":      return <MiniTreemap rows={rows} color={color} W={W} H={H} />;
     case "Lollipop":     return <MiniLollipop rows={rows} color={color} W={W} H={H} />;
+    case "Dot Matrix":   return <MiniDotMatrix rows={rows} color={color} W={W} H={H} />;
+    case "Scatter":
+    case "Scatter Plot": return <MiniScatter rows={rows} color={color} W={W} H={H} />;
+    case "Stacked Bar":  return <MiniStacked rows={rows} color={color} W={W} H={H} />;
+    case "Heatmap":      return <MiniHeatmap rows={rows} color={color} W={W} H={H} />;
+    case "Radar":        return <MiniRadar rows={rows} color={color} W={W} H={H} />;
+    case "Donut":        return <MiniDonut rows={rows} color={color} W={W} H={H} />;
+    /* Legacy (resolved but never offered in dropdown) */
+    case "Spline Area":
+    case "Line":
+    case "Area":         return <MiniSpline rows={rows} color={color} W={W} H={H} />;
     case "Bar":
     case "Clean Columns":return <MiniColumns rows={rows} color={color} W={W} H={H} />;
     case "Waterfall":    return <MiniWaterfall rows={rows} color={color} W={W} H={H} />;
-    case "Stacked Bar":  return <MiniStacked rows={rows} color={color} W={W} H={H} />;
-    case "Donut":        return <MiniDonut rows={rows} color={color} W={W} H={H} />;
-    case "Scatter":
-    case "Scatter Plot": return <MiniScatter rows={rows} color={color} W={W} H={H} />;
-    case "Treemap":      return <MiniTreemap rows={rows} color={color} W={W} H={H} />;
     default:             return <MiniColumns rows={rows} color={color} W={W} H={H} />;
   }
 }
@@ -254,6 +263,110 @@ function MiniTreemap({ rows, color, W, H }: { rows: DataRow[]; color: string; W:
         <rect key={i} x={c.x} y={c.y} width={c.w} height={Math.max(2, c.h - 1)}
           fill={color} fillOpacity={c.op} />
       ))}
+    </>
+  );
+}
+
+/* ── Mini Heatmap — rows × columns colour grid (1-2 px gutters) ── */
+function MiniHeatmap({ rows, color, W, H }: { rows: DataRow[]; color: string; W: number; H: number }) {
+  const data = rows.slice(0, 5);
+  if (data.length === 0) return null;
+  const cols = Math.max(1, Math.max(...data.map(d => d.values.length)));
+  let mx = 0;
+  for (const row of data) for (const v of row.values) mx = Math.max(mx, v);
+  mx = mx || 1;
+  const cellW = (W - 1) / cols;
+  const cellH = (H - 1) / data.length;
+  return (
+    <>
+      {data.map((row, ri) =>
+        Array.from({ length: cols }, (_, ci) => {
+          const v = row.values[ci] ?? 0;
+          const intensity = v / mx;
+          return (
+            <rect
+              key={`${ri}-${ci}`}
+              x={r(ci * cellW + 0.5)} y={r(ri * cellH + 0.5)}
+              width={r(cellW - 1)} height={r(cellH - 1)}
+              fill={color} fillOpacity={0.18 + intensity * 0.75}
+            />
+          );
+        })
+      )}
+    </>
+  );
+}
+
+/* ── Mini Radar — axes from center, filled polygon ── */
+function MiniRadar({ rows, color, W, H }: { rows: DataRow[]; color: string; W: number; H: number }) {
+  const n = rows.length;
+  if (n < 3) return null;
+  const cx = W / 2, cy = H / 2;
+  const radius = Math.min(W, H) / 2 - 1.5;
+  const values = rows.map(r => r.values[0] ?? 0);
+  const mx = Math.max(...values) || 1;
+  function pt(i: number, t: number) {
+    const a = (i / n) * 2 * Math.PI - Math.PI / 2;
+    return { x: cx + Math.cos(a) * radius * t, y: cy + Math.sin(a) * radius * t };
+  }
+  const polygon = values
+    .map((v, i) => { const p = pt(i, v / mx); return `${r(p.x)},${r(p.y)}`; })
+    .join(" ");
+  return (
+    <>
+      <polygon
+        points={Array.from({ length: n }, (_, i) => {
+          const p = pt(i, 1);
+          return `${r(p.x)},${r(p.y)}`;
+        }).join(" ")}
+        fill="none" stroke={color} strokeOpacity="0.18" strokeWidth="0.6"
+      />
+      <polygon points={polygon} fill={color} fillOpacity="0.32"
+        stroke={color} strokeWidth="0.9" strokeLinejoin="round" />
+    </>
+  );
+}
+
+/* ── Mini Dot Matrix — 10×10 waffle ── */
+function MiniDotMatrix({ rows, color, W, H }: { rows: DataRow[]; color: string; W: number; H: number }) {
+  const COLS = 10, GRID_ROWS = 10;
+  const total = rows.reduce((s, r) => s + (r.values[0] ?? 0), 0) || 1;
+  const shares = rows.map(r => ((r.values[0] ?? 0) / total) * 100);
+  const counts = shares.map(s => Math.floor(s));
+  let remainder = 100 - counts.reduce((s, c) => s + c, 0);
+  const fracs = shares.map((s, i) => ({ frac: s - Math.floor(s), idx: i }))
+    .sort((a, b) => b.frac - a.frac);
+  for (let i = 0; i < remainder && fracs.length; i++) counts[fracs[i % fracs.length].idx]++;
+
+  /* Single colour passed in — tier the row tones via opacity ramp so the
+     mini stays readable even when called with a flat NAVY default. */
+  const ramp = [1, 0.65, 0.42, 0.85, 0.32, 0.55];
+  const dotOp: (number | null)[] = [];
+  rows.forEach((_, ri) => {
+    for (let i = 0; i < counts[ri]; i++) dotOp.push(ramp[ri % ramp.length]);
+  });
+  while (dotOp.length < 100) dotOp.push(null);
+
+  const dotW = Math.min(W / COLS, H / GRID_ROWS);
+  const gridW = dotW * COLS;
+  const gridH = dotW * GRID_ROWS;
+  const sx = (W - gridW) / 2;
+  const sy = (H - gridH) / 2;
+  const dotR = dotW * 0.30;
+
+  return (
+    <>
+      {Array.from({ length: 100 }, (_, i) => {
+        const col = i % COLS, row = Math.floor(i / COLS);
+        const cx = sx + col * dotW + dotW / 2;
+        const cy = sy + row * dotW + dotW / 2;
+        const op = dotOp[i];
+        return (
+          <circle key={i} cx={r(cx)} cy={r(cy)} r={r(dotR)}
+            fill={op == null ? "#D9D3C2" : color}
+            fillOpacity={op == null ? 0.5 : op} />
+        );
+      })}
     </>
   );
 }

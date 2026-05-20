@@ -507,6 +507,223 @@ function TreemapChart({ rows, expanded, containerWidth, containerHeight }: Chart
   );
 }
 
+/* ── Heatmap ──────────────────────────────────────────────
+   Grid of cells (rows × columns), each tinted by its value.
+   Cells with intensity ≥ 0.55 stamp their numeric value in cream. */
+function HeatmapChart({ rows, columns, expanded, containerWidth, containerHeight }: ChartProps) {
+  const W = containerWidth  ?? (expanded ? 600 : 360);
+  const H = containerHeight ?? (expanded ? 320 : 200);
+
+  const colCount = Math.max(1, columns.length);
+  const pl = 84, pr = 16, pt = 22, pb = 14;
+  const plotW = W - pl - pr;
+  const plotH = H - pt - pb;
+  const colW  = plotW / colCount;
+  const rowH  = plotH / Math.max(rows.length, 1);
+
+  let mx = 0;
+  for (const row of rows) for (const v of row.values) mx = Math.max(mx, v);
+  mx = mx || 1;
+
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} fill="none" {...svgAttrs(containerWidth, containerHeight, expanded)}>
+      {/* Column labels — top */}
+      {columns.map((col, ci) => (
+        <text key={ci}
+          x={pl + (ci + 0.5) * colW} y={pt - 6}
+          textAnchor="middle" fontSize="9.5"
+          fill={T3} fontFamily={MONO_FAMILY}>
+          {col}
+        </text>
+      ))}
+      {/* Row labels + cells */}
+      {rows.map((row, ri) => (
+        <g key={ri}>
+          <text x={pl - 8} y={pt + (ri + 0.5) * rowH + 3.5}
+            textAnchor="end" fontSize="10"
+            fill={T2} fontFamily={SANS_FAMILY}>
+            {row.label}
+          </text>
+          {row.values.map((v, ci) => {
+            const intensity = (v ?? 0) / mx;
+            const fill = intensity > 0.66 ? NAVY
+                       : intensity > 0.33 ? NAVY_500
+                       : intensity > 0.10 ? NAVY_300
+                       : NAVY_100;
+            const opacity = 0.32 + intensity * 0.65;
+            return (
+              <g key={ci}>
+                <rect
+                  x={r(pl + ci * colW + 1.5)} y={r(pt + ri * rowH + 1.5)}
+                  width={r(colW - 3)} height={r(rowH - 3)}
+                  fill={fill} fillOpacity={opacity}
+                />
+                {intensity >= 0.55 && (
+                  <text
+                    x={r(pl + (ci + 0.5) * colW)} y={r(pt + (ri + 0.5) * rowH + 3.5)}
+                    textAnchor="middle" fontSize="10"
+                    fill="#F5F2EA" fontFamily={MONO_FAMILY}>
+                    {v}
+                  </text>
+                )}
+              </g>
+            );
+          })}
+        </g>
+      ))}
+    </svg>
+  );
+}
+
+/* ── Radar ────────────────────────────────────────────────
+   One axis per row, magnitude = values[0]. Concentric ring
+   guides at 25/50/75/100 %. Filled polygon on top. */
+function RadarChart({ rows, expanded, containerWidth, containerHeight }: ChartProps) {
+  const W = containerWidth  ?? (expanded ? 480 : 320);
+  const H = containerHeight ?? (expanded ? 320 : 200);
+  const n = rows.length;
+
+  if (n < 3) {
+    return (
+      <svg viewBox={`0 0 ${W} ${H}`} fill="none" {...svgAttrs(containerWidth, containerHeight, expanded)}>
+        <text x={W / 2} y={H / 2} textAnchor="middle" fontSize="11"
+          fill={T3} fontFamily={MONO_FAMILY}>
+          Radar needs ≥ 3 categories
+        </text>
+      </svg>
+    );
+  }
+
+  const cx = W / 2;
+  const cy = H / 2 + 4;
+  const radius = Math.min(W * 0.42, H * 0.40);
+  const values = rows.map(row => row.values[0] ?? 0);
+  const mx = Math.max(...values) || 1;
+
+  function axisAngle(i: number) { return (i / n) * 2 * Math.PI - Math.PI / 2; }
+  function pointAt(i: number, t: number) {
+    const a = axisAngle(i);
+    return { x: cx + Math.cos(a) * radius * t, y: cy + Math.sin(a) * radius * t };
+  }
+
+  const polygon = values
+    .map((v, i) => { const p = pointAt(i, v / mx); return `${r(p.x)},${r(p.y)}`; })
+    .join(" ");
+
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} fill="none" {...svgAttrs(containerWidth, containerHeight, expanded)}>
+      {/* Concentric ring guides — polygons in same shape */}
+      {[0.25, 0.5, 0.75, 1].map(t => (
+        <polygon key={t}
+          points={Array.from({ length: n }, (_, i) => {
+            const p = pointAt(i, t);
+            return `${r(p.x)},${r(p.y)}`;
+          }).join(" ")}
+          fill="none" stroke={BORDER} strokeWidth="1" opacity={0.5} />
+      ))}
+      {/* Axis spokes */}
+      {Array.from({ length: n }, (_, i) => {
+        const p = pointAt(i, 1);
+        return (
+          <line key={i} x1={cx} y1={cy} x2={r(p.x)} y2={r(p.y)}
+            stroke={BORDER} strokeWidth="1" opacity={0.45} />
+        );
+      })}
+      {/* Filled data polygon */}
+      <polygon points={polygon} fill={NAVY} fillOpacity="0.22"
+        stroke={NAVY} strokeWidth="1.5" strokeLinejoin="round" />
+      {/* Vertex dots — first one accented gold */}
+      {values.map((v, i) => {
+        const p = pointAt(i, v / mx);
+        return <circle key={i} cx={r(p.x)} cy={r(p.y)} r={i === 0 ? 4 : 3}
+          fill={i === 0 ? GOLD : NAVY} />;
+      })}
+      {/* Outer axis labels */}
+      {rows.map((row, i) => {
+        const a = axisAngle(i);
+        const lx = cx + Math.cos(a) * (radius + 16);
+        const ly = cy + Math.sin(a) * (radius + 16);
+        const anchor = Math.abs(Math.cos(a)) < 0.35 ? "middle" : Math.cos(a) > 0 ? "start" : "end";
+        return (
+          <text key={i} x={r(lx)} y={r(ly + 3)} textAnchor={anchor}
+            fontSize="10" fill={T2} fontFamily={SANS_FAMILY}>
+            {row.label}
+          </text>
+        );
+      })}
+    </svg>
+  );
+}
+
+/* ── Dot Matrix (waffle) ──────────────────────────────────
+   100-dot grid where each row of data colours a proportional
+   share. Rounding distributes any remainder to the rows with
+   the largest fractional part so the grid always sums to 100. */
+function DotMatrixChart({ rows, expanded, containerWidth, containerHeight }: ChartProps) {
+  const W = containerWidth  ?? (expanded ? 480 : 340);
+  const H = containerHeight ?? (expanded ? 320 : 200);
+  const COLS = 10, GRID_ROWS = 10;
+
+  const total = rows.reduce((s, row) => s + (row.values[0] ?? 0), 0) || 1;
+  const shares = rows.map(row => ((row.values[0] ?? 0) / total) * 100);
+  const counts = shares.map(s => Math.floor(s));
+  let remainder = 100 - counts.reduce((s, c) => s + c, 0);
+  const fracs = shares.map((s, i) => ({ frac: s - Math.floor(s), idx: i }))
+    .sort((a, b) => b.frac - a.frac);
+  for (let i = 0; i < remainder && fracs.length; i++) {
+    counts[fracs[i % fracs.length].idx]++;
+  }
+
+  /* Reserve right gutter for legend (≈110px), then size dot grid to fit. */
+  const LEGEND_W = 120;
+  const padX = 16, padY = 16;
+  const availW = W - padX * 2 - LEGEND_W;
+  const availH = H - padY * 2;
+  const dotW   = Math.min(availW / COLS, availH / GRID_ROWS);
+  const gridW  = dotW * COLS;
+  const gridH  = dotW * GRID_ROWS;
+  const startX = padX + (availW - gridW) / 2;
+  const startY = padY + (availH - gridH) / 2;
+  const dotR   = dotW * 0.32;
+
+  /* Flat 100-element colour map, ordered by row index. */
+  const dotFill: (string | null)[] = [];
+  rows.forEach((_, ri) => {
+    const c = SERIES[ri % SERIES.length];
+    for (let i = 0; i < counts[ri]; i++) dotFill.push(c);
+  });
+  while (dotFill.length < 100) dotFill.push(null);
+
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} fill="none" {...svgAttrs(containerWidth, containerHeight, expanded)}>
+      {Array.from({ length: 100 }, (_, i) => {
+        const col = i % COLS;
+        const row = Math.floor(i / COLS);
+        const cx = startX + col * dotW + dotW / 2;
+        const cy = startY + row * dotW + dotW / 2;
+        const fill = dotFill[i];
+        return (
+          <circle key={i} cx={r(cx)} cy={r(cy)} r={r(dotR)}
+            fill={fill ?? BORDER}
+            fillOpacity={fill ? 1 : 0.4} />
+        );
+      })}
+      {/* Legend right of the grid */}
+      {rows.map((row, ri) => {
+        const ly = startY + 6 + ri * 18;
+        if (ly > startY + gridH) return null;   // hide overflow rows on tiny canvases
+        return (
+          <g key={ri} transform={`translate(${r(startX + gridW + 16)}, ${r(ly)})`}>
+            <circle cx="3" cy="0" r="3.5" fill={SERIES[ri % SERIES.length]} />
+            <text x="11" y="3" fontSize="10" fill={T2} fontFamily={SANS_FAMILY}>{row.label}</text>
+            <text x="11" y="14" fontSize="9" fill={T3} fontFamily={MONO_FAMILY}>{counts[ri]}%</text>
+          </g>
+        );
+      })}
+    </svg>
+  );
+}
+
 /* ── Main dispatcher ──────────────────────────────────── */
 export function ChartRenderer({
   rows, columns, chartType, expanded, containerWidth, containerHeight,
@@ -520,16 +737,23 @@ export function ChartRenderer({
 }) {
   const props = { rows, columns, expanded, containerWidth, containerHeight };
   switch (chartType) {
+    /* Active 8 (round-4) */
+    case "Treemap":       return <TreemapChart {...props} />;
     case "Lollipop":      return <LollipopChart {...props} />;
-    case "Spline Area":   return <SplineAreaChart {...props} />;
-    case "Donut":         return <DonutChart {...props} />;
-    case "Bar":
-    case "Clean Columns": return <CleanColumnsChart {...props} />;
-    case "Stacked Bar":   return <StackedBarChart {...props} />;
-    case "Waterfall":     return <WaterfallChart {...props} />;
+    case "Dot Matrix":    return <DotMatrixChart {...props} />;
     case "Scatter":
     case "Scatter Plot":  return <ScatterPlotChart {...props} />;
-    case "Treemap":       return <TreemapChart {...props} />;
+    case "Stacked Bar":   return <StackedBarChart {...props} />;
+    case "Heatmap":       return <HeatmapChart {...props} />;
+    case "Radar":         return <RadarChart {...props} />;
+    case "Donut":         return <DonutChart {...props} />;
+    /* Legacy — resolve but never offered in dropdown */
+    case "Bar":
+    case "Clean Columns": return <CleanColumnsChart {...props} />;
+    case "Spline Area":
+    case "Line":
+    case "Area":          return <SplineAreaChart {...props} />;
+    case "Waterfall":     return <WaterfallChart {...props} />;
     default:              return <SplineAreaChart {...props} />;
   }
 }

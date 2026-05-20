@@ -4,17 +4,18 @@ import type {
 } from "./types";
 export type { ChartType, DataRow };
 
-/* Flat list — kept for back-compat; the picker now reads from
-   CHART_TYPE_GROUPS in lib/types.ts so it can render section headers. */
+/* Round-4: narrowed to 8 active types. Use ACTIVE_CHART_TYPES from
+   lib/types.ts as the single source of truth — this re-export exists
+   only for back-compat consumers that still import CHART_TYPES. */
 export const CHART_TYPES: ChartType[] = [
-  /* Comparison */
-  "Bar", "Stacked Bar", "Lollipop", "Bullet", "Radar",
-  /* Trend */
-  "Line", "Area", "Waterfall",
-  /* Composition */
-  "Donut", "Treemap", "Sankey",
-  /* Distribution */
-  "Scatter", "Heatmap", "Box Plot",
+  "Treemap",
+  "Lollipop",
+  "Dot Matrix",
+  "Scatter",
+  "Stacked Bar",
+  "Heatmap",
+  "Radar",
+  "Donut",
 ];
 
 export interface CardState {
