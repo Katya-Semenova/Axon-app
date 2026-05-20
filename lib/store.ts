@@ -9,7 +9,7 @@ import type {
   NodePositionMap, WorkspaceSnapshot,
   ChartType, DataRow, SlideArchetype,
   BuildAudience, BuildTone, BuildMessage,
-  DataSetSettings,
+  DataSetSettings, NarrationMode,
 } from "./types";
 import { DEFAULT_DATASET_SETTINGS } from "./types";
 
@@ -143,9 +143,10 @@ interface WorkspaceStateShape extends WorkspaceSnapshot {
   canvasTransform:   { x: number; y: number; zoom: number };
 
   /* ── Build mode ─ */
-  buildAudience:  BuildAudience;
-  buildTone:      BuildTone;
-  buildNarration: boolean;
+  buildAudience:      BuildAudience;
+  buildTone:          BuildTone;
+  buildNarration:     boolean;        /* legacy on/off — preserved for any old consumer */
+  buildNarrationMode: NarrationMode;  /* round-4: tristate delivery picker */
   buildMessages:  BuildMessage[];
 }
 
@@ -185,9 +186,10 @@ interface WorkspaceActions {
   setCanvasTransform: (t: { x: number; y: number; zoom: number }) => void;
 
   /* ── Build mode ─ */
-  setBuildAudience:     (a: BuildAudience) => void;
-  setBuildTone:         (t: BuildTone) => void;
-  toggleBuildNarration: () => void;
+  setBuildAudience:      (a: BuildAudience) => void;
+  setBuildTone:          (t: BuildTone) => void;
+  toggleBuildNarration:  () => void;
+  setBuildNarrationMode: (mode: NarrationMode) => void;
   addBuildMessage:      (msg: BuildMessage) => void;
   updateBuildMessage:   (id: string, update: Partial<BuildMessage>) => void;
   clearBuildMessages:   () => void;
@@ -226,9 +228,10 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => {
     /* Slightly zoomed-out so all 6 insight cards are visible on startup. */
     canvasTransform:   { x: 20, y: 20, zoom: 0.85 },
 
-    buildAudience:  "CEO",
-    buildTone:      "Neutral",
-    buildNarration: false,
+    buildAudience:      "CEO",
+    buildTone:          "Neutral",
+    buildNarration:     false,
+    buildNarrationMode: "Speaker notes included",
     buildMessages:  [],
 
     /* ── history ─ */
@@ -464,6 +467,7 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => {
     setBuildAudience:     (buildAudience) => set({ buildAudience }),
     setBuildTone:         (buildTone)     => set({ buildTone }),
     toggleBuildNarration: ()              => set((s) => ({ buildNarration: !s.buildNarration })),
+    setBuildNarrationMode: (buildNarrationMode) => set({ buildNarrationMode }),
     addBuildMessage: (msg) => set((s) => ({ buildMessages: [...s.buildMessages, msg] })),
     updateBuildMessage: (id, update) => set((s) => ({
       buildMessages: s.buildMessages.map(m => m.id === id ? { ...m, ...update } : m),

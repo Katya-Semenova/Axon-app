@@ -5,8 +5,8 @@ import { useWorkspaceStore } from "@/lib/store";
 import { MiniChart } from "../MiniChart";
 import { ComboLayoutDropdown } from "../ui/ComboLayoutDropdown";
 import { SlideArchetypeRenderer, deriveSlideSummary } from "./SlideArchetypeRenderer";
-import type { Slide, VisualStyle, ColorAccent, RenderEngine } from "@/lib/types";
-import { RENDER_ENGINES } from "@/lib/types";
+import type { Slide, VisualStyle, ColorAccent, RenderEngine, BuildAudience, BuildTone, NarrationMode } from "@/lib/types";
+import { RENDER_ENGINES, NARRATION_MODES } from "@/lib/types";
 import { BORDER, NAVY, GOLD, T2, T3, SURFACE, SURFACE_RAISE, SURFACE_MUTED } from "../ui/tokens";
 
 /* ── Speaker narrative — 2–4 sentence first-person prose derived from
@@ -501,6 +501,9 @@ export function SlideEditor() {
                 narrativeText={activeSlide.narrative ?? deriveSpeakerNarrative(activeDs.title, deriveSlideSummary(activeDs.rows, activeDs.columns))}
                 onChange={(t) => updateSlide(activeSlide.id, { narrative: t })}
               />
+
+              {/* ── Block 5: Delivery settings — deck-wide, round-4 fix 5 ── */}
+              <DeliverySettingsStrip />
             </div>
           ) : (
             <div className="flex-1 flex items-center justify-center">
@@ -554,17 +557,21 @@ function SummaryBlock({
     if (draft.trim() && draft !== summaryText) onChange(draft.trim());
   }
 
+  /* Round-4 fix 8: summary is the slide's HEADLINE — sized between the
+     title and the speaker narrative. 19 px body, weight 500, dark navy,
+     4 px gold left border, generous padding, beige bg unchanged. The
+     'SUMMARY · AUTO' caption stays small + muted so it never competes. */
   return (
     <div style={{
       flexShrink: 0,
       margin: "14px 28px 4px",
       background: "#FAF8F2",
-      borderLeft: "3px solid #C9A75A",
-      padding: "10px 14px 12px",
+      borderLeft: "4px solid #C9A75A",
+      padding: "18px 22px",
     }}>
       <div style={{
         fontFamily: mono, fontSize: 9, letterSpacing: "0.12em", textTransform: "uppercase",
-        color: T3, marginBottom: 5,
+        color: T3, marginBottom: 8,
       }}>
         Summary · AUTO
       </div>
@@ -579,7 +586,8 @@ function SummaryBlock({
           style={{
             width: "100%",
             fontFamily: "Inter, sans-serif",
-            fontSize: 13.5, lineHeight: 1.45, color: "#1B2840",
+            fontSize: 19, fontWeight: 500, lineHeight: 1.4,
+            color: "#1B2332",
             background: "transparent",
             border: "none", outline: "none", resize: "vertical",
           }}
@@ -590,13 +598,131 @@ function SummaryBlock({
           title="Click to edit"
           style={{
             fontFamily: "Inter, sans-serif",
-            fontSize: 13.5, lineHeight: 1.45, color: "#1B2840",
+            fontSize: 19, fontWeight: 500, lineHeight: 1.4,
+            color: "#1B2332",
             cursor: "text",
           }}
         >
           {summaryText}
         </div>
       )}
+    </div>
+  );
+}
+
+/* ── Block 5: Delivery settings — deck-wide controls, round-4 fix 5 ────
+   Lives inside the slide card, below the speaker narrative. Three
+   selects: AUDIENCE / TONE / NARRATION. All three persist on the
+   workspace store (buildAudience / buildTone / buildNarrationMode) so
+   changes apply to the WHOLE deck, never per-slide. */
+const AUDIENCE_OPTIONS: BuildAudience[] = ["CEO", "Board", "Investor", "Team", "Custom"];
+const TONE_OPTIONS:     BuildTone[]     = ["Formal", "Neutral", "Casual"];
+
+function DeliverySettingsStrip() {
+  const audience     = useWorkspaceStore(s => s.buildAudience);
+  const tone         = useWorkspaceStore(s => s.buildTone);
+  const narrMode     = useWorkspaceStore(s => s.buildNarrationMode);
+  const setAudience  = useWorkspaceStore(s => s.setBuildAudience);
+  const setTone      = useWorkspaceStore(s => s.setBuildTone);
+  const setNarrMode  = useWorkspaceStore(s => s.setBuildNarrationMode);
+
+  return (
+    <div style={{
+      flexShrink: 0,
+      margin: "0 28px 16px",
+      border: `1px solid ${BORDER}`,
+      background: SURFACE,
+      padding: "14px 18px 16px",
+    }}>
+      <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 10, gap: 12, flexWrap: "wrap" }}>
+        <span style={{
+          fontFamily: mono, fontSize: 9, letterSpacing: "0.12em", textTransform: "uppercase",
+          color: T3,
+        }}>
+          Delivery settings
+        </span>
+        <span style={{
+          fontFamily: mono, fontSize: 9, color: T3, opacity: 0.7,
+        }}>
+          applies to whole deck
+        </span>
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12 }}>
+        <DeliveryField label="Audience">
+          <DeliverySelect<BuildAudience>
+            value={audience}
+            options={AUDIENCE_OPTIONS}
+            format={a => a === "CEO" ? "CEO / Exec" : a}
+            onChange={setAudience}
+          />
+        </DeliveryField>
+        <DeliveryField label="Tone">
+          <DeliverySelect<BuildTone>
+            value={tone}
+            options={TONE_OPTIONS}
+            format={t => t === "Formal" ? "Direct, factual" : t === "Neutral" ? "Narrative" : "Casual"}
+            onChange={setTone}
+          />
+        </DeliveryField>
+        <DeliveryField label="Narration">
+          <DeliverySelect<NarrationMode>
+            value={narrMode}
+            options={NARRATION_MODES}
+            onChange={setNarrMode}
+          />
+        </DeliveryField>
+      </div>
+    </div>
+  );
+}
+
+function DeliveryField({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <div style={{
+        fontFamily: mono, fontSize: 8.5, letterSpacing: "0.1em", textTransform: "uppercase",
+        color: T3, marginBottom: 5,
+      }}>
+        {label}
+      </div>
+      {children}
+    </div>
+  );
+}
+
+function DeliverySelect<T extends string>({
+  value, options, onChange, format,
+}: {
+  value: T;
+  options: readonly T[];
+  onChange: (v: T) => void;
+  format?: (v: T) => string;
+}) {
+  return (
+    <div style={{ position: "relative" }}>
+      <select
+        value={value}
+        onChange={e => onChange(e.target.value as T)}
+        style={{
+          width: "100%",
+          appearance: "none", WebkitAppearance: "none",
+          background: SURFACE_RAISE,
+          border: `1px solid ${BORDER}`,
+          borderRadius: 4,
+          fontFamily: mono, fontSize: 10.5, color: NAVY,
+          padding: "7px 22px 7px 10px",
+          outline: "none", cursor: "pointer",
+        }}
+      >
+        {options.map(o => (
+          <option key={o} value={o}>{format ? format(o) : o}</option>
+        ))}
+      </select>
+      <svg width="8" height="8" viewBox="0 0 8 8" fill="none" stroke={T3} strokeWidth="1.3" strokeLinecap="round"
+        style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }}>
+        <path d="M1 2.5l3 3 3-3" />
+      </svg>
     </div>
   );
 }
