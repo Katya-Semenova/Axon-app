@@ -86,7 +86,13 @@
 }
 
 /* ── Base ── */
+html {
+  height: 100%;
+  overflow: hidden;   /* viewport is the scroll root — nothing scrolls at page level */
+}
 body {
+  height: 100%;
+  overflow: hidden;   /* workspace fills exactly the viewport; landing page is also fit-to-screen */
   background-color: #EDE9E0;          /* canvas */
   color:            #1B2840;          /* text-primary */
   font-family: var(--font-inter), -apple-system, system-ui, sans-serif;

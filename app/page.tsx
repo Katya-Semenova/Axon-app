@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { AnimatePresence } from "framer-motion";
 import {
   DndContext, DragOverlay, PointerSensor, useSensor, useSensors,
   type DragEndEvent, type DragStartEvent, type Modifier,
@@ -14,19 +15,10 @@ import { InsightExpandedViewOverlay } from "@/app/components/canvas/InsightExpan
 import { DataSetExpandedViewOverlay } from "@/app/components/canvas/DataSetExpandedView";
 import { SlideEditor } from "@/app/components/presentation/SlideEditor";
 import { PresentationStructure } from "@/app/components/presentation/PresentationStructure";
-import { BuildMode } from "@/app/components/build/BuildMode";
+import { PresentMode } from "@/app/components/build/PresentMode";
+import { ModeTabs } from "@/app/components/ui/ModeTabs";
 
-/* ── Modifier: pin the DragOverlay top-left to the live cursor position.
-   Without this, dnd-kit anchors the overlay at the draggable element's
-   bounding-rect top-left and applies only the movement delta — causing the
-   ghost to appear far above the pointer when the grab point is the "на слайд"
-   handle at the card's bottom.
-
-   Math: overlay renders at (draggingNodeRect.left + transform.x,
-                              draggingNodeRect.top  + transform.y).
-   We want it at (activatorEvent.clientX + transform.x,
-                  activatorEvent.clientY + transform.y) — i.e. the live cursor.
-   Adding (clickX − cardLeft, clickY − cardTop) to the transform achieves this. */
+/* ── Modifier: pin the DragOverlay top-left to the live cursor position. */
 const snapToPointer: Modifier = ({ activatorEvent, draggingNodeRect, transform }) => {
   if (draggingNodeRect && activatorEvent) {
     const { clientX, clientY } = activatorEvent as PointerEvent;
@@ -41,17 +33,39 @@ const snapToPointer: Modifier = ({ activatorEvent, draggingNodeRect, transform }
 
 /* ══════════════════════════════════════════════════════
    PAGE 2 — WORKSPACE
+   Three-mode workflow: CANVAS · SLIDES · PRESENT
+   ────────────────────────────────────────────────────
+   CANVAS  → store mode "data"          — node graph
+   SLIDES  → store mode "presentation"  — slide editor + splitter + thumb rail
+   PRESENT → presentOpen overlay        — fullscreen playback, no chrome
 ══════════════════════════════════════════════════════ */
 function Page2({ onBack }: { onBack: () => void }) {
   const mode               = useWorkspaceStore(s => s.mode);
+  const slideOrder         = useWorkspaceStore(s => s.slideOrder);
+  const slidesById         = useWorkspaceStore(s => s.slidesById);
   const addSlideWithDs     = useWorkspaceStore(s => s.addSlideWithDataSet);
   const bindDataSetToSlide = useWorkspaceStore(s => s.bindDataSetToSlide);
   const dataSetsById       = useWorkspaceStore(s => s.dataSetsById);
 
   const [activeDragDataSetId, setActiveDragDataSetId] = useState<string | null>(null);
 
-  /* Require 8 px of movement before a dnd-kit drag activates — prevents
-     accidental drag starts when clicking inputs, the splitter, or table rows. */
+  /* ── Present mode (fullscreen overlay) lives at page level so it can
+        suppress every surrounding rail/panel. ── */
+  const [presentOpen, setPresentOpen] = useState(false);
+  const [presentIdx,  setPresentIdx]  = useState(0);
+  const [showNotes,   setShowNotes]   = useState(false);
+
+  function openPresent() {
+    /* PRESENT tab is disabled if there are no slides; this is also guarded
+       inside ModeTabs by the parent passing the boolean. */
+    if (slideOrder.length === 0) return;
+    setPresentIdx(0);
+    setPresentOpen(true);
+  }
+
+  const presentSlides = slideOrder.map(id => slidesById[id]).filter(Boolean);
+
+  /* 8 px drag activation prevents accidental drag on input/splitter clicks. */
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
   );
@@ -71,7 +85,6 @@ function Page2({ onBack }: { onBack: () => void }) {
 
     if (activeData?.type === "dataset" && activeData.dataSetId) {
       const dataSetId = activeData.dataSetId;
-
       if (overId === "slide-slot:new") {
         addSlideWithDs(dataSetId);
       } else if (overId.startsWith("slide-slot:")) {
@@ -83,10 +96,17 @@ function Page2({ onBack }: { onBack: () => void }) {
 
   const activeDs = activeDragDataSetId ? dataSetsById[activeDragDataSetId] : null;
 
+  /* Rail visibility — driven purely by the three modes. */
+  const showChat  = !presentOpen;                          // hide in PRESENT only
+  const showRail  = mode === "presentation" && !presentOpen; // SLIDES only
+  const showTabs  = !presentOpen;                          // hidden during fullscreen playback
+
   return (
     <DndContext sensors={sensors} modifiers={[snapToPointer]} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-      <div className="flex h-screen overflow-hidden bg-bg animate-fade-in">
-        <ChatRail onBack={onBack} />
+      <div className="flex h-screen max-h-screen overflow-hidden bg-bg animate-fade-in">
+
+        {/* ── Left: AI Chat Rail (hidden in PRESENT) ── */}
+        {showChat && <ChatRail onBack={onBack} />}
 
         {/* ── Mobile top bar ── */}
         <div className="lg:hidden flex items-center justify-between px-4 py-[14px] border-b border-border bg-card shrink-0 fixed top-0 left-0 right-0 z-30">
@@ -102,40 +122,50 @@ function Page2({ onBack }: { onBack: () => void }) {
           </button>
         </div>
 
-        {/* ── Right column — canvas / editor + strip ── */}
-        <div className="flex-1 min-w-0 relative flex flex-col h-screen overflow-hidden">
+        {/* ── Right column — main surface ── */}
+        <div className="flex-1 min-w-0 min-h-0 relative flex flex-col overflow-hidden">
+
+          {/* Floating top-right nav tabs */}
+          {showTabs && (
+            <div
+              style={{
+                position: "absolute",
+                top: 12,
+                right: 16,
+                zIndex: 25,
+              }}
+            >
+              <ModeTabs presentActive={presentOpen} onPresent={openPresent} />
+            </div>
+          )}
+
+          {/* Main surface — CANVAS or SLIDES editor */}
           {mode === "data"
             ? <Canvas />
-            : mode === "presentation"
-            ? <SlideEditor />
-            : <BuildMode />
+            : <SlideEditor />
           }
-          {mode === "data" && <PresentationStructure />}
 
-          {/* Expanded-view overlays — absolute, cover right column */}
+          {/* Bottom presentation strip — SLIDES only */}
+          {showRail && <PresentationStructure />}
+
+          {/* Expanded overlays */}
           <InsightExpandedViewOverlay />
           <DataSetExpandedViewOverlay />
         </div>
       </div>
 
-      {/* Drag ghost — pinned to cursor via snapToPointer modifier */}
+      {/* Drag ghost */}
       <DragOverlay dropAnimation={null}>
         {activeDs ? (
           <div style={{
             display: "inline-flex", alignItems: "center", gap: 7,
-            background: "#1B2840",
-            color: "#F5F2EA",
-            fontFamily: "'JetBrains Mono', monospace",
-            fontSize: 11,
+            background: "#1B2840", color: "#F5F2EA",
+            fontFamily: "'JetBrains Mono', monospace", fontSize: 11,
             padding: "6px 14px 6px 10px",
-            borderRadius: 3,
-            whiteSpace: "nowrap",
-            opacity: 0.93,
-            boxShadow: "0 6px 18px rgba(27,40,64,0.35)",
-            pointerEvents: "none",
-            userSelect: "none",
+            borderRadius: 3, whiteSpace: "nowrap",
+            opacity: 0.93, boxShadow: "0 6px 18px rgba(27,40,64,0.35)",
+            pointerEvents: "none", userSelect: "none",
           }}>
-            {/* Grab-hand icon */}
             <svg width="10" height="12" viewBox="0 0 10 12" fill="none" stroke="#F5F2EA" strokeWidth="1.15" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.7, flexShrink: 0 }}>
               <path d="M1.5 6V4.5a.8.8 0 0 1 1.6 0V5.5" />
               <path d="M3.1 6.5V2.5a.85.85 0 0 1 1.7 0V6" />
@@ -147,6 +177,20 @@ function Page2({ onBack }: { onBack: () => void }) {
           </div>
         ) : null}
       </DragOverlay>
+
+      {/* ── PRESENT mode — fullscreen overlay, suppresses every rail ── */}
+      <AnimatePresence>
+        {presentOpen && presentSlides.length > 0 && (
+          <PresentMode
+            slides={presentSlides}
+            currentIdx={presentIdx}
+            onChangeIdx={setPresentIdx}
+            onExit={() => setPresentOpen(false)}
+            showNotes={showNotes}
+            onToggleNotes={() => setShowNotes(v => !v)}
+          />
+        )}
+      </AnimatePresence>
     </DndContext>
   );
 }

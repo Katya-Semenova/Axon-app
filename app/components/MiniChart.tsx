@@ -18,10 +18,12 @@ export function MiniChart({ rows, chartType, color, W = 104, H = 34 }: MiniChart
   switch (chartType) {
     case "Spline Area":  return <MiniSpline rows={rows} color={color} W={W} H={H} />;
     case "Lollipop":     return <MiniLollipop rows={rows} color={color} W={W} H={H} />;
+    case "Bar":
     case "Clean Columns":return <MiniColumns rows={rows} color={color} W={W} H={H} />;
     case "Waterfall":    return <MiniWaterfall rows={rows} color={color} W={W} H={H} />;
     case "Stacked Bar":  return <MiniStacked rows={rows} color={color} W={W} H={H} />;
     case "Donut":        return <MiniDonut rows={rows} color={color} W={W} H={H} />;
+    case "Scatter":
     case "Scatter Plot": return <MiniScatter rows={rows} color={color} W={W} H={H} />;
     case "Treemap":      return <MiniTreemap rows={rows} color={color} W={W} H={H} />;
     default:             return <MiniColumns rows={rows} color={color} W={W} H={H} />;

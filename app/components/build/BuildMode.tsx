@@ -3,10 +3,11 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { PresentMode } from "./PresentMode";
-import { ChartFill } from "../ChartFill";
 import { MiniChart } from "../MiniChart";
+import { SlideArchetypeRenderer, inferArchetype, deriveSlideSummary } from "../presentation/SlideArchetypeRenderer";
 import { useWorkspaceStore } from "@/lib/store";
-import type { Slide, BuildAudience, BuildTone, DataSet, BuildMessage } from "@/lib/types";
+import type { Slide, BuildAudience, BuildTone, DataSet, BuildMessage, SlideArchetype } from "@/lib/types";
+import { NON_CHART_ARCHETYPES } from "@/lib/types";
 import { BORDER, NAVY, T2, T3, SURFACE, SURFACE_RAISE, SURFACE_MUTED } from "../ui/tokens";
 
 const mono = "'JetBrains Mono', monospace";
@@ -54,20 +55,25 @@ function rearrangeForAudience(ids: string[], audience: BuildAudience): string[] 
   return arr;                                // CEO, Investor, Custom: keep order
 }
 
-function getAudienceMessage(audience: BuildAudience, n: number, customText: string): string {
+function getAudienceMessage(audience: BuildAudience, n: number, newOrder: string[], oldOrder: string[], customText: string): string {
+  const reordered = newOrder.some((id, i) => id !== oldOrder[i]);
   switch (audience) {
     case "CEO":
-      return `Switched to CEO view — ${n} slides ordered by impact. Leading with the top-line number, supporting detail behind. Brevity first.`;
+      return `Switched to CEO view — slide order unchanged, already leading with the strongest signal. Narrative framing updated for brevity. ${n} slide${n !== 1 ? "s" : ""} total.`;
     case "Board":
-      return `Switched to Board view — moved the KPI summary to slide 1, expanded the segment breakdown. Structured for governance-level review.`;
+      return reordered
+        ? `Switched to Board view — moved slide 2 to position 1 as the KPI anchor. Remaining slides follow in supporting order. Structured for governance-level review.`
+        : `Switched to Board view — KPI summary is already in position 1. Structured for governance-level review.`;
     case "Team":
-      return `Switched to Team view — reversed to lead with context, close on the headline. Full data visible throughout.`;
+      return reordered
+        ? `Switched to Team view — reversed slide order to open with context and close on the headline. Full data visible throughout.`
+        : `Switched to Team view — only one slide, nothing to reverse. Full detail visible.`;
     case "Investor":
-      return `Switched to Investor view — growth vectors first, risks at the close. TAM framing applied throughout.`;
+      return `Switched to Investor view — slide order unchanged, growth vectors already lead. TAM framing and risk disclosure noted. ${n} slide${n !== 1 ? "s" : ""} total.`;
     case "Custom":
       return customText.trim()
-        ? `Understood — reframing for "${customText.trim()}". Narrative emphasis adjusted. Tell me what else to change.`
-        : `Custom audience selected. Describe your audience in the field above and I'll adjust the framing.`;
+        ? `Understood — reframing for "${customText.trim()}". Slide order unchanged. Tell me what to emphasise and I'll adjust.`
+        : `Custom audience selected — describe your audience above and I'll adjust the framing. No reorder applied.`;
   }
 }
 
@@ -83,11 +89,11 @@ function getSpeakerNote(title: string, serial: number, tone: BuildTone, narrativ
   const base = narrative || title;
   switch (tone) {
     case "Formal":
-      return `Slide ${serial} presents ${base}. The data demonstrates a statistically significant trend warranting close attention. Cross-reference against prior-quarter targets before drawing final conclusions.`;
+      return `Open slide ${serial} by citing the headline figure precisely — include the time period and the comparison baseline. Reference "${base}" as your evidence anchor. Allow a two-second pause after the key metric before advancing. Close by explicitly linking this finding to the recommendation on the following slide.`;
     case "Casual":
-      return `So here's the story on ${base}. The numbers are pretty clear — pause on the big figure and let it land before moving on.`;
+      return `Kick off with "Here's what happened with ${base}" and keep it tight. Point directly at the biggest number and say "this is the one that matters." Don't over-explain — let the visual carry the weight. Check the room before moving on, and ask if anyone wants to dig in.`;
     default:
-      return `This slide covers ${base}. Call out the main trend and connect it to the overall narrative — diagnostic, root cause, or recovery path depending on where we are in the deck.`;
+      return `Lead with the main takeaway from "${base}." Name the trend clearly — diagnostic, root cause, or recovery path — then bridge to the slide before and after. Target 45–60 seconds. If the audience seems engaged, offer to expand before advancing.`;
   }
 }
 
@@ -126,6 +132,7 @@ export function BuildMode() {
   const activeSlideId        = useWorkspaceStore(s => s.activeSlideId);
   const setActiveSlide       = useWorkspaceStore(s => s.setActiveSlide);
   const removeSlide          = useWorkspaceStore(s => s.removeSlide);
+  const updateSlide          = useWorkspaceStore(s => s.updateSlide);
   const buildAudience        = useWorkspaceStore(s => s.buildAudience);
   const buildTone            = useWorkspaceStore(s => s.buildTone);
   const buildNarration       = useWorkspaceStore(s => s.buildNarration);
@@ -157,6 +164,105 @@ export function BuildMode() {
   const [presentIdx,  setPresentIdx]  = useState(0);
   const [showNotes,   setShowNotes]   = useState(false);
 
+  /* ── Canvas pan + zoom ── */
+  const [panOffset,   setPanOffset]   = useState({ x: 0, y: 0 });
+  const [zoom,        setZoom]        = useState(1);
+  const [isSpaceDown, setIsSpaceDown] = useState(false);
+  const [isPanning,   setIsPanning]   = useState(false);
+  const [isResetting, setIsResetting] = useState(false);
+  const panState         = useRef<{ startX: number; startY: number; startPanX: number; startPanY: number } | null>(null);
+  const canvasViewportRef = useRef<HTMLDivElement>(null);
+  /* Refs let the wheel handler always read the latest values without stale closures */
+  const zoomRef        = useRef(1);
+  const panRef         = useRef({ x: 0, y: 0 });
+  const fitToScreenRef = useRef<() => void>(() => {});
+
+  /* Spacebar → grab cursor; guards against firing inside chat/text inputs */
+  useEffect(() => {
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.repeat) return;
+      const active   = document.activeElement;
+      const inInput  =
+        active instanceof HTMLInputElement ||
+        active instanceof HTMLTextAreaElement ||
+        (active as HTMLElement | null)?.isContentEditable;
+
+      if (e.code === "Space") {
+        if (inInput) return;
+        e.preventDefault();
+        setIsSpaceDown(true);
+        return;
+      }
+      if (e.code === "Digit0" || e.code === "Numpad0") {
+        if (inInput) return;
+        e.preventDefault();
+        fitToScreenRef.current();
+      }
+    }
+    function onKeyUp(e: KeyboardEvent) {
+      if (e.code !== "Space") return;
+      setIsSpaceDown(false);
+      setIsPanning(false);
+      panState.current = null;
+    }
+    window.addEventListener("keydown", onKeyDown);
+    window.addEventListener("keyup",   onKeyUp);
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+      window.removeEventListener("keyup",   onKeyUp);
+    };
+  }, []);
+
+  /* Sync refs every render so wheel handler never has stale values */
+  zoomRef.current = zoom;
+  panRef.current  = panOffset;
+
+  /* Wheel → zoom (Cmd/Ctrl + scroll or trackpad pinch) */
+  useEffect(() => {
+    const el = canvasViewportRef.current;
+    if (!el) return;
+    function onWheel(e: WheelEvent) {
+      if (!e.ctrlKey && !e.metaKey) return;
+      e.preventDefault();
+      const rect    = el!.getBoundingClientRect();
+      const cx      = e.clientX - rect.left;
+      const cy      = e.clientY - rect.top;
+      const prevZ   = zoomRef.current;
+      const prevPan = panRef.current;
+      const newZ    = Math.max(0.25, Math.min(2.0, prevZ * Math.pow(0.999, e.deltaY)));
+      const ratio   = newZ / prevZ;
+      const newPan  = { x: cx - ratio * (cx - prevPan.x), y: cy - ratio * (cy - prevPan.y) };
+      zoomRef.current = newZ;
+      panRef.current  = newPan;
+      setZoom(newZ);
+      setPanOffset(newPan);
+    }
+    el.addEventListener("wheel", onWheel, { passive: false });
+    return () => el.removeEventListener("wheel", onWheel);
+  }, []);
+
+  /* Global mouse-move / mouse-up drive the pan while active */
+  useEffect(() => {
+    function onMouseMove(e: MouseEvent) {
+      if (!panState.current) return;
+      setPanOffset({
+        x: panState.current.startPanX + e.clientX - panState.current.startX,
+        y: panState.current.startPanY + e.clientY - panState.current.startY,
+      });
+    }
+    function onMouseUp() {
+      if (!panState.current) return;
+      panState.current = null;
+      setIsPanning(false);
+    }
+    window.addEventListener("mousemove", onMouseMove);
+    window.addEventListener("mouseup",   onMouseUp);
+    return () => {
+      window.removeEventListener("mousemove", onMouseMove);
+      window.removeEventListener("mouseup",   onMouseUp);
+    };
+  }, []);
+
   /* ── Delivery rail ── */
   const [exportOpen, setExportOpen] = useState(false);
   const [shareOpen,  setShareOpen]  = useState(false);
@@ -171,12 +277,39 @@ export function BuildMode() {
   /* ── Narration first-time guard ── */
   const narrationInitRef = useRef(false);
 
-  /* ── Stream first message on mount ── */
+  /* ── Stream first message + archetype suggestions on mount ── */
   const streamedRef = useRef(false);
   useEffect(() => {
     if (streamedRef.current || buildMessages.length > 0) return;
     streamedRef.current = true;
     streamAxon(buildFirstMessage(localSlides, dataSetsById, buildAudience), addBuildMessage, updateBuildMessage, 400);
+
+    /* Suggest alternative archetypes — read-only, never mutates slide state */
+    setTimeout(() => {
+      const suggestions: string[] = [];
+      for (const slide of localSlides) {
+        const ds = slide.dataSetIds[0] ? dataSetsById[slide.dataSetIds[0]] : null;
+        if (!ds || !ds.rows.length) continue;
+        const suggested = inferArchetype(ds.rows, ds.columns);
+        const current   = slide.archetype ?? "Chart";
+        if (suggested !== current) {
+          const reason: Record<SlideArchetype, string> = {
+            "Big Number":  "has a single metric",
+            "Comparison":  "has exactly two comparable values",
+            "Sentiment":   "has a binary positive/negative split",
+            "Map":         "has geographic labels",
+            "Treemap":     "has a few categories with one dominant value",
+            "Word List":   "has a long ranked list",
+            "Chart":       "has multi-series data",
+            "Quote":       "has no data",
+          };
+          suggestions.push(`Slide ${slide.serial} ${reason[suggested] ?? "matches a pattern"} — ${suggested} might suit it. Use the Layout dropdown to switch.`);
+        }
+      }
+      if (suggestions.length > 0) {
+        streamAxon(suggestions.join(" "), addBuildMessage, updateBuildMessage, 1200);
+      }
+    }, 600);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -198,16 +331,19 @@ export function BuildMode() {
   /* ─── Handlers ─── */
 
   function handleAudienceChange(a: BuildAudience) {
+    const oldOrder = [...localSlideOrder];
     const newOrder = rearrangeForAudience(localSlideOrder, a);
     setLocalSlideOrder(newOrder);
     if (newOrder[0] && newOrder[0] !== activeSlideId) setActiveSlide(newOrder[0]);
     setBuildAudience(a);
-    streamAxon(getAudienceMessage(a, newOrder.length, customText), addBuildMessage, updateBuildMessage);
+    streamAxon(getAudienceMessage(a, newOrder.length, newOrder, oldOrder, customText), addBuildMessage, updateBuildMessage);
   }
 
   function handleToneChange(t: BuildTone) {
     setBuildTone(t);
-    streamAxon(getToneMessage(t), addBuildMessage, updateBuildMessage);
+    if (buildNarration) {
+      streamAxon(getToneMessage(t), addBuildMessage, updateBuildMessage);
+    }
   }
 
   function handleNarrationToggle() {
@@ -254,6 +390,37 @@ export function BuildMode() {
     if (lower.includes("team"))                             { setTimeout(() => handleAudienceChange("Team"),     400); return; }
     if (lower.includes("investor"))                         { setTimeout(() => handleAudienceChange("Investor"), 400); return; }
 
+    /* archetype commands — "switch slide N to Big Number" etc. */
+    const archMatch = lower.match(/(?:switch|change|set|use)\s+(?:slide\s+(\d+)\s+to\s+|to\s+)?(.+?)(?:\s+(?:layout|archetype|view))?$/);
+    const ARCH_MAP: Record<string, SlideArchetype> = {
+      "big number": "Big Number", "bignumber": "Big Number",
+      "comparison": "Comparison", "compare": "Comparison",
+      "sentiment": "Sentiment", "ratio": "Sentiment",
+      "map": "Map", "geographic": "Map",
+      "word list": "Word List", "wordlist": "Word List", "list": "Word List",
+      "treemap": "Treemap", "tree map": "Treemap",
+      "quote": "Quote", "insight": "Quote",
+      "chart": "Chart",
+    };
+    if (archMatch) {
+      const slideN   = archMatch[1] ? parseInt(archMatch[1]) : null;
+      const archKey  = (archMatch[2] ?? "").trim().toLowerCase();
+      const arch     = ARCH_MAP[archKey];
+      if (arch) {
+        const targets = slideN
+          ? localSlides.filter(s => s.serial === slideN)
+          : activeSlide ? [activeSlide] : [];
+        if (targets.length) {
+          setTimeout(() => {
+            targets.forEach(s => updateSlide(s.id, { archetype: arch }));
+            const label = targets.length === 1 ? `Slide ${targets[0].serial}` : `${targets.length} slides`;
+            streamAxon(`Switched ${label} to ${arch}.`, addBuildMessage, updateBuildMessage);
+          }, 400);
+          return;
+        }
+      }
+    }
+
     /* fallback */
     setTimeout(() => streamAxon(
       "Got it — I'd update the deck based on that. Full editing coming soon.",
@@ -263,6 +430,25 @@ export function BuildMode() {
 
   /* Keep processRef current so the useEffect always calls the latest version */
   processRef.current = processUserMessage;
+
+  function handleFitToScreen() {
+    setIsResetting(true);
+    setZoom(1);
+    setPanOffset({ x: 0, y: 0 });
+    zoomRef.current = 1;
+    panRef.current  = { x: 0, y: 0 };
+    setTimeout(() => setIsResetting(false), 350);
+  }
+  fitToScreenRef.current = handleFitToScreen;
+
+  function handleCanvasMouseDown(e: React.MouseEvent) {
+    const isMiddleButton = e.button === 1;
+    const isSpaceDrag    = isSpaceDown && e.button === 0;
+    if (!isMiddleButton && !isSpaceDrag) return;
+    e.preventDefault();
+    setIsPanning(true);
+    panState.current = { startX: e.clientX, startY: e.clientY, startPanX: panOffset.x, startPanY: panOffset.y };
+  }
 
   function playNote(text: string) {
     try { window.speechSynthesis.cancel(); window.speechSynthesis.speak(new SpeechSynthesisUtterance(text)); }
@@ -309,32 +495,32 @@ export function BuildMode() {
           padding: "9px 24px", borderBottom: `1px solid ${BORDER}`,
           background: SURFACE, flexShrink: 0,
         }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
             <button
               onClick={() => setMode("presentation")}
               style={{
-                display: "flex", alignItems: "center", gap: 5,
-                fontFamily: mono, fontSize: 11, color: T2,
-                background: "none", border: "none", cursor: "pointer", transition: "color 150ms",
+                fontFamily: mono, fontSize: 10.5, letterSpacing: "0.08em", textTransform: "uppercase",
+                color: T3, background: "none", border: "none", cursor: "pointer",
+                padding: 0, textDecoration: "none", transition: "text-decoration 100ms",
               }}
-              onMouseEnter={e => { e.currentTarget.style.color = "#0A0A0A"; }}
-              onMouseLeave={e => { e.currentTarget.style.color = T2; }}
+              onMouseEnter={e => { e.currentTarget.style.textDecoration = "underline"; e.currentTarget.style.color = T2; }}
+              onMouseLeave={e => { e.currentTarget.style.textDecoration = "none"; e.currentTarget.style.color = T3; }}
             >
-              <svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
-                <path d="M9 2L4 7l5 5" />
-              </svg>
               Presentation
             </button>
-            <span style={{ color: BORDER, fontSize: 10 }}>|</span>
+            <span style={{ fontFamily: mono, fontSize: 10, color: T3, opacity: 0.45, userSelect: "none" }}>›</span>
             <span style={{
-              fontFamily: mono, fontSize: 7.5, letterSpacing: "0.1em", textTransform: "uppercase",
-              background: "rgba(27,40,64,0.06)", border: `1px solid ${BORDER}`,
-              padding: "1px 5px", borderRadius: 2, color: NAVY,
-            }}>BUILD</span>
+              fontFamily: mono, fontSize: 10.5, letterSpacing: "0.08em", textTransform: "uppercase", color: NAVY,
+            }}>
+              Build
+            </span>
             {activeSlide && (
-              <span style={{ fontFamily: mono, fontSize: 10.5, color: T3 }}>
-                {serial} / {(activeDs?.title ?? "—").slice(0, 40)}
-              </span>
+              <>
+                <span style={{ fontFamily: mono, fontSize: 10, color: T3, opacity: 0.45, userSelect: "none" }}>›</span>
+                <span style={{ fontFamily: mono, fontSize: 10.5, color: T3 }}>
+                  {serial} / {(activeDs?.title ?? "—").slice(0, 36)}
+                </span>
+              </>
             )}
           </div>
           <span style={{ fontFamily: mono, fontSize: 10, color: T3 }}>
@@ -348,12 +534,29 @@ export function BuildMode() {
           {/* ── Center ── */}
           <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", background: SURFACE_RAISE, overflow: "hidden" }}>
 
-            {/* Slide preview */}
-            <div style={{
-              flex: 1, minHeight: 0, overflow: "hidden",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              padding: "24px 40px 16px",
-            }}>
+            {/* Slide preview — viewport (clips panned content) */}
+            <div
+              ref={canvasViewportRef}
+              style={{
+                flex: 1, minHeight: 0, overflow: "hidden",
+                position: "relative",
+                cursor: isPanning ? "grabbing" : isSpaceDown ? "grab" : "default",
+                userSelect: isPanning ? "none" : "auto",
+              }}
+              onMouseDown={handleCanvasMouseDown}
+            >
+              {/* Pan container — dotted grid rides the transform */}
+              <div style={{
+                position: "absolute", inset: 0,
+                display: "flex", alignItems: "center", justifyContent: "center",
+                padding: "24px 40px 16px",
+                backgroundImage: "radial-gradient(circle, rgba(60,50,30,0.12) 1px, transparent 1px)",
+                backgroundSize: "20px 20px",
+                transform: `translate(${panOffset.x}px, ${panOffset.y}px) scale(${zoom})`,
+                transformOrigin: "0 0",
+                transition: isPanning ? "none" : isResetting ? "transform 300ms ease-out" : "transform 150ms ease-out",
+                willChange: "transform",
+              }}>
               {activeSlide && activeDs ? (
                 <AnimatePresence mode="wait">
                   <motion.div
@@ -383,9 +586,32 @@ export function BuildMode() {
                         </div>
                       )}
                     </div>
-                    <div style={{ flex: 1, minHeight: 0, padding: "16px 28px 20px" }}>
-                      <ChartFill rows={activeDs.rows} columns={activeDs.columns} chartType={activeDs.chartType} expanded />
+                    <div style={{ flex: 1, minHeight: 0, padding: "16px 28px 12px" }}>
+                      <SlideArchetypeRenderer
+                        rows={activeDs.rows}
+                        columns={activeDs.columns}
+                        chartType={activeDs.chartType}
+                        archetype={activeSlide.archetype ?? "Chart"}
+                        accentColor={ACCENT[activeSlide.colorAccent] ?? NAVY}
+                        title={activeDs.title}
+                        narrative={activeSlide.narrative}
+                        visualStyle={activeSlide.visualStyle}
+                      />
                     </div>
+                    {activeDs.rows.length > 0 && (
+                      <div style={{
+                        flexShrink: 0, padding: "6px 28px 10px",
+                        borderTop: `1px solid rgba(27,40,64,0.08)`,
+                        background: slideBg,
+                      }}>
+                        <span style={{
+                          fontFamily: headFont, fontSize: 11, color: T3,
+                          fontStyle: "italic", lineHeight: 1.4,
+                        }}>
+                          {deriveSlideSummary(activeDs.rows, activeDs.columns)}
+                        </span>
+                      </div>
+                    )}
                   </motion.div>
                 </AnimatePresence>
               ) : (
@@ -393,7 +619,59 @@ export function BuildMode() {
                   {localSlides.length === 0 ? "No slides — go back to Presentation Mode and add data sets." : "Select a slide below."}
                 </span>
               )}
-            </div>
+              </div>{/* end pan container */}
+
+              {/* Zoom indicator + fit-to-screen button — absolute overlays, not transformed */}
+              <div style={{
+                position: "absolute", bottom: 16, right: 16,
+                display: "flex", alignItems: "center", gap: 6,
+                zIndex: 10,
+              }}>
+                <div style={{
+                  fontFamily: mono, fontSize: 12, color: T2,
+                  background: "rgba(255,255,255,0.7)",
+                  backdropFilter: "blur(8px)",
+                  border: "1px solid rgba(27,40,64,0.12)",
+                  padding: "4px 9px",
+                  userSelect: "none",
+                  lineHeight: 1,
+                }}>
+                  {Math.round(zoom * 100)}%
+                </div>
+                <button
+                  onClick={handleFitToScreen}
+                  title="Fit to screen"
+                  style={{
+                    width: 32, height: 32,
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    background: "rgba(255,255,255,0.7)",
+                    backdropFilter: "blur(8px)",
+                    border: "1px solid rgba(27,40,64,0.12)",
+                    borderRadius: 0, cursor: "pointer",
+                    color: T2, padding: 0,
+                    transition: "background 150ms, border-color 150ms, color 150ms",
+                  }}
+                  onMouseEnter={e => {
+                    e.currentTarget.style.background = "rgba(255,255,255,0.92)";
+                    e.currentTarget.style.borderColor = NAVY;
+                    e.currentTarget.style.color = NAVY;
+                  }}
+                  onMouseLeave={e => {
+                    e.currentTarget.style.background = "rgba(255,255,255,0.7)";
+                    e.currentTarget.style.borderColor = "rgba(27,40,64,0.12)";
+                    e.currentTarget.style.color = T2;
+                  }}
+                >
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M1 5V1h4" />
+                    <path d="M9 1h4v4" />
+                    <path d="M13 9v4h-4" />
+                    <path d="M5 13H1V9" />
+                  </svg>
+                </button>
+              </div>
+
+            </div>{/* end viewport */}
 
             {/* Speaker notes panel */}
             <AnimatePresence>
@@ -480,8 +758,13 @@ export function BuildMode() {
                       </text>
                       {ds && (
                         <g transform="translate(4, 21)">
-                          <MiniChart rows={ds.rows} chartType={ds.chartType} color={accentColor} W={78} H={43} />
+                          <MiniChart rows={ds.rows} chartType={ds.chartType} color={accentColor} W={78} H={36} />
                         </g>
+                      )}
+                      {ds && ds.rows.length > 0 && (
+                        <text x="4" y="68" fontSize="3.8" fill={T3} fontFamily="Inter, sans-serif" fontStyle="italic">
+                          {deriveSlideSummary(ds.rows, ds.columns).slice(0, 36)}
+                        </text>
                       )}
                     </svg>
                   </motion.div>

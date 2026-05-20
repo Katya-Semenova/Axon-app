@@ -235,34 +235,41 @@ export function DataSetCard({
   );
 }
 
-/* ── "+ NEW DATA SET" — prominent viewport-pinned button ────────────────── */
+/* ── "+ NEW DATA SET" — high-contrast anchor button ─────────────────────── */
 export function DataSetPlaceholder({ onClick }: { onClick: () => void }) {
   return (
-    <div
+    <button
       data-is-card=""
       onClick={onClick}
-      className="rounded-none flex flex-col items-center justify-center cursor-pointer"
       style={{
-        borderColor: BORDER, border: "2px dashed",
-        minHeight: 76, gap: 6,
-        background: "transparent",
-        transition: "border-color 200ms ease, background 200ms ease",
+        display: "flex", alignItems: "center", justifyContent: "center", gap: 10,
+        width: "100%", padding: "15px 20px",
+        background: "#1B2840",
+        border: "none", borderRadius: 0, cursor: "pointer",
+        boxShadow: "0 4px 18px rgba(27,40,64,0.32)",
+        transition: "transform 200ms ease, box-shadow 200ms ease, background 200ms ease",
       }}
       onMouseEnter={e => {
-        e.currentTarget.style.borderColor = GOLD;
-        e.currentTarget.style.background = "rgba(184,149,72,0.05)";
+        e.currentTarget.style.background = "#243252";
+        e.currentTarget.style.transform = "scale(1.028)";
+        e.currentTarget.style.boxShadow = "0 8px 32px rgba(27,40,64,0.50)";
       }}
       onMouseLeave={e => {
-        e.currentTarget.style.borderColor = BORDER;
-        e.currentTarget.style.background = "transparent";
+        e.currentTarget.style.background = "#1B2840";
+        e.currentTarget.style.transform = "scale(1)";
+        e.currentTarget.style.boxShadow = "0 4px 18px rgba(27,40,64,0.32)";
       }}
     >
-      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke={T3} strokeWidth="1.5" strokeLinecap="round">
-        <path d="M10 3v14M3 10h14" />
+      <svg width="13" height="13" viewBox="0 0 13 13" fill="none"
+        stroke="rgba(245,242,234,0.88)" strokeWidth="1.7" strokeLinecap="round">
+        <path d="M6.5 1v11M1 6.5h11" />
       </svg>
-      <span style={{ fontFamily: mono, fontSize: 10.5, letterSpacing: "0.09em", color: T3 }}>
-        + NEW DATA SET
+      <span style={{
+        fontFamily: mono, fontSize: 10.5, letterSpacing: "0.13em",
+        color: "#F5F2EA", fontWeight: 500,
+      }}>
+        NEW DATA SET
       </span>
-    </div>
+    </button>
   );
 }

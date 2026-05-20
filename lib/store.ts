@@ -7,13 +7,14 @@ import {
 import type {
   Insight, DataSet, Slide, Connection, Mode,
   NodePositionMap, WorkspaceSnapshot,
-  ChartType, DataRow,
+  ChartType, DataRow, SlideArchetype,
   BuildAudience, BuildTone, BuildMessage,
 } from "./types";
 
 /* ── Canvas layout constants ───────────────────────────────────────────── */
 const CARD_W      = 200;
 const CARD_H_EST  = 130;
+const DS_W        = 248;   /* DataSet card width — also matches the centre "+ NEW" placeholder */
 const ROW_GAP     = 18;
 const INS_COL_X   = 28;
 /* 2-column insight grid: each col is CARD_W + 12px gap. DS column starts 48px to the right. */
@@ -280,13 +281,27 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => {
           dataSetOrder: [...s.dataSetOrder, id],
         };
       });
-      /* Place new dataset below the last existing one in the DS column. */
+      /* Grid-offset spawn around the centre "+ NEW DATA SET" anchor.
+         Cards fly out in 8-card rings (N, NE, E, SE, S, SW, W, NW)
+         at radii that step out one card-width per ring — so the
+         centre button is never obscured and the layout reads as an
+         organised burst rather than a stack. */
       set((s) => {
-        const idx = s.dataSetOrder.indexOf(id);
+        const idx = s.dataSetOrder.indexOf(id);   // 0-based spawn order
+        const SPOKES   = 8;
+        const ring     = Math.floor(idx / SPOKES) + 1;
+        const slot     = idx % SPOKES;
+        /* Start at N (-π/2) so the first card lands directly above the button. */
+        const angle    = -Math.PI / 2 + slot * (2 * Math.PI / SPOKES);
+        const radius   = 200 + (ring - 1) * 210;  // 200 keeps clear of 248×130 button
+        const ANCHOR_X = 1100;                    // world-space centre near the button
+        const ANCHOR_Y = 720;
+        const cx       = ANCHOR_X + Math.cos(angle) * radius;
+        const cy       = ANCHOR_Y + Math.sin(angle) * radius;
         return {
           nodePositions: {
             ...s.nodePositions,
-            [id]: { x: DS_COL_X, y: 28 + idx * (CARD_H_EST + ROW_GAP) },
+            [id]: { x: cx - DS_W / 2, y: cy - CARD_H_EST / 2 },
           },
         };
       });
@@ -370,6 +385,7 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => {
       const serial = s.slideOrder.length + 1;
       const slide: Slide = {
         id, serial, dataSetIds: [], narrative: "",
+        archetype: "Chart" as SlideArchetype,
         status: "Paid", aggregation: "Monthly", colorBy: "Segment",
         filter: "All data", colorAccent: "Navy", visualStyle: "Modern",
         showLabels: true, showGrid: true, stackedBars: false,
@@ -385,6 +401,7 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => {
       const serial = s.slideOrder.length + 1;
       const slide: Slide = {
         id, serial, dataSetIds: [dataSetId], narrative: "",
+        archetype: "Chart" as SlideArchetype,
         status: "Paid", aggregation: "Monthly", colorBy: "Segment",
         filter: "All data", colorAccent: "Navy", visualStyle: "Modern",
         showLabels: true, showGrid: true, stackedBars: false,

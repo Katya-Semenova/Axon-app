@@ -2,12 +2,12 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useWorkspaceStore } from "@/lib/store";
-import { ChartFill } from "../ChartFill";
 import { MiniChart } from "../MiniChart";
-import { ModeToggle } from "../ui/ModeToggle";
-import { ChartTypeDropdown } from "../ui/ChartTypeDropdown";
+import { ComboLayoutDropdown } from "../ui/ComboLayoutDropdown";
+import { SlideArchetypeRenderer, deriveSlideSummary } from "./SlideArchetypeRenderer";
 import { DataTable } from "../DataTable";
-import type { Slide, VisualStyle, ColorAccent } from "@/lib/types";
+import type { Slide, VisualStyle, ColorAccent, SlideArchetype } from "@/lib/types";
+import { NON_CHART_ARCHETYPES } from "@/lib/types";
 import { BORDER, NAVY, GOLD, T2, T3, SURFACE, SURFACE_RAISE, SURFACE_MUTED } from "../ui/tokens";
 
 /* ── Palette constants ───────────────────────────────────────────────────── */
@@ -189,9 +189,11 @@ function SlideThumbnail({ slide, isActive, onClick, onDelete }: {
   onClick: () => void;
   onDelete: () => void;
 }) {
-  const [hovered, setHovered] = useState(false);
-  const dataSetsById  = useWorkspaceStore(s => s.dataSetsById);
-  const ds            = slide.dataSetIds[0] ? dataSetsById[slide.dataSetIds[0]] : null;
+  const [hovered, setHovered]     = useState(false);
+  const [chartSize, setChartSize] = useState({ w: 104, h: 54 });
+  const chartDivRef               = useRef<HTMLDivElement>(null);
+  const dataSetsById              = useWorkspaceStore(s => s.dataSetsById);
+  const ds                        = slide.dataSetIds[0] ? dataSetsById[slide.dataSetIds[0]] : null;
 
   const serial      = String(slide.serial).padStart(2, "0");
   const headline    = (ds?.title ?? "Untitled").slice(0, 28) + ((ds?.title ?? "").length > 28 ? "…" : "");
@@ -199,39 +201,74 @@ function SlideThumbnail({ slide, isActive, onClick, onDelete }: {
   const bg          = STYLE_BG[slide.visualStyle];
   const headFont    = STYLE_HEADLINE_FONT[slide.visualStyle];
 
-  const wireDots = slide.visualStyle === "Wireframe"
-    ? Array.from({ length: 5 }, (_, row) =>
-        Array.from({ length: 13 }, (_, col) => (
-          <circle key={`${row}-${col}`} cx={6 + col * 8} cy={32 + row * 7} r="0.6" fill={T3} fillOpacity="0.45" />
-        ))
-      ).flat()
-    : null;
+  useEffect(() => {
+    const el = chartDivRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(entries => {
+      const rect = entries[0]?.contentRect;
+      if (rect) setChartSize({ w: Math.max(1, Math.round(rect.width)), h: Math.max(1, Math.round(rect.height)) });
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
 
   return (
-    <div style={{ position: "relative", aspectRatio: "116 / 76" }}
+    <div
+      style={{ position: "relative", width: "100%", maxWidth: 168, display: "flex", flexDirection: "column" }}
       onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}>
-      <div onClick={onClick} className="cursor-pointer overflow-hidden"
+      onMouseLeave={() => setHovered(false)}
+    >
+      <div
+        onClick={onClick}
+        className="cursor-pointer"
         style={{
-          width: "100%", height: "100%", borderRadius: 0,
+          flex: 1, minHeight: 0,
+          display: "flex", flexDirection: "column",
           border: `${isActive ? "1.5px" : "1px"} solid ${isActive ? NAVY : hovered ? GOLD : BORDER}`,
-          background: bg, transition: "border-color 150ms ease, border-width 150ms ease",
-        }}>
-        <svg viewBox="0 0 116 76" fill="none" style={{ width: "100%", height: "100%", display: "block" }}>
-          <rect width="116" height="76" fill={bg} />
-          {wireDots}
-          <text x="6" y="11" fontSize="5" fontWeight="500" fill={T3} fontFamily={mono} letterSpacing="0.08em">{serial} /</text>
-          <text x="6" y={slide.visualStyle === "Magazine" ? 23 : 21}
-            fontSize={slide.visualStyle === "Magazine" ? 7.5 : 6.5}
-            fontWeight={slide.visualStyle === "Magazine" ? "600" : "500"}
-            fill="#0A0A0A" fontFamily={headFont}>{headline}</text>
-          {ds && (
-            <g transform="translate(6, 30)">
-              <MiniChart rows={ds.rows} chartType={ds.chartType} color={accentColor} W={104} H={34} />
-            </g>
+          background: bg, overflow: "hidden",
+          transition: "border-color 150ms ease",
+        }}
+      >
+        {/* Title */}
+        <div style={{ flexShrink: 0, padding: "3px 5px 2px" }}>
+          <div style={{ fontFamily: mono, fontSize: 4.5, color: T3, letterSpacing: "0.08em", lineHeight: 1.2, marginBottom: 1 }}>
+            {serial} /
+          </div>
+          <div style={{
+            fontFamily: headFont,
+            fontSize: slide.visualStyle === "Magazine" ? 6.5 : 5.5,
+            fontWeight: slide.visualStyle === "Magazine" ? 600 : 500,
+            color: "#0A0A0A", lineHeight: 1.2,
+            overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+          }}>
+            {headline}
+          </div>
+        </div>
+
+        {/* Chart — fills remaining space; ResizeObserver drives exact MiniChart dimensions */}
+        <div
+          ref={chartDivRef}
+          style={{
+            flex: 1, minHeight: 0, overflow: "hidden",
+            ...(slide.visualStyle === "Wireframe" ? {
+              backgroundImage: "radial-gradient(circle, rgba(138,139,135,0.45) 1px, transparent 1px)",
+              backgroundSize: "8px 7px",
+            } : {}),
+          }}
+        >
+          {ds && chartSize.w > 0 && chartSize.h > 0 && (
+            <svg
+              viewBox={`0 0 ${chartSize.w} ${chartSize.h}`}
+              width={chartSize.w}
+              height={chartSize.h}
+              style={{ display: "block" }}
+            >
+              <MiniChart rows={ds.rows} chartType={ds.chartType} color={accentColor} W={chartSize.w} H={chartSize.h} />
+            </svg>
           )}
-        </svg>
+        </div>
       </div>
+
       <button
         onClick={(e) => { e.stopPropagation(); onDelete(); }}
         title="Remove slide"
@@ -261,8 +298,8 @@ function SlideThumbnail({ slide, isActive, onClick, onDelete }: {
                      + resizable body (chart panel / splitter / data+settings)
      3. Bottom strip — thumbnail rail (excl. active) + Viz Style + Build CTA   */
 export function SlideEditor() {
-  const setMode           = useWorkspaceStore(s => s.setMode);
-  const clearBuildMessages = useWorkspaceStore(s => s.clearBuildMessages);
+  /* setMode and clearBuildMessages were only used by the removed
+     "Build Presentation" CTA — no longer subscribed here. */
   const slideOrder        = useWorkspaceStore(s => s.slideOrder);
   const slidesById        = useWorkspaceStore(s => s.slidesById);
   const slides            = slideOrder.map(id => slidesById[id]).filter(Boolean) as Slide[];
@@ -322,8 +359,10 @@ export function SlideEditor() {
   const totalPages   = Math.max(1, Math.ceil(slides.length / SLIDES_PER_PAGE));
   const safePage     = Math.min(page, totalPages - 1);
   const pageSlides   = slides.slice(safePage * SLIDES_PER_PAGE, (safePage + 1) * SLIDES_PER_PAGE);
-  /* Exclude the active slide from the preview strip (spec §8) */
-  const thumbnailSlides = pageSlides.filter(s => s.id !== activeSlideId);
+  /* With ≤3 total slides show all (including active); with ≥4 exclude the active */
+  const thumbnailSlides = slides.length <= 3
+    ? pageSlides
+    : pageSlides.filter(s => s.id !== activeSlideId);
 
   function handleRemove(id: string) {
     removeSlide(id);
@@ -356,25 +395,26 @@ export function SlideEditor() {
             </>
           )}
         </div>
-        <ModeToggle />
+        {/* Top-right tab nav lives at page level (ModeTabs) — gutter reserves space. */}
+        <div style={{ width: 280 }} aria-hidden />
       </div>
 
       {/* ── Slide card — centred, fills remaining space above strip ── */}
       <div
         className="flex-1 min-h-0 overflow-hidden"
-        style={{ background: SURFACE_RAISE, padding: "20px 32px", display: "flex", justifyContent: "center" }}
+        style={{ background: SURFACE_RAISE, padding: "20px 32px", display: "flex", flexDirection: "column", alignItems: "center" }}
       >
         {activeSlide && activeDs ? (
           <div style={{
             width: "100%", maxWidth: 940,
-            height: "100%",          /* explicit height so card doesn't push strip */
+            flex: 1, minHeight: 0,   /* fill available height via flex, never push strip */
             display: "flex", flexDirection: "column",
             border: `1px solid ${BORDER}`,
             background: slideBg,
-            overflow: "hidden",      /* clip card content within the card */
+            overflow: "hidden",
           }}>
 
-            {/* ── Card header: 2-line title + chart-type dropdown ── */}
+            {/* ── Card header: 2-line title + layout + chart-type dropdowns ── */}
             <div style={{
               padding: "14px 24px 12px",
               borderBottom: `1px solid ${BORDER}`,
@@ -406,11 +446,13 @@ export function SlideEditor() {
                   </span>
                 </div>
               </div>
-              {/* Chart type dropdown — per-slide, in the card */}
+              {/* Combined layout + chart-type dropdown */}
               <div style={{ flexShrink: 0 }}>
-                <ChartTypeDropdown
-                  value={activeDs.chartType}
-                  onChange={(type) => updateDsChartType(activeDs.id, type)}
+                <ComboLayoutDropdown
+                  archetype={activeSlide.archetype ?? "Chart"}
+                  chartType={activeDs.chartType}
+                  onChangeArchetype={(arch) => updateSlide(activeSlide.id, { archetype: arch })}
+                  onChangeChartType={(type) => updateDsChartType(activeDs.id, type)}
                 />
               </div>
             </div>
@@ -427,11 +469,15 @@ export function SlideEditor() {
                 display: "flex", flexDirection: "column",
               }}>
                 <div style={{ flex: 1, minHeight: 0, maxWidth: 820, width: "100%", margin: "0 auto" }}>
-                  <ChartFill
+                  <SlideArchetypeRenderer
                     rows={activeDs.rows}
                     columns={activeDs.columns}
                     chartType={activeDs.chartType}
-                    expanded
+                    archetype={activeSlide.archetype ?? "Chart"}
+                    accentColor={ACCENT_COLOR[activeSlide.colorAccent]}
+                    title={activeDs.title}
+                    narrative={activeSlide.narrative}
+                    visualStyle={activeSlide.visualStyle}
                   />
                 </div>
               </div>
@@ -459,12 +505,28 @@ export function SlideEditor() {
                 </svg>
               </div>
 
+              {/* Slide Summary — factual data takeaway, tone-independent */}
+              {activeDs.rows.length > 0 && (
+                <div style={{
+                  flexShrink: 0, padding: "5px 32px",
+                  borderTop: `1px solid ${BORDER}`,
+                  background: slideBg,
+                }}>
+                  <span style={{
+                    fontFamily: STYLE_HEADLINE_FONT[activeSlide.visualStyle],
+                    fontSize: 11, color: T3, fontStyle: "italic", lineHeight: 1.4,
+                  }}>
+                    {deriveSlideSummary(activeDs.rows, activeDs.columns)}
+                  </span>
+                </div>
+              )}
+
               {/* Data + Chart Settings panel */}
-              <div style={{ flex: 1, minHeight: 80, overflow: "hidden", display: "flex" }}>
+              <div style={{ flex: 1, minHeight: 0, overflow: "hidden", display: "flex" }}>
 
                 {/* Left column — DataTable */}
                 <div style={{
-                  flex: 1, minWidth: 0,
+                  flex: 1, minWidth: 0, minHeight: 0,
                   borderRight: `1px solid ${BORDER}`,
                   display: "flex", flexDirection: "column",
                   overflow: "hidden",
@@ -479,7 +541,7 @@ export function SlideEditor() {
                       DATA — EDIT TO CORRECT AGGREGATION ERRORS
                     </span>
                   </div>
-                  <div style={{ flex: 1, overflowY: "auto" }} className="thin-scroll">
+                  <div style={{ flex: 1, minHeight: 0, overflowY: "auto" }} className="thin-scroll">
                     {activeDs.rows.length === 0 ? (
                       <div style={{
                         fontFamily: mono, fontSize: 11, color: T3,
@@ -500,7 +562,7 @@ export function SlideEditor() {
 
                 {/* Right column — Chart Settings */}
                 <div style={{
-                  width: 248, flexShrink: 0,
+                  width: 248, flexShrink: 0, minHeight: 0,
                   display: "flex", flexDirection: "column",
                   overflow: "hidden",
                 }}>
@@ -550,8 +612,8 @@ export function SlideEditor() {
 
       {/* ── Bottom strip: thumbnail rail (left) + viz style panel (right) ── */}
       <div
-        className="shrink-0 flex border-t overflow-hidden"
-        style={{ height: 200, minHeight: 180, background: "#EDE9E0", borderColor: BORDER }}
+        className="flex border-t overflow-hidden"
+        style={{ flexShrink: 0, height: 200, minHeight: 180, background: "#EDE9E0", borderColor: BORDER }}
       >
         {/* Slide thumbnails — active slide excluded from preview */}
         <div className="flex flex-col flex-1 min-w-0 border-r overflow-hidden" style={{ borderColor: BORDER }}>
@@ -566,7 +628,8 @@ export function SlideEditor() {
             flex: 1,
             display: "grid",
             gridTemplateColumns: "repeat(4, 1fr)",
-            alignContent: "center",
+            justifyItems: "center",
+            alignContent: "stretch",
             gap: 8,
             paddingLeft: 20, paddingRight: 20,
             paddingTop: 4, paddingBottom: 6,
@@ -576,7 +639,7 @@ export function SlideEditor() {
               <SlideThumbnail
                 key={slide.id}
                 slide={slide}
-                isActive={false}
+                isActive={slide.id === activeSlideId}
                 onClick={() => setActiveSlide(slide.id)}
                 onDelete={() => handleRemove(slide.id)}
               />
@@ -610,37 +673,34 @@ export function SlideEditor() {
           <div className="px-4 pt-2 pb-1 shrink-0 border-b" style={{ borderColor: BORDER }}>
             <span style={{ fontFamily: mono, fontSize: 8.5, letterSpacing: "0.09em", textTransform: "uppercase" as const, color: T3 }}>Visualization Style</span>
           </div>
-          <div className="flex-1 overflow-y-auto thin-scroll px-4 py-3">
+          <div className="flex-1 overflow-y-auto thin-scroll px-4 py-3" style={{
+            opacity: activeSlide && NON_CHART_ARCHETYPES.has(activeSlide.archetype ?? "Chart") ? 0.38 : 1,
+            pointerEvents: activeSlide && NON_CHART_ARCHETYPES.has(activeSlide.archetype ?? "Chart") ? "none" : undefined,
+            transition: "opacity 180ms",
+          }}>
             {activeSlide ? (
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", columnGap: 6, rowGap: 8 }}>
-                {(["Modern", "Magazine", "Wireframe"] as VisualStyle[]).map(s => (
-                  <StyleTile key={s} style={s} active={activeSlide.visualStyle === s}
-                    onClick={() => updateSlide(activeSlide.id, { visualStyle: s })} />
-                ))}
-                <ToggleSwitch label="Labels" checked={activeSlide.showLabels}  onChange={v => updateSlide(activeSlide.id, { showLabels: v })} />
-                <ToggleSwitch label="Grid"   checked={activeSlide.showGrid}    onChange={v => updateSlide(activeSlide.id, { showGrid: v })} />
-                <ToggleSwitch label="Stack"  checked={activeSlide.stackedBars} onChange={v => updateSlide(activeSlide.id, { stackedBars: v })} />
-              </div>
+              <>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", columnGap: 6, rowGap: 8 }}>
+                  {(["Modern", "Magazine", "Wireframe"] as VisualStyle[]).map(s => (
+                    <StyleTile key={s} style={s} active={activeSlide.visualStyle === s}
+                      onClick={() => updateSlide(activeSlide.id, { visualStyle: s })} />
+                  ))}
+                  <ToggleSwitch label="Labels" checked={activeSlide.showLabels}  onChange={v => updateSlide(activeSlide.id, { showLabels: v })} />
+                  <ToggleSwitch label="Grid"   checked={activeSlide.showGrid}    onChange={v => updateSlide(activeSlide.id, { showGrid: v })} />
+                  <ToggleSwitch label="Stack"  checked={activeSlide.stackedBars} onChange={v => updateSlide(activeSlide.id, { stackedBars: v })} />
+                </div>
+                {NON_CHART_ARCHETYPES.has(activeSlide.archetype ?? "Chart") && (
+                  <div style={{ marginTop: 10, fontFamily: mono, fontSize: 8.5, color: T3, lineHeight: 1.5 }}>
+                    Available for Chart layouts.
+                  </div>
+                )}
+              </>
             ) : (
               <span style={{ fontFamily: mono, fontSize: 10, color: T3 }}>Select a slide</span>
             )}
           </div>
-          {/* Build Presentation CTA — pinned to bottom of panel */}
-          {activeSlide && (
-            <div className="px-4 pb-4 pt-2 shrink-0">
-              <button
-                onClick={() => { clearBuildMessages(); setMode("build"); }}
-                className="w-full font-medium transition-opacity duration-150 hover:opacity-85"
-                style={{
-                  fontFamily: mono, fontSize: 11, color: "#F5F2EA",
-                  background: NAVY, border: "none",
-                  padding: "8px 0", borderRadius: 0,
-                  cursor: "pointer", whiteSpace: "nowrap",
-                }}>
-                Build Presentation
-              </button>
-            </div>
-          )}
+          {/* "Build Presentation" CTA removed — the PRESENT tab in the
+              top-right nav now opens fullscreen playback directly. */}
         </div>
       </div>
     </div>

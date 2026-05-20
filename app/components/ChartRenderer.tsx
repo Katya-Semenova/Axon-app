@@ -523,9 +523,11 @@ export function ChartRenderer({
     case "Lollipop":      return <LollipopChart {...props} />;
     case "Spline Area":   return <SplineAreaChart {...props} />;
     case "Donut":         return <DonutChart {...props} />;
+    case "Bar":
     case "Clean Columns": return <CleanColumnsChart {...props} />;
     case "Stacked Bar":   return <StackedBarChart {...props} />;
     case "Waterfall":     return <WaterfallChart {...props} />;
+    case "Scatter":
     case "Scatter Plot":  return <ScatterPlotChart {...props} />;
     case "Treemap":       return <TreemapChart {...props} />;
     default:              return <SplineAreaChart {...props} />;

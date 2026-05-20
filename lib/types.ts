@@ -14,10 +14,13 @@
 
 export type ChartType =
   | "Lollipop"
-  | "Spline Area"
+  | "Bar"
   | "Donut"
-  | "Clean Columns"
+  | "Scatter"
   | "Stacked Bar"
+  /* legacy — still render but not offered in dropdown */
+  | "Spline Area"
+  | "Clean Columns"
   | "Waterfall"
   | "Scatter Plot"
   | "Treemap";
@@ -100,6 +103,25 @@ export interface DataSet {
 export type VisualStyle = "Wireframe" | "Magazine" | "Modern";
 export type ColorAccent = "Navy" | "Gold" | "Slate" | "Graphite";
 
+export type SlideArchetype =
+  | "Chart"
+  | "Big Number"
+  | "Comparison"
+  | "Sentiment"
+  | "Map"
+  | "Word List"
+  | "Treemap"
+  | "Quote";
+
+export const SLIDE_ARCHETYPES: SlideArchetype[] = [
+  "Chart", "Big Number", "Comparison", "Sentiment", "Map", "Word List", "Treemap", "Quote",
+];
+
+/** Archetypes that don't render a chart — controls dropdown/viz-style visibility. */
+export const NON_CHART_ARCHETYPES = new Set<SlideArchetype>([
+  "Big Number", "Comparison", "Sentiment", "Map", "Word List", "Treemap", "Quote",
+]);
+
 export interface Slide {
   id: string;
   serial: number;
@@ -107,6 +129,9 @@ export interface Slide {
   dataSetIds: string[];
   /** One-liner narrative subtitle shown below the title in the slide card. */
   narrative?: string;
+
+  /* ── archetype ────────────────────────────────────────────────────── */
+  archetype: SlideArchetype;
 
   /* ── chart settings panel ─────────────────────────────────────────── */
   status: string;

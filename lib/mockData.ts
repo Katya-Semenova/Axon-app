@@ -1,18 +1,15 @@
 import type {
   ChartType, DataRow,
-  Insight, DataSet, Slide, Connection,
+  Insight, DataSet, Slide, Connection, SlideArchetype,
 } from "./types";
 export type { ChartType, DataRow };
 
 export const CHART_TYPES: ChartType[] = [
   "Lollipop",
-  "Spline Area",
+  "Bar",
   "Donut",
-  "Clean Columns",
+  "Scatter",
   "Stacked Bar",
-  "Waterfall",
-  "Scatter Plot",
-  "Treemap",
 ];
 
 export interface CardState {
@@ -93,7 +90,7 @@ export const INITIAL_CARDS: CardState[] = [
     id: "columns",
     serial: 5,
     headline: "MRR: $1.2M — 12-month steady growth trajectory",
-    chartType: "Clean Columns",
+    chartType: "Bar",
     columns: ["MRR ($K)"],
     rows: [
       row("r1", "Jan", 1050), row("r2", "Feb", 1080), row("r3", "Mar", 1100),
@@ -123,6 +120,7 @@ export const INITIAL_CARDS: CardState[] = [
 
 export function defaultDataForType(type: ChartType): { columns: string[]; rows: DataRow[] } {
   switch (type) {
+    case "Scatter":
     case "Scatter Plot":
       return {
         columns: ["Engagement", "Revenue ($K)"],
@@ -163,7 +161,7 @@ export function defaultDataForType(type: ChartType): { columns: string[]; rows: 
 
 export function adaptRows(rows: DataRow[], targetType: ChartType, targetColumns: string[]): DataRow[] {
   const needCount =
-    targetType === "Scatter Plot" ? 2
+    (targetType === "Scatter" || targetType === "Scatter Plot") ? 2
     : targetType === "Stacked Bar" ? targetColumns.length
     : 1;
 
@@ -264,7 +262,7 @@ export const INITIAL_INSIGHTS: Insight[] = [
     kind: "data",
     data: {
       columns: ["MRR ($K)"],
-      chartType: "Clean Columns",
+      chartType: "Bar",
       rows: [
         row("r1",  "Jan", 1050), row("r2",  "Feb", 1080), row("r3",  "Mar", 1100),
         row("r4",  "Apr", 1140), row("r5",  "May", 1160), row("r6",  "Jun", 1180),
@@ -295,6 +293,7 @@ export const INITIAL_CONNECTIONS: Connection[] = [];
 
 /* ── Slides — three, matching the existing presentation defaults ───────── */
 const SLIDE_DEFAULTS = {
+  archetype: "Chart" as SlideArchetype,
   status: "Paid",
   aggregation: "Monthly" as const,
   colorBy: "Segment",

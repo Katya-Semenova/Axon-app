@@ -6,7 +6,6 @@ import { useWorkspaceStore } from "@/lib/store";
 import type { Insight, DataSet } from "@/lib/types";
 import { InsightCard } from "./InsightCard";
 import { DataSetCard, DataSetPlaceholder } from "./DataSetCard";
-import { ModeToggle } from "../ui/ModeToggle";
 import {
   GOLD, NAVY_300, BORDER, T2, T3, SURFACE, SURFACE_MUTED,
   CARD_W, CARD_H_EST, COL_GAP,
@@ -236,7 +235,8 @@ export function Canvas() {
               </svg>
             </button>
           </div>
-          <ModeToggle />
+          {/* Top-right tab nav lives at page level (ModeTabs) — reserved 280 px gutter. */}
+          <div style={{ width: 280 }} aria-hidden />
         </div>
       </div>
 
@@ -392,8 +392,20 @@ export function Canvas() {
           </div>
         </div>
 
-        {/* "+ NEW DATA SET" — pinned to viewport bottom-right, always accessible */}
-        <div style={{ position: "absolute", bottom: 62, right: 16, width: 248, zIndex: 5 }}>
+        {/* "+ NEW DATA SET" — centred in the viewport. New sets fly out around
+            this anchor on a grid offset (see store.addDataSet), so the button
+            itself is never obscured. */}
+        <div
+          style={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            width: 248,
+            zIndex: 5,
+            pointerEvents: "auto",
+          }}
+        >
           <DataSetPlaceholder onClick={addDataSet} />
         </div>
 

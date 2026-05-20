@@ -64,33 +64,27 @@ export function ChatRail({ onBack }: { onBack: () => void }) {
     <aside className="hidden lg:flex w-[280px] shrink-0 border-r border-border bg-card flex-col h-screen overflow-hidden">
       {/* Header */}
       <div className="flex items-center justify-between px-5 py-5 border-b border-border shrink-0">
-        <span className="font-mono text-[13px] font-medium tracking-[0.14em]">AXON</span>
-        <div className="flex items-center gap-2">
-          {/* Collapse chevron */}
-          <button
-            onClick={toggleChat}
-            title="Collapse chat"
-            className="flex items-center justify-center rounded-sm transition-colors duration-200"
-            style={{ width: 24, height: 24, color: T3, border: `1px solid ${BORDER}` }}
-            onMouseEnter={e => { e.currentTarget.style.color = "#0A0A0A"; e.currentTarget.style.borderColor = NAVY; }}
-            onMouseLeave={e => { e.currentTarget.style.color = T3; e.currentTarget.style.borderColor = BORDER; }}
-          >
-            <svg width="11" height="11" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
-              <path d="M9 2L4 7l5 5" />
-            </svg>
-          </button>
-          {/* Back */}
-          <button
-            onClick={onBack}
-            className="flex items-center gap-[5px] font-mono text-[11.5px] text-t2 hover:text-t1 transition-colors duration-200 group"
-          >
-            <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"
-              className="group-hover:-translate-x-0.5 transition-transform duration-200">
-              <path d="M9 2L4 7l5 5" />
-            </svg>
-            Back
-          </button>
-        </div>
+        <button
+          onClick={onBack}
+          title="Return to home"
+          className="font-mono text-[13px] font-medium tracking-[0.14em] hover:underline transition-all duration-150"
+          style={{ background: "none", border: "none", padding: 0, cursor: "pointer" }}
+        >
+          AXON
+        </button>
+        {/* Collapse chevron */}
+        <button
+          onClick={toggleChat}
+          title="Collapse chat"
+          className="flex items-center justify-center rounded-sm transition-colors duration-200"
+          style={{ width: 24, height: 24, color: T3, border: `1px solid ${BORDER}` }}
+          onMouseEnter={e => { e.currentTarget.style.color = "#0A0A0A"; e.currentTarget.style.borderColor = NAVY; }}
+          onMouseLeave={e => { e.currentTarget.style.color = T3; e.currentTarget.style.borderColor = BORDER; }}
+        >
+          <svg width="11" height="11" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+            <path d="M9 2L4 7l5 5" />
+          </svg>
+        </button>
       </div>
 
       {/* File chips — only in non-build modes */}
