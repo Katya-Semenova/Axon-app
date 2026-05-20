@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { AnimatePresence } from "framer-motion";
 import {
   DndContext, DragOverlay, PointerSensor, useSensor, useSensors,
   type DragEndEvent, type DragStartEvent, type Modifier,
@@ -15,10 +14,10 @@ import { InsightExpandedViewOverlay } from "@/app/components/canvas/InsightExpan
 import { DataSetExpandedViewOverlay } from "@/app/components/canvas/DataSetExpandedView";
 import { SlideEditor } from "@/app/components/presentation/SlideEditor";
 import { PresentationStructure } from "@/app/components/presentation/PresentationStructure";
-import { PresentMode } from "@/app/components/build/PresentMode";
+import { PresentExport } from "@/app/components/build/PresentExport";
 import { ModeTabs } from "@/app/components/ui/ModeTabs";
 
-/* ── Modifier: pin the DragOverlay top-left to the live cursor position. */
+/* ── Modifier: pin the DragOverlay top-left to the live cursor. ── */
 const snapToPointer: Modifier = ({ activatorEvent, draggingNodeRect, transform }) => {
   if (draggingNodeRect && activatorEvent) {
     const { clientX, clientY } = activatorEvent as PointerEvent;
@@ -33,37 +32,24 @@ const snapToPointer: Modifier = ({ activatorEvent, draggingNodeRect, transform }
 
 /* ══════════════════════════════════════════════════════
    PAGE 2 — WORKSPACE
-   Three-mode workflow: CANVAS · SLIDES · PRESENT
    ────────────────────────────────────────────────────
-   CANVAS  → store mode "data"          — node graph
-   SLIDES  → store mode "presentation"  — slide editor + splitter + thumb rail
-   PRESENT → presentOpen overlay        — fullscreen playback, no chrome
+   Three modes, all rendered inside the same shell
+   (AI Chat Rail left, ModeTabs floating top-right):
+
+     CANVAS  → store mode "data"          — node graph
+     SLIDES  → store mode "presentation"  — slide editor
+     PRESENT → store mode "build"         — export gateway
+
+   Slide tray (PresentationStructure, labelled "Slides" in UI)
+   shows in CANVAS + SLIDES, hidden in PRESENT.
 ══════════════════════════════════════════════════════ */
 function Page2({ onBack }: { onBack: () => void }) {
   const mode               = useWorkspaceStore(s => s.mode);
-  const slideOrder         = useWorkspaceStore(s => s.slideOrder);
-  const slidesById         = useWorkspaceStore(s => s.slidesById);
   const addSlideWithDs     = useWorkspaceStore(s => s.addSlideWithDataSet);
   const bindDataSetToSlide = useWorkspaceStore(s => s.bindDataSetToSlide);
   const dataSetsById       = useWorkspaceStore(s => s.dataSetsById);
 
   const [activeDragDataSetId, setActiveDragDataSetId] = useState<string | null>(null);
-
-  /* ── Present mode (fullscreen overlay) lives at page level so it can
-        suppress every surrounding rail/panel. ── */
-  const [presentOpen, setPresentOpen] = useState(false);
-  const [presentIdx,  setPresentIdx]  = useState(0);
-  const [showNotes,   setShowNotes]   = useState(false);
-
-  function openPresent() {
-    /* PRESENT tab is disabled if there are no slides; this is also guarded
-       inside ModeTabs by the parent passing the boolean. */
-    if (slideOrder.length === 0) return;
-    setPresentIdx(0);
-    setPresentOpen(true);
-  }
-
-  const presentSlides = slideOrder.map(id => slidesById[id]).filter(Boolean);
 
   /* 8 px drag activation prevents accidental drag on input/splitter clicks. */
   const sensors = useSensors(
@@ -96,17 +82,22 @@ function Page2({ onBack }: { onBack: () => void }) {
 
   const activeDs = activeDragDataSetId ? dataSetsById[activeDragDataSetId] : null;
 
-  /* Rail visibility — driven purely by the three modes. */
-  const showChat  = !presentOpen;                          // hide in PRESENT only
-  const showRail  = mode === "presentation" && !presentOpen; // SLIDES only
-  const showTabs  = !presentOpen;                          // hidden during fullscreen playback
+  /* Surface mounted per mode */
+  const Surface = mode === "data"
+    ? <Canvas />
+    : mode === "presentation"
+    ? <SlideEditor />
+    : <PresentExport />;
+
+  /* Slide tray — CANVAS + SLIDES only. Hidden in PRESENT (export gateway). */
+  const showSlideTray = mode === "data" || mode === "presentation";
 
   return (
     <DndContext sensors={sensors} modifiers={[snapToPointer]} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
       <div className="flex h-screen max-h-screen overflow-hidden bg-bg animate-fade-in">
 
-        {/* ── Left: AI Chat Rail (hidden in PRESENT) ── */}
-        {showChat && <ChatRail onBack={onBack} />}
+        {/* ── Left: AI Chat Rail — always visible across all three modes ── */}
+        <ChatRail onBack={onBack} />
 
         {/* ── Mobile top bar ── */}
         <div className="lg:hidden flex items-center justify-between px-4 py-[14px] border-b border-border bg-card shrink-0 fixed top-0 left-0 right-0 z-30">
@@ -125,30 +116,17 @@ function Page2({ onBack }: { onBack: () => void }) {
         {/* ── Right column — main surface ── */}
         <div className="flex-1 min-w-0 min-h-0 relative flex flex-col overflow-hidden">
 
-          {/* Floating top-right nav tabs */}
-          {showTabs && (
-            <div
-              style={{
-                position: "absolute",
-                top: 12,
-                right: 16,
-                zIndex: 25,
-              }}
-            >
-              <ModeTabs presentActive={presentOpen} onPresent={openPresent} />
-            </div>
-          )}
+          {/* Floating top-right nav — always visible, all three modes */}
+          <div style={{ position: "absolute", top: 12, right: 16, zIndex: 25 }}>
+            <ModeTabs />
+          </div>
 
-          {/* Main surface — CANVAS or SLIDES editor */}
-          {mode === "data"
-            ? <Canvas />
-            : <SlideEditor />
-          }
+          {Surface}
 
-          {/* Bottom presentation strip — SLIDES only */}
-          {showRail && <PresentationStructure />}
+          {/* Bottom slide tray — CANVAS + SLIDES only */}
+          {showSlideTray && <PresentationStructure />}
 
-          {/* Expanded overlays */}
+          {/* Expanded overlays — fire on demand inside any mode */}
           <InsightExpandedViewOverlay />
           <DataSetExpandedViewOverlay />
         </div>
@@ -177,20 +155,6 @@ function Page2({ onBack }: { onBack: () => void }) {
           </div>
         ) : null}
       </DragOverlay>
-
-      {/* ── PRESENT mode — fullscreen overlay, suppresses every rail ── */}
-      <AnimatePresence>
-        {presentOpen && presentSlides.length > 0 && (
-          <PresentMode
-            slides={presentSlides}
-            currentIdx={presentIdx}
-            onChangeIdx={setPresentIdx}
-            onExit={() => setPresentOpen(false)}
-            showNotes={showNotes}
-            onToggleNotes={() => setShowNotes(v => !v)}
-          />
-        )}
-      </AnimatePresence>
     </DndContext>
   );
 }

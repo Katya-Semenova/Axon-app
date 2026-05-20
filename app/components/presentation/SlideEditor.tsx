@@ -610,99 +610,12 @@ export function SlideEditor() {
         )}
       </div>
 
-      {/* ── Bottom strip: thumbnail rail (left) + viz style panel (right) ── */}
-      <div
-        className="flex border-t overflow-hidden"
-        style={{ flexShrink: 0, height: 200, minHeight: 180, background: "#EDE9E0", borderColor: BORDER }}
-      >
-        {/* Slide thumbnails — active slide excluded from preview */}
-        <div className="flex flex-col flex-1 min-w-0 border-r overflow-hidden" style={{ borderColor: BORDER }}>
-          <div className="flex items-center gap-2 shrink-0 px-5 pt-2 pb-1">
-            <span style={{ fontFamily: mono, fontSize: 9.5, letterSpacing: "0.1em", textTransform: "uppercase" as const, color: T3 }}>Slides</span>
-            <span style={{ fontFamily: mono, fontSize: 9, color: T3, border: `1px solid ${BORDER}`, borderRadius: 999, padding: "1px 7px" }}>
-              {slides.length}
-            </span>
-          </div>
-
-          <div style={{
-            flex: 1,
-            display: "grid",
-            gridTemplateColumns: "repeat(4, 1fr)",
-            justifyItems: "center",
-            alignContent: "stretch",
-            gap: 8,
-            paddingLeft: 20, paddingRight: 20,
-            paddingTop: 4, paddingBottom: 6,
-            overflow: "hidden",
-          }}>
-            {thumbnailSlides.map(slide => (
-              <SlideThumbnail
-                key={slide.id}
-                slide={slide}
-                isActive={slide.id === activeSlideId}
-                onClick={() => setActiveSlide(slide.id)}
-                onDelete={() => handleRemove(slide.id)}
-              />
-            ))}
-          </div>
-
-          {/* Smart paginator — centred, "1  2  ..  12" style */}
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 2, padding: "4px 0 6px", flexShrink: 0 }}>
-            {buildPages(safePage, totalPages).map((p, i) =>
-              p === "..." ? (
-                <span key={`dots-${i}`} style={{ fontFamily: mono, fontSize: 9.5, color: T3, padding: "0 2px", lineHeight: "20px" }}>…</span>
-              ) : (
-                <button key={p} onClick={() => setPage(p as number)}
-                  style={{
-                    fontFamily: mono, fontSize: 9.5, width: 20, height: 20,
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    borderRadius: 2, border: "none", cursor: "pointer",
-                    background: p === safePage ? NAVY : "transparent",
-                    color: p === safePage ? "#F5F2EA" : T3,
-                    transition: "background 150ms, color 150ms",
-                  }}>
-                  {(p as number) + 1}
-                </button>
-              )
-            )}
-          </div>
-        </div>
-
-        {/* Viz style — StyleTiles + Toggles only; Accent/Aggregation live in Chart Settings */}
-        <div className="flex flex-col shrink-0 overflow-hidden" style={{ width: 220, background: SURFACE }}>
-          <div className="px-4 pt-2 pb-1 shrink-0 border-b" style={{ borderColor: BORDER }}>
-            <span style={{ fontFamily: mono, fontSize: 8.5, letterSpacing: "0.09em", textTransform: "uppercase" as const, color: T3 }}>Visualization Style</span>
-          </div>
-          <div className="flex-1 overflow-y-auto thin-scroll px-4 py-3" style={{
-            opacity: activeSlide && NON_CHART_ARCHETYPES.has(activeSlide.archetype ?? "Chart") ? 0.38 : 1,
-            pointerEvents: activeSlide && NON_CHART_ARCHETYPES.has(activeSlide.archetype ?? "Chart") ? "none" : undefined,
-            transition: "opacity 180ms",
-          }}>
-            {activeSlide ? (
-              <>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", columnGap: 6, rowGap: 8 }}>
-                  {(["Modern", "Magazine", "Wireframe"] as VisualStyle[]).map(s => (
-                    <StyleTile key={s} style={s} active={activeSlide.visualStyle === s}
-                      onClick={() => updateSlide(activeSlide.id, { visualStyle: s })} />
-                  ))}
-                  <ToggleSwitch label="Labels" checked={activeSlide.showLabels}  onChange={v => updateSlide(activeSlide.id, { showLabels: v })} />
-                  <ToggleSwitch label="Grid"   checked={activeSlide.showGrid}    onChange={v => updateSlide(activeSlide.id, { showGrid: v })} />
-                  <ToggleSwitch label="Stack"  checked={activeSlide.stackedBars} onChange={v => updateSlide(activeSlide.id, { stackedBars: v })} />
-                </div>
-                {NON_CHART_ARCHETYPES.has(activeSlide.archetype ?? "Chart") && (
-                  <div style={{ marginTop: 10, fontFamily: mono, fontSize: 8.5, color: T3, lineHeight: 1.5 }}>
-                    Available for Chart layouts.
-                  </div>
-                )}
-              </>
-            ) : (
-              <span style={{ fontFamily: mono, fontSize: 10, color: T3 }}>Select a slide</span>
-            )}
-          </div>
-          {/* "Build Presentation" CTA removed — the PRESENT tab in the
-              top-right nav now opens fullscreen playback directly. */}
-        </div>
-      </div>
+      {/* The duplicate bottom strip (thumbnail rail + viz-style panel) was
+          removed per the final spec: there must be only ONE slide tray, and
+          it's the page-level <PresentationStructure /> rendered by page.tsx.
+          The Modern/Magazine/Wireframe style tiles + Labels/Grid/Stack
+          toggles now live in the slide tray's panel (PresentationStructure)
+          where they were already duplicated. */}
     </div>
   );
 }

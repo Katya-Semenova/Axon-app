@@ -6,31 +6,16 @@ import { NAVY, BORDER, T2 } from "./tokens";
 /**
  * Three-tab segmented control — CANVAS / SLIDES / PRESENT.
  *
- * - CANVAS  → store mode "data"          (node graph)
- * - SLIDES  → store mode "presentation"  (slide editor with splitter)
- * - PRESENT → opens fullscreen overlay   (does not change store mode)
+ * Each tab maps to a real store mode, so PRESENT is a normal in-shell
+ * surface (light theme, chat rail visible) — not a fullscreen overlay.
  *
- * The Present tab is purely visual on click — it fires onPresent() to let
- * the parent open a PresentMode overlay. The store remains in whichever
- * mode it was in (typically "presentation"), so leaving Present returns
- * the user to SLIDES naturally.
+ *   CANVAS  → mode "data"          — node graph
+ *   SLIDES  → mode "presentation"  — slide editor + slide tray
+ *   PRESENT → mode "build"         — export gateway (PresentExport)
  */
-export function ModeTabs({
-  presentActive,
-  onPresent,
-}: {
-  presentActive: boolean;
-  onPresent: () => void;
-}) {
+export function ModeTabs() {
   const mode    = useWorkspaceStore(s => s.mode);
   const setMode = useWorkspaceStore(s => s.setMode);
-
-  type Tab = "canvas" | "slides" | "present";
-  const current: Tab = presentActive
-    ? "present"
-    : mode === "presentation"
-    ? "slides"
-    : "canvas";
 
   return (
     <div
@@ -50,21 +35,9 @@ export function ModeTabs({
         userSelect: "none",
       }}
     >
-      <Tab
-        label="Canvas"
-        active={current === "canvas"}
-        onClick={() => { if (current !== "canvas") setMode("data"); }}
-      />
-      <Tab
-        label="Slides"
-        active={current === "slides"}
-        onClick={() => { if (current !== "slides") setMode("presentation"); }}
-      />
-      <Tab
-        label="Present"
-        active={current === "present"}
-        onClick={() => { if (current !== "present") onPresent(); }}
-      />
+      <Tab label="Canvas"  active={mode === "data"}         onClick={() => mode !== "data"         && setMode("data")} />
+      <Tab label="Slides"  active={mode === "presentation"} onClick={() => mode !== "presentation" && setMode("presentation")} />
+      <Tab label="Present" active={mode === "build"}        onClick={() => mode !== "build"        && setMode("build")} />
     </div>
   );
 }
