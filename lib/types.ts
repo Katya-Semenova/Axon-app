@@ -12,18 +12,48 @@
 
 /* ── Chart types & data rows — owned by `types`, re-exported from mockData ─ */
 
+/* ── ChartType — 14 types, grouped by family in the picker ──────────────
+   Groups (dropdown render order):
+     Comparison   — Bar, Stacked Bar, Lollipop, Bullet, Radar
+     Trend        — Line, Area, Waterfall
+     Composition  — Donut, Treemap, Sankey
+     Distribution — Scatter, Heatmap, Box Plot
+   Legacy names ("Spline Area", "Clean Columns", "Scatter Plot") still
+   resolve in ChartFill so existing data sets render — they're just no
+   longer offered in the picker. */
 export type ChartType =
-  | "Lollipop"
+  /* Comparison */
   | "Bar"
-  | "Donut"
-  | "Scatter"
   | "Stacked Bar"
+  | "Lollipop"
+  | "Bullet"
+  | "Radar"
+  /* Trend */
+  | "Line"
+  | "Area"
+  | "Waterfall"
+  /* Composition */
+  | "Donut"
+  | "Treemap"
+  | "Sankey"
+  /* Distribution */
+  | "Scatter"
+  | "Heatmap"
+  | "Box Plot"
   /* legacy — still render but not offered in dropdown */
   | "Spline Area"
   | "Clean Columns"
-  | "Waterfall"
-  | "Scatter Plot"
-  | "Treemap";
+  | "Scatter Plot";
+
+export type ChartTypeGroup = "Comparison" | "Trend" | "Composition" | "Distribution";
+
+/* Grouped picker data — single source of truth for the dropdown. */
+export const CHART_TYPE_GROUPS: { group: ChartTypeGroup; types: ChartType[] }[] = [
+  { group: "Comparison",   types: ["Bar", "Stacked Bar", "Lollipop", "Bullet", "Radar"] },
+  { group: "Trend",        types: ["Line", "Area", "Waterfall"] },
+  { group: "Composition",  types: ["Donut", "Treemap", "Sankey"] },
+  { group: "Distribution", types: ["Scatter", "Heatmap", "Box Plot"] },
+];
 
 export interface DataRow {
   id: string;
