@@ -392,15 +392,16 @@ export function Canvas() {
           </div>
         </div>
 
-        {/* "+ NEW DATA SET" — centred in the viewport. New sets fly out around
-            this anchor on a grid offset (see store.addDataSet), so the button
-            itself is never obscured. */}
+        {/* "+ NEW DATA SET" — pinned to top-centre of the viewport, vertically
+            aligned with the first row of cards. Stays put while the user pans
+            or scrolls the canvas. New sets still spawn on the grid-offset ring
+            around the world-space anchor (see store.addDataSet). */}
         <div
           style={{
             position: "absolute",
-            top: "50%",
+            top: 18,
             left: "50%",
-            transform: "translate(-50%, -50%)",
+            transform: "translateX(-50%)",
             width: 248,
             zIndex: 5,
             pointerEvents: "auto",

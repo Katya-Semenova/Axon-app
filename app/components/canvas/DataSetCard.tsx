@@ -192,15 +192,18 @@ export function DataSetCard({
         </div>
       )}
 
-      {/* ── "на слайд" drag handle — full-width strip, formed datasets only ── */}
+      {/* ── "на слайд" drag handle — formed datasets only.
+            Round-4 fix 2: ti-hand-finger icon at 18px (≈2× previous size) so
+            the affordance reads clearly as draggable. Click-to-send is still
+            wired by dnd-kit's listeners on this whole strip. */}
       {!isEmpty && (
         <div
           data-grip=""
           {...listeners}
           title="Перетащите карточку на слайд"
           style={{
-            display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
-            padding: "8px 14px",
+            display: "flex", alignItems: "center", justifyContent: "center", gap: 9,
+            padding: "10px 14px",
             marginLeft: -14, marginRight: -14,
             borderTop: `1.5px solid ${BORDER}`,
             cursor: isDragging ? "grabbing" : "grab",
@@ -220,15 +223,14 @@ export function DataSetCard({
             e.currentTarget.style.borderColor = BORDER;
           }}
         >
-          {/* Hand / grab icon */}
-          <svg width="11" height="13" viewBox="0 0 11 13" fill="none" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M2 6.5V4.5a.85.85 0 0 1 1.7 0V6" />
-            <path d="M3.7 7V2.5a.9.9 0 0 1 1.8 0V6.5" />
-            <path d="M5.5 6.5V2a.9.9 0 0 1 1.8 0V6.5" />
-            <path d="M7.3 7V3.5a.9.9 0 0 1 1.8 0V7" />
-            <path d="M2 6.5C1.8 10.5 3 12.5 5.5 12.5C8 12.5 9.3 10.5 9.1 7" />
+          {/* ti-hand-finger — 18 px, stroke matches surrounding text */}
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+            <path d="M8 13v-7.5a1.5 1.5 0 0 1 3 0v6.5" />
+            <path d="M11 5.5v-2a1.5 1.5 0 1 1 3 0v8.5" />
+            <path d="M14 5.5a1.5 1.5 0 0 1 3 0v6.5" />
+            <path d="M17 7.5a1.5 1.5 0 0 1 3 0v8.5a6 6 0 0 1 -6 6h-2h.208a6 6 0 0 1 -5.012 -2.7l-.196 -.3c-.312 -.479 -1.407 -2.388 -3.286 -5.728a1.5 1.5 0 0 1 .536 -2.022a1.867 1.867 0 0 1 2.28 .28l1.47 1.47" />
           </svg>
-          <span style={{ fontFamily: mono, fontSize: 9.5, letterSpacing: "0.07em" }}>на слайд</span>
+          <span style={{ fontFamily: mono, fontSize: 10.5, letterSpacing: "0.07em", fontWeight: 500 }}>на слайд</span>
         </div>
       )}
     </div>
