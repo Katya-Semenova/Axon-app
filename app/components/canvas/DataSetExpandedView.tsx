@@ -6,8 +6,9 @@ import { ChartFill } from "../ChartFill";
 import { ChartTypeDropdown } from "../ui/ChartTypeDropdown";
 import { DataTable } from "../DataTable";
 import { useWorkspaceStore } from "@/lib/store";
-import type { DataSet, Insight, ChartType } from "@/lib/types";
-import { BORDER, T2, T3, SURFACE, SURFACE_RAISE } from "../ui/tokens";
+import type { DataSet, Insight, ChartType, ColorAccent, DataSetSettings } from "@/lib/types";
+import { DEFAULT_DATASET_SETTINGS } from "@/lib/types";
+import { BORDER, NAVY, T2, T3, SURFACE, SURFACE_RAISE } from "../ui/tokens";
 
 function DataSetExpandedView({ dataSet, insights }: {
   dataSet: DataSet;
@@ -16,6 +17,10 @@ function DataSetExpandedView({ dataSet, insights }: {
   const setExpDataSet   = useWorkspaceStore(s => s.setExpandedDataSet);
   const updateChartType = useWorkspaceStore(s => s.updateDataSetChartType);
   const updateRows      = useWorkspaceStore(s => s.updateDataSetRows);
+  const updateSettings  = useWorkspaceStore(s => s.updateDataSetSettings);
+
+  /* Settings carried on the dataset; defaults apply when not yet set. */
+  const settings: DataSetSettings = dataSet.settings ?? DEFAULT_DATASET_SETTINGS;
 
   const insightsByIdMap = Object.fromEntries(insights.map(ins => [ins.id, ins]));
 
@@ -135,38 +140,191 @@ function DataSetExpandedView({ dataSet, insights }: {
           </svg>
         </div>
 
-        {/* ── Table panel (fills remaining) ── */}
-        <div style={{
-          flex: 1, minHeight: 80,
-          overflowY: "auto",
-          padding: "16px 40px 32px",
-        }}
-          className="thin-scroll"
-        >
-          <span className="font-mono uppercase tracking-[0.1em] mb-4 block" style={{ fontSize: 10, color: T3 }}>
-            Data ({dataSet.rows.length} rows)
-          </span>
+        {/* ── Bottom row: DATA table (left, ~75%) + CHART SETTINGS (right, ~25%) ── */}
+        <div style={{ flex: 1, minHeight: 120, display: "flex", overflow: "hidden" }}>
 
-          {dataSet.rows.length === 0 ? (
-            <div style={{
-              fontFamily: "'JetBrains Mono', monospace",
-              fontSize: 11, color: T3,
-              border: `1px dashed ${BORDER}`,
-              borderRadius: 2, padding: "24px", textAlign: "center",
-            }}>
-              No data yet — wire an Insight to this card's input port on the canvas.
+          {/* Left: DATA — editable table with drag handles */}
+          <div
+            style={{
+              flex: 3, minWidth: 0,
+              borderRight: `1px solid ${BORDER}`,
+              overflowY: "auto",
+              padding: "16px 32px 28px",
+            }}
+            className="thin-scroll"
+          >
+            <span className="font-mono uppercase tracking-[0.1em] mb-4 block" style={{ fontSize: 10, color: T3 }}>
+              Data ({dataSet.rows.length} rows)
+            </span>
+
+            {dataSet.rows.length === 0 ? (
+              <div style={{
+                fontFamily: "'JetBrains Mono', monospace",
+                fontSize: 11, color: T3,
+                border: `1px dashed ${BORDER}`,
+                borderRadius: 2, padding: "24px", textAlign: "center",
+              }}>
+                No data yet — wire an Insight to this card's input port on the canvas.
+              </div>
+            ) : (
+              <DataTable
+                columns={dataSet.columns}
+                rows={dataSet.rows}
+                onRowsChange={(rows) => updateRows(dataSet.id, rows)}
+                insightsById={insights.length > 0 ? insightsByIdMap : undefined}
+              />
+            )}
+          </div>
+
+          {/* Right: CHART SETTINGS — 5 controls bound to THIS data set */}
+          <div
+            style={{
+              flex: 1, minWidth: 240, maxWidth: 320,
+              padding: "16px 20px 28px",
+              overflowY: "auto",
+              background: SURFACE,
+              display: "flex", flexDirection: "column", gap: 14,
+            }}
+            className="thin-scroll"
+          >
+            <span className="font-mono uppercase tracking-[0.1em]" style={{ fontSize: 10, color: T3 }}>
+              Chart Settings
+            </span>
+
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+              <SettingField label="Status">
+                <PanelSelect<string>
+                  value={settings.status}
+                  options={["All", "Paid", "Pending", "Failed"]}
+                  onChange={v => updateSettings(dataSet.id, { status: v })}
+                />
+              </SettingField>
+              <SettingField label="Aggregation">
+                <PanelSelect<DataSetSettings["aggregation"]>
+                  value={settings.aggregation}
+                  options={["Daily", "Weekly", "Monthly", "Quarterly"]}
+                  onChange={v => updateSettings(dataSet.id, { aggregation: v })}
+                />
+              </SettingField>
+              <SettingField label="Color by">
+                <PanelSelect<string>
+                  value={settings.colorBy}
+                  options={["Segment", "Status", "Channel", "Region", "None"]}
+                  onChange={v => updateSettings(dataSet.id, { colorBy: v })}
+                />
+              </SettingField>
+              <SettingField label="Filter">
+                <PanelSelect<string>
+                  value={settings.filter}
+                  options={["All data", "Top 10", "Bottom 10", "Outliers"]}
+                  onChange={v => updateSettings(dataSet.id, { filter: v })}
+                />
+              </SettingField>
             </div>
-          ) : (
-            <DataTable
-              columns={dataSet.columns}
-              rows={dataSet.rows}
-              onRowsChange={(rows) => updateRows(dataSet.id, rows)}
-              insightsById={insights.length > 0 ? insightsByIdMap : undefined}
-            />
-          )}
+
+            {/* Accent — full-width row with colour swatch */}
+            <SettingField label="Accent">
+              <AccentSelect
+                value={settings.accent}
+                onChange={v => updateSettings(dataSet.id, { accent: v })}
+              />
+            </SettingField>
+          </div>
         </div>
       </div>
     </motion.div>
+  );
+}
+
+/* ── Settings primitives ─────────────────────────────────────────────────── */
+
+function SettingField({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div style={{ minWidth: 0 }}>
+      <div style={{
+        fontFamily: "'JetBrains Mono', monospace",
+        fontSize: 8.5, letterSpacing: "0.1em", textTransform: "uppercase",
+        color: T3, marginBottom: 5,
+      }}>
+        {label}
+      </div>
+      {children}
+    </div>
+  );
+}
+
+function PanelSelect<T extends string>({
+  value, options, onChange,
+}: {
+  value: T;
+  options: readonly T[];
+  onChange: (v: T) => void;
+}) {
+  return (
+    <div style={{ position: "relative" }}>
+      <select
+        value={value}
+        onChange={e => onChange(e.target.value as T)}
+        style={{
+          width: "100%",
+          appearance: "none", WebkitAppearance: "none",
+          background: SURFACE_RAISE,
+          border: `1px solid ${BORDER}`,
+          borderRadius: 4,
+          fontFamily: "'JetBrains Mono', monospace",
+          fontSize: 10.5, color: NAVY,
+          padding: "6px 22px 6px 9px",
+          outline: "none", cursor: "pointer",
+        }}
+      >
+        {options.map(o => <option key={o} value={o}>{o}</option>)}
+      </select>
+      <svg width="8" height="8" viewBox="0 0 8 8" fill="none" stroke={T3} strokeWidth="1.3" strokeLinecap="round"
+        style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }}>
+        <path d="M1 2.5l3 3 3-3" />
+      </svg>
+    </div>
+  );
+}
+
+const ACCENT_SWATCH: Record<ColorAccent, string> = {
+  Navy:     "#1B2840",
+  Gold:     "#B89548",
+  Slate:    "#4A5878",
+  Graphite: "#2A3654",
+};
+
+function AccentSelect({ value, onChange }: { value: ColorAccent; onChange: (v: ColorAccent) => void }) {
+  const options: ColorAccent[] = ["Navy", "Gold", "Slate", "Graphite"];
+  return (
+    <div style={{ position: "relative" }}>
+      <div style={{
+        position: "absolute", left: 9, top: "50%", transform: "translateY(-50%)",
+        width: 10, height: 10, background: ACCENT_SWATCH[value],
+        pointerEvents: "none",
+      }} />
+      <select
+        value={value}
+        onChange={e => onChange(e.target.value as ColorAccent)}
+        style={{
+          width: "100%",
+          appearance: "none", WebkitAppearance: "none",
+          background: SURFACE_RAISE,
+          border: `1px solid ${BORDER}`,
+          borderRadius: 4,
+          fontFamily: "'JetBrains Mono', monospace",
+          fontSize: 10.5, color: NAVY,
+          padding: "7px 22px 7px 26px",
+          outline: "none", cursor: "pointer",
+        }}
+      >
+        {options.map(o => <option key={o} value={o}>{o}</option>)}
+      </select>
+      <svg width="8" height="8" viewBox="0 0 8 8" fill="none" stroke={T3} strokeWidth="1.3" strokeLinecap="round"
+        style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }}>
+        <path d="M1 2.5l3 3 3-3" />
+      </svg>
+    </div>
   );
 }
 

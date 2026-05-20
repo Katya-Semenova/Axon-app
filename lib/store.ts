@@ -9,7 +9,9 @@ import type {
   NodePositionMap, WorkspaceSnapshot,
   ChartType, DataRow, SlideArchetype,
   BuildAudience, BuildTone, BuildMessage,
+  DataSetSettings,
 } from "./types";
+import { DEFAULT_DATASET_SETTINGS } from "./types";
 
 /* ── Canvas layout constants ───────────────────────────────────────────── */
 const CARD_W      = 200;
@@ -166,6 +168,7 @@ interface WorkspaceActions {
   removeDataSet:         (id: string) => void;
   updateDataSetRows:     (id: string, rows: DataRow[]) => void;
   updateDataSetChartType: (id: string, type: ChartType) => void;
+  updateDataSetSettings: (id: string, partial: Partial<DataSetSettings>) => void;
   setExpandedDataSet:    (id: string | null) => void;
 
   addConnection:    (fromInsightId: string, toDataSetId: string) => void;
@@ -337,6 +340,17 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => {
       const ds = s.dataSetsById[id];
       if (!ds) return {};
       return { dataSetsById: { ...s.dataSetsById, [id]: { ...ds, chartType: type } } };
+    }),
+    updateDataSetSettings: (id, partial) => commit((s) => {
+      const ds = s.dataSetsById[id];
+      if (!ds) return {};
+      const current = ds.settings ?? DEFAULT_DATASET_SETTINGS;
+      return {
+        dataSetsById: {
+          ...s.dataSetsById,
+          [id]: { ...ds, settings: { ...current, ...partial } },
+        },
+      };
     }),
     setExpandedDataSet: (expandedDataSetId) => set({ expandedDataSetId }),
 

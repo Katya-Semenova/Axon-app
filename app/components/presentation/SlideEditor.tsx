@@ -382,11 +382,11 @@ export function SlideEditor() {
       >
         <div className="flex items-center gap-3 min-w-0">
           <span style={{ fontFamily: mono, fontSize: 10.5, letterSpacing: "0.1em", textTransform: "uppercase" as const, color: T3, flexShrink: 0 }}>
-            Presentation
+            Slides
           </span>
           {activeSlide && (
             <>
-              <span style={{ color: BORDER, fontSize: 10, flexShrink: 0 }}>|</span>
+              <span style={{ color: T3, fontSize: 10, flexShrink: 0, opacity: 0.55, userSelect: "none" }}>·</span>
               <span className="truncate" style={{ fontFamily: mono, fontSize: 10.5, color: T3 }}>
                 {serial} / {activeDs?.title
                   ? (activeDs.title.length > 34 ? activeDs.title.slice(0, 34) + "…" : activeDs.title)

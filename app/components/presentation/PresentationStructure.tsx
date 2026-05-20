@@ -210,8 +210,9 @@ export function PresentationStructure() {
       <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
         {/* Header */}
         <div className="flex items-center gap-2 shrink-0 px-5 pt-2 pb-1">
-          <span style={{ fontFamily: mono, fontSize: 10, letterSpacing: "0.1em", textTransform: "uppercase", color: T3 }}>Presentation</span>
-          <span style={{ fontFamily: mono, fontSize: 9, color: T3, border: `1px solid ${BORDER}`, borderRadius: 999, padding: "1px 7px" }}>
+          <span style={{ fontFamily: mono, fontSize: 10, letterSpacing: "0.1em", textTransform: "uppercase", color: T3 }}>Slide tray</span>
+          <span style={{ fontFamily: mono, fontSize: 10, color: T3, opacity: 0.55, userSelect: "none" }}>·</span>
+          <span style={{ fontFamily: mono, fontSize: 10, color: T3 }}>
             {slides.length}
           </span>
         </div>

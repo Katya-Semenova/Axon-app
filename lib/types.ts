@@ -126,7 +126,31 @@ export interface DataSet {
   rows: DataRow[];
   /** Wider card on canvas (mirrors today's `wide` flag on `CardState`). */
   wide: boolean;
+  /**
+   * Settings bound to THIS data set — populated only via the drill-in page
+   * (DataSetExpandedView). When undefined, defaults apply: status "All",
+   * aggregation "Monthly", colorBy "Segment", filter "All data", accent "Navy".
+   * Changes here re-render the aggregate chart on the drill-in page and
+   * persist when the user returns to canvas.
+   */
+  settings?: DataSetSettings;
 }
+
+export interface DataSetSettings {
+  status: string;
+  aggregation: "Monthly" | "Weekly" | "Daily" | "Quarterly";
+  colorBy: string;
+  filter: string;
+  accent: ColorAccent;
+}
+
+export const DEFAULT_DATASET_SETTINGS: DataSetSettings = {
+  status:      "All",
+  aggregation: "Monthly",
+  colorBy:     "Segment",
+  filter:      "All data",
+  accent:      "Navy",
+};
 
 /* ── 1st level — Slide ─────────────────────────────────────────────────── */
 

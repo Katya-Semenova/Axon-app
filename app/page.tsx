@@ -48,6 +48,11 @@ function Page2({ onBack }: { onBack: () => void }) {
   const addSlideWithDs     = useWorkspaceStore(s => s.addSlideWithDataSet);
   const bindDataSetToSlide = useWorkspaceStore(s => s.bindDataSetToSlide);
   const dataSetsById       = useWorkspaceStore(s => s.dataSetsById);
+  const expandedDataSetId  = useWorkspaceStore(s => s.expandedDataSetId);
+  const expandedInsightId  = useWorkspaceStore(s => s.expandedInsightId);
+  /* Drill-in is a context within a mode — its own back-button is the only
+     nav control. Hide the top-right CANVAS/SLIDES/PRESENT pill while it's open. */
+  const drillInOpen        = !!(expandedDataSetId || expandedInsightId);
 
   const [activeDragDataSetId, setActiveDragDataSetId] = useState<string | null>(null);
 
@@ -116,10 +121,13 @@ function Page2({ onBack }: { onBack: () => void }) {
         {/* ── Right column — main surface ── */}
         <div className="flex-1 min-w-0 min-h-0 relative flex flex-col overflow-hidden">
 
-          {/* Floating top-right nav — always visible, all three modes */}
-          <div style={{ position: "absolute", top: 12, right: 16, zIndex: 25 }}>
-            <ModeTabs />
-          </div>
+          {/* Floating top-right nav — hidden while a drill-in overlay is
+              active so its 'Back to Canvas' breadcrumb is the only nav. */}
+          {!drillInOpen && (
+            <div style={{ position: "absolute", top: 12, right: 16, zIndex: 25 }}>
+              <ModeTabs />
+            </div>
+          )}
 
           {Surface}
 
