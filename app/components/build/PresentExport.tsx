@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { MiniChart } from "../MiniChart";
 import { useWorkspaceStore } from "@/lib/store";
-import type { BuildAudience, BuildTone } from "@/lib/types";
+import type { Slide, DataSet } from "@/lib/types";
 import { BORDER, NAVY, T2, T3, SURFACE, SURFACE_RAISE, SURFACE_MUTED } from "../ui/tokens";
 
 /* ══════════════════════════════════════════════════════════════════════════
@@ -79,23 +80,19 @@ const OUTPUT_FORMATS: { id: OutputFormat; title: string; tagline: string; icon: 
   },
 ];
 
-const AUDIENCE_OPTIONS: BuildAudience[] = ["Board", "Investor", "Team", "CEO"];
-const TONE_OPTIONS: BuildTone[]         = ["Formal", "Neutral", "Casual"];
-const NARRATION_OPTIONS = ["Speaker notes included", "Voiceover script", "None"] as const;
-type NarrationMode = typeof NARRATION_OPTIONS[number];
+/* Delivery settings (Audience / Tone / Narration) moved to SLIDES mode
+   in round-4 — see DeliverySettingsStrip in SlideEditor.tsx. */
 
 /* ── Component ─────────────────────────────────────────────────────────── */
 
 export function PresentExport() {
   const slideOrder    = useWorkspaceStore(s => s.slideOrder);
   const slidesById    = useWorkspaceStore(s => s.slidesById);
-  const buildAudience = useWorkspaceStore(s => s.buildAudience);
-  const buildTone     = useWorkspaceStore(s => s.buildTone);
-  const setAudience   = useWorkspaceStore(s => s.setBuildAudience);
-  const setTone       = useWorkspaceStore(s => s.setBuildTone);
+  const dataSetsById  = useWorkspaceStore(s => s.dataSetsById);
+  const narration     = useWorkspaceStore(s => s.buildNarrationMode);
+  const reorderSlide  = useWorkspaceStore(s => s.reorderSlide);
 
   const [format, setFormat]         = useState<OutputFormat>("PPTX");
-  const [narration, setNarration]   = useState<NarrationMode>("Speaker notes included");
   const [built, setBuilt]           = useState<null | { kind: "file"; filename: string; size: string } | { kind: "link"; url: string }>(null);
   const [copied, setCopied]         = useState(false);
 
@@ -229,40 +226,13 @@ export function PresentExport() {
             })}
           </div>
 
-          {/* ── 2. Delivery settings strip ── */}
-          <div style={{ border: `1px solid ${BORDER}`, background: SURFACE, padding: "18px 22px 20px" }}>
-            <span style={{
-              fontFamily: mono, fontSize: 9.5, letterSpacing: "0.11em", textTransform: "uppercase", color: T3,
-              display: "block", marginBottom: 14,
-            }}>
-              Delivery settings
-            </span>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 18 }}>
-              <SettingsField label="Audience">
-                <Select<BuildAudience>
-                  value={buildAudience === "Custom" ? "Board" : buildAudience}
-                  options={AUDIENCE_OPTIONS}
-                  format={a => a === "CEO" ? "CEO / Exec" : a}
-                  onChange={a => { setAudience(a); if (built) setBuilt(null); }}
-                />
-              </SettingsField>
-              <SettingsField label="Tone">
-                <Select<BuildTone>
-                  value={buildTone}
-                  options={TONE_OPTIONS}
-                  format={t => t === "Formal" ? "Direct, factual" : t === "Neutral" ? "Narrative" : "Casual"}
-                  onChange={t => { setTone(t); if (built) setBuilt(null); }}
-                />
-              </SettingsField>
-              <SettingsField label="Narration">
-                <Select<NarrationMode>
-                  value={narration}
-                  options={[...NARRATION_OPTIONS]}
-                  onChange={n => { setNarration(n); if (built) setBuilt(null); }}
-                />
-              </SettingsField>
-            </div>
-          </div>
+          {/* ── 2. Deck order — final reorder before BUILD (round-4 fix 6) ── */}
+          <DeckReorderTray
+            slideOrder={slideOrder}
+            slidesById={slidesById}
+            dataSetsById={dataSetsById}
+            onReorder={(from, to) => { reorderSlide(from, to); if (built) setBuilt(null); }}
+          />
 
           {/* ── 3. Build bar OR 4. Result card ── */}
           <AnimatePresence mode="wait">
@@ -293,21 +263,23 @@ export function PresentExport() {
                   onClick={handleBuild}
                   disabled={slideCount === 0}
                   style={{
-                    display: "flex", alignItems: "center", gap: 9,
-                    padding: "11px 26px",
-                    fontFamily: mono, fontSize: 12.5, fontWeight: 500, letterSpacing: "0.06em",
-                    color: slideCount === 0 ? "rgba(245,242,234,0.55)" : "#C9A961",
-                    background: slideCount === 0 ? "rgba(27,40,64,0.4)" : NAVY,
+                    display: "flex", alignItems: "center", gap: 8,
+                    padding: "11px 28px",
+                    fontFamily: mono, fontSize: 13, fontWeight: 500, letterSpacing: "0.06em",
+                    /* Round-4 fix 7: white text + white icon on dark navy.
+                       Disabled state lifts opacity rather than swapping colours. */
+                    color: "#FFFFFF",
+                    background: slideCount === 0 ? "rgba(27,35,50,0.45)" : "#1B2332",
                     border: "none", borderRadius: 0,
                     cursor: slideCount === 0 ? "default" : "pointer",
                     textTransform: "uppercase",
-                    transition: "opacity 150ms, background 150ms",
+                    transition: "background 150ms ease",
                   }}
-                  onMouseEnter={e => { if (slideCount > 0) e.currentTarget.style.opacity = "0.9"; }}
-                  onMouseLeave={e => { e.currentTarget.style.opacity = "1"; }}
+                  onMouseEnter={e => { if (slideCount > 0) e.currentTarget.style.background = "#27334A"; }}
+                  onMouseLeave={e => { if (slideCount > 0) e.currentTarget.style.background = "#1B2332"; }}
                 >
-                  {/* Tabler hammer icon */}
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                  {/* ti-hammer — 17 px white, left of label */}
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M11.414 10l-7.383 7.418a2.091 2.091 0 0 0 0 2.967a2.11 2.11 0 0 0 2.976 0l7.407 -7.385" />
                     <path d="M18.121 15.293l2.586 -2.586a1 1 0 0 0 0 -1.414l-7.586 -7.586a1 1 0 0 0 -1.414 0l-2.586 2.586a1 1 0 0 0 0 1.414l7.586 7.586a1 1 0 0 0 1.414 0z" />
                   </svg>
@@ -394,54 +366,181 @@ export function PresentExport() {
   );
 }
 
-/* ── Tiny primitives ─────────────────────────────────────────────────────── */
+/* ── Deck order tray — drag-to-reorder before BUILD (round-4 fix 6) ────────
+   Native HTML5 drag-and-drop keeps the implementation simple and avoids
+   nesting another @dnd-kit context inside the page-level one. Tiles are
+   roughly 2× the height of the small slide-tray thumbnail, render the
+   actual chart preview via MiniChart, and the strip scrolls horizontally
+   when the deck overflows. */
 
-function SettingsField({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div>
-      <span style={{
-        fontFamily: mono, fontSize: 8.5, letterSpacing: "0.1em", textTransform: "uppercase", color: T3,
-        display: "block", marginBottom: 6,
+function DeckReorderTray({
+  slideOrder, slidesById, dataSetsById, onReorder,
+}: {
+  slideOrder: string[];
+  slidesById: Record<string, Slide>;
+  dataSetsById: Record<string, DataSet>;
+  onReorder: (from: number, to: number) => void;
+}) {
+  const [dragFrom, setDragFrom] = useState<number | null>(null);
+  const [overIdx,  setOverIdx]  = useState<number | null>(null);
+
+  const tiles = slideOrder
+    .map(id => slidesById[id])
+    .filter((s): s is Slide => !!s);
+
+  if (tiles.length === 0) {
+    return (
+      <div style={{
+        border: `1px dashed ${BORDER}`, background: SURFACE,
+        padding: "22px 18px", textAlign: "center",
+        fontFamily: mono, fontSize: 10.5, color: T3, letterSpacing: "0.05em",
       }}>
-        {label}
-      </span>
-      {children}
+        No slides to reorder — switch to CANVAS and send a Data Set to the slide tray first.
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ border: `1px solid ${BORDER}`, background: SURFACE, padding: "16px 20px 18px" }}>
+      <div style={{
+        display: "flex", alignItems: "baseline", justifyContent: "space-between",
+        marginBottom: 12, gap: 12, flexWrap: "wrap",
+      }}>
+        <span style={{
+          fontFamily: mono, fontSize: 9.5, letterSpacing: "0.11em", textTransform: "uppercase", color: T3,
+        }}>
+          Deck order
+        </span>
+        <span style={{ fontFamily: mono, fontSize: 9.5, color: T3, opacity: 0.75 }}>
+          drag to reorder
+        </span>
+      </div>
+
+      <div
+        className="slide-scroll"
+        style={{
+          display: "flex", gap: 12,
+          overflowX: "auto", overflowY: "hidden",
+          paddingBottom: 6,
+        }}
+      >
+        {tiles.map((slide, idx) => {
+          const ds = slide.dataSetIds[0] ? dataSetsById[slide.dataSetIds[0]] : null;
+          const isDragging = dragFrom === idx;
+          const isOver     = overIdx === idx && dragFrom !== null && dragFrom !== idx;
+          return (
+            <DeckTile
+              key={slide.id}
+              idx={idx}
+              slide={slide}
+              ds={ds}
+              isDragging={isDragging}
+              isOver={isOver}
+              onDragStart={() => setDragFrom(idx)}
+              onDragOver={() => setOverIdx(idx)}
+              onDrop={() => {
+                if (dragFrom !== null && dragFrom !== idx) onReorder(dragFrom, idx);
+                setDragFrom(null);
+                setOverIdx(null);
+              }}
+              onDragEnd={() => { setDragFrom(null); setOverIdx(null); }}
+            />
+          );
+        })}
+      </div>
     </div>
   );
 }
 
-function Select<T extends string>({
-  value, options, onChange, format,
+function DeckTile({
+  idx, slide, ds, isDragging, isOver,
+  onDragStart, onDragOver, onDrop, onDragEnd,
 }: {
-  value: T;
-  options: T[];
-  onChange: (v: T) => void;
-  format?: (v: T) => string;
+  idx: number;
+  slide: Slide;
+  ds: DataSet | null;
+  isDragging: boolean;
+  isOver: boolean;
+  onDragStart: () => void;
+  onDragOver: () => void;
+  onDrop: () => void;
+  onDragEnd: () => void;
 }) {
+  const W = 168, H = 130;
+  const serial = String(slide.serial).padStart(2, "0");
+  const title  = ds?.title ?? "—";
+
   return (
-    <div style={{ position: "relative" }}>
-      <select
-        value={value}
-        onChange={e => onChange(e.target.value as T)}
-        style={{
-          width: "100%",
-          appearance: "none", WebkitAppearance: "none",
-          background: SURFACE_RAISE,
-          border: `1px solid ${BORDER}`,
-          borderRadius: 4,
-          fontFamily: mono, fontSize: 11, color: NAVY,
-          padding: "7px 24px 7px 10px",
-          outline: "none", cursor: "pointer",
-        }}
-      >
-        {options.map(o => (
-          <option key={o} value={o}>{format ? format(o) : o}</option>
-        ))}
-      </select>
-      <svg width="8" height="8" viewBox="0 0 8 8" fill="none" stroke={T3} strokeWidth="1.4" strokeLinecap="round"
-        style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }}>
-        <path d="M1.5 3l2.5 2.5L6.5 3" />
-      </svg>
+    <div
+      draggable
+      onDragStart={e => { e.dataTransfer.effectAllowed = "move"; onDragStart(); }}
+      onDragOver={e => { e.preventDefault(); e.dataTransfer.dropEffect = "move"; onDragOver(); }}
+      onDrop={e => { e.preventDefault(); onDrop(); }}
+      onDragEnd={onDragEnd}
+      style={{
+        flexShrink: 0,
+        width: W,
+        background: "#FBF9F3",
+        border: `${isOver ? "2px solid #B89548" : "1px solid " + BORDER}`,
+        padding: 0,
+        opacity: isDragging ? 0.4 : 1,
+        cursor: "grab",
+        transition: "border-color 120ms, opacity 120ms",
+        userSelect: "none",
+        boxShadow: isOver ? "0 0 0 3px rgba(184,149,72,0.18)" : "none",
+      }}
+    >
+      {/* Header — serial + drag-grip hint */}
+      <div style={{
+        display: "flex", alignItems: "center", justifyContent: "space-between",
+        padding: "8px 10px 4px",
+        borderBottom: `1px solid ${BORDER}`,
+      }}>
+        <span style={{ fontFamily: mono, fontSize: 9, letterSpacing: "0.1em", color: T3 }}>
+          {serial} /
+        </span>
+        {/* ti-grip-vertical */}
+        <svg width="10" height="14" viewBox="0 0 24 24" fill="none" stroke={T3} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="9" cy="5"  r="1" />
+          <circle cx="9" cy="12" r="1" />
+          <circle cx="9" cy="19" r="1" />
+          <circle cx="15" cy="5"  r="1" />
+          <circle cx="15" cy="12" r="1" />
+          <circle cx="15" cy="19" r="1" />
+        </svg>
+      </div>
+
+      {/* Title */}
+      <div style={{
+        padding: "8px 10px 6px",
+        fontFamily: "Inter, sans-serif", fontSize: 11.5, fontWeight: 500, color: NAVY,
+        lineHeight: 1.25,
+        overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+      }}>
+        {title}
+      </div>
+
+      {/* Chart preview */}
+      <div style={{ padding: "0 10px 10px" }}>
+        <svg viewBox={`0 0 ${W - 20} 60`} fill="none" style={{ width: "100%", height: 60, display: "block" }}>
+          {ds && ds.rows.length > 0 ? (
+            <MiniChart rows={ds.rows} chartType={ds.chartType} color={NAVY} W={W - 20} H={60} />
+          ) : (
+            <text x={(W - 20) / 2} y="32" textAnchor="middle"
+              fontSize="9" fill={T3} fontFamily={mono} fillOpacity="0.7">
+              — no data —
+            </text>
+          )}
+        </svg>
+      </div>
+
+      {/* Position pill */}
+      <div style={{
+        padding: "0 10px 8px",
+        fontFamily: mono, fontSize: 8.5, letterSpacing: "0.1em", color: T3, textTransform: "uppercase",
+      }}>
+        position {idx + 1}
+      </div>
     </div>
   );
 }

@@ -180,6 +180,7 @@ interface WorkspaceActions {
   removeSlide:         (id: string) => void;
   bindDataSetToSlide:  (slideId: string, dataSetId: string) => void;
   updateSlide:         (id: string, update: Partial<Slide>) => void;
+  reorderSlide:        (fromIndex: number, toIndex: number) => void;
   setActiveSlide:      (id: string | null) => void;
 
   setNodePosition:    (id: string, x: number, y: number) => void;
@@ -453,6 +454,14 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => {
       return { slidesById: { ...s.slidesById, [id]: { ...slide, ...update } } };
     }),
 
+    reorderSlide: (from, to) => commit((s) => {
+      if (from === to || from < 0 || to < 0) return {};
+      const order = [...s.slideOrder];
+      if (from >= order.length || to >= order.length) return {};
+      const [moved] = order.splice(from, 1);
+      order.splice(to, 0, moved);
+      return { slideOrder: order };
+    }),
     setActiveSlide: (activeSlideId) => set({ activeSlideId }),
 
     /* ── node positions (NOT in history) ─ */
