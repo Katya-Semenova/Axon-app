@@ -5,10 +5,19 @@ import { useWorkspaceStore } from "@/lib/store";
 import { MiniChart } from "../MiniChart";
 import { ComboLayoutDropdown } from "../ui/ComboLayoutDropdown";
 import { SlideArchetypeRenderer, deriveSlideSummary } from "./SlideArchetypeRenderer";
-import { DataTable } from "../DataTable";
-import type { Slide, VisualStyle, ColorAccent, SlideArchetype } from "@/lib/types";
-import { NON_CHART_ARCHETYPES } from "@/lib/types";
+import type { Slide, VisualStyle, ColorAccent, RenderEngine } from "@/lib/types";
+import { RENDER_ENGINES } from "@/lib/types";
 import { BORDER, NAVY, GOLD, T2, T3, SURFACE, SURFACE_RAISE, SURFACE_MUTED } from "../ui/tokens";
+
+/* ── Speaker narrative — 2–4 sentence first-person prose derived from
+   the slide's title + data summary. Replaces the per-tone variants in
+   BuildMode that lived behind the old PRESENT overlay. The user can
+   override by clicking the block and editing inline. */
+function deriveSpeakerNarrative(title: string, summary: string): string {
+  return `Here's the story on ${title.toLowerCase().replace(/[.!?]+$/, "")}. ` +
+    `${summary} ` +
+    `That's the headline — happy to go deeper on the drivers or what we should do next.`;
+}
 
 /* ── Palette constants ───────────────────────────────────────────────────── */
 const ACCENT_COLOR: Record<ColorAccent, string> = {
@@ -399,76 +408,80 @@ export function SlideEditor() {
         <div style={{ width: 280 }} aria-hidden />
       </div>
 
-      {/* ── Slide card — centred, fills remaining space above strip ── */}
+      {/* ── Main row — slide card (centre) + Visualization Style rail (right) ── */}
       <div
         className="flex-1 min-h-0 overflow-hidden"
-        style={{ background: SURFACE_RAISE, padding: "20px 32px", display: "flex", flexDirection: "column", alignItems: "center" }}
+        style={{ background: SURFACE_RAISE, display: "flex", flexDirection: "row" }}
       >
-        {activeSlide && activeDs ? (
-          <div style={{
-            width: "100%", maxWidth: 940,
-            flex: 1, minHeight: 0,   /* fill available height via flex, never push strip */
-            display: "flex", flexDirection: "column",
-            border: `1px solid ${BORDER}`,
-            background: slideBg,
-            overflow: "hidden",
-          }}>
 
-            {/* ── Card header: 2-line title + layout + chart-type dropdowns ── */}
-            <div style={{
-              padding: "14px 24px 12px",
-              borderBottom: `1px solid ${BORDER}`,
-              flexShrink: 0,
-              display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16,
-              background: slideBg,
-            }}>
-              <div style={{ minWidth: 0, flex: 1 }}>
-                {/* Line 1: serial / title */}
-                <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
+        {/* ── Centre — pure presentation-ready slide card ───────────────────
+            Four blocks stacked: Title · Summary · Chart · Speaker Narrative.
+            No data table, no chart settings — those live on the data-set
+            drill-in page within CANVAS mode. */}
+        <div
+          style={{
+            flex: 1, minWidth: 0, minHeight: 0,
+            padding: "20px 32px",
+            display: "flex", flexDirection: "column", alignItems: "center",
+            overflow: "hidden",
+          }}
+        >
+          {activeSlide && activeDs ? (
+            <div
+              style={{
+                width: "100%", maxWidth: 940,
+                flex: 1, minHeight: 0,
+                display: "flex", flexDirection: "column",
+                border: `1px solid ${BORDER}`,
+                background: slideBg,
+                overflow: "hidden",
+              }}
+            >
+              {/* ── Block 1: Title ── */}
+              <div style={{
+                padding: "18px 32px 14px",
+                borderBottom: `1px solid ${BORDER}`,
+                flexShrink: 0,
+                display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16,
+                background: slideBg,
+              }}>
+                <div style={{ minWidth: 0, flex: 1, display: "flex", alignItems: "baseline", gap: 10 }}>
                   <span style={{ fontFamily: mono, fontSize: 11, color: T3, flexShrink: 0 }}>{serial} /</span>
                   <span style={{
                     fontFamily: STYLE_HEADLINE_FONT[activeSlide.visualStyle],
-                    fontSize: 15, fontWeight: 500, color: "#0A0A0A",
+                    fontSize: 19, fontWeight: 500, color: "#0A0A0A",
+                    lineHeight: 1.25,
                     overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
                   }}>
                     {activeDs.title}
                   </span>
                 </div>
-                {/* Line 2: narrative subtitle */}
-                <div style={{ marginTop: 4 }}>
-                  <span style={{
-                    fontFamily: STYLE_HEADLINE_FONT[activeSlide.visualStyle],
-                    fontSize: 12, fontWeight: 400,
-                    color: T2,
-                    fontStyle: activeSlide.visualStyle === "Magazine" ? "italic" : "normal",
-                  }}>
-                    {activeSlide.narrative || "Revenue contracted 18% in Q3 — mid-market churn led"}
-                  </span>
+                <div style={{ flexShrink: 0 }}>
+                  <ComboLayoutDropdown
+                    archetype={activeSlide.archetype ?? "Chart"}
+                    chartType={activeDs.chartType}
+                    onChangeArchetype={(arch) => updateSlide(activeSlide.id, { archetype: arch })}
+                    onChangeChartType={(type) => updateDsChartType(activeDs.id, type)}
+                  />
                 </div>
               </div>
-              {/* Combined layout + chart-type dropdown */}
-              <div style={{ flexShrink: 0 }}>
-                <ComboLayoutDropdown
-                  archetype={activeSlide.archetype ?? "Chart"}
-                  chartType={activeDs.chartType}
-                  onChangeArchetype={(arch) => updateSlide(activeSlide.id, { archetype: arch })}
-                  onChangeChartType={(type) => updateDsChartType(activeDs.id, type)}
-                />
-              </div>
-            </div>
 
-            {/* ── Card body: resizable chart / splitter / data+settings ── */}
-            <div style={{ flex: 1, minHeight: 0, overflow: "hidden", display: "flex", flexDirection: "column" }}>
+              {/* ── Block 2: Summary — PROMINENT, gold-left-border, beige bg ── */}
+              <SummaryBlock
+                slide={activeSlide}
+                summaryText={activeSlide.summary ?? deriveSlideSummary(activeDs.rows, activeDs.columns)}
+                onChange={(s) => updateSlide(activeSlide.id, { summary: s })}
+              />
 
-              {/* Chart panel — flexBasis drives the drag-resize; flexShrink:1 lets
-                  it compress on small screens rather than pushing the strip off */}
+              {/* ── Block 3: Chart — just the visualization ── */}
               <div style={{
-                flexBasis: chartH, flexShrink: 1, flexGrow: 0, minHeight: 100, overflow: "hidden",
-                padding: "12px 32px 8px",
+                flex: 1, minHeight: 0,
+                padding: "14px 32px 10px",
                 background: slideBg,
                 display: "flex", flexDirection: "column",
+                overflow: "hidden",
               }}>
-                <div style={{ flex: 1, minHeight: 0, maxWidth: 820, width: "100%", margin: "0 auto" }}>
+                <div style={{ flex: 1, minHeight: 0, maxWidth: 860, width: "100%", margin: "0 auto" }}>
                   <SlideArchetypeRenderer
                     rows={activeDs.rows}
                     columns={activeDs.columns}
@@ -482,131 +495,30 @@ export function SlideEditor() {
                 </div>
               </div>
 
-              {/* Splitter handle */}
-              <div
-                onMouseDown={handleSplitterDown}
-                title="Drag to resize"
-                style={{
-                  height: 10, flexShrink: 0,
-                  cursor: "row-resize",
-                  background: slideBg,
-                  borderTop:    `1px solid ${BORDER}`,
-                  borderBottom: `1px solid ${BORDER}`,
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  userSelect: "none",
-                }}
-                onMouseEnter={e => { e.currentTarget.style.background = "rgba(184,149,72,0.07)"; }}
-                onMouseLeave={e => { e.currentTarget.style.background = slideBg; }}
-              >
-                <svg width="24" height="6" viewBox="0 0 24 6" fill="none">
-                  {[0, 8, 16].map(x => (
-                    <circle key={x} cx={x + 4} cy="3" r="1.5" fill={T3} fillOpacity="0.5" />
-                  ))}
-                </svg>
-              </div>
-
-              {/* Slide Summary — factual data takeaway, tone-independent */}
-              {activeDs.rows.length > 0 && (
-                <div style={{
-                  flexShrink: 0, padding: "5px 32px",
-                  borderTop: `1px solid ${BORDER}`,
-                  background: slideBg,
-                }}>
-                  <span style={{
-                    fontFamily: STYLE_HEADLINE_FONT[activeSlide.visualStyle],
-                    fontSize: 11, color: T3, fontStyle: "italic", lineHeight: 1.4,
-                  }}>
-                    {deriveSlideSummary(activeDs.rows, activeDs.columns)}
-                  </span>
-                </div>
-              )}
-
-              {/* Data + Chart Settings panel */}
-              <div style={{ flex: 1, minHeight: 0, overflow: "hidden", display: "flex" }}>
-
-                {/* Left column — DataTable */}
-                <div style={{
-                  flex: 1, minWidth: 0, minHeight: 0,
-                  borderRight: `1px solid ${BORDER}`,
-                  display: "flex", flexDirection: "column",
-                  overflow: "hidden",
-                }}>
-                  <div style={{
-                    padding: "7px 16px 6px",
-                    borderBottom: `1px solid ${BORDER}`,
-                    flexShrink: 0,
-                    background: "rgba(27,40,64,0.03)",
-                  }}>
-                    <span style={{ fontFamily: mono, fontSize: 8.5, letterSpacing: "0.08em", textTransform: "uppercase" as const, color: T3 }}>
-                      DATA — EDIT TO CORRECT AGGREGATION ERRORS
-                    </span>
-                  </div>
-                  <div style={{ flex: 1, minHeight: 0, overflowY: "auto" }} className="thin-scroll">
-                    {activeDs.rows.length === 0 ? (
-                      <div style={{
-                        fontFamily: mono, fontSize: 11, color: T3,
-                        padding: "20px 16px", textAlign: "center",
-                      }}>
-                        No data — wire an Insight to this Data Set on the canvas.
-                      </div>
-                    ) : (
-                      <DataTable
-                        columns={activeDs.columns}
-                        rows={activeDs.rows}
-                        onRowsChange={(rows) => updateDsRows(activeDs.id, rows)}
-                        insightsById={Object.keys(slideInsightsById).length > 0 ? slideInsightsById : undefined}
-                      />
-                    )}
-                  </div>
-                </div>
-
-                {/* Right column — Chart Settings */}
-                <div style={{
-                  width: 248, flexShrink: 0, minHeight: 0,
-                  display: "flex", flexDirection: "column",
-                  overflow: "hidden",
-                }}>
-                  <div style={{
-                    padding: "7px 16px 6px",
-                    borderBottom: `1px solid ${BORDER}`,
-                    flexShrink: 0,
-                    background: "rgba(27,40,64,0.03)",
-                  }}>
-                    <span style={{ fontFamily: mono, fontSize: 8.5, letterSpacing: "0.08em", textTransform: "uppercase" as const, color: T3 }}>
-                      CHART SETTINGS
-                    </span>
-                  </div>
-                  <div style={{ flex: 1, overflowY: "auto", padding: "12px 16px 16px", display: "flex", flexDirection: "column", gap: 10 }} className="thin-scroll">
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-                      <PanelSelect label="Status"      value={activeSlide.status}
-                        options={["Paid", "Organic", "Direct", "Email"]}
-                        onChange={v => updateSlide(activeSlide.id, { status: v })} />
-                      <PanelSelect label="Aggregation" value={activeSlide.aggregation}
-                        options={["Monthly", "Weekly", "Daily"]}
-                        onChange={v => updateSlide(activeSlide.id, { aggregation: v as Slide["aggregation"] })} />
-                      <PanelSelect label="Color By"    value={activeSlide.colorBy}
-                        options={["Segment", "Region", "Product", "Channel"]}
-                        onChange={v => updateSlide(activeSlide.id, { colorBy: v })} />
-                      <PanelSelect label="Filter"      value={activeSlide.filter}
-                        options={["All data", "Paid only", "Organic only", "Last 30d"]}
-                        onChange={v => updateSlide(activeSlide.id, { filter: v })} />
-                    </div>
-                    <PanelSelect label="Accent" value={activeSlide.colorAccent}
-                      options={["Navy", "Gold", "Slate", "Graphite"]}
-                      onChange={v => updateSlide(activeSlide.id, { colorAccent: v as ColorAccent })} />
-                  </div>
-                </div>
-              </div>
+              {/* ── Block 4: Speaker narrative — flowing prose, editable ── */}
+              <NarrativeBlock
+                slide={activeSlide}
+                narrativeText={activeSlide.narrative ?? deriveSpeakerNarrative(activeDs.title, deriveSlideSummary(activeDs.rows, activeDs.columns))}
+                onChange={(t) => updateSlide(activeSlide.id, { narrative: t })}
+              />
             </div>
-          </div>
-        ) : (
-          <div className="flex-1 flex items-center justify-center">
-            <span style={{ fontFamily: mono, fontSize: 11, color: T3 }}>
-              {slides.length === 0
-                ? "No slides yet — switch to Data Mode and drag a Data Set into the strip below."
-                : "Select a slide below."}
-            </span>
-          </div>
+          ) : (
+            <div className="flex-1 flex items-center justify-center">
+              <span style={{ fontFamily: mono, fontSize: 11, color: T3 }}>
+                {slides.length === 0
+                  ? "No slides yet — switch to Data Mode and drag a Data Set into the strip below."
+                  : "Select a slide below."}
+              </span>
+            </div>
+          )}
+        </div>
+
+        {/* ── Right rail — Visualization Style picker (~170 px) ───────────── */}
+        {activeSlide && (
+          <VisualizationStyleRail
+            slide={activeSlide}
+            onChange={(engine) => updateSlide(activeSlide.id, { renderEngine: engine })}
+          />
         )}
       </div>
 
@@ -617,5 +529,269 @@ export function SlideEditor() {
           toggles now live in the slide tray's panel (PresentationStructure)
           where they were already duplicated. */}
     </div>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Slide sub-components — Summary, Narrative, Viz-Style rail
+══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Block 2: Summary — prominent, gold left border, "SUMMARY · AUTO" ── */
+function SummaryBlock({
+  slide, summaryText, onChange,
+}: {
+  slide: Slide;
+  summaryText: string;
+  onChange: (text: string) => void;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft]     = useState(summaryText);
+
+  useEffect(() => { setDraft(summaryText); }, [summaryText, slide.id]);
+
+  function commit() {
+    setEditing(false);
+    if (draft.trim() && draft !== summaryText) onChange(draft.trim());
+  }
+
+  return (
+    <div style={{
+      flexShrink: 0,
+      margin: "14px 28px 4px",
+      background: "#FAF8F2",
+      borderLeft: "3px solid #C9A75A",
+      padding: "10px 14px 12px",
+    }}>
+      <div style={{
+        fontFamily: mono, fontSize: 9, letterSpacing: "0.12em", textTransform: "uppercase",
+        color: T3, marginBottom: 5,
+      }}>
+        Summary · AUTO
+      </div>
+      {editing ? (
+        <textarea
+          autoFocus
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          onBlur={commit}
+          onKeyDown={(e) => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) commit(); if (e.key === "Escape") { setDraft(summaryText); setEditing(false); } }}
+          rows={2}
+          style={{
+            width: "100%",
+            fontFamily: "Inter, sans-serif",
+            fontSize: 13.5, lineHeight: 1.45, color: "#1B2840",
+            background: "transparent",
+            border: "none", outline: "none", resize: "vertical",
+          }}
+        />
+      ) : (
+        <div
+          onClick={() => setEditing(true)}
+          title="Click to edit"
+          style={{
+            fontFamily: "Inter, sans-serif",
+            fontSize: 13.5, lineHeight: 1.45, color: "#1B2840",
+            cursor: "text",
+          }}
+        >
+          {summaryText}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ── Block 4: Speaker narrative — "SPEAKER NARRATIVE · AI · editable" + mic ── */
+function NarrativeBlock({
+  slide, narrativeText, onChange,
+}: {
+  slide: Slide;
+  narrativeText: string;
+  onChange: (text: string) => void;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft]     = useState(narrativeText);
+
+  useEffect(() => { setDraft(narrativeText); }, [narrativeText, slide.id]);
+
+  function commit() {
+    setEditing(false);
+    if (draft.trim() && draft !== narrativeText) onChange(draft.trim());
+  }
+
+  return (
+    <div style={{
+      flexShrink: 0,
+      padding: "12px 32px 14px",
+      borderTop: `1px solid ${BORDER}`,
+      background: "rgba(27,40,64,0.02)",
+    }}>
+      <div style={{
+        display: "flex", alignItems: "center", gap: 6,
+        marginBottom: 6,
+      }}>
+        {/* ti-microphone */}
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke={T3} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+          <path d="M9 2m0 3a3 3 0 0 1 3 -3h0a3 3 0 0 1 3 3v5a3 3 0 0 1 -3 3h0a3 3 0 0 1 -3 -3z" />
+          <path d="M5 10a7 7 0 0 0 14 0" />
+          <path d="M8 21l8 0" />
+          <path d="M12 17l0 4" />
+        </svg>
+        <span style={{
+          fontFamily: mono, fontSize: 9, letterSpacing: "0.12em", textTransform: "uppercase",
+          color: T3,
+        }}>
+          Speaker narrative · AI · editable
+        </span>
+      </div>
+      {editing ? (
+        <textarea
+          autoFocus
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          onBlur={commit}
+          onKeyDown={(e) => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) commit(); if (e.key === "Escape") { setDraft(narrativeText); setEditing(false); } }}
+          rows={3}
+          style={{
+            width: "100%",
+            fontFamily: "Inter, sans-serif",
+            fontSize: 12, lineHeight: 1.55, color: T2,
+            background: "transparent",
+            border: "none", outline: "none", resize: "vertical",
+          }}
+        />
+      ) : (
+        <div
+          onClick={() => setEditing(true)}
+          title="Click to edit"
+          style={{
+            fontFamily: "Inter, sans-serif",
+            fontSize: 12, lineHeight: 1.55, color: T2,
+            cursor: "text",
+          }}
+        >
+          {narrativeText}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ── Right rail: Visualization Style picker — 3 engine cards ── */
+function VisualizationStyleRail({
+  slide, onChange,
+}: {
+  slide: Slide;
+  onChange: (engine: RenderEngine) => void;
+}) {
+  /* SciChart is the default if no choice has been made yet. */
+  const current: RenderEngine = slide.renderEngine ?? "SciChart";
+
+  return (
+    <aside
+      style={{
+        width: 174, flexShrink: 0,
+        borderLeft: `1px solid ${BORDER}`,
+        background: SURFACE,
+        padding: "18px 14px 18px",
+        display: "flex", flexDirection: "column", gap: 12,
+        overflowY: "auto",
+      }}
+      className="thin-scroll"
+    >
+      <div style={{
+        fontFamily: mono, fontSize: 9, letterSpacing: "0.12em", textTransform: "uppercase",
+        color: T3,
+      }}>
+        Visualization style
+      </div>
+
+      {RENDER_ENGINES.map(({ id, label, subtitle }) => {
+        const active = id === current;
+        return (
+          <button
+            key={id}
+            onClick={() => onChange(id)}
+            style={{
+              width: "100%",
+              display: "flex", flexDirection: "column", gap: 6,
+              padding: 10,
+              background: active ? SURFACE_RAISE : "transparent",
+              border: `${active ? "1.5px" : "1px"} solid ${active ? NAVY : BORDER}`,
+              borderRadius: 4,
+              cursor: active ? "default" : "pointer",
+              color: T2,
+              textAlign: "left",
+              transition: "border-color 150ms, background 150ms",
+            }}
+            onMouseEnter={(e) => { if (!active) e.currentTarget.style.borderColor = NAVY; }}
+            onMouseLeave={(e) => { if (!active) e.currentTarget.style.borderColor = BORDER; }}
+          >
+            {/* 5-bar mini preview — varies treatment per engine */}
+            <EnginePreview engine={id} active={active} />
+            <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
+              <span style={{
+                fontFamily: mono, fontSize: 10.5, color: NAVY, fontWeight: active ? 500 : 400,
+              }}>
+                {label}
+              </span>
+              <span style={{
+                fontFamily: mono, fontSize: 8.5, letterSpacing: "0.08em", textTransform: "uppercase",
+                color: T3,
+              }}>
+                {subtitle}
+              </span>
+            </div>
+          </button>
+        );
+      })}
+
+      <div style={{
+        marginTop: "auto", paddingTop: 8,
+        fontFamily: mono, fontSize: 8.5, color: T3, lineHeight: 1.5,
+      }}>
+        Engine drives how this slide&apos;s chart is rendered. Data-level settings live on the data&nbsp;set drill-in.
+      </div>
+    </aside>
+  );
+}
+
+function EnginePreview({ engine, active }: { engine: RenderEngine; active: boolean }) {
+  /* Each engine renders the same 5-bar set with a distinct treatment:
+       SciChart   — clean rectangles, sharp tops
+       Highcharts — gradient fills, slightly inset
+       D3.js      — outline strokes only, dotted top guides   */
+  const heights = [22, 30, 18, 26, 14];
+  const navy    = NAVY;
+  const muted   = "#8892AA";
+
+  return (
+    <svg width="100%" height="38" viewBox="0 0 120 38" preserveAspectRatio="none" style={{ display: "block" }}>
+      <defs>
+        <linearGradient id={`hc-grad-${engine}`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%"   stopColor={navy} stopOpacity={active ? 0.95 : 0.5} />
+          <stop offset="100%" stopColor={navy} stopOpacity={active ? 0.55 : 0.25} />
+        </linearGradient>
+      </defs>
+      {heights.map((h, i) => {
+        const x = 6 + i * 22;
+        const y = 36 - h;
+        if (engine === "SciChart") {
+          return <rect key={i} x={x} y={y} width="16" height={h} fill={active ? navy : muted} />;
+        }
+        if (engine === "Highcharts") {
+          return <rect key={i} x={x} y={y} width="16" height={h} fill={`url(#hc-grad-${engine})`} />;
+        }
+        // D3.js — outline + dotted top guide
+        return (
+          <g key={i}>
+            <rect x={x + 0.5} y={y + 0.5} width="15" height={h - 1}
+              fill="none" stroke={active ? navy : muted} strokeWidth="1.2" />
+            <line x1={x} y1={y - 1.5} x2={x + 16} y2={y - 1.5}
+              stroke={active ? navy : muted} strokeWidth="1" strokeDasharray="2 1.5" opacity="0.6" />
+          </g>
+        );
+      })}
+    </svg>
   );
 }

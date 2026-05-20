@@ -199,7 +199,25 @@ export interface Slide {
   showLabels: boolean;
   showGrid: boolean;
   stackedBars: boolean;
+
+  /* ── SLIDES mode additions ──────────────────────────────────────────
+     Render engine driving the slide's chart — picker lives in the right
+     rail of SLIDES mode. UI selection persists per slide.            */
+  renderEngine?: RenderEngine;
+
+  /** AI-generated 1–2 sentence headline summary rendered as the prominent
+      gold-bordered block under the slide title. When undefined, the slide
+      derives one from the bound dataset on the fly. */
+  summary?: string;
 }
+
+export type RenderEngine = "SciChart" | "Highcharts" | "D3";
+
+export const RENDER_ENGINES: { id: RenderEngine; label: string; subtitle: string }[] = [
+  { id: "SciChart",   label: "SciChart",   subtitle: "Modern"  },
+  { id: "Highcharts", label: "Highcharts", subtitle: "Classic" },
+  { id: "D3",         label: "D3.js",      subtitle: "Custom"  },
+];
 
 /* ── Connections — Insight → DataSet ───────────────────────────────────── */
 
