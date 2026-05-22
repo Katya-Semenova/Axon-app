@@ -6,8 +6,9 @@ import { NAVY, BORDER, T2 } from "./tokens";
 /**
  * Three-tab segmented control — CANVAS / SLIDES / PRESENT.
  *
- * Each tab maps to a real store mode, so PRESENT is a normal in-shell
- * surface (light theme, chat rail visible) — not a fullscreen overlay.
+ * Sizing and corner radius match the "+ New data set" button exactly
+ * (padding: 15px 20px, borderRadius: 0) per Art Director review item 1.4.
+ * Position is controlled by the parent (page.tsx) — centered over canvas.
  *
  *   CANVAS  → mode "data"          — node graph
  *   SLIDES  → mode "presentation"  — slide editor + slide tray
@@ -25,14 +26,15 @@ export function ModeTabs() {
         display: "inline-flex",
         alignItems: "center",
         border: `1px solid ${BORDER}`,
-        borderRadius: 999,
+        borderRadius: 0,
         padding: 2,
-        background: "rgba(245,242,234,0.85)",
+        background: "rgba(245,242,234,0.92)",
         backdropFilter: "blur(8px)",
         fontFamily: "'JetBrains Mono', monospace",
         fontSize: 10.5,
         letterSpacing: "0.07em",
         userSelect: "none",
+        boxShadow: "0 4px 18px rgba(27,40,64,0.18)",
       }}
     >
       <Tab label="Canvas"  active={mode === "data"}         onClick={() => mode !== "data"         && setMode("data")} />
@@ -49,8 +51,8 @@ function Tab({ label, active, onClick }: { label: string; active: boolean; onCli
       aria-selected={active}
       onClick={onClick}
       style={{
-        padding: "6px 16px",
-        borderRadius: 999,
+        padding: "15px 20px",
+        borderRadius: 0,
         border: "none",
         cursor: active ? "default" : "pointer",
         background: active ? NAVY : "transparent",

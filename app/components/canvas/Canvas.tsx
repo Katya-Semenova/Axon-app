@@ -5,7 +5,7 @@ import { roundTo } from "@/lib/charts";
 import { useWorkspaceStore } from "@/lib/store";
 import type { Insight, DataSet } from "@/lib/types";
 import { InsightCard } from "./InsightCard";
-import { DataSetCard, DataSetPlaceholder } from "./DataSetCard";
+import { DataSetCard } from "./DataSetCard";
 import {
   GOLD, NAVY_300, BORDER, T2, T3, SURFACE, SURFACE_MUTED,
   CARD_W, CARD_H_EST, COL_GAP,
@@ -38,7 +38,6 @@ export function Canvas() {
   const setExpInsight   = useWorkspaceStore(s => s.setExpandedInsight);
   const setExpDataSet   = useWorkspaceStore(s => s.setExpandedDataSet);
   const updateDsType    = useWorkspaceStore(s => s.updateDataSetChartType);
-  const addDataSet      = useWorkspaceStore(s => s.addDataSet);
   const removeDataSet   = useWorkspaceStore(s => s.removeDataSet);
   const addConnection   = useWorkspaceStore(s => s.addConnection);
   const removeConn      = useWorkspaceStore(s => s.removeConnection);
@@ -220,23 +219,19 @@ export function Canvas() {
             {insights.length} insights · {dataSets.length} data sets
           </span>
         </div>
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2">
-            <button onClick={undo} disabled={!canUndo} title="Undo"
-              className="w-[28px] h-[28px] rounded-sm border border-border flex items-center justify-center text-t2 disabled:opacity-30 hover:border-[#B89548] hover:text-[#B89548] transition-colors">
-              <svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M2 5h6a4 4 0 010 8H4M2 5l3-3M2 5l3 3" />
-              </svg>
-            </button>
-            <button onClick={redo} disabled={!canRedo} title="Redo"
-              className="w-[28px] h-[28px] rounded-sm border border-border flex items-center justify-center text-t2 disabled:opacity-30 hover:border-[#B89548] hover:text-[#B89548] transition-colors">
-              <svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M12 5H6a4 4 0 000 8h4M12 5l-3-3M12 5l-3 3" />
-              </svg>
-            </button>
-          </div>
-          {/* Top-right tab nav lives at page level (ModeTabs) — reserved 280 px gutter. */}
-          <div style={{ width: 280 }} aria-hidden />
+        <div className="flex items-center gap-2">
+          <button onClick={undo} disabled={!canUndo} title="Undo"
+            className="w-[28px] h-[28px] rounded-sm border border-border flex items-center justify-center text-t2 disabled:opacity-30 hover:border-[#B89548] hover:text-[#B89548] transition-colors">
+            <svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M2 5h6a4 4 0 010 8H4M2 5l3-3M2 5l3 3" />
+            </svg>
+          </button>
+          <button onClick={redo} disabled={!canRedo} title="Redo"
+            className="w-[28px] h-[28px] rounded-sm border border-border flex items-center justify-center text-t2 disabled:opacity-30 hover:border-[#B89548] hover:text-[#B89548] transition-colors">
+            <svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 5H6a4 4 0 000 8h4M12 5l-3-3M12 5l-3 3" />
+            </svg>
+          </button>
         </div>
       </div>
 
@@ -390,24 +385,6 @@ export function Canvas() {
 
 
           </div>
-        </div>
-
-        {/* "+ NEW DATA SET" — pinned to top-centre of the viewport, vertically
-            aligned with the first row of cards. Stays put while the user pans
-            or scrolls the canvas. New sets still spawn on the grid-offset ring
-            around the world-space anchor (see store.addDataSet). */}
-        <div
-          style={{
-            position: "absolute",
-            top: 18,
-            left: "50%",
-            transform: "translateX(-50%)",
-            width: 248,
-            zIndex: 5,
-            pointerEvents: "auto",
-          }}
-        >
-          <DataSetPlaceholder onClick={addDataSet} />
         </div>
 
         {/* Zoom HUD */}

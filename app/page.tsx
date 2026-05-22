@@ -121,10 +121,11 @@ function Page2({ onBack }: { onBack: () => void }) {
         {/* ── Right column — main surface ── */}
         <div className="flex-1 min-w-0 min-h-0 relative flex flex-col overflow-hidden">
 
-          {/* Floating top-right nav — hidden while a drill-in overlay is
-              active so its 'Back to Canvas' breadcrumb is the only nav. */}
+          {/* Mode switcher — centered over the canvas viewport at the same
+              coordinates formerly occupied by the "+ New data set" button.
+              Hidden while a drill-in overlay is active. */}
           {!drillInOpen && (
-            <div style={{ position: "absolute", top: 12, right: 16, zIndex: 25 }}>
+            <div style={{ position: "absolute", top: 18, left: "50%", transform: "translateX(-50%)", zIndex: 25 }}>
               <ModeTabs />
             </div>
           )}
