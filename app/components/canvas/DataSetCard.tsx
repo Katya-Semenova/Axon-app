@@ -1,6 +1,5 @@
 "use client";
 
-import { useDraggable } from "@dnd-kit/core";
 import { ChartRenderer } from "../ChartRenderer";
 import { ChartTypeDropdown } from "../ui/ChartTypeDropdown";
 import type { DataSet, ChartType } from "@/lib/types";
@@ -21,7 +20,7 @@ export interface DataSetCardProps {
 /* ── DataSetCard ────────────────────────────────────────────────────────
    Two visual states:
    · EMPTY  (rows.length === 0): dashed outline, "connect an insight" hint.
-   · FORMED (rows.length  >  0): renders chart + visible "на слайд" drag handle. */
+   · FORMED (rows.length  >  0): renders chart + row count + expand button. */
 export function DataSetCard({
   dataSet, isDraggingNode, isConnecting,
   onExpand, onChartTypeChange, onInputPortUp, onDelete,
@@ -29,23 +28,15 @@ export function DataSetCard({
   const isEmpty = dataSet.rows.length === 0;
   const padded  = String(dataSet.serial).padStart(2, "0");
 
-  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
-    id:       `dataset:${dataSet.id}`,
-    data:     { type: "dataset", dataSetId: dataSet.id },
-    disabled: isEmpty,
-  });
-
   return (
     <div
-      ref={setNodeRef}
-      {...attributes}
       className="group relative rounded-none transition-colors duration-200"
       data-is-card=""
       style={{
         padding: "12px 14px 0 14px",
         background: SURFACE_RAISE,
         cursor: isDraggingNode ? "grabbing" : "default",
-        opacity: isDragging ? 0.45 : 1,
+        opacity: isDraggingNode ? 0.45 : 1,
         transition: "opacity 150ms ease",
         border: isEmpty
           ? `1.5px dashed ${BORDER}`
@@ -192,47 +183,6 @@ export function DataSetCard({
         </div>
       )}
 
-      {/* ── "на слайд" drag handle — formed datasets only.
-            Round-4 fix 2: ti-hand-finger icon at 18px (≈2× previous size) so
-            the affordance reads clearly as draggable. Click-to-send is still
-            wired by dnd-kit's listeners on this whole strip. */}
-      {!isEmpty && (
-        <div
-          data-grip=""
-          {...listeners}
-          title="Перетащите карточку на слайд"
-          style={{
-            display: "flex", alignItems: "center", justifyContent: "center", gap: 9,
-            padding: "10px 14px",
-            marginLeft: -14, marginRight: -14,
-            borderTop: `1.5px solid ${BORDER}`,
-            cursor: isDragging ? "grabbing" : "grab",
-            color: T3,
-            touchAction: "none",
-            userSelect: "none",
-            transition: "background 150ms ease, color 150ms ease, border-color 150ms ease",
-          }}
-          onMouseEnter={e => {
-            e.currentTarget.style.background = "rgba(184,149,72,0.07)";
-            e.currentTarget.style.color = GOLD;
-            e.currentTarget.style.borderColor = "rgba(184,149,72,0.35)";
-          }}
-          onMouseLeave={e => {
-            e.currentTarget.style.background = "transparent";
-            e.currentTarget.style.color = T3;
-            e.currentTarget.style.borderColor = BORDER;
-          }}
-        >
-          {/* ti-hand-finger — 18 px, stroke matches surrounding text */}
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
-            <path d="M8 13v-7.5a1.5 1.5 0 0 1 3 0v6.5" />
-            <path d="M11 5.5v-2a1.5 1.5 0 1 1 3 0v8.5" />
-            <path d="M14 5.5a1.5 1.5 0 0 1 3 0v6.5" />
-            <path d="M17 7.5a1.5 1.5 0 0 1 3 0v8.5a6 6 0 0 1 -6 6h-2h.208a6 6 0 0 1 -5.012 -2.7l-.196 -.3c-.312 -.479 -1.407 -2.388 -3.286 -5.728a1.5 1.5 0 0 1 .536 -2.022a1.867 1.867 0 0 1 2.28 .28l1.47 1.47" />
-          </svg>
-          <span style={{ fontFamily: mono, fontSize: 10.5, letterSpacing: "0.07em", fontWeight: 500 }}>на слайд</span>
-        </div>
-      )}
     </div>
   );
 }

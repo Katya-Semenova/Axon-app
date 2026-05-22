@@ -272,7 +272,8 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => {
 
     /* ── dataset ops ─ */
     addDataSet: () => {
-      const id = `ds-${Date.now().toString(36)}`;
+      const id      = `ds-${Date.now().toString(36)}`;
+      const slideId = `slide-${Date.now().toString(36)}-ds`;
       commit((s) => {
         const serial = s.dataSetOrder.length + 1;
         const ds: DataSet = {
@@ -283,9 +284,21 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => {
           rows:      [],
           wide:      true,
         };
+        /* Auto-create a paired slide in the tray so the dataset appears
+           immediately without requiring a manual drag. Same pattern as slides. */
+        const slideSerial = s.slideOrder.length + 1;
+        const slide: Slide = {
+          id: slideId, serial: slideSerial, dataSetIds: [id], narrative: "",
+          archetype: "Chart",
+          status: "Paid", aggregation: "Monthly", colorBy: "Segment",
+          filter: "All data", colorAccent: "Navy", visualStyle: "Modern",
+          showLabels: true, showGrid: true, stackedBars: false,
+        };
         return {
           dataSetsById: { ...s.dataSetsById, [id]: ds },
           dataSetOrder: [...s.dataSetOrder, id],
+          slidesById:   { ...s.slidesById, [slideId]: slide },
+          slideOrder:   [...s.slideOrder, slideId],
         };
       });
       /* Grid-offset spawn around the centre "+ NEW DATA SET" anchor.
