@@ -16,6 +16,15 @@ export const SURFACE_RAISE = "#FBF9F3";
 export const SURFACE_MUTED = "#E5E0D2";
 export const CANVAS_BG     = "#EDE9E0";
 
+/* Slate-blue ramp — extracted from the inner rings of the reference palette.
+   SLATE_MID is the mid ring; SLATE_INNER is the innermost (softest) ring.
+   INSIGHT_CARD_BG is SLATE_INNER at ~30% opacity over SURFACE_RAISE — used
+   as the insight card surface so source nodes read as distinctly cool against
+   the warm canvas. */
+export const SLATE_MID       = "#7A94AE";
+export const SLATE_INNER     = "#9DB5C8";
+export const INSIGHT_CARD_BG = "#D6E4EE";
+
 /* Card / spacing constants — used by the canvas layout maths. */
 export const CARD_W     = 200;   /* insight card width (reduced for compact layout) */
 export const HERO_W     = 360;

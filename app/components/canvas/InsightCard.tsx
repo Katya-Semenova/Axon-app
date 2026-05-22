@@ -1,7 +1,7 @@
 "use client";
 
 import type { Insight } from "@/lib/types";
-import { GOLD, NAVY, BORDER, T2, T3, SURFACE_RAISE } from "../ui/tokens";
+import { GOLD, NAVY, BORDER, T2, T3, INSIGHT_CARD_BG } from "../ui/tokens";
 
 export interface InsightCardProps {
   insight: Insight;
@@ -36,7 +36,7 @@ export function InsightCard({
       data-is-card=""
       style={{
         padding: "8px 10px",
-        background: SURFACE_RAISE,
+        background: INSIGHT_CARD_BG,
         cursor: isDraggingNode ? "grabbing" : "grab",
         opacity: isDraggingNode ? 0.45 : 1,
         transition: "opacity 150ms ease",

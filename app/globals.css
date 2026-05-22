@@ -13,6 +13,11 @@
   --color-surface-raised: #FBF9F3;  /* dropdowns, popovers, slide thumbs */
   --color-surface-muted:  #E5E0D2;  /* nested elements, file chips, count badges */
   --color-border-subtle:  #D9D3C2;
+
+  /* ── Slate-blue ramp — from reference palette inner rings ── */
+  --color-slate-mid:    #7A94AE;  /* mid ring — chart accent, secondary data */
+  --color-slate-inner:  #9DB5C8;  /* inner ring — lightest blue */
+  --color-insight-card: #D6E4EE;  /* 30% tint of slate-inner over surface-raised */
   --color-border-strong:  #B8AE96;
 
   /* ── Navy ramp — structural / primary data ── */
