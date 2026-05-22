@@ -59,11 +59,15 @@
   --color-second:  #B89548;   /* was #B8924A → gold-500 */
   --color-muted:   #E5E0D2;   /* was #C8CDD8 (COOL BLUE!) → surface-muted */
 
-  /* ── Radii — STRICT bimodal+pill system ── */
-  --radius-none: 0px;
-  --radius-sm:   4px;
-  --radius-card: 4px;
-  --radius-pill: 999px;
+  /* ── Radii ──
+     none / sm / card  → structural elements (toolbars, mode tabs, cards)
+     bubble            → conversational UI only (chat message bubbles)
+     pill              → CTAs and toggle controls that are explicitly pill-shaped */
+  --radius-none:   0px;
+  --radius-sm:     4px;
+  --radius-card:   4px;
+  --radius-bubble: 12px;
+  --radius-pill:   999px;
 
   /* ── Typography ── */
   --font-sans:  var(--font-inter);

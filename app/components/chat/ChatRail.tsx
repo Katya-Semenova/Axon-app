@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react";
 import { useWorkspaceStore } from "@/lib/store";
-import { BORDER, NAVY, T2, T3, SURFACE_MUTED } from "../ui/tokens";
+import { BORDER, NAVY, T2, T3, SURFACE_MUTED, RADIUS_BUBBLE } from "../ui/tokens";
 
 function ChatTextarea({ placeholder }: { placeholder: string }) {
   const ref = useRef<HTMLTextAreaElement>(null);
@@ -141,7 +141,7 @@ export function ChatRail({ onBack }: { onBack: () => void }) {
                 ) : (
                   <div
                     className="self-end px-[14px] py-[9px] text-[13px] leading-[1.5] max-w-[88%] ml-auto"
-                    style={{ background: NAVY, color: "#F5F2EA", borderRadius: 4 }}
+                    style={{ background: NAVY, color: "#F5F2EA", borderRadius: RADIUS_BUBBLE }}
                   >
                     {msg.content}
                   </div>
@@ -158,7 +158,7 @@ export function ChatRail({ onBack }: { onBack: () => void }) {
             </div>
             <div
               className="self-end px-[16px] py-[10px] text-[13.5px] leading-[1.5] max-w-[88%]"
-              style={{ background: NAVY, color: "#F5F2EA", borderRadius: 4 }}
+              style={{ background: NAVY, color: "#F5F2EA", borderRadius: RADIUS_BUBBLE }}
             >
               Focus on revenue, conversion, and churn. Show me what&apos;s broken and what&apos;s working.
             </div>

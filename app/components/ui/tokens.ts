@@ -25,6 +25,11 @@ export const SLATE_MID       = "#7A94AE";
 export const SLATE_INNER     = "#9DB5C8";
 export const INSIGHT_CARD_BG = "#D6E4EE";
 
+/* Radius tokens — JS mirror of --radius-* in globals.css.
+   RADIUS_BUBBLE is intentionally NOT shared with mode-switcher tabs (which
+   are square, 0). Two independent decisions — one structural, one conversational. */
+export const RADIUS_BUBBLE = 12;
+
 /* Card / spacing constants — used by the canvas layout maths. */
 export const CARD_W     = 200;   /* insight card width (reduced for compact layout) */
 export const HERO_W     = 360;
