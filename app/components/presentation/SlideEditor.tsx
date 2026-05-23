@@ -550,6 +550,7 @@ export function SlideEditor() {
               {narrMode !== "None" && (
                 <NarrativeBlock
                   slide={activeSlide}
+                  narrMode={narrMode}
                   narrativeText={activeSlide.narrative ?? deriveSpeakerNarrative(activeDs.title, deriveSlideSummary(activeDs.rows, activeDs.columns))}
                   onChange={(t) => updateSlide(activeSlide.id, { narrative: t })}
                 />
@@ -746,11 +747,29 @@ function DeliverySettingsStrip() {
   );
 }
 
-/* ── Block 4: Speaker narrative — "SPEAKER NARRATIVE · AI · editable" + mic ── */
+/* ── Block 4: Speaker narrative / Voiceover script ───────────────────────
+   narrMode controls the label, format, and whether the block renders at all.
+
+   "Speaker notes included" → prose, mic icon, label "SPEAKER NARRATIVE"
+   "Voiceover script"       → same prose stored, displayed as timestamped
+                              cues ([00:00], [00:09]…), label "VOICEOVER SCRIPT"
+   "None"                   → block is not rendered (parent gates with &&)     */
+
+function voiceoverCues(text: string): Array<{ time: string; line: string }> {
+  const parts = text.split(/\.(?:\s+|$)/).filter(s => s.trim().length > 0);
+  return parts.map((s, i) => {
+    const sec = i * 9;
+    const mm  = Math.floor(sec / 60).toString().padStart(2, "0");
+    const ss  = (sec % 60).toString().padStart(2, "0");
+    return { time: `${mm}:${ss}`, line: s.trim() + "." };
+  });
+}
+
 function NarrativeBlock({
-  slide, narrativeText, onChange,
+  slide, narrMode, narrativeText, onChange,
 }: {
   slide: Slide;
+  narrMode: NarrationMode;
   narrativeText: string;
   onChange: (text: string) => void;
 }) {
@@ -764,6 +783,9 @@ function NarrativeBlock({
     if (draft.trim() && draft !== narrativeText) onChange(draft.trim());
   }
 
+  const isVoiceover = narrMode === "Voiceover script";
+  const cues        = isVoiceover ? voiceoverCues(narrativeText) : [];
+
   return (
     <div style={{
       flexShrink: 0,
@@ -771,11 +793,8 @@ function NarrativeBlock({
       borderTop: `1px solid ${BORDER}`,
       background: "rgba(27,40,64,0.02)",
     }}>
-      <div style={{
-        display: "flex", alignItems: "center", gap: 6,
-        marginBottom: 6,
-      }}>
-        {/* ti-microphone */}
+      <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
+        {/* mic icon */}
         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke={T3} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
           <path d="M9 2m0 3a3 3 0 0 1 3 -3h0a3 3 0 0 1 3 3v5a3 3 0 0 1 -3 3h0a3 3 0 0 1 -3 -3z" />
           <path d="M5 10a7 7 0 0 0 14 0" />
@@ -783,19 +802,23 @@ function NarrativeBlock({
           <path d="M12 17l0 4" />
         </svg>
         <span style={{
-          fontFamily: mono, fontSize: 9, letterSpacing: "0.12em", textTransform: "uppercase",
-          color: T3,
+          fontFamily: mono, fontSize: 9, letterSpacing: "0.12em", textTransform: "uppercase", color: T3,
         }}>
-          Speaker narrative · AI · editable
+          {isVoiceover ? "Voiceover script · AI · editable" : "Speaker narrative · AI · editable"}
         </span>
       </div>
+
       {editing ? (
+        /* Edit always operates on the raw prose regardless of display mode */
         <textarea
           autoFocus
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
           onBlur={commit}
-          onKeyDown={(e) => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) commit(); if (e.key === "Escape") { setDraft(narrativeText); setEditing(false); } }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) commit();
+            if (e.key === "Escape") { setDraft(narrativeText); setEditing(false); }
+          }}
           rows={3}
           style={{
             width: "100%",
@@ -805,15 +828,29 @@ function NarrativeBlock({
             border: "none", outline: "none", resize: "vertical",
           }}
         />
+      ) : isVoiceover ? (
+        /* Voiceover display — timestamped cue lines */
+        <div onClick={() => setEditing(true)} title="Click to edit" style={{ cursor: "text" }}>
+          {cues.map((cue, i) => (
+            <div key={i} style={{ display: "flex", gap: 10, marginBottom: i < cues.length - 1 ? 5 : 0 }}>
+              <span style={{
+                fontFamily: mono, fontSize: 9.5, color: T3, flexShrink: 0,
+                minWidth: 38, paddingTop: 2,
+              }}>
+                [{cue.time}]
+              </span>
+              <span style={{ fontFamily: "Inter, sans-serif", fontSize: 12, lineHeight: 1.55, color: T2 }}>
+                {cue.line}
+              </span>
+            </div>
+          ))}
+        </div>
       ) : (
+        /* Speaker notes display — prose */
         <div
           onClick={() => setEditing(true)}
           title="Click to edit"
-          style={{
-            fontFamily: "Inter, sans-serif",
-            fontSize: 12, lineHeight: 1.55, color: T2,
-            cursor: "text",
-          }}
+          style={{ fontFamily: "Inter, sans-serif", fontSize: 12, lineHeight: 1.55, color: T2, cursor: "text" }}
         >
           {narrativeText}
         </div>
