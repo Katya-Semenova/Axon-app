@@ -40,7 +40,7 @@ const snapToPointer: Modifier = ({ activatorEvent, draggingNodeRect, transform }
      SLIDES  → store mode "presentation"  — slide editor
      PRESENT → store mode "build"         — export gateway
 
-   Slide tray (PresentationStructure, labelled "Slides" in UI)
+   Data set tray (PresentationStructure)
    shows in CANVAS + SLIDES, hidden in PRESENT.
 ══════════════════════════════════════════════════════ */
 function Page2({ onBack }: { onBack: () => void }) {
@@ -94,8 +94,8 @@ function Page2({ onBack }: { onBack: () => void }) {
     ? <SlideEditor />
     : <PresentExport />;
 
-  /* Slide tray — CANVAS + SLIDES only. Hidden in PRESENT (export gateway). */
-  const showSlideTray = mode === "data" || mode === "presentation";
+  /* Data set tray — CANVAS + SLIDES only. Hidden in PRESENT (export gateway). */
+  const showDataSetTray = mode === "data" || mode === "presentation";
 
   return (
     <DndContext sensors={sensors} modifiers={[snapToPointer]} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
@@ -132,8 +132,8 @@ function Page2({ onBack }: { onBack: () => void }) {
 
           {Surface}
 
-          {/* Bottom slide tray — CANVAS + SLIDES only */}
-          {showSlideTray && <PresentationStructure />}
+          {/* Bottom data set tray — CANVAS + SLIDES only */}
+          {showDataSetTray && <PresentationStructure />}
 
           {/* Expanded overlays — fire on demand inside any mode */}
           <InsightExpandedViewOverlay />

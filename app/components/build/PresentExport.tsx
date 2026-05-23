@@ -395,7 +395,7 @@ function DeckReorderTray({
         padding: "22px 18px", textAlign: "center",
         fontFamily: mono, fontSize: 10.5, color: T3, letterSpacing: "0.05em",
       }}>
-        No slides to reorder — switch to CANVAS and send a Data Set to the slide tray first.
+        No slides to reorder — switch to CANVAS and send a Data Set to the data set tray first.
       </div>
     );
   }

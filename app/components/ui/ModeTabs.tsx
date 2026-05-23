@@ -11,7 +11,7 @@ import { NAVY, BORDER, T2 } from "./tokens";
  * Position is controlled by the parent (page.tsx) — centered over canvas.
  *
  *   CANVAS  → mode "data"          — node graph
- *   SLIDES  → mode "presentation"  — slide editor + slide tray
+ *   SLIDES  → mode "presentation"  — slide editor + data set tray
  *   PRESENT → mode "build"         — export gateway (PresentExport)
  */
 export function ModeTabs() {

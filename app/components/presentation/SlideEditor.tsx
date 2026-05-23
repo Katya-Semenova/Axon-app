@@ -526,10 +526,10 @@ export function SlideEditor() {
       </div>
 
       {/* The duplicate bottom strip (thumbnail rail + viz-style panel) was
-          removed per the final spec: there must be only ONE slide tray, and
+          removed per the final spec: there must be only ONE data set tray, and
           it's the page-level <PresentationStructure /> rendered by page.tsx.
           The Modern/Magazine/Wireframe style tiles + Labels/Grid/Stack
-          toggles now live in the slide tray's panel (PresentationStructure)
+          toggles now live in the data set tray's panel (PresentationStructure)
           where they were already duplicated. */}
     </div>
   );
