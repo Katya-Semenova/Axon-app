@@ -23,7 +23,7 @@ export const CANVAS_BG     = "#EDE9E0";
    the warm canvas. */
 export const SLATE_MID       = "#A9AFBD";
 export const SLATE_INNER     = "#D1D5DC";
-export const INSIGHT_CARD_BG = "#E8EAED";
+export const INSIGHT_CARD_BG = "#F3F4F6";
 
 /* Radius tokens — JS mirror of --radius-* in globals.css.
    RADIUS_BUBBLE is intentionally NOT shared with mode-switcher tabs (which
