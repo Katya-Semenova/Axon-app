@@ -508,69 +508,90 @@ function TreemapChart({ rows, expanded, containerWidth, containerHeight }: Chart
 }
 
 /* ── Heatmap ──────────────────────────────────────────────
-   Grid of cells (rows × columns), each tinted by its value.
-   Cells with intensity ≥ 0.55 stamp their numeric value in cream. */
+   Horizontal intensity bars — one per data row.
+
+   Layout:
+     Left  axis  : row labels (right-aligned)
+     Bar area    : background track + intensity-filled bar
+     Right label : numeric value after bar end
+     Top header  : column[0] name centered over bar area
+
+   Color scale (low → high intensity):
+     NAVY_100 → NAVY_300 → NAVY_500 → NAVY (quartiles)
+     Max-value row gets GOLD accent instead.                */
 function HeatmapChart({ rows, columns, expanded, containerWidth, containerHeight }: ChartProps) {
   const W = containerWidth  ?? (expanded ? 600 : 360);
   const H = containerHeight ?? (expanded ? 320 : 200);
 
-  const colCount = Math.max(1, columns.length);
-  const pl = 84, pr = 16, pt = 22, pb = 14;
-  const plotW = W - pl - pr;
-  const plotH = H - pt - pb;
-  const colW  = plotW / colCount;
-  const rowH  = plotH / Math.max(rows.length, 1);
+  const n      = rows.length;
+  const pl     = 78;   // left margin: row labels
+  const pr     = 52;   // right margin: value labels
+  const pt     = 28;   // top: column header
+  const pb     = 8;
+  const plotW  = W - pl - pr;
+  const plotH  = H - pt - pb;
+  const rowH   = n > 0 ? plotH / n : plotH;
+  const barH   = Math.min(rowH * 0.55, 22);
+  const barGap = (rowH - barH) / 2;
 
-  let mx = 0;
-  for (const row of rows) for (const v of row.values) mx = Math.max(mx, v);
-  mx = mx || 1;
+  const values  = rows.map(row => row.values[0] ?? 0);
+  const mx      = Math.max(...values, 1);
+  const maxIdx  = values.indexOf(Math.max(...values));
+  const maxLbl  = Math.max(5, Math.floor((pl - 10) / 6));
 
   return (
     <svg viewBox={`0 0 ${W} ${H}`} fill="none" {...svgAttrs(containerWidth, containerHeight, expanded)}>
-      {/* Column labels — top */}
-      {columns.map((col, ci) => (
-        <text key={ci}
-          x={pl + (ci + 0.5) * colW} y={pt - 6}
-          textAnchor="middle" fontSize="9.5"
+      {/* Column header */}
+      {columns[0] && (
+        <text x={r(pl + plotW / 2)} y={pt - 8}
+          textAnchor="middle" fontSize="8.5" letterSpacing="0.06em"
           fill={T3} fontFamily={MONO_FAMILY}>
-          {col}
+          {columns[0].toUpperCase()}
         </text>
-      ))}
-      {/* Row labels + cells */}
-      {rows.map((row, ri) => (
-        <g key={ri}>
-          <text x={pl - 8} y={pt + (ri + 0.5) * rowH + 3.5}
-            textAnchor="end" fontSize="10"
-            fill={T2} fontFamily={SANS_FAMILY}>
-            {row.label}
-          </text>
-          {row.values.map((v, ci) => {
-            const intensity = (v ?? 0) / mx;
-            const fill = intensity > 0.66 ? NAVY
-                       : intensity > 0.33 ? NAVY_500
-                       : intensity > 0.10 ? NAVY_300
-                       : NAVY_100;
-            const opacity = 0.32 + intensity * 0.65;
-            return (
-              <g key={ci}>
-                <rect
-                  x={r(pl + ci * colW + 1.5)} y={r(pt + ri * rowH + 1.5)}
-                  width={r(colW - 3)} height={r(rowH - 3)}
-                  fill={fill} fillOpacity={opacity}
-                />
-                {intensity >= 0.55 && (
-                  <text
-                    x={r(pl + (ci + 0.5) * colW)} y={r(pt + (ri + 0.5) * rowH + 3.5)}
-                    textAnchor="middle" fontSize="10"
-                    fill="#F5F2EA" fontFamily={MONO_FAMILY}>
-                    {v}
-                  </text>
-                )}
-              </g>
-            );
-          })}
-        </g>
-      ))}
+      )}
+
+      {rows.map((row, ri) => {
+        const v         = values[ri];
+        const intensity = mx > 0 ? v / mx : 0;
+        const barW      = r(plotW * intensity);
+        const y         = r(pt + ri * rowH + barGap);
+        const bh        = r(barH);
+        const isMax     = ri === maxIdx;
+
+        const fill = isMax         ? GOLD
+                   : intensity > 0.65 ? NAVY
+                   : intensity > 0.35 ? NAVY_500
+                   : NAVY_300;
+
+        const lbl = row.label.length > maxLbl
+          ? row.label.slice(0, maxLbl - 1) + "…"
+          : row.label;
+
+        return (
+          <g key={ri}>
+            {/* Row label — right-aligned, centred on bar */}
+            <text x={pl - 7} y={r(y + barH / 2 + 3.5)}
+              textAnchor="end" fontSize="9.5" fill={T2} fontFamily={SANS_FAMILY}>
+              {lbl}
+            </text>
+            {/* Background track */}
+            <rect x={pl} y={y} width={plotW} height={bh}
+              fill={NAVY} fillOpacity="0.05" />
+            {/* Intensity bar */}
+            {barW > 0 && (
+              <rect x={pl} y={y} width={barW} height={bh}
+                fill={fill} fillOpacity={isMax ? 0.9 : 0.78} />
+            )}
+            {/* Value label — right of bar */}
+            <text x={r(pl + barW + 5)} y={r(y + barH / 2 + 3.5)}
+              fontSize="9.5" fontFamily={MONO_FAMILY}
+              fill={isMax ? GOLD : NAVY_500}
+              fontWeight={isMax ? "500" : "400"}>
+              {v}
+            </text>
+          </g>
+        );
+      })}
     </svg>
   );
 }
