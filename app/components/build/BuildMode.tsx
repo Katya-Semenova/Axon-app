@@ -298,7 +298,6 @@ export function BuildMode() {
             "Comparison":  "has exactly two comparable values",
             "Sentiment":   "has a binary positive/negative split",
             "Map":         "has geographic labels",
-            "Treemap":     "has a few categories with one dominant value",
             "Word List":   "has a long ranked list",
             "Chart":       "has multi-series data",
             "Quote":       "has no data",
@@ -398,7 +397,7 @@ export function BuildMode() {
       "sentiment": "Sentiment", "ratio": "Sentiment",
       "map": "Map", "geographic": "Map",
       "word list": "Word List", "wordlist": "Word List", "list": "Word List",
-      "treemap": "Treemap", "tree map": "Treemap",
+      "treemap": "Chart", "tree map": "Chart",
       "quote": "Quote", "insight": "Quote",
       "chart": "Chart",
     };

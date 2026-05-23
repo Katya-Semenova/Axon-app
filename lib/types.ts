@@ -175,17 +175,21 @@ export type SlideArchetype =
   | "Sentiment"
   | "Map"
   | "Word List"
-  | "Treemap"
   | "Quote";
 
 export const SLIDE_ARCHETYPES: SlideArchetype[] = [
-  "Chart", "Big Number", "Comparison", "Sentiment", "Map", "Word List", "Treemap", "Quote",
+  "Chart", "Big Number", "Comparison", "Sentiment", "Map", "Word List", "Quote",
 ];
 
 /** Archetypes that don't render a chart — controls dropdown/viz-style visibility. */
 export const NON_CHART_ARCHETYPES = new Set<SlideArchetype>([
-  "Big Number", "Comparison", "Sentiment", "Map", "Word List", "Treemap", "Quote",
+  "Big Number", "Comparison", "Sentiment", "Map", "Word List", "Quote",
 ]);
+
+/** Slide formats available in Delivery Settings — all non-Chart archetypes. */
+export const SLIDE_FORMAT_OPTIONS: SlideArchetype[] = [
+  "Big Number", "Comparison", "Sentiment", "Map", "Word List", "Quote",
+];
 
 export interface Slide {
   id: string;

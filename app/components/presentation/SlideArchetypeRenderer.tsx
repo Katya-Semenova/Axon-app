@@ -407,9 +407,11 @@ const RENDERERS: Record<SlideArchetype, React.ComponentType<ArchProps>> = {
   "Sentiment":  ArchSentiment,
   "Map":        ArchMap,
   "Word List":  ArchWordList,
-  "Treemap":    ArchTreemap,
   "Quote":      ArchQuote,
 };
+
+/* ArchTreemap is kept as an internal utility — used when chart type is
+   "Treemap" via ArchChart → ChartFill, not as a top-level slide archetype. */
 
 interface SlideArchetypeRendererProps {
   rows: DataRow[];
@@ -513,10 +515,10 @@ export function inferArchetype(rows: DataRow[], columns: string[]): SlideArchety
   /* Multiple series columns (time series / multi-series) → Chart */
   if (columns.length >= 3) return "Chart";
 
-  /* ≤ 6 rows with one clearly dominant value → Treemap */
+  /* ≤ 6 rows with one clearly dominant value → Chart (Treemap type) */
   if (rows.length <= 6) {
     const values = rows.map(r => r.values[0]).sort((a, b) => b - a);
-    if (values[0] > values[1] * 1.8) return "Treemap";
+    if (values[0] > values[1] * 1.8) return "Chart";
   }
 
   /* Long ranked list → Word List */

@@ -2,7 +2,7 @@
 
 import { useState, useRef } from "react";
 import { createPortal } from "react-dom";
-import { ACTIVE_CHART_TYPES, SLIDE_ARCHETYPES } from "@/lib/types";
+import { ACTIVE_CHART_TYPES } from "@/lib/types";
 import type { SlideArchetype } from "@/lib/types";
 import type { ChartType } from "@/lib/types";
 import { NAVY, T2, T3, BORDER, SURFACE_RAISE, SURFACE_MUTED } from "./tokens";
@@ -13,6 +13,14 @@ function getLabel(archetype: SlideArchetype, chartType: ChartType): string {
   return archetype === "Chart" ? `Chart › ${chartType}` : archetype;
 }
 
+/* ── ComboLayoutDropdown ──────────────────────────────────────────────────
+   Chart-type picker used in the Slides mode slide header. Shows the active
+   chart type as "Chart › Lollipop". When a non-chart format is active via
+   Delivery Settings the trigger is visually muted — clicking still lets the
+   user return to chart mode by picking any type.
+
+   Non-chart formats (Big Number, Comparison, etc.) have been moved to
+   Delivery Settings → Slide format. This dropdown is chart-types only.  */
 export function ComboLayoutDropdown({
   archetype,
   chartType,
@@ -25,23 +33,17 @@ export function ComboLayoutDropdown({
   onChangeChartType: (t: ChartType) => void;
 }) {
   const [open, setOpen] = useState(false);
-  const [chartExpanded, setChartExpanded] = useState(false);
   const [triggerRect, setTriggerRect] = useState<DOMRect | null>(null);
   const btnRef = useRef<HTMLButtonElement>(null);
+
+  const isChartMode = archetype === "Chart";
 
   function handleToggle(e: React.MouseEvent) {
     e.stopPropagation();
     if (!open && btnRef.current) {
       setTriggerRect(btnRef.current.getBoundingClientRect());
-      setChartExpanded(archetype === "Chart");
     }
     setOpen(v => !v);
-  }
-
-  function handleChartRowClick(e: React.MouseEvent) {
-    e.stopPropagation();
-    if (archetype !== "Chart") onChangeArchetype("Chart");
-    setChartExpanded(v => !v);
   }
 
   function handleChartType(t: ChartType) {
@@ -50,20 +52,18 @@ export function ComboLayoutDropdown({
     setOpen(false);
   }
 
-  function handleArchetype(a: SlideArchetype) {
-    onChangeArchetype(a);
-    setOpen(false);
-  }
-
-  const nonChart = SLIDE_ARCHETYPES.filter(a => a !== "Chart");
-
   return (
     <div>
       <button
         ref={btnRef}
         onClick={handleToggle}
         className="flex items-center gap-[5px] text-[11px] border border-border rounded-sm px-[8px] py-[3px] hover:border-[rgba(27,40,64,0.3)] transition-colors duration-200"
-        style={{ background: SURFACE_RAISE, fontFamily: mono, color: T2 }}
+        style={{
+          background: SURFACE_RAISE,
+          fontFamily: mono,
+          color: isChartMode ? T2 : T3,
+          opacity: isChartMode ? 1 : 0.65,
+        }}
       >
         {/* layout grid icon */}
         <svg width="9" height="9" viewBox="0 0 9 9" fill="none" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round"
@@ -100,73 +100,12 @@ export function ComboLayoutDropdown({
               maxHeight: "70vh",
               overflowY: "auto",
             }}>
-
-              {/* Chart row — expandable */}
-              <button
-                onClick={handleChartRowClick}
-                className="w-full text-left"
-                style={{
-                  display: "flex", alignItems: "center", justifyContent: "space-between",
-                  padding: "6px 12px",
-                  fontFamily: mono, fontSize: 11,
-                  color: archetype === "Chart" ? NAVY : T2,
-                  fontWeight: archetype === "Chart" ? 500 : 400,
-                  background: archetype === "Chart" && !chartExpanded ? SURFACE_MUTED : "transparent",
-                }}
-                onMouseEnter={e => { if (!(archetype === "Chart" && !chartExpanded)) e.currentTarget.style.background = SURFACE_MUTED; }}
-                onMouseLeave={e => { e.currentTarget.style.background = archetype === "Chart" && !chartExpanded ? SURFACE_MUTED : "transparent"; }}
-              >
-                <span>Chart</span>
-                <svg width="8" height="8" viewBox="0 0 8 8" fill="none" stroke={T3} strokeWidth="1.4" strokeLinecap="round"
-                  style={{ transform: chartExpanded ? "rotate(90deg)" : "rotate(0deg)", transition: "transform 150ms", flexShrink: 0 }}>
-                  <path d="M2.5 1.5l3 2.5-3 2.5" />
-                </svg>
-              </button>
-
-              {/* Chart subtypes — inline expansion */}
-              {chartExpanded && (
-                <div style={{ borderTop: `1px solid ${BORDER}`, borderBottom: `1px solid ${BORDER}`, marginBottom: 2 }}>
-                  {ACTIVE_CHART_TYPES.map(type => {
-                    const isActive = archetype === "Chart" && chartType === type;
-                    return (
-                      <button
-                        key={type}
-                        onClick={(e) => { e.stopPropagation(); handleChartType(type); }}
-                        className="w-full text-left"
-                        style={{
-                          display: "flex", alignItems: "center", gap: 6,
-                          padding: "5px 12px 5px 22px",
-                          fontFamily: mono, fontSize: 10.5,
-                          color: isActive ? NAVY : T2,
-                          fontWeight: isActive ? 500 : 400,
-                          background: isActive ? SURFACE_MUTED : "transparent",
-                        }}
-                        onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = SURFACE_MUTED; }}
-                        onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = "transparent"; }}
-                      >
-                        {isActive && (
-                          <svg width="8" height="8" viewBox="0 0 8 8" fill="none" stroke={NAVY} strokeWidth="1.8" strokeLinecap="round"
-                            style={{ flexShrink: 0, marginLeft: -14 }}>
-                            <path d="M1 4l2 2 4-4" />
-                          </svg>
-                        )}
-                        {type}
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
-
-              {/* Divider before non-chart archetypes */}
-              <div style={{ borderTop: `1px solid ${BORDER}`, margin: "2px 0" }} />
-
-              {/* Non-chart archetypes */}
-              {nonChart.map(arch => {
-                const isActive = archetype === arch;
+              {ACTIVE_CHART_TYPES.map(type => {
+                const isActive = isChartMode && chartType === type;
                 return (
                   <button
-                    key={arch}
-                    onClick={(e) => { e.stopPropagation(); handleArchetype(arch); }}
+                    key={type}
+                    onClick={(e) => { e.stopPropagation(); handleChartType(type); }}
                     className="w-full text-left"
                     style={{
                       display: "flex", alignItems: "center", gap: 6,
@@ -185,7 +124,7 @@ export function ComboLayoutDropdown({
                         <path d="M1 4l2 2 4-4" />
                       </svg>
                     )}
-                    {arch}
+                    {type}
                   </button>
                 );
               })}
