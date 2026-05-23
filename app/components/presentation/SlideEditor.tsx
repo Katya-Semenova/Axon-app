@@ -5,8 +5,8 @@ import { useWorkspaceStore } from "@/lib/store";
 import { MiniChart } from "../MiniChart";
 import { ComboLayoutDropdown } from "../ui/ComboLayoutDropdown";
 import { SlideArchetypeRenderer, deriveSlideSummary } from "./SlideArchetypeRenderer";
-import type { Slide, VisualStyle, ColorAccent, RenderEngine, BuildAudience, BuildTone, NarrationMode } from "@/lib/types";
-import { RENDER_ENGINES, NARRATION_MODES } from "@/lib/types";
+import type { Slide, VisualStyle, ColorAccent, RenderEngine, BuildAudience, BuildTone, NarrationMode, SlideArchetype } from "@/lib/types";
+import { RENDER_ENGINES, NARRATION_MODES, SLIDE_FORMAT_OPTIONS } from "@/lib/types";
 import { BORDER, NAVY, GOLD, T2, T3, SURFACE, SURFACE_RAISE, SURFACE_MUTED } from "../ui/tokens";
 
 /* ── Speaker narrative — 2–4 sentence first-person prose derived from
@@ -45,6 +45,44 @@ const LIBRARY_NAME: Record<VisualStyle, string> = {
 const SLIDES_PER_PAGE = 4;
 const mono = "'JetBrains Mono', monospace";
 
+/* ── Audience × Tone narrative lookup — drives SummaryBlock headline ──────
+   15 hardcoded variants (5 audiences × 3 tones). Falls back to
+   deriveSlideSummary() when the combination has no entry.              */
+const NARRATIVES: Record<BuildAudience, Record<BuildTone, string>> = {
+  CEO: {
+    Formal:  "Revenue contracted 18% in Q3, driven by mid-market churn — Jul marks the inflection point.",
+    Neutral: "Q3 showed an 18% revenue dip; July led the decline — mid-market churn is the primary story.",
+    Casual:  "Revenue dropped about a fifth in Q3 — mid-market fell off fast after July peaked.",
+  },
+  Board: {
+    Formal:  "Q3 revenue performance was 18% below plan; mid-market attrition is the primary risk vector.",
+    Neutral: "The board should note Q3's 18% revenue shortfall — mid-market churn explains most of the gap.",
+    Casual:  "Q3 was rough — revenue down 18%, mostly mid-market. Worth a focused discussion.",
+  },
+  Investor: {
+    Formal:  "Q3 revenue declined 18% year-over-year; mid-market churn represents a recoverable headwind.",
+    Neutral: "Q3 shows an 18% revenue decline — the mid-market segment is the key driver to watch.",
+    Casual:  "Revenue was down 18% in Q3. Mid-market is struggling, but the thesis holds long-term.",
+  },
+  Team: {
+    Formal:  "Team performance in Q3 resulted in an 18% revenue shortfall; root cause is mid-market retention.",
+    Neutral: "Q3 revenue was 18% lower than target — let's align on what drove mid-market churn.",
+    Casual:  "We missed Q3 by 18%. Mid-market churn hit hard — let's dig into why and what to change.",
+  },
+  Custom: {
+    Formal:  "The data indicates an 18% revenue contraction in Q3 attributable to mid-market segment attrition.",
+    Neutral: "Q3 revenue declined 18%; mid-market churn is the explanatory variable across the dataset.",
+    Casual:  "Revenue down 18% in Q3 — mid-market churn is telling a clear story in the data.",
+  },
+};
+
+/* Abbreviated trigger labels for Narration dropdown (full text stays in menu). */
+const NARRATION_TRIGGER: Record<NarrationMode, string> = {
+  "Speaker notes included": "Speaker notes",
+  "Voiceover script":       "Voiceover",
+  "None":                   "None",
+};
+
 /* ── Smart pagination ────────────────────────────────────────────────────── */
 function buildPages(current: number, total: number): (number | "...")[] {
   if (total <= 7) return Array.from({ length: total }, (_, i) => i);
@@ -62,8 +100,15 @@ function buildPages(current: number, total: number): (number | "...")[] {
 }
 
 /* ── PanelSelect ─────────────────────────────────────────────────────────── */
-function PanelSelect({ label, value, options, onChange }: {
-  label: string; value: string; options: string[]; onChange: (v: string) => void;
+function PanelSelect({ label, value, options, onChange, getLabel, triggerFormat }: {
+  label: string;
+  value: string;
+  options: string[];
+  onChange: (v: string) => void;
+  /** Maps raw option value → display label in the menu (and trigger unless triggerFormat overrides). */
+  getLabel?: (v: string) => string;
+  /** Overrides label shown in the trigger button only — menu still shows getLabel(v). */
+  triggerFormat?: (v: string) => string;
 }) {
   const [open, setOpen] = useState(false);
   const triggerRef      = useRef<HTMLButtonElement>(null);
@@ -94,7 +139,9 @@ function PanelSelect({ label, value, options, onChange }: {
           cursor: "pointer", outline: "none", userSelect: "none", transition: "border-color 150ms",
         }}
       >
-        <span style={{ flex: 1, textAlign: "left", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{value}</span>
+        <span style={{ flex: 1, textAlign: "left", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+          {triggerFormat ? triggerFormat(value) : getLabel ? getLabel(value) : value}
+        </span>
         <svg width="7" height="7" viewBox="0 0 7 7" fill="none" stroke={T3} strokeWidth="1.3" strokeLinecap="round"
           style={{ flexShrink: 0, transform: open ? "rotate(180deg)" : undefined, transition: "transform 150ms" }}>
           <path d="M1 2.5l2.5 2.5L6 2.5" />
@@ -125,7 +172,7 @@ function PanelSelect({ label, value, options, onChange }: {
                 }}
                 onMouseEnter={e => { if (opt !== value) e.currentTarget.style.background = SURFACE_MUTED; }}
                 onMouseLeave={e => { if (opt !== value) e.currentTarget.style.background = "transparent"; }}
-              >{opt}</button>
+              >{getLabel ? getLabel(opt) : opt}</button>
             </li>
           ))}
         </ul>
@@ -321,6 +368,9 @@ export function SlideEditor() {
   const removeSlide       = useWorkspaceStore(s => s.removeSlide);
   const updateDsChartType = useWorkspaceStore(s => s.updateDataSetChartType);
   const updateDsRows      = useWorkspaceStore(s => s.updateDataSetRows);
+  const audience          = useWorkspaceStore(s => s.buildAudience);
+  const tone              = useWorkspaceStore(s => s.buildTone);
+  const narrMode          = useWorkspaceStore(s => s.buildNarrationMode);
 
   const [page, setPage] = useState(0);
 
@@ -469,7 +519,7 @@ export function SlideEditor() {
               {/* ── Block 2: Summary — PROMINENT, gold-left-border, beige bg ── */}
               <SummaryBlock
                 slide={activeSlide}
-                summaryText={activeSlide.summary ?? deriveSlideSummary(activeDs.rows, activeDs.columns)}
+                summaryText={activeSlide.summary ?? NARRATIVES[audience]?.[tone] ?? deriveSlideSummary(activeDs.rows, activeDs.columns)}
                 onChange={(s) => updateSlide(activeSlide.id, { summary: s })}
               />
 
@@ -491,16 +541,19 @@ export function SlideEditor() {
                     title={activeDs.title}
                     narrative={activeSlide.narrative}
                     visualStyle={activeSlide.visualStyle}
+                    renderEngine={activeSlide.renderEngine ?? "SciChart"}
                   />
                 </div>
               </div>
 
-              {/* ── Block 4: Speaker narrative — flowing prose, editable ── */}
-              <NarrativeBlock
-                slide={activeSlide}
-                narrativeText={activeSlide.narrative ?? deriveSpeakerNarrative(activeDs.title, deriveSlideSummary(activeDs.rows, activeDs.columns))}
-                onChange={(t) => updateSlide(activeSlide.id, { narrative: t })}
-              />
+              {/* ── Block 4: Speaker narrative — hidden when narration is "None" ── */}
+              {narrMode !== "None" && (
+                <NarrativeBlock
+                  slide={activeSlide}
+                  narrativeText={activeSlide.narrative ?? deriveSpeakerNarrative(activeDs.title, deriveSlideSummary(activeDs.rows, activeDs.columns))}
+                  onChange={(t) => updateSlide(activeSlide.id, { narrative: t })}
+                />
+              )}
 
               {/* ── Block 5: Delivery settings — deck-wide, round-4 fix 5 ── */}
               <DeliverySettingsStrip />
@@ -610,21 +663,33 @@ function SummaryBlock({
   );
 }
 
-/* ── Block 5: Delivery settings — deck-wide controls, round-4 fix 5 ────
-   Lives inside the slide card, below the speaker narrative. Three
-   selects: AUDIENCE / TONE / NARRATION. All three persist on the
-   workspace store (buildAudience / buildTone / buildNarrationMode) so
-   changes apply to the WHOLE deck, never per-slide. */
+/* ── Block 5: Delivery settings — deck-wide controls ────────────────────
+   Four PanelSelect controls: Audience / Tone / Narration / Slide format.
+   Audience + Tone + Narration persist on the workspace store (deck-wide).
+   Slide format changes the active slide's archetype (per-slide).        */
 const AUDIENCE_OPTIONS: BuildAudience[] = ["CEO", "Board", "Investor", "Team", "Custom"];
 const TONE_OPTIONS:     BuildTone[]     = ["Formal", "Neutral", "Casual"];
 
 function DeliverySettingsStrip() {
-  const audience     = useWorkspaceStore(s => s.buildAudience);
-  const tone         = useWorkspaceStore(s => s.buildTone);
-  const narrMode     = useWorkspaceStore(s => s.buildNarrationMode);
-  const setAudience  = useWorkspaceStore(s => s.setBuildAudience);
-  const setTone      = useWorkspaceStore(s => s.setBuildTone);
-  const setNarrMode  = useWorkspaceStore(s => s.setBuildNarrationMode);
+  const audience      = useWorkspaceStore(s => s.buildAudience);
+  const tone          = useWorkspaceStore(s => s.buildTone);
+  const narrMode      = useWorkspaceStore(s => s.buildNarrationMode);
+  const setAudience   = useWorkspaceStore(s => s.setBuildAudience);
+  const setTone       = useWorkspaceStore(s => s.setBuildTone);
+  const setNarrMode   = useWorkspaceStore(s => s.setBuildNarrationMode);
+  const activeSlideId = useWorkspaceStore(s => s.activeSlideId);
+  const slidesById    = useWorkspaceStore(s => s.slidesById);
+  const updateSlide   = useWorkspaceStore(s => s.updateSlide);
+  const activeSlide   = activeSlideId ? slidesById[activeSlideId] : null;
+
+  /* Slide format — "—" means "Chart" (the default render path). */
+  const slideFormatOptions = ["—", ...SLIDE_FORMAT_OPTIONS];
+  const slideFormatValue   = !activeSlide || activeSlide.archetype === "Chart" ? "—" : activeSlide.archetype;
+
+  function handleSlideFormat(v: string) {
+    if (!activeSlide) return;
+    updateSlide(activeSlide.id, { archetype: (v === "—" ? "Chart" : v) as SlideArchetype });
+  }
 
   return (
     <div style={{
@@ -648,81 +713,35 @@ function DeliverySettingsStrip() {
         </span>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12 }}>
-        <DeliveryField label="Audience">
-          <DeliverySelect<BuildAudience>
-            value={audience}
-            options={AUDIENCE_OPTIONS}
-            format={a => a === "CEO" ? "CEO / Exec" : a}
-            onChange={setAudience}
-          />
-        </DeliveryField>
-        <DeliveryField label="Tone">
-          <DeliverySelect<BuildTone>
-            value={tone}
-            options={TONE_OPTIONS}
-            format={t => t === "Formal" ? "Direct, factual" : t === "Neutral" ? "Narrative" : "Casual"}
-            onChange={setTone}
-          />
-        </DeliveryField>
-        <DeliveryField label="Narration">
-          <DeliverySelect<NarrationMode>
-            value={narrMode}
-            options={NARRATION_MODES}
-            onChange={setNarrMode}
-          />
-        </DeliveryField>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 12 }}>
+        <PanelSelect
+          label="Audience"
+          value={audience}
+          options={AUDIENCE_OPTIONS}
+          getLabel={(a) => a === "CEO" ? "CEO / Exec" : a}
+          onChange={(v) => setAudience(v as BuildAudience)}
+        />
+        <PanelSelect
+          label="Tone"
+          value={tone}
+          options={TONE_OPTIONS}
+          getLabel={(t) => t === "Formal" ? "Direct, factual" : t === "Neutral" ? "Narrative" : t}
+          onChange={(v) => setTone(v as BuildTone)}
+        />
+        <PanelSelect
+          label="Narration"
+          value={narrMode}
+          options={NARRATION_MODES}
+          triggerFormat={(v) => NARRATION_TRIGGER[v as NarrationMode] ?? v}
+          onChange={(v) => setNarrMode(v as NarrationMode)}
+        />
+        <PanelSelect
+          label="Slide format"
+          value={slideFormatValue}
+          options={slideFormatOptions}
+          onChange={handleSlideFormat}
+        />
       </div>
-    </div>
-  );
-}
-
-function DeliveryField({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div>
-      <div style={{
-        fontFamily: mono, fontSize: 8.5, letterSpacing: "0.1em", textTransform: "uppercase",
-        color: T3, marginBottom: 5,
-      }}>
-        {label}
-      </div>
-      {children}
-    </div>
-  );
-}
-
-function DeliverySelect<T extends string>({
-  value, options, onChange, format,
-}: {
-  value: T;
-  options: readonly T[];
-  onChange: (v: T) => void;
-  format?: (v: T) => string;
-}) {
-  return (
-    <div style={{ position: "relative" }}>
-      <select
-        value={value}
-        onChange={e => onChange(e.target.value as T)}
-        style={{
-          width: "100%",
-          appearance: "none", WebkitAppearance: "none",
-          background: SURFACE_RAISE,
-          border: `1px solid ${BORDER}`,
-          borderRadius: 4,
-          fontFamily: mono, fontSize: 10.5, color: NAVY,
-          padding: "7px 22px 7px 10px",
-          outline: "none", cursor: "pointer",
-        }}
-      >
-        {options.map(o => (
-          <option key={o} value={o}>{format ? format(o) : o}</option>
-        ))}
-      </select>
-      <svg width="8" height="8" viewBox="0 0 8 8" fill="none" stroke={T3} strokeWidth="1.3" strokeLinecap="round"
-        style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }}>
-        <path d="M1 2.5l3 3 3-3" />
-      </svg>
     </div>
   );
 }
