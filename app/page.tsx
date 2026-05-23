@@ -125,7 +125,7 @@ function Page2({ onBack }: { onBack: () => void }) {
               coordinates formerly occupied by the "+ New data set" button.
               Hidden while a drill-in overlay is active. */}
           {!drillInOpen && (
-            <div style={{ position: "absolute", top: 18, left: "50%", transform: "translateX(-50%)", zIndex: 25 }}>
+            <div style={{ position: "absolute", top: 62, left: "50%", transform: "translateX(-50%)", zIndex: 25 }}>
               <ModeTabs />
             </div>
           )}
