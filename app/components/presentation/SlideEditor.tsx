@@ -683,12 +683,12 @@ function DeliverySettingsStrip() {
   const activeSlide   = activeSlideId ? slidesById[activeSlideId] : null;
 
   /* Slide format — "—" means "Chart" (the default render path). */
-  const slideFormatOptions = ["—", ...SLIDE_FORMAT_OPTIONS];
-  const slideFormatValue   = !activeSlide || activeSlide.archetype === "Chart" ? "—" : activeSlide.archetype;
+  const slideFormatOptions = ["None", ...SLIDE_FORMAT_OPTIONS];
+  const slideFormatValue   = !activeSlide || activeSlide.archetype === "Chart" ? "None" : activeSlide.archetype;
 
   function handleSlideFormat(v: string) {
     if (!activeSlide) return;
-    updateSlide(activeSlide.id, { archetype: (v === "—" ? "Chart" : v) as SlideArchetype });
+    updateSlide(activeSlide.id, { archetype: (v === "None" ? "Chart" : v) as SlideArchetype });
   }
 
   return (
