@@ -2,8 +2,7 @@
 
 import { useState, useRef } from "react";
 import { createPortal } from "react-dom";
-import { CHART_TYPES } from "@/lib/mockData";
-import { SLIDE_ARCHETYPES } from "@/lib/types";
+import { ACTIVE_CHART_TYPES, SLIDE_ARCHETYPES } from "@/lib/types";
 import type { SlideArchetype } from "@/lib/types";
 import type { ChartType } from "@/lib/types";
 import { NAVY, T2, T3, BORDER, SURFACE_RAISE, SURFACE_MUTED } from "./tokens";
@@ -127,7 +126,7 @@ export function ComboLayoutDropdown({
               {/* Chart subtypes — inline expansion */}
               {chartExpanded && (
                 <div style={{ borderTop: `1px solid ${BORDER}`, borderBottom: `1px solid ${BORDER}`, marginBottom: 2 }}>
-                  {CHART_TYPES.map(type => {
+                  {ACTIVE_CHART_TYPES.map(type => {
                     const isActive = archetype === "Chart" && chartType === type;
                     return (
                       <button
