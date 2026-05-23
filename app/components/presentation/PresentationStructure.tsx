@@ -160,6 +160,7 @@ function NewDataSetSlot({ onClick }: { onClick: () => void }) {
 /* ── PresentationStructure ────────────────────────────────────────────────
    Bottom strip in Data Mode: paginated slide thumbnails.                  */
 export function PresentationStructure() {
+  const mode          = useWorkspaceStore(s => s.mode);
   const slideOrder    = useWorkspaceStore(s => s.slideOrder);
   const slidesById    = useWorkspaceStore(s => s.slidesById);
   const slides        = slideOrder.map(id => slidesById[id]).filter(Boolean) as Slide[];
@@ -202,7 +203,9 @@ export function PresentationStructure() {
       <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
         {/* Header */}
         <div className="flex items-center gap-2 shrink-0 px-5 pt-2 pb-1">
-          <span style={{ fontFamily: mono, fontSize: 10, letterSpacing: "0.1em", textTransform: "uppercase", color: T3 }}>Data set tray</span>
+          <span style={{ fontFamily: mono, fontSize: 10, letterSpacing: "0.1em", textTransform: "uppercase", color: T3 }}>
+            {mode === "presentation" ? "Slides tray" : "Data set tray"}
+          </span>
           <span style={{ fontFamily: mono, fontSize: 10, color: T3, opacity: 0.55, userSelect: "none" }}>·</span>
           <span style={{ fontFamily: mono, fontSize: 10, color: T3 }}>
             {slides.length}
