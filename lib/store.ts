@@ -124,7 +124,11 @@ function seedNodePositions(): NodePositionMap {
     const row = Math.floor(i / 2);
     p[ins.id] = { x: INS_COL_X + col * INS_COL_STRIDE, y: 28 + row * (CARD_H_EST + ROW_GAP) };
   });
-  /* No initial datasets — positions are seeded on addDataSet. */
+  /* Initial datasets from the AI agent — seeded in the dataset column (DS_COL_X = 500),
+     stacked from the top with the same row-gap as insights. */
+  INITIAL_DATASETS.forEach((ds, i) => {
+    p[ds.id] = { x: DS_COL_X, y: 28 + i * (CARD_H_EST + ROW_GAP) };
+  });
   return p;
 }
 

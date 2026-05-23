@@ -291,11 +291,42 @@ export const INITIAL_INSIGHTS: Insight[] = [
   },
 ];
 
-/* ── DataSets — start empty; created dynamically by the user on the canvas ─ */
-export const INITIAL_DATASETS: DataSet[] = [];
+/* ── DataSets — one pre-seeded by the AI agent, connected to insights ───── */
+export const INITIAL_DATASETS: DataSet[] = [
+  {
+    id: "ds-seed-01",
+    serial: 1,
+    title: "Monthly revenue, FY",
+    chartType: "Lollipop",
+    columns: ["Revenue (K)"],
+    /* Rows pre-computed from ins-revenue-monthly. sourceInsightId matches
+       the connection below so the edge renders immediately on canvas load. */
+    rows: [
+      { id: "ins-revenue-monthly-r1",  label: "Jan", values: [820],  sourceInsightId: "ins-revenue-monthly" },
+      { id: "ins-revenue-monthly-r2",  label: "Feb", values: [890],  sourceInsightId: "ins-revenue-monthly" },
+      { id: "ins-revenue-monthly-r3",  label: "Mar", values: [940],  sourceInsightId: "ins-revenue-monthly" },
+      { id: "ins-revenue-monthly-r4",  label: "Apr", values: [920],  sourceInsightId: "ins-revenue-monthly" },
+      { id: "ins-revenue-monthly-r5",  label: "May", values: [980],  sourceInsightId: "ins-revenue-monthly" },
+      { id: "ins-revenue-monthly-r6",  label: "Jun", values: [1020], sourceInsightId: "ins-revenue-monthly" },
+      { id: "ins-revenue-monthly-r7",  label: "Jul", values: [1040], sourceInsightId: "ins-revenue-monthly" },
+      { id: "ins-revenue-monthly-r8",  label: "Aug", values: [850],  sourceInsightId: "ins-revenue-monthly" },
+      { id: "ins-revenue-monthly-r9",  label: "Sep", values: [790],  sourceInsightId: "ins-revenue-monthly" },
+      { id: "ins-revenue-monthly-r10", label: "Oct", values: [820],  sourceInsightId: "ins-revenue-monthly" },
+      { id: "ins-revenue-monthly-r11", label: "Nov", values: [860],  sourceInsightId: "ins-revenue-monthly" },
+      { id: "ins-revenue-monthly-r12", label: "Dec", values: [930],  sourceInsightId: "ins-revenue-monthly" },
+    ],
+    wide: true,
+  },
+];
 
-/* ── Connections — drawn by the user on the canvas; empty on startup ────── */
-export const INITIAL_CONNECTIONS: Connection[] = [];
+/* ── Connections — one pre-seeded edge from the AI agent grouping ────────── */
+export const INITIAL_CONNECTIONS: Connection[] = [
+  {
+    id: "c-ins-revenue-monthly->ds-seed-01",
+    fromInsightId: "ins-revenue-monthly",
+    toDataSetId:   "ds-seed-01",
+  },
+];
 
 /* ── Slides — three, matching the existing presentation defaults ───────── */
 const SLIDE_DEFAULTS = {
@@ -311,7 +342,7 @@ const SLIDE_DEFAULTS = {
   stackedBars: false,
 };
 
-/* ── Slides — one empty default slide on startup ───────────────────────── */
+/* ── Slides — one slide paired to the AI-seeded dataset ─────────────────── */
 export const INITIAL_SLIDES: Slide[] = [
-  { id: "slide-default", serial: 1, dataSetIds: [], ...SLIDE_DEFAULTS },
+  { id: "slide-seed-01", serial: 1, dataSetIds: ["ds-seed-01"], narrative: "", ...SLIDE_DEFAULTS },
 ];
