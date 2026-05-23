@@ -125,46 +125,6 @@ function SlideSlot({ slide, isActive, onClick, onDelete }: {
   );
 }
 
-/* ── "+ NEW SLIDE" slot ───────────────────────────────────────────────────
-   Clicking adds an empty slide; dropping a DataSet creates a new slide with
-   that DataSet bound (handled by handleDragEnd in page.tsx).               */
-function NewSlideSlot({ onClick }: { onClick: () => void }) {
-  const [hovered, setHovered] = useState(false);
-  const { setNodeRef, isOver } = useDroppable({
-    id:   "slide-slot:new",
-    data: { type: "slide-slot", slideId: null },
-  });
-
-  const accent = isOver || hovered ? GOLD : T3;
-
-  return (
-    <div
-      ref={setNodeRef}
-      onClick={onClick}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      style={{
-        aspectRatio: "116 / 76",
-        border: `1.5px dashed ${accent}`,
-        background: isOver || hovered ? "rgba(184,149,72,0.06)" : "transparent",
-        borderRadius: 0,
-        display: "flex", alignItems: "center", justifyContent: "center",
-        transition: "border-color 150ms ease, background 150ms ease",
-        cursor: "pointer",
-      }}
-    >
-      <div className="flex flex-col items-center gap-1" style={{ color: accent, transition: "color 150ms" }}>
-        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
-          <path d="M6 2v8M2 6h8" />
-        </svg>
-        <span style={{ fontFamily: mono, fontSize: 8, letterSpacing: "0.08em" }}>
-          {isOver ? "Drop here" : "+ NEW SLIDE"}
-        </span>
-      </div>
-    </div>
-  );
-}
-
 /* ── "+ NEW DATA SET" slot ────────────────────────────────────────────────
    Same visual language as NewSlideSlot. Creates a dataset and auto-pairs
    it with a new slide — the slide appears in the tray immediately.         */
@@ -206,7 +166,6 @@ export function PresentationStructure() {
   const activeSlideId = useWorkspaceStore(s => s.activeSlideId);
   const setActive     = useWorkspaceStore(s => s.setActiveSlide);
   const removeSlide   = useWorkspaceStore(s => s.removeSlide);
-  const addEmptySlide = useWorkspaceStore(s => s.addEmptySlide);
   const addDataSet    = useWorkspaceStore(s => s.addDataSet);
 
   const [page, setPage] = useState(0);
@@ -269,13 +228,8 @@ export function PresentationStructure() {
               />
             </div>
           ))}
-          {/* New-item buttons on the last page, fitting within the page limit */}
+          {/* + New data set — always the last item on the final page */}
           {safePage === totalPages - 1 && pageSlides.length < SLIDES_PER_PAGE && (
-            <div style={{ width: 116, flexShrink: 0 }}>
-              <NewSlideSlot onClick={addEmptySlide} />
-            </div>
-          )}
-          {safePage === totalPages - 1 && pageSlides.length < SLIDES_PER_PAGE - 1 && (
             <div style={{ width: 116, flexShrink: 0 }}>
               <NewDataSetSlot onClick={addDataSet} />
             </div>
