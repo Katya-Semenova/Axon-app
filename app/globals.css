@@ -15,9 +15,9 @@
   --color-border-subtle:  #D9D3C2;
 
   /* ── Slate-blue ramp — from reference palette inner rings ── */
-  --color-slate-mid:    #7A94AE;  /* mid ring — chart accent, secondary data */
-  --color-slate-inner:  #9DB5C8;  /* inner ring — lightest blue */
-  --color-insight-card: #D6E4EE;  /* 30% tint of slate-inner over surface-raised */
+  --color-slate-mid:    #A9AFBD;  /* mid ring */
+  --color-slate-inner:  #D1D5DC;  /* inner ring */
+  --color-insight-card: #E8EAED;  /* insight card surface */
   --color-border-strong:  #B8AE96;
 
   /* ── Navy ramp — structural / primary data ── */

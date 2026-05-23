@@ -21,9 +21,9 @@ export const CANVAS_BG     = "#EDE9E0";
    INSIGHT_CARD_BG is SLATE_INNER at ~30% opacity over SURFACE_RAISE — used
    as the insight card surface so source nodes read as distinctly cool against
    the warm canvas. */
-export const SLATE_MID       = "#7A94AE";
-export const SLATE_INNER     = "#9DB5C8";
-export const INSIGHT_CARD_BG = "#D6E4EE";
+export const SLATE_MID       = "#A9AFBD";
+export const SLATE_INNER     = "#D1D5DC";
+export const INSIGHT_CARD_BG = "#E8EAED";
 
 /* Radius tokens — JS mirror of --radius-* in globals.css.
    RADIUS_BUBBLE is intentionally NOT shared with mode-switcher tabs (which
