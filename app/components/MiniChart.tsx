@@ -28,6 +28,7 @@ export function MiniChart({ rows, chartType, color, W = 104, H = 34 }: MiniChart
     case "Heatmap":      return <MiniHeatmap rows={rows} color={color} W={W} H={H} />;
     case "Radar":        return <MiniRadar rows={rows} color={color} W={W} H={H} />;
     case "Donut":        return <MiniDonut rows={rows} color={color} W={W} H={H} />;
+    case "Map":          return <MiniMap rows={rows} color={color} W={W} H={H} />;
     /* Legacy (resolved but never offered in dropdown) */
     case "Spline Area":
     case "Line":
@@ -263,6 +264,40 @@ function MiniTreemap({ rows, color, W, H }: { rows: DataRow[]; color: string; W:
         <rect key={i} x={c.x} y={c.y} width={c.w} height={Math.max(2, c.h - 1)}
           fill={color} fillOpacity={c.op} />
       ))}
+    </>
+  );
+}
+
+/* ── Mini Map — proportional dot-grid per region ── */
+function MiniMap({ rows, color, W, H }: { rows: DataRow[]; color: string; W: number; H: number }) {
+  const sorted = [...rows].sort((a, b) => (b.values[0] ?? 0) - (a.values[0] ?? 0));
+  const total  = sorted.reduce((s, r) => s + (r.values[0] ?? 0), 0) || 1;
+  const dotR   = 2.0;
+  const step   = dotR * 2 + 1.5;
+  const cols   = Math.floor(W / step);
+  const gRows  = Math.floor(H / step);
+  const totalDots = cols * gRows;
+
+  const regionOf: number[] = [];
+  let allocated = 0;
+  sorted.forEach((row, ri) => {
+    const count = ri < sorted.length - 1
+      ? Math.max(1, Math.round((row.values[0] ?? 0) / total * totalDots))
+      : totalDots - allocated;
+    for (let d = 0; d < count && allocated + d < totalDots; d++) regionOf.push(ri);
+    allocated += count;
+  });
+
+  const opacs = [1, 0.55, 0.72, 0.38, 0.62, 0.45];
+  return (
+    <>
+      {regionOf.slice(0, totalDots).map((ri, i) => {
+        const col = i % cols;
+        const row = Math.floor(i / cols);
+        const cx  = col * step + dotR;
+        const cy  = row * step + dotR;
+        return <circle key={i} cx={r(cx)} cy={r(cy)} r={dotR} fill={color} fillOpacity={opacs[ri % opacs.length]} />;
+      })}
     </>
   );
 }

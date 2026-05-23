@@ -24,7 +24,7 @@
    existing data sets continue to resolve — they're just not offered in
    the dropdown. */
 export type ChartType =
-  /* Active 8 — exposed in dropdown */
+  /* Active 9 — exposed in dropdown */
   | "Treemap"
   | "Lollipop"
   | "Dot Matrix"
@@ -33,6 +33,7 @@ export type ChartType =
   | "Heatmap"
   | "Radar"
   | "Donut"
+  | "Map"
   /* Legacy — still resolve, never offered */
   | "Bar"
   | "Line"
@@ -45,7 +46,8 @@ export type ChartType =
   | "Clean Columns"
   | "Scatter Plot";
 
-/* The 8 types in dropdown order — single source of truth. */
+/* The 9 types in dropdown order — single source of truth.
+   Map moved here from SlideArchetype (it's a data viz, not a presentation format). */
 export const ACTIVE_CHART_TYPES: ChartType[] = [
   "Treemap",
   "Lollipop",
@@ -55,6 +57,7 @@ export const ACTIVE_CHART_TYPES: ChartType[] = [
   "Heatmap",
   "Radar",
   "Donut",
+  "Map",
 ];
 
 export interface DataRow {
@@ -173,22 +176,22 @@ export type SlideArchetype =
   | "Big Number"
   | "Comparison"
   | "Sentiment"
-  | "Map"
   | "Word List"
   | "Quote";
 
 export const SLIDE_ARCHETYPES: SlideArchetype[] = [
-  "Chart", "Big Number", "Comparison", "Sentiment", "Map", "Word List", "Quote",
+  "Chart", "Big Number", "Comparison", "Sentiment", "Word List", "Quote",
 ];
 
 /** Archetypes that don't render a chart — controls dropdown/viz-style visibility. */
 export const NON_CHART_ARCHETYPES = new Set<SlideArchetype>([
-  "Big Number", "Comparison", "Sentiment", "Map", "Word List", "Quote",
+  "Big Number", "Comparison", "Sentiment", "Word List", "Quote",
 ]);
 
-/** Slide formats available in Delivery Settings — all non-Chart archetypes. */
+/** Slide formats available in Delivery Settings — all non-Chart archetypes.
+    "Map" is no longer here — it moved to ChartType (it's a data viz, not a format). */
 export const SLIDE_FORMAT_OPTIONS: SlideArchetype[] = [
-  "Big Number", "Comparison", "Sentiment", "Map", "Word List", "Quote",
+  "Big Number", "Comparison", "Sentiment", "Word List", "Quote",
 ];
 
 export interface Slide {

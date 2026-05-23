@@ -724,6 +724,69 @@ function DotMatrixChart({ rows, expanded, containerWidth, containerHeight }: Cha
   );
 }
 
+/* ── Map — proportional dot-grid, one region per row ─────
+   Dots are allocated to rows by value share. A legend row
+   beneath shows label + percentage for up to 6 regions.
+   (Moved from SlideArchetype "Map" → ChartType "Map".) */
+function MapChart({ rows, expanded, containerWidth, containerHeight }: ChartProps) {
+  const W = containerWidth  ?? (expanded ? 600 : 360);
+  const H = containerHeight ?? (expanded ? 320 : 200);
+
+  if (!rows.length) return <svg viewBox={`0 0 ${W} ${H}`} fill="none" {...svgAttrs(containerWidth, containerHeight, expanded)} />;
+
+  const sorted    = [...rows].sort((a, b) => (b.values[0] ?? 0) - (a.values[0] ?? 0));
+  const total     = sorted.reduce((s, row) => s + (row.values[0] ?? 0), 0) || 1;
+  const dotR      = 3.5;
+  const dotGap    = 3;
+  const step      = dotR * 2 + dotGap;
+  const legendH   = 38;
+  const padX      = 20;
+  const padY      = 14;
+  const cols      = Math.floor((W - padX * 2) / step);
+  const gridRows  = Math.floor((H - legendH - padY * 2) / step);
+  const totalDots = cols * gridRows;
+
+  const regionOf: number[] = [];
+  let allocated = 0;
+  sorted.forEach((row, ri) => {
+    const count = ri < sorted.length - 1
+      ? Math.max(1, Math.round((row.values[0] ?? 0) / total * totalDots))
+      : totalDots - allocated;
+    for (let d = 0; d < count && allocated + d < totalDots; d++) regionOf.push(ri);
+    allocated += count;
+  });
+
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} fill="none" {...svgAttrs(containerWidth, containerHeight, expanded)}>
+      {/* Dot grid */}
+      {regionOf.slice(0, totalDots).map((ri, i) => {
+        const col = i % cols;
+        const row = Math.floor(i / cols);
+        const cx  = padX + col * step + dotR;
+        const cy  = padY + row * step + dotR;
+        return <circle key={i} cx={r(cx)} cy={r(cy)} r={dotR} fill={SERIES[ri % SERIES.length]} fillOpacity={0.8} />;
+      })}
+      {/* Legend row */}
+      {sorted.slice(0, 6).map((row, ri) => {
+        const maxCols  = Math.min(sorted.length, 6);
+        const lx       = padX + ri * Math.floor((W - padX * 2) / maxCols);
+        const ly       = H - legendH + 8;
+        const pct      = total > 0 ? Math.round((row.values[0] ?? 0) / total * 100) : 0;
+        const maxChars = Math.floor((W - padX * 2) / maxCols / 5.5);
+        return (
+          <g key={ri}>
+            <circle cx={r(lx + dotR)} cy={r(ly + dotR)} r={dotR} fill={SERIES[ri % SERIES.length]} />
+            <text x={r(lx + dotR * 2 + 4)} y={r(ly + dotR * 2)}
+              fontSize="9" fontFamily={MONO_FAMILY} fill={T2}>
+              {row.label.slice(0, maxChars)} {pct}%
+            </text>
+          </g>
+        );
+      })}
+    </svg>
+  );
+}
+
 /* ── Main dispatcher ──────────────────────────────────── */
 export function ChartRenderer({
   rows, columns, chartType, expanded, containerWidth, containerHeight,
@@ -747,6 +810,7 @@ export function ChartRenderer({
     case "Heatmap":       return <HeatmapChart {...props} />;
     case "Radar":         return <RadarChart {...props} />;
     case "Donut":         return <DonutChart {...props} />;
+    case "Map":           return <MapChart {...props} />;
     /* Legacy — resolve but never offered in dropdown */
     case "Bar":
     case "Clean Columns": return <CleanColumnsChart {...props} />;

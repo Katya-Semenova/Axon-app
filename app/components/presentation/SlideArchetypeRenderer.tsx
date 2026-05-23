@@ -445,10 +445,12 @@ const RENDERERS: Record<SlideArchetype, React.ComponentType<ArchProps>> = {
   "Big Number": ArchBigNumber,
   "Comparison": ArchComparison,
   "Sentiment":  ArchSentiment,
-  "Map":        ArchMap,
   "Word List":  ArchWordList,
   "Quote":      ArchQuote,
 };
+
+/* ArchMap and ArchTreemap are internal utilities only — they render via
+   ChartFill/ChartRenderer when their types appear as ChartType, not SlideArchetype. */
 
 /* ArchTreemap is kept as an internal utility — used when chart type is
    "Treemap" via ArchChart → ChartFill, not as a top-level slide archetype. */
@@ -549,9 +551,9 @@ export function inferArchetype(rows: DataRow[], columns: string[]): SlideArchety
     return isSentiment ? "Sentiment" : "Comparison";
   }
 
-  /* Check for geographic terms → Map */
+  /* Geographic terms → Chart (Map is now a ChartType, rendered via ChartFill) */
   const geoTerms = /north|south|east|west|\bus\b|\buk\b|\beu\b|asia|europe|america|africa|region|country|market/;
-  if (rows.some(r => geoTerms.test(r.label.toLowerCase()))) return "Map";
+  if (rows.some(r => geoTerms.test(r.label.toLowerCase()))) return "Chart";
 
   /* Multiple series columns (time series / multi-series) → Chart */
   if (columns.length >= 3) return "Chart";
