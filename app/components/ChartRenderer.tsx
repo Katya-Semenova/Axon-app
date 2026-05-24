@@ -208,13 +208,30 @@ function DonutChart({ rows, expanded, containerWidth, containerHeight }: ChartPr
   }
 
   /* Legend sizing — proper text-sized rows */
-  const n         = rows.length;
-  const rowH      = Math.min(28, Math.max(16, (H - 16) / Math.max(n, 1)));
-  const fSize     = Math.max(11, Math.min(14, rowH - 3));
-  const markerS   = Math.max(8, fSize - 2);
-  const startY    = Math.max(8, (H - n * rowH) / 2);
-  const valW      = fSize * 2.8;
-  const maxChars  = Math.max(5, Math.floor((legendAvailW - markerS - 8 - valW) / (fSize * 0.54)));
+  const n      = rows.length;
+  const rowH   = Math.min(28, Math.max(16, (H - 16) / Math.max(n, 1)));
+  const fSize  = Math.max(11, Math.min(14, rowH - 3));
+  const markerS = Math.max(8, fSize - 2);
+  const startY  = Math.max(8, (H - n * rowH) / 2);
+
+  /* Value text width: measure the widest value string (monospace, 0.63 ratio).
+     This replaces the flat fSize*2.8 guess that mis-fires on short/long values. */
+  const LABEL_X  = markerS + 6;         // x where label text starts within the legend group
+  const MIN_GAP  = 8;                   // guaranteed px between label end and value start
+  const maxValStr = rows.reduce((mx, row) => {
+    const s = `${row.values[0] ?? 0}%`;
+    return s.length > mx.length ? s : mx;
+  }, "");
+  const valTextW = maxValStr.length * fSize * 0.63;  // monospace width estimate
+
+  /* Pixel budget for label text on a single line */
+  const maxLabelPx   = Math.max(0, legendAvailW - LABEL_X - MIN_GAP - valTextW);
+  const maxChars     = Math.max(3, Math.floor(maxLabelPx / (fSize * 0.60)));  // sans-serif ratio
+
+  /* Two-line mode: switch when the single-line budget is too tight to show ≥5 chars
+     AND rowH gives enough height to stack label + value.                          */
+  const twoLine      = maxChars < 5 && rowH >= 22;
+  const maxCharsFull = Math.floor((legendAvailW - LABEL_X) / (fSize * 0.60));
 
   return (
     <svg viewBox={`0 0 ${W} ${H}`} fill="none" {...svgAttrs(containerWidth, containerHeight, expanded)}>
@@ -228,12 +245,30 @@ function DonutChart({ rows, expanded, containerWidth, containerHeight }: ChartPr
       <text x={CX} y={CY + Math.max(16, OR * 0.5) + 10} textAnchor="middle" fontSize="7.5"
         fontFamily={MONO_FAMILY} fill={T3} letterSpacing="0.08em">CHANNELS</text>
       {rows.map((row, i) => {
-        const label = row.label.length > maxChars ? row.label.slice(0, maxChars - 1) + "…" : row.label;
         const y = startY + i * rowH;
+        if (twoLine) {
+          /* Stack: label line 1, value line 2 — no horizontal collision possible */
+          const lbl = row.label.length > maxCharsFull
+            ? row.label.slice(0, maxCharsFull - 1) + "…" : row.label;
+          return (
+            <g key={i} transform={`translate(${legendX}, ${y})`}>
+              <rect x="0" y={rowH * 0.08} width={markerS} height={markerS * 0.60} rx="1" fill={SERIES[i % SERIES.length]} />
+              <text x={LABEL_X} y={rowH * 0.46} fontSize={fSize - 1} fill={T2} fontFamily={SANS_FAMILY}>
+                {lbl}
+              </text>
+              <text x={LABEL_X} y={rowH * 0.88} fontSize={fSize - 1}
+                fill={NAVY} fontFamily={MONO_FAMILY} fontWeight="500">
+                {row.values[0]}%
+              </text>
+            </g>
+          );
+        }
+        /* Single-line: label left, value right, guaranteed MIN_GAP between them */
+        const label = row.label.length > maxChars ? row.label.slice(0, maxChars - 1) + "…" : row.label;
         return (
           <g key={i} transform={`translate(${legendX}, ${y})`}>
             <rect x="0" y={rowH * 0.1} width={markerS} height={markerS * 0.65} rx="1" fill={SERIES[i % SERIES.length]} />
-            <text x={markerS + 5} y={rowH * 0.72} fontSize={fSize} fill={T2} fontFamily={SANS_FAMILY}>
+            <text x={LABEL_X} y={rowH * 0.72} fontSize={fSize} fill={T2} fontFamily={SANS_FAMILY}>
               {label}
             </text>
             <text x={legendAvailW} y={rowH * 0.72} textAnchor="end" fontSize={fSize}
