@@ -317,9 +317,9 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => {
         const slot     = idx % SPOKES;
         /* Start at N (-π/2) so the first card lands directly above the button. */
         const angle    = -Math.PI / 2 + slot * (2 * Math.PI / SPOKES);
-        const radius   = 200 + (ring - 1) * 210;  // 200 keeps clear of 248×130 button
-        const ANCHOR_X = 1100;                    // world-space centre near the button
-        const ANCHOR_Y = 720;
+        const radius   = Math.min(260, 180 + (ring - 1) * 100);
+        const ANCHOR_X = 600;   // world-space centre — canvas mid-point at default pan
+        const ANCHOR_Y = 430;
         const cx       = ANCHOR_X + Math.cos(angle) * radius;
         const cy       = ANCHOR_Y + Math.sin(angle) * radius;
         return {

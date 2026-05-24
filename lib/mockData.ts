@@ -325,7 +325,7 @@ export const INITIAL_INSIGHTS: Insight[] = [
   },
 ];
 
-/* ── DataSets — one pre-seeded by the AI agent, connected to insights ───── */
+/* ── DataSets — two pre-seeded by the AI agent, connected to insights ───── */
 export const INITIAL_DATASETS: DataSet[] = [
   {
     id: "ds-seed-01",
@@ -351,14 +351,35 @@ export const INITIAL_DATASETS: DataSet[] = [
     ],
     wide: true,
   },
+  {
+    id: "ds-seed-02",
+    serial: 2,
+    title: "Conversion by channel",
+    chartType: "Treemap",
+    columns: ["Rate (%)"],
+    /* Rows pre-computed from ins-conversion-channel.
+       Treemap layout lets size encode conversion rate at a glance. */
+    rows: [
+      { id: "ins-conversion-channel-r1", label: "Email",   values: [6.2], sourceInsightId: "ins-conversion-channel" },
+      { id: "ins-conversion-channel-r2", label: "Organic", values: [4.8], sourceInsightId: "ins-conversion-channel" },
+      { id: "ins-conversion-channel-r3", label: "Direct",  values: [3.4], sourceInsightId: "ins-conversion-channel" },
+      { id: "ins-conversion-channel-r4", label: "Paid",    values: [2.9], sourceInsightId: "ins-conversion-channel" },
+    ],
+    wide: false,
+  },
 ];
 
-/* ── Connections — one pre-seeded edge from the AI agent grouping ────────── */
+/* ── Connections — two pre-seeded edges from the AI agent grouping ───────── */
 export const INITIAL_CONNECTIONS: Connection[] = [
   {
     id: "c-ins-revenue-monthly->ds-seed-01",
     fromInsightId: "ins-revenue-monthly",
     toDataSetId:   "ds-seed-01",
+  },
+  {
+    id: "c-ins-conversion-channel->ds-seed-02",
+    fromInsightId: "ins-conversion-channel",
+    toDataSetId:   "ds-seed-02",
   },
 ];
 
@@ -376,7 +397,8 @@ const SLIDE_DEFAULTS = {
   stackedBars: false,
 };
 
-/* ── Slides — one slide paired to the AI-seeded dataset ─────────────────── */
+/* ── Slides — two slides, one per AI-seeded dataset ─────────────────────── */
 export const INITIAL_SLIDES: Slide[] = [
   { id: "slide-seed-01", serial: 1, dataSetIds: ["ds-seed-01"], narrative: "", ...SLIDE_DEFAULTS },
+  { id: "slide-seed-02", serial: 2, dataSetIds: ["ds-seed-02"], narrative: "", ...SLIDE_DEFAULTS },
 ];
