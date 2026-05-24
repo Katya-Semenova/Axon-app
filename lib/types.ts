@@ -46,18 +46,21 @@ export type ChartType =
   | "Clean Columns"
   | "Scatter Plot";
 
-/* The 9 types in dropdown order — single source of truth.
-   Map moved here from SlideArchetype (it's a data viz, not a presentation format). */
+/* The 10 types in dropdown order — single source of truth.
+   Visually rich types first, utilitarian types last.
+   Map moved here from SlideArchetype (it's a data viz, not a presentation format).
+   Spline Area promoted from the ChartType union — was seeded in insights but missing here. */
 export const ACTIVE_CHART_TYPES: ChartType[] = [
   "Treemap",
+  "Heatmap",
+  "Map",
   "Lollipop",
+  "Donut",
+  "Stacked Bar",
   "Dot Matrix",
   "Scatter",
-  "Stacked Bar",
-  "Heatmap",
   "Radar",
-  "Donut",
-  "Map",
+  "Spline Area",
 ];
 
 export interface DataRow {
