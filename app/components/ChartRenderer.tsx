@@ -1,5 +1,6 @@
 "use client";
 
+import { hierarchy, treemap, treemapSquarify } from "d3-hierarchy";
 import { makePoints, smoothPath, roundTo } from "@/lib/charts";
 import type { DataRow, ChartType } from "@/lib/mockData";
 
@@ -448,61 +449,79 @@ function ScatterPlotChart({ rows, columns, expanded, containerWidth, containerHe
   );
 }
 
-/* ── Treemap ──────────────────────────────────────────── */
+/* ── Treemap ──────────────────────────────────────────────
+   Squarified layout via d3-hierarchy treemapSquarify.
+   Each leaf maps to one rect; d3 fills [0,0,W,H] exactly.
+   padding(1) creates 1 px gutters — no SVG stroke needed.  */
+type TmDatum = { label?: string; value?: number; children?: TmDatum[] };
+
 function TreemapChart({ rows, expanded, containerWidth, containerHeight }: ChartProps) {
-  const W = containerWidth ?? 342;
+  const W = containerWidth  ?? 342;
   const H = containerHeight ?? 162;
-  const total  = rows.reduce((s, row) => s + (row.values[0] ?? 0), 0) || 1;
-  const sorted = [...rows].sort((a, b) => (b.values[0] ?? 0) - (a.values[0] ?? 0));
-  const leftN  = Math.ceil(sorted.length / 2);
-  const leftRows  = sorted.slice(0, leftN);
-  const rightRows = sorted.slice(leftN);
-  const leftTotal  = leftRows.reduce((s, row)  => s + (row.values[0] ?? 0), 0) || 1;
-  const rightTotal = rightRows.reduce((s, row) => s + (row.values[0] ?? 0), 0) || 0.001;
 
-  const leftW  = Math.max(60, Math.round(W * (leftTotal / total))) - 1;
-  const rightW = W - leftW - 2;
-
-  const fills = [NAVY, NAVY_700, GOLD, NAVY_500, GOLD_300, NAVY_300, NAVY_100];
+  const fills      = [NAVY, NAVY_700, GOLD, NAVY_500, GOLD_300, NAVY_300, NAVY_100];
   const textOnDark = ["#F5F2EA", "#F5F2EA", NAVY, "#F5F2EA", NAVY, NAVY, NAVY];
 
-  const cells: { x: number; y: number; w: number; h: number; fill: string; label: string; val: number; tx: string }[] = [];
-
-  let ly = 0;
-  leftRows.forEach((row, i) => {
-    const h = Math.max(18, Math.round((row.values[0] ?? 0) / leftTotal * H));
-    cells.push({ x: 0, y: ly, w: leftW, h, fill: fills[i], tx: textOnDark[i], label: row.label, val: row.values[0] ?? 0 });
-    ly += h + 2;
-  });
-  let ry = 0;
-  rightRows.forEach((row, i) => {
-    const idx = leftN + i;
-    const h = Math.max(18, Math.round((row.values[0] ?? 0) / rightTotal * H));
-    cells.push({ x: leftW + 2, y: ry, w: rightW, h, fill: fills[idx], tx: textOnDark[idx], label: row.label, val: row.values[0] ?? 0 });
-    ry += h + 2;
-  });
-
   function fmtVal(v: number) {
-    return v >= 1 ? `$${v.toFixed(1)}M` : `$${(v * 1000).toFixed(0)}K`;
+    if (v >= 1000) return `${(v / 1000).toFixed(1)}K`;
+    return Number.isInteger(v) ? String(v) : v.toFixed(1);
   }
+
+  if (rows.length === 0) {
+    return (
+      <svg viewBox={`0 0 ${W} ${H}`} fill="none" {...svgAttrs(containerWidth, containerHeight, expanded)}>
+        <text x={W / 2} y={H / 2} textAnchor="middle" fontSize="11" fill={T3} fontFamily={MONO_FAMILY}>
+          No data
+        </text>
+      </svg>
+    );
+  }
+
+  const data: TmDatum = {
+    children: rows.map(row => ({ label: row.label, value: row.values[0] ?? 0 })),
+  };
+
+  const leaves = treemap<TmDatum>()
+    .tile(treemapSquarify)
+    .size([W, H])
+    .padding(1)
+    (hierarchy<TmDatum>(data).sum(d => d.value ?? 0).sort((a, b) => (b.value ?? 0) - (a.value ?? 0)))
+    .leaves();
 
   return (
     <svg viewBox={`0 0 ${W} ${H}`} fill="none" {...svgAttrs(containerWidth, containerHeight, expanded)}>
-      {cells.map((c, i) => (
-        <g key={i}>
-          <rect x={c.x} y={c.y} width={c.w} height={c.h} fill={c.fill} />
-          {c.h >= 22 && (
-            <text x={c.x + 10} y={c.y + (c.h < 40 ? 15 : 20)}
-              fontSize={c.w < 80 ? 10 : 12} fontWeight="500"
-              fill={c.tx} fontFamily={SANS_FAMILY}>{c.label}</text>
-          )}
-          {c.h >= 34 && (
-            <text x={c.x + 10} y={c.y + (c.h < 48 ? 30 : 38)}
-              fontSize={c.w < 80 ? 13 : 16}
-              fill={c.tx} fillOpacity="0.78" fontFamily={SERIF_FAMILY}>{fmtVal(c.val)}</text>
-          )}
-        </g>
-      ))}
+      {leaves.map((leaf, i) => {
+        const x0  = leaf.x0;
+        const y0  = leaf.y0;
+        const lw  = leaf.x1 - leaf.x0;
+        const lh  = leaf.y1 - leaf.y0;
+        const fill = fills[i % fills.length];
+        const ink  = textOnDark[i % textOnDark.length];
+        const lbl  = leaf.data.label ?? "";
+        const val  = leaf.data.value ?? 0;
+
+        return (
+          <g key={i}>
+            <rect x={r(x0)} y={r(y0)} width={r(lw)} height={r(lh)} fill={fill} />
+            {lh >= 20 && lw >= 20 && (
+              <text
+                x={r(x0 + 6)} y={r(y0 + 14)}
+                fontSize={Math.min(11, lw * 0.22)}
+                fontWeight="500" fill={ink} fontFamily={SANS_FAMILY}>
+                {lbl}
+              </text>
+            )}
+            {lh >= 32 && lw >= 30 && (
+              <text
+                x={r(x0 + 6)} y={r(y0 + 28)}
+                fontSize={Math.min(13, lw * 0.18)}
+                fill={ink} fillOpacity="0.78" fontFamily={SERIF_FAMILY}>
+                {fmtVal(val)}
+              </text>
+            )}
+          </g>
+        );
+      })}
     </svg>
   );
 }

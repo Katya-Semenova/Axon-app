@@ -1,5 +1,6 @@
 "use client";
 
+import { hierarchy, treemap, treemapSquarify } from "d3-hierarchy";
 import { makePoints, smoothPath, roundTo } from "@/lib/charts";
 import type { DataRow, ChartType } from "@/lib/mockData";
 
@@ -235,34 +236,28 @@ function MiniScatter({ rows, color, W, H }: { rows: DataRow[]; color: string; W:
 
 /* ── Treemap ── */
 function MiniTreemap({ rows, color, W, H }: { rows: DataRow[]; color: string; W: number; H: number }) {
-  const sorted = [...rows].sort((a, b) => (b.values[0] ?? 0) - (a.values[0] ?? 0));
-  const total  = sorted.reduce((s, r) => s + (r.values[0] ?? 0), 0) || 1;
-  const leftN  = Math.ceil(sorted.length / 2);
-  const leftRows  = sorted.slice(0, leftN);
-  const rightRows = sorted.slice(leftN);
-  const leftTotal  = leftRows.reduce((s, r) => s + (r.values[0] ?? 0), 0) || 1;
-  const rightTotal = rightRows.reduce((s, r) => s + (r.values[0] ?? 0), 0) || 0.001;
-  const leftW  = Math.max(20, Math.round((W - 2) * (leftTotal / total)));
-  const rightW = W - leftW - 2;
-  const opacs  = [1, 0.65, 0.45, 0.8, 0.35, 0.6];
-  const cells: { x: number; y: number; w: number; h: number; op: number }[] = [];
-  let ly = 0;
-  leftRows.forEach((row, i) => {
-    const h = Math.max(4, Math.round((row.values[0] ?? 0) / leftTotal * H));
-    cells.push({ x: 0, y: ly, w: leftW, h, op: opacs[i % opacs.length] });
-    ly += h + 1;
-  });
-  let ry = 0;
-  rightRows.forEach((row, i) => {
-    const h = Math.max(4, Math.round((row.values[0] ?? 0) / rightTotal * H));
-    cells.push({ x: leftW + 2, y: ry, w: rightW, h, op: opacs[(leftN + i) % opacs.length] });
-    ry += h + 1;
-  });
+  if (rows.length === 0) return null;
+  type TmDatum = { value?: number; children?: TmDatum[] };
+  const data: TmDatum = { children: rows.map(r => ({ value: r.values[0] ?? 0 })) };
+  const root = hierarchy<TmDatum>(data)
+    .sum(d => d.value ?? 0)
+    .sort((a, b) => (b.value ?? 0) - (a.value ?? 0));
+  const leaves = treemap<TmDatum>()
+    .tile(treemapSquarify)
+    .size([W, H])
+    .padding(1)
+    (root)
+    .leaves();
+  const opacs = [1, 0.65, 0.45, 0.8, 0.35, 0.6];
+  const r = Math.round;
   return (
     <>
-      {cells.map((c, i) => (
-        <rect key={i} x={c.x} y={c.y} width={c.w} height={Math.max(2, c.h - 1)}
-          fill={color} fillOpacity={c.op} />
+      {leaves.map((leaf, i) => (
+        <rect key={i}
+          x={r(leaf.x0)} y={r(leaf.y0)}
+          width={r(leaf.x1 - leaf.x0)} height={r(leaf.y1 - leaf.y0)}
+          fill={color} fillOpacity={opacs[i % opacs.length]}
+        />
       ))}
     </>
   );
