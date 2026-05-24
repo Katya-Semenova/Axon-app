@@ -507,91 +507,144 @@ function TreemapChart({ rows, expanded, containerWidth, containerHeight }: Chart
   );
 }
 
+/* ── Heatmap color helpers ────────────────────────────────
+   Two-segment diverging scale: GOLD → warm cream → NAVY.
+   Anchors:
+     cold  #B89548 (GOLD)      — rgb(184,149, 72)
+     mid   #E9E4D5 (warm cream)— rgb(233,228,213)
+     hot   #1B2840 (NAVY)      — rgb( 27, 40, 64)
+   Cell ink flips light/dark at the brightness midpoint.   */
+const HEAT_LOW  = "#B89548";
+const HEAT_MID  = "#E9E4D5";
+const HEAT_HIGH = "#1B2840";
+
+function lerpHex(a: string, b: string, t: number): string {
+  const ah = [parseInt(a.slice(1,3),16), parseInt(a.slice(3,5),16), parseInt(a.slice(5,7),16)];
+  const bh = [parseInt(b.slice(1,3),16), parseInt(b.slice(3,5),16), parseInt(b.slice(5,7),16)];
+  return "#" + ah.map((av, i) =>
+    Math.round(av + (bh[i] - av) * t).toString(16).padStart(2, "0")
+  ).join("");
+}
+function heatFill(t: number): string {
+  return t < 0.5 ? lerpHex(HEAT_LOW, HEAT_MID, t * 2)
+                 : lerpHex(HEAT_MID, HEAT_HIGH, (t - 0.5) * 2);
+}
+function heatInk(t: number): string {
+  return t > 0.62 ? "#F5F2EA"   // cream on dark navy
+       : t < 0.35 ? "#1B2840"   // navy on gold
+       :            "#5C6478";  // T2 on neutral mid
+}
+
 /* ── Heatmap ──────────────────────────────────────────────
-   Horizontal intensity bars — one per data row.
-
-   Layout:
-     Left  axis  : row labels (right-aligned)
-     Bar area    : background track + intensity-filled bar
-     Right label : numeric value after bar end
-     Top header  : column[0] name centered over bar area
-
-   Color scale (low → high intensity):
-     NAVY_100 → NAVY_300 → NAVY_500 → NAVY (quartiles)
-     Max-value row gets GOLD accent instead.                */
+   True matrix. X-axis: columns[], Y-axis: rows[].
+   Cell (ci, ri) filled on diverging scale [minVal, maxVal].
+   Legend: horizontal gradient swatch top-right.           */
 function HeatmapChart({ rows, columns, expanded, containerWidth, containerHeight }: ChartProps) {
   const W = containerWidth  ?? (expanded ? 600 : 360);
   const H = containerHeight ?? (expanded ? 320 : 200);
 
-  const n      = rows.length;
-  const pl     = 78;   // left margin: row labels
-  const pr     = 52;   // right margin: value labels
-  const pt     = 28;   // top: column header
-  const pb     = 8;
-  const plotW  = W - pl - pr;
-  const plotH  = H - pt - pb;
-  const rowH   = n > 0 ? plotH / n : plotH;
-  const barH   = Math.min(rowH * 0.55, 22);
-  const barGap = (rowH - barH) / 2;
+  const nRows = rows.length;
+  const nCols = columns.length || Math.max(...rows.map(row => row.values.length), 1);
 
-  const values  = rows.map(row => row.values[0] ?? 0);
-  const mx      = Math.max(...values, 1);
-  const maxIdx  = values.indexOf(Math.max(...values));
-  const maxLbl  = Math.max(5, Math.floor((pl - 10) / 6));
+  /* Y-axis label width — scales to longest label, capped at 56 px */
+  const maxLabelLen = Math.max(...rows.map(row => row.label.length), 3);
+  const pl = Math.max(28, Math.min(56, Math.round(maxLabelLen * 5.5 + 4)));
+  const pb = 20;  // X-axis labels
+  const pt = 18;  // top (legend + breathing room)
+  const pr = 8;
+
+  const gridW = W - pl - pr;
+  const gridH = H - pt - pb;
+  const cellW = nCols > 0 ? gridW / nCols : gridW;
+  const cellH = nRows > 0 ? gridH / nRows : gridH;
+
+  /* Global range */
+  const allVals = rows.flatMap(row => row.values);
+  const minVal  = allVals.length ? Math.min(...allVals) : 0;
+  const maxVal  = allVals.length ? Math.max(...allVals) : 1;
+  const span    = maxVal - minVal || 1;
+
+  function tOf(v: number) { return (v - minVal) / span; }
+  function fmtV(v: number) {
+    return Math.abs(v) < 10
+      ? (Number.isInteger(v) ? String(v) : v.toFixed(2))
+      : Math.round(v).toString();
+  }
+
+  /* Legend dimensions */
+  const lgW = Math.min(68, gridW * 0.28);
+  const lgH = 6;
+  const lgX = r(W - pr - lgW);
+  const lgY = 5;
 
   return (
     <svg viewBox={`0 0 ${W} ${H}`} fill="none" {...svgAttrs(containerWidth, containerHeight, expanded)}>
-      {/* Column header */}
-      {columns[0] && (
-        <text x={r(pl + plotW / 2)} y={pt - 8}
-          textAnchor="middle" fontSize="8.5" letterSpacing="0.06em"
-          fill={T3} fontFamily={MONO_FAMILY}>
-          {columns[0].toUpperCase()}
+      <defs>
+        <linearGradient id="hm-grad" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%"   stopColor={HEAT_LOW}  />
+          <stop offset="50%"  stopColor={HEAT_MID}  />
+          <stop offset="100%" stopColor={HEAT_HIGH} />
+        </linearGradient>
+      </defs>
+
+      {/* ── Legend ── */}
+      <rect x={lgX} y={lgY} width={lgW} height={lgH} fill="url(#hm-grad)" />
+      <text x={lgX} y={lgY + lgH + 7}
+        fontSize="6" fontFamily={MONO_FAMILY} fill={T3} textAnchor="start">
+        {fmtV(minVal)}
+      </text>
+      <text x={lgX + lgW} y={lgY + lgH + 7}
+        fontSize="6" fontFamily={MONO_FAMILY} fill={T3} textAnchor="end">
+        {fmtV(maxVal)}
+      </text>
+
+      {/* ── Y-axis labels ── */}
+      {rows.map((row, ri) => (
+        <text key={`yl-${ri}`}
+          x={pl - 5} y={r(pt + ri * cellH + cellH / 2 + 3.5)}
+          textAnchor="end"
+          fontSize={Math.min(9.5, cellH * 0.42)}
+          fontFamily={SANS_FAMILY} fill={T2}>
+          {row.label}
         </text>
+      ))}
+
+      {/* ── X-axis labels ── */}
+      {columns.map((col, ci) => (
+        <text key={`xl-${ci}`}
+          x={r(pl + ci * cellW + cellW / 2)} y={H - 4}
+          textAnchor="middle"
+          fontSize={Math.min(8.5, cellW * 0.28)}
+          fontFamily={SANS_FAMILY} fill={T2}>
+          {col}
+        </text>
+      ))}
+
+      {/* ── Cells ── */}
+      {rows.map((row, ri) =>
+        columns.map((_, ci) => {
+          const v  = row.values[ci] ?? 0;
+          const tv = tOf(v);
+          const cx = r(pl + ci * cellW);
+          const cy = r(pt + ri * cellH);
+          const cw = r(cellW - 1);
+          const ch = r(cellH - 1);
+          return (
+            <g key={`${ri}-${ci}`}>
+              <rect x={cx} y={cy} width={cw} height={ch} fill={heatFill(tv)} />
+              {cw > 18 && ch > 9 && (
+                <text
+                  x={r(cx + cw / 2)} y={r(cy + ch / 2 + 3.5)}
+                  textAnchor="middle"
+                  fontSize={Math.min(9, cw * 0.2, ch * 0.38)}
+                  fontFamily={MONO_FAMILY} fill={heatInk(tv)}>
+                  {fmtV(v)}
+                </text>
+              )}
+            </g>
+          );
+        })
       )}
-
-      {rows.map((row, ri) => {
-        const v         = values[ri];
-        const intensity = mx > 0 ? v / mx : 0;
-        const barW      = r(plotW * intensity);
-        const y         = r(pt + ri * rowH + barGap);
-        const bh        = r(barH);
-        const isMax     = ri === maxIdx;
-
-        const fill = isMax         ? GOLD
-                   : intensity > 0.65 ? NAVY
-                   : intensity > 0.35 ? NAVY_500
-                   : NAVY_300;
-
-        const lbl = row.label.length > maxLbl
-          ? row.label.slice(0, maxLbl - 1) + "…"
-          : row.label;
-
-        return (
-          <g key={ri}>
-            {/* Row label — right-aligned, centred on bar */}
-            <text x={pl - 7} y={r(y + barH / 2 + 3.5)}
-              textAnchor="end" fontSize="9.5" fill={T2} fontFamily={SANS_FAMILY}>
-              {lbl}
-            </text>
-            {/* Background track */}
-            <rect x={pl} y={y} width={plotW} height={bh}
-              fill={NAVY} fillOpacity="0.05" />
-            {/* Intensity bar */}
-            {barW > 0 && (
-              <rect x={pl} y={y} width={barW} height={bh}
-                fill={fill} fillOpacity={isMax ? 0.9 : 0.78} />
-            )}
-            {/* Value label — right of bar */}
-            <text x={r(pl + barW + 5)} y={r(y + barH / 2 + 3.5)}
-              fontSize="9.5" fontFamily={MONO_FAMILY}
-              fill={isMax ? GOLD : NAVY_500}
-              fontWeight={isMax ? "500" : "400"}>
-              {v}
-            </text>
-          </g>
-        );
-      })}
     </svg>
   );
 }

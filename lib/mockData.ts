@@ -154,6 +154,20 @@ export function defaultDataForType(type: ChartType): { columns: string[]; rows: 
           row("r3", "SMB", 19, 21, 17),
         ],
       };
+    case "Heatmap":
+      /* 6×6 SaaS metric correlation matrix — values in [-1, 1].
+         Symmetric, diagonal = 1.00. Churn row/column is the "cold" stripe. */
+      return {
+        columns: ["Revenue", "Conv.", "Churn", "MRR", "Retention", "NPS"],
+        rows: [
+          row("r1", "Revenue",    1.00,  0.64, -0.71,  0.92,  0.78,  0.55),
+          row("r2", "Conv.",      0.64,  1.00, -0.58,  0.61,  0.63,  0.47),
+          row("r3", "Churn",     -0.71, -0.58,  1.00, -0.68, -0.82, -0.74),
+          row("r4", "MRR",        0.92,  0.61, -0.68,  1.00,  0.71,  0.52),
+          row("r5", "Retention",  0.78,  0.63, -0.82,  0.71,  1.00,  0.69),
+          row("r6", "NPS",        0.55,  0.47, -0.74,  0.52,  0.69,  1.00),
+        ],
+      };
     default:
       return {
         columns: ["Value"],
@@ -169,6 +183,7 @@ export function adaptRows(rows: DataRow[], targetType: ChartType, targetColumns:
   const needCount =
     (targetType === "Scatter" || targetType === "Scatter Plot") ? 2
     : targetType === "Stacked Bar" ? targetColumns.length
+    : targetType === "Heatmap"     ? targetColumns.length
     : 1;
 
   return rows.map((r) => {
@@ -279,8 +294,27 @@ export const INITIAL_INSIGHTS: Insight[] = [
     confFilled: 5, confPct: 94,
   },
   {
-    id: "ins-q3-narrative",
+    id: "ins-metric-correlation",
     serial: 6,
+    title: "Metric correlation matrix",
+    kind: "data",
+    data: {
+      columns: ["Revenue", "Conv.", "Churn", "MRR", "Retention", "NPS"],
+      chartType: "Heatmap",
+      rows: [
+        row("r1", "Revenue",    1.00,  0.64, -0.71,  0.92,  0.78,  0.55),
+        row("r2", "Conv.",      0.64,  1.00, -0.58,  0.61,  0.63,  0.47),
+        row("r3", "Churn",     -0.71, -0.58,  1.00, -0.68, -0.82, -0.74),
+        row("r4", "MRR",        0.92,  0.61, -0.68,  1.00,  0.71,  0.52),
+        row("r5", "Retention",  0.78,  0.63, -0.82,  0.71,  1.00,  0.69),
+        row("r6", "NPS",        0.55,  0.47, -0.74,  0.52,  0.69,  1.00),
+      ],
+    },
+    confFilled: 5, confPct: 93,
+  },
+  {
+    id: "ins-q3-narrative",
+    serial: 7,
     title: "Q3 churn narrative",
     kind: "text",
     text:

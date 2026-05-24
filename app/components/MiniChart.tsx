@@ -302,28 +302,42 @@ function MiniMap({ rows, color, W, H }: { rows: DataRow[]; color: string; W: num
   );
 }
 
-/* ── Mini Heatmap — rows × columns colour grid (1-2 px gutters) ── */
-function MiniHeatmap({ rows, color, W, H }: { rows: DataRow[]; color: string; W: number; H: number }) {
-  const data = rows.slice(0, 5);
+/* ── Mini Heatmap — diverging matrix grid (GOLD → cream → NAVY) ── */
+function MiniHeatmap({ rows, W, H }: { rows: DataRow[]; color: string; W: number; H: number }) {
+  const data = rows.slice(0, 6);
   if (data.length === 0) return null;
   const cols = Math.max(1, Math.max(...data.map(d => d.values.length)));
-  let mx = 0;
-  for (const row of data) for (const v of row.values) mx = Math.max(mx, v);
-  mx = mx || 1;
-  const cellW = (W - 1) / cols;
-  const cellH = (H - 1) / data.length;
+
+  const allVals: number[] = data.flatMap(d => d.values);
+  const minVal = allVals.length ? Math.min(...allVals) : 0;
+  const maxVal = allVals.length ? Math.max(...allVals) : 1;
+  const span   = maxVal - minVal || 1;
+
+  /* Inline lerp: GOLD[184,149,72] → cream[233,228,213] → NAVY[27,40,64] */
+  function miniHeatColor(v: number): string {
+    const t = (v - minVal) / span;
+    if (t < 0.5) {
+      const s = t * 2;
+      return `rgb(${Math.round(184+(233-184)*s)},${Math.round(149+(228-149)*s)},${Math.round(72+(213-72)*s)})`;
+    }
+    const s = (t - 0.5) * 2;
+    return `rgb(${Math.round(233+(27-233)*s)},${Math.round(228+(40-228)*s)},${Math.round(213+(64-213)*s)})`;
+  }
+
+  const cellW = W / cols;
+  const cellH = H / data.length;
+
   return (
     <>
       {data.map((row, ri) =>
         Array.from({ length: cols }, (_, ci) => {
           const v = row.values[ci] ?? 0;
-          const intensity = v / mx;
           return (
             <rect
               key={`${ri}-${ci}`}
               x={r(ci * cellW + 0.5)} y={r(ri * cellH + 0.5)}
               width={r(cellW - 1)} height={r(cellH - 1)}
-              fill={color} fillOpacity={0.18 + intensity * 0.75}
+              fill={miniHeatColor(v)}
             />
           );
         })
