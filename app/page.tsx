@@ -3,7 +3,7 @@
 import { useState } from "react";
 import {
   DndContext, DragOverlay, PointerSensor, useSensor, useSensors,
-  type DragEndEvent, type DragStartEvent, type Modifier,
+  type DragEndEvent, type DragStartEvent, type DragOverEvent, type Modifier,
 } from "@dnd-kit/core";
 
 import { useWorkspaceStore } from "@/lib/store";
@@ -48,6 +48,9 @@ function Page2({ onBack }: { onBack: () => void }) {
   const addSlideWithDs     = useWorkspaceStore(s => s.addSlideWithDataSet);
   const bindDataSetToSlide = useWorkspaceStore(s => s.bindDataSetToSlide);
   const dataSetsById       = useWorkspaceStore(s => s.dataSetsById);
+  const slideOrder         = useWorkspaceStore(s => s.slideOrder);
+  const slidesById         = useWorkspaceStore(s => s.slidesById);
+  const reorderSlide       = useWorkspaceStore(s => s.reorderSlide);
   const expandedDataSetId  = useWorkspaceStore(s => s.expandedDataSetId);
   const expandedInsightId  = useWorkspaceStore(s => s.expandedInsightId);
   /* Drill-in is a context within a mode — its own back-button is the only
@@ -55,6 +58,9 @@ function Page2({ onBack }: { onBack: () => void }) {
   const drillInOpen        = !!(expandedDataSetId || expandedInsightId);
 
   const [activeDragDataSetId, setActiveDragDataSetId] = useState<string | null>(null);
+  /* Slide reorder drag state */
+  const [activeDragSlideId, setActiveDragSlideId] = useState<string | null>(null);
+  const [dragOverSlideId,   setDragOverSlideId]   = useState<string | null>(null);
 
   /* 8 px drag activation prevents accidental drag on input/splitter clicks. */
   const sensors = useSensors(
@@ -62,30 +68,58 @@ function Page2({ onBack }: { onBack: () => void }) {
   );
 
   function handleDragStart(event: DragStartEvent) {
-    const data = event.active.data.current as { type?: string; dataSetId?: string } | undefined;
+    const data = event.active.data.current as { type?: string; dataSetId?: string; slideId?: string } | undefined;
     if (data?.type === "dataset") setActiveDragDataSetId(data.dataSetId ?? null);
+    if (data?.type === "slide")   setActiveDragSlideId(String(event.active.id));
+  }
+
+  function handleDragOver(event: DragOverEvent) {
+    const { active, over } = event;
+    if (!over) return;
+    const activeData = active.data.current as { type?: string } | undefined;
+    if (activeData?.type === "slide") setDragOverSlideId(String(over.id));
   }
 
   function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;
+    const activeData = active.data.current as { type?: string; dataSetId?: string } | undefined;
+
+    /* ── Slide reorder ── */
+    if (activeData?.type === "slide") {
+      if (over && over.id !== active.id) {
+        const fromIdx = slideOrder.indexOf(String(active.id));
+        const toIdx   = slideOrder.indexOf(String(over.id));
+        if (fromIdx !== -1 && toIdx !== -1) reorderSlide(fromIdx, toIdx);
+      }
+      setActiveDragSlideId(null);
+      setDragOverSlideId(null);
+      return;
+    }
+
+    /* ── Dataset → slide binding ── */
     setActiveDragDataSetId(null);
     if (!over) return;
 
-    const activeData = active.data.current as { type?: string; dataSetId?: string } | undefined;
-    const overId     = String(over.id);
-
     if (activeData?.type === "dataset" && activeData.dataSetId) {
       const dataSetId = activeData.dataSetId;
+      const overId    = String(over.id);
+      /* Sortable slide IDs are plain slide IDs now (no "slide-slot:" prefix) */
       if (overId === "slide-slot:new") {
         addSlideWithDs(dataSetId);
-      } else if (overId.startsWith("slide-slot:")) {
-        const slideId = overId.replace("slide-slot:", "");
-        bindDataSetToSlide(slideId, dataSetId);
+      } else if (slidesById[overId]) {
+        bindDataSetToSlide(overId, dataSetId);
       }
     }
   }
 
   const activeDs = activeDragDataSetId ? dataSetsById[activeDragDataSetId] : null;
+  const insertAt = (activeDragSlideId && dragOverSlideId)
+    ? slideOrder.indexOf(dragOverSlideId) : null;
+
+  const activeSlideGhost      = activeDragSlideId ? slidesById[activeDragSlideId] : null;
+  const activeSlideGhostDsId  = activeSlideGhost?.dataSetIds[0] ?? null;
+  const activeSlideGhostTitle = activeSlideGhostDsId
+    ? (dataSetsById[activeSlideGhostDsId]?.title ?? "Empty slide") : "Empty slide";
 
   /* Surface mounted per mode */
   const Surface = mode === "data"
@@ -98,7 +132,7 @@ function Page2({ onBack }: { onBack: () => void }) {
   const showDataSetTray = mode === "data" || mode === "presentation";
 
   return (
-    <DndContext sensors={sensors} modifiers={[snapToPointer]} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+    <DndContext sensors={sensors} modifiers={[snapToPointer]} onDragStart={handleDragStart} onDragOver={handleDragOver} onDragEnd={handleDragEnd}>
       <div className="flex h-screen max-h-screen overflow-hidden bg-bg animate-fade-in">
 
         {/* ── Left: AI Chat Rail — always visible across all three modes ── */}
@@ -133,7 +167,7 @@ function Page2({ onBack }: { onBack: () => void }) {
           {Surface}
 
           {/* Bottom data set tray — CANVAS + SLIDES only */}
-          {showDataSetTray && <PresentationStructure />}
+          {showDataSetTray && <PresentationStructure insertAt={insertAt} isDraggingSlide={!!activeDragSlideId} />}
 
           {/* Expanded overlays — fire on demand inside any mode */}
           <InsightExpandedViewOverlay />
@@ -161,6 +195,31 @@ function Page2({ onBack }: { onBack: () => void }) {
               <path d="M1.5 6C1.3 9.8 2.5 11.5 5 11.5S8.5 9.8 8.2 6.5" />
             </svg>
             {activeDs.title.length > 36 ? activeDs.title.slice(0, 36) + "…" : activeDs.title}
+          </div>
+        ) : activeSlideGhost ? (
+          <div style={{
+            width: 116, height: 76,
+            background: "#1B2840", borderRadius: 0,
+            display: "flex", flexDirection: "column",
+            alignItems: "center", justifyContent: "center",
+            opacity: 0.88, boxShadow: "0 8px 24px rgba(27,40,64,0.4)",
+            pointerEvents: "none", userSelect: "none",
+          }}>
+            <span style={{
+              fontFamily: "'JetBrains Mono', monospace", fontSize: 8,
+              color: "rgba(245,242,234,0.45)", letterSpacing: "0.08em", marginBottom: 5,
+            }}>
+              {String(activeSlideGhost.serial).padStart(2, "0")}
+            </span>
+            <span style={{
+              fontFamily: "'JetBrains Mono', monospace", fontSize: 9,
+              color: "#F5F2EA", textAlign: "center",
+              padding: "0 10px", lineHeight: 1.45,
+            }}>
+              {activeSlideGhostTitle.length > 22
+                ? activeSlideGhostTitle.slice(0, 22) + "…"
+                : activeSlideGhostTitle}
+            </span>
           </div>
         ) : null}
       </DragOverlay>

@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
-import { useDroppable } from "@dnd-kit/core";
+import { useState, useRef, useEffect, type ReactNode } from "react";
+import { SortableContext, useSortable, horizontalListSortingStrategy } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import { useWorkspaceStore } from "@/lib/store";
 import type { Slide, VisualStyle } from "@/lib/types";
 import { MiniChart } from "../MiniChart";
@@ -21,23 +22,38 @@ const STYLE_HEADLINE_FONT: Record<VisualStyle, string> = {
   Wireframe: "'JetBrains Mono', monospace",
 };
 
+/* ── InsertionLine ────────────────────────────────────────────────────────
+   2 px navy vertical bar rendered between thumbnails during slide reorder.  */
+function InsertionLine() {
+  return (
+    <div style={{
+      width: 2, alignSelf: "stretch", flexShrink: 0,
+      background: NAVY, borderRadius: 1,
+    }} />
+  );
+}
+
 /* ── SlideSlot ────────────────────────────────────────────────────────────
    Shows either a fully populated thumbnail (has a linked DataSet) or an
    "empty" dashed-border state (no dataSetIds yet) with a drop-here hint.  */
-function SlideSlot({ slide, isActive, onClick, onDelete }: {
+function SlideSlot({ slide, isActive, onClick, onDelete, isDraggingSlide }: {
   slide: Slide;
   isActive: boolean;
   onClick: () => void;
   onDelete: () => void;
+  isDraggingSlide: boolean;
 }) {
   const [hovered, setHovered] = useState(false);
   const dataSetsById = useWorkspaceStore(s => s.dataSetsById);
   const ds           = slide.dataSetIds[0] ? dataSetsById[slide.dataSetIds[0]] : null;
   const isEmpty      = !ds || ds.rows.length === 0;
 
-  const { setNodeRef, isOver } = useDroppable({
-    id:   `slide-slot:${slide.id}`,
-    data: { type: "slide-slot", slideId: slide.id },
+  const {
+    setNodeRef, attributes, listeners,
+    transform, transition, isDragging, isOver,
+  } = useSortable({
+    id:   slide.id,
+    data: { type: "slide", slideId: slide.id },
   });
 
   const serial   = String(slide.serial).padStart(2, "0");
@@ -53,25 +69,35 @@ function SlideSlot({ slide, isActive, onClick, onDelete }: {
       ).flat()
     : null;
 
-  const borderColor = isOver ? GOLD : isActive ? NAVY : hovered ? GOLD : BORDER;
-  const borderWidth = isOver ? "2px" : isActive ? "1.5px" : "1px";
-  const borderStyle = isEmpty && !isOver ? "dashed" : "solid";
+  /* Gold drop highlight only for dataset drags — not during slide reorder */
+  const showDropHighlight = isOver && !isDraggingSlide;
+  const borderColor = showDropHighlight ? GOLD : isActive ? NAVY : hovered ? GOLD : BORDER;
+  const borderWidth = showDropHighlight ? "2px" : isActive ? "1.5px" : "1px";
+  const borderStyle = isEmpty && !showDropHighlight ? "dashed" : "solid";
 
   return (
     <div
       ref={setNodeRef}
-      style={{ position: "relative", aspectRatio: "116 / 76" }}
+      style={{
+        position: "relative", aspectRatio: "116 / 76",
+        transform: CSS.Transform.toString(transform),
+        transition,
+        opacity: isDragging ? 0.3 : 1,
+        cursor: "grab",
+      }}
+      {...attributes}
+      {...listeners}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
       <div
         onClick={onClick}
-        className="cursor-pointer overflow-hidden"
+        className="overflow-hidden"
         style={{
           width: "100%", height: "100%", borderRadius: 0,
           border: `${borderWidth} ${borderStyle} ${borderColor}`,
-          background: isOver ? "rgba(184,149,72,0.13)" : bg,
-          boxShadow: isOver ? `inset 0 0 0 1px rgba(184,149,72,0.25)` : "none",
+          background: showDropHighlight ? "rgba(184,149,72,0.13)" : bg,
+          boxShadow: showDropHighlight ? `inset 0 0 0 1px rgba(184,149,72,0.25)` : "none",
           transition: "border-color 120ms ease, background 120ms ease, box-shadow 120ms ease",
         }}
       >
@@ -82,7 +108,7 @@ function SlideSlot({ slide, isActive, onClick, onDelete }: {
           {isEmpty ? (
             <>
               <text x="58" y="36" textAnchor="middle" fontSize="6" fill={T3} fontFamily={mono} fillOpacity="0.7">
-                {isOver ? "Drop here" : "Drop a Data Set"}
+                {showDropHighlight ? "Drop here" : "Drop a Data Set"}
               </text>
               <text x="58" y="45" textAnchor="middle" fontSize="5.5" fill={T3} fontFamily={mono} fillOpacity="0.5">to populate</text>
             </>
@@ -102,9 +128,10 @@ function SlideSlot({ slide, isActive, onClick, onDelete }: {
         </svg>
       </div>
 
-      {/* Delete button */}
+      {/* Delete — stopPropagation on pointerDown prevents drag from activating */}
       <button
         onClick={(e) => { e.stopPropagation(); onDelete(); }}
+        onPointerDown={(e) => e.stopPropagation()}
         title="Remove slide"
         style={{
           position: "absolute", top: 3, right: 3, width: 15, height: 15,
@@ -159,7 +186,10 @@ function NewDataSetSlot({ onClick }: { onClick: () => void }) {
 
 /* ── PresentationStructure ────────────────────────────────────────────────
    Bottom strip in Data Mode: paginated slide thumbnails.                  */
-export function PresentationStructure() {
+export function PresentationStructure({ insertAt, isDraggingSlide }: {
+  insertAt: number | null;
+  isDraggingSlide: boolean;
+}) {
   const mode          = useWorkspaceStore(s => s.mode);
   const slideOrder    = useWorkspaceStore(s => s.slideOrder);
   const slidesById    = useWorkspaceStore(s => s.slidesById);
@@ -213,31 +243,58 @@ export function PresentationStructure() {
         </div>
 
         {/* Thumbnails row — fixed-width items prevent aspect-ratio overflow */}
-        <div style={{
-          flex: 1, display: "flex",
-          alignItems: "center",
-          gap: 8,
-          paddingLeft: 20, paddingRight: 20,
-          paddingTop: 4, paddingBottom: 6,
-          overflow: "hidden",
-        }}>
-          {pageSlides.map(slide => (
-            <div key={slide.id} style={{ width: 116, flexShrink: 0 }}>
-              <SlideSlot
-                slide={slide}
-                isActive={activeSlideId === slide.id}
-                onClick={() => setActive(slide.id)}
-                onDelete={() => handleRemove(slide.id)}
-              />
-            </div>
-          ))}
-          {/* + New data set — always the last item on the final page */}
-          {safePage === totalPages - 1 && pageSlides.length < SLIDES_PER_PAGE && (
-            <div style={{ width: 116, flexShrink: 0 }}>
-              <NewDataSetSlot onClick={addDataSet} />
-            </div>
-          )}
-        </div>
+        <SortableContext
+          items={pageSlides.map(s => s.id)}
+          strategy={horizontalListSortingStrategy}
+        >
+          <div style={{
+            flex: 1, display: "flex",
+            alignItems: "center",
+            gap: 8,
+            paddingLeft: 20, paddingRight: 20,
+            paddingTop: 4, paddingBottom: 6,
+            overflow: "hidden",
+          }}>
+            {/* Translate global insertAt to a page-local index */}
+            {(() => {
+              const pageInsertAt = insertAt !== null
+                ? insertAt - safePage * SLIDES_PER_PAGE : null;
+
+              const items: ReactNode[] = pageSlides.flatMap((slide, i) => {
+                const nodes: ReactNode[] = [];
+                if (pageInsertAt !== null && i === pageInsertAt) {
+                  nodes.push(<InsertionLine key="__ins__" />);
+                }
+                nodes.push(
+                  <div key={slide.id} style={{ width: 116, flexShrink: 0 }}>
+                    <SlideSlot
+                      slide={slide}
+                      isActive={activeSlideId === slide.id}
+                      onClick={() => setActive(slide.id)}
+                      onDelete={() => handleRemove(slide.id)}
+                      isDraggingSlide={isDraggingSlide}
+                    />
+                  </div>
+                );
+                return nodes;
+              });
+
+              /* Trailing insertion line — drop target is after the last slide */
+              if (pageInsertAt !== null && pageInsertAt >= pageSlides.length) {
+                items.push(<InsertionLine key="__ins_trail__" />);
+              }
+
+              return items;
+            })()}
+
+            {/* + New data set — always the last item on the final page */}
+            {safePage === totalPages - 1 && pageSlides.length < SLIDES_PER_PAGE && (
+              <div style={{ width: 116, flexShrink: 0 }}>
+                <NewDataSetSlot onClick={addDataSet} />
+              </div>
+            )}
+          </div>
+        </SortableContext>
 
         {/* Pagination */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 3, padding: "3px 0 5px", flexShrink: 0 }}>
