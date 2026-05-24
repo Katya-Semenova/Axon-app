@@ -288,7 +288,7 @@ export function PresentationStructure({ insertAt, isDraggingSlide }: {
             })()}
 
             {/* + New data set — always the last item on the final page */}
-            {safePage === totalPages - 1 && pageSlides.length < SLIDES_PER_PAGE && (
+            {safePage === totalPages - 1 && (
               <div style={{ width: 116, flexShrink: 0 }}>
                 <NewDataSetSlot onClick={addDataSet} />
               </div>
