@@ -125,10 +125,10 @@ function Page2({ onBack }: { onBack: () => void }) {
 
   /* Surface mounted per mode */
   const Surface = mode === "data"
-    ? <Canvas topRight={modeTabs} />
+    ? <Canvas modeSwitcher={modeTabs} />
     : mode === "presentation"
-    ? <SlideEditor topRight={modeTabs} />
-    : <PresentExport topRight={modeTabs} />;
+    ? <SlideEditor modeSwitcher={modeTabs} />
+    : <PresentExport modeSwitcher={modeTabs} />;
 
   /* Data set tray — CANVAS + SLIDES only. Hidden in PRESENT (export gateway). */
   const showDataSetTray = mode === "data" || mode === "presentation";

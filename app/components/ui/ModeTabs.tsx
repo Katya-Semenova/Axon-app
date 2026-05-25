@@ -53,7 +53,7 @@ function Tab({ label, active, onClick, compact }: { label: string; active: boole
       aria-selected={active}
       onClick={onClick}
       style={{
-        padding: compact ? "7px 12px" : "15px 20px",
+        padding: compact ? "10px 16px" : "15px 20px",
         borderRadius: 0,
         border: "none",
         cursor: active ? "default" : "pointer",

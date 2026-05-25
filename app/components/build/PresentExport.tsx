@@ -85,7 +85,7 @@ const OUTPUT_FORMATS: { id: OutputFormat; title: string; tagline: string; icon: 
 
 /* ── Component ─────────────────────────────────────────────────────────── */
 
-export function PresentExport({ topRight }: { topRight?: React.ReactNode }) {
+export function PresentExport({ modeSwitcher }: { modeSwitcher?: React.ReactNode }) {
   const slideOrder    = useWorkspaceStore(s => s.slideOrder);
   const slidesById    = useWorkspaceStore(s => s.slidesById);
   const dataSetsById  = useWorkspaceStore(s => s.dataSetsById);
@@ -126,7 +126,7 @@ export function PresentExport({ topRight }: { topRight?: React.ReactNode }) {
 
       {/* ── Page header ── */}
       <div
-        className="flex items-center justify-between border-b px-7 h-[64px] shrink-0"
+        className="grid grid-cols-[1fr_auto_1fr] items-center border-b px-7 h-[64px] shrink-0"
         style={{ background: SURFACE, borderColor: BORDER }}
       >
         <div className="flex items-center gap-3 min-w-0">
@@ -138,7 +138,8 @@ export function PresentExport({ topRight }: { topRight?: React.ReactNode }) {
             {slideCount === 0 ? "no slides yet" : `${slideCount} slide${slideCount !== 1 ? "s" : ""} ready to export`}
           </span>
         </div>
-        {topRight ?? <div style={{ width: 280 }} aria-hidden />}
+        <div className="flex justify-center">{modeSwitcher}</div>
+        <div />
       </div>
 
       {/* ── Body ── */}

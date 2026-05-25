@@ -353,7 +353,7 @@ function SlideThumbnail({ slide, isActive, onClick, onDelete }: {
      2. Slide card — bordered container: header (2-line title + chart dropdown)
                      + resizable body (chart panel / splitter / data+settings)
      3. Bottom strip — thumbnail rail (excl. active) + Viz Style + Build CTA   */
-export function SlideEditor({ topRight }: { topRight?: React.ReactNode }) {
+export function SlideEditor({ modeSwitcher }: { modeSwitcher?: React.ReactNode }) {
   /* setMode and clearBuildMessages were only used by the removed
      "Build Presentation" CTA — no longer subscribed here. */
   const slideOrder        = useWorkspaceStore(s => s.slideOrder);
@@ -436,7 +436,7 @@ export function SlideEditor({ topRight }: { topRight?: React.ReactNode }) {
 
       {/* ── Toolbar ── */}
       <div
-        className="flex items-center justify-between shrink-0 border-b px-6 h-[64px]"
+        className="grid grid-cols-[1fr_auto_1fr] items-center shrink-0 border-b px-6 h-[64px]"
         style={{ background: SURFACE, borderColor: BORDER }}
       >
         <div className="flex items-center gap-3 min-w-0">
@@ -454,7 +454,8 @@ export function SlideEditor({ topRight }: { topRight?: React.ReactNode }) {
             </>
           )}
         </div>
-        {topRight ?? <div style={{ width: 280 }} aria-hidden />}
+        <div className="flex justify-center">{modeSwitcher}</div>
+        <div />
       </div>
 
       {/* ── Main row — slide card (centre) + Visualization Style rail (right) ── */}

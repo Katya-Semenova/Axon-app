@@ -20,7 +20,7 @@ const DS_COL_X       = INS_COL_X + 2 * INS_COL_STRIDE + 48;  /* = 500 */
 const DS_W           = 340;
 void COL_GAP;
 
-export function Canvas({ topRight }: { topRight?: React.ReactNode }) {
+export function Canvas({ modeSwitcher }: { modeSwitcher?: React.ReactNode }) {
   const insightOrder  = useWorkspaceStore(s => s.insightOrder);
   const insightsById  = useWorkspaceStore(s => s.insightsById);
   const dataSetOrder  = useWorkspaceStore(s => s.dataSetOrder);
@@ -210,7 +210,7 @@ export function Canvas({ topRight }: { topRight?: React.ReactNode }) {
     <section className="flex-1 min-h-0 flex flex-col overflow-hidden">
       {/* Toolbar */}
       <div
-        className="flex items-center justify-between shrink-0 border-b border-border px-6 h-[64px]"
+        className="grid grid-cols-[1fr_auto_1fr] items-center shrink-0 border-b border-border px-6 h-[64px]"
         style={{ background: SURFACE }}
       >
         <div className="flex items-center gap-[10px]">
@@ -219,8 +219,8 @@ export function Canvas({ topRight }: { topRight?: React.ReactNode }) {
             {insights.length} insights · {dataSets.length} data sets
           </span>
         </div>
-        <div className="flex items-center gap-2">
-          {topRight}
+        <div className="flex justify-center">{modeSwitcher}</div>
+        <div className="flex items-center justify-end gap-2">
           <button onClick={undo} disabled={!canUndo} title="Undo"
             className="w-[28px] h-[28px] rounded-sm border border-border flex items-center justify-center text-t2 disabled:opacity-30 hover:border-[#B89548] hover:text-[#B89548] transition-colors">
             <svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
