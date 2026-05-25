@@ -233,17 +233,25 @@ function DonutChart({ rows, expanded, containerWidth, containerHeight }: ChartPr
   const twoLine      = maxChars < 5 && rowH >= 22;
   const maxCharsFull = Math.floor((legendAvailW - LABEL_X) / (fSize * 0.60));
 
+  /* 9a: center (number + CHANNELS) pair vertically within the donut hole */
+  const numSize = Math.max(16, OR * 0.5);
+  const CHAN_SIZE = 7.5;
+  const CHAN_GAP  = 5;
+  const pairH  = numSize * 0.75 + CHAN_GAP + CHAN_SIZE;
+  const numY   = CY - pairH / 2 + numSize * 0.75;
+  const chanY  = numY + CHAN_GAP + CHAN_SIZE;
+
   return (
     <svg viewBox={`0 0 ${W} ${H}`} fill="none" {...svgAttrs(containerWidth, containerHeight, expanded)}>
       {slices.map((s, i) => (
         <path key={i} d={arc(s)} fill={s.color} />
       ))}
-      <text x={CX} y={CY + 5} textAnchor="middle"
-        fontSize={Math.max(16, OR * 0.5)} fontFamily={SERIF_FAMILY} fill={NAVY}>
+      <text x={CX} y={numY} textAnchor="middle"
+        fontSize={numSize} fontFamily={SERIF_FAMILY} fill={NAVY}>
         {rows.length}
       </text>
-      <text x={CX} y={CY + Math.max(16, OR * 0.5) + 10} textAnchor="middle" fontSize="7.5"
-        fontFamily={MONO_FAMILY} fill={T3} letterSpacing="0.08em">CHANNELS</text>
+      <text x={CX} y={chanY} textAnchor="middle" fontSize={CHAN_SIZE}
+        fontFamily={MONO_FAMILY} fill={T2} letterSpacing="0.08em">CHANNELS</text>
       {rows.map((row, i) => {
         const y = startY + i * rowH;
         if (twoLine) {
@@ -263,15 +271,16 @@ function DonutChart({ rows, expanded, containerWidth, containerHeight }: ChartPr
             </g>
           );
         }
-        /* Single-line: label left, value right, guaranteed MIN_GAP between them */
-        const label = row.label.length > maxChars ? row.label.slice(0, maxChars - 1) + "…" : row.label;
+        /* 9b: tight pair — value sits MIN_GAP after the label, not right-aligned to edge */
+        const label  = row.label.length > maxChars ? row.label.slice(0, maxChars - 1) + "…" : row.label;
+        const labelW = label.length * fSize * 0.60;
         return (
           <g key={i} transform={`translate(${legendX}, ${y})`}>
             <rect x="0" y={rowH * 0.1} width={markerS} height={markerS * 0.65} rx="1" fill={SERIES[i % SERIES.length]} />
             <text x={LABEL_X} y={rowH * 0.72} fontSize={fSize} fill={T2} fontFamily={SANS_FAMILY}>
               {label}
             </text>
-            <text x={legendAvailW} y={rowH * 0.72} textAnchor="end" fontSize={fSize}
+            <text x={LABEL_X + labelW + MIN_GAP} y={rowH * 0.72} textAnchor="start" fontSize={fSize}
               fill={NAVY} fontFamily={MONO_FAMILY} fontWeight="500">
               {row.values[0]}%
             </text>
