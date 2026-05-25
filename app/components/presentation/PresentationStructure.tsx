@@ -206,7 +206,14 @@ export function PresentationStructure({ insertAt, isDraggingSlide }: {
   const mode          = useWorkspaceStore(s => s.mode);
   const slideOrder    = useWorkspaceStore(s => s.slideOrder);
   const slidesById    = useWorkspaceStore(s => s.slidesById);
-  const slides        = slideOrder.map(id => slidesById[id]).filter(Boolean) as Slide[];
+  const dataSetsById  = useWorkspaceStore(s => s.dataSetsById);
+  const allSlides     = slideOrder.map(id => slidesById[id]).filter(Boolean) as Slide[];
+  /* In Slides mode show only slides that have a linked dataset — no empty placeholders.
+     In Canvas mode show all slides so new (empty) slots are visible as drop targets. */
+  const isSlideMode   = mode === "presentation";
+  const slides        = isSlideMode
+    ? allSlides.filter(s => !!s.dataSetIds[0] && !!dataSetsById[s.dataSetIds[0]])
+    : allSlides;
   const activeSlideId = useWorkspaceStore(s => s.activeSlideId);
   const setActive     = useWorkspaceStore(s => s.setActiveSlide);
   const removeSlide   = useWorkspaceStore(s => s.removeSlide);
@@ -294,10 +301,12 @@ export function PresentationStructure({ insertAt, isDraggingSlide }: {
               return items;
             })()}
 
-            {/* + New data set — always at the end of the scroll row */}
-            <div style={{ width: 116, flexShrink: 0 }}>
-              <NewDataSetSlot onClick={addDataSet} />
-            </div>
+            {/* + New data set — Canvas mode only; not shown in Slides mode */}
+            {!isSlideMode && (
+              <div style={{ width: 116, flexShrink: 0 }}>
+                <NewDataSetSlot onClick={addDataSet} />
+              </div>
+            )}
           </div>
         </SortableContext>
       </div>
