@@ -28,7 +28,7 @@ export const INSIGHT_CARD_BG = "#F3F4F6";
 /* Radius tokens — JS mirror of --radius-* in globals.css.
    RADIUS_BUBBLE is intentionally NOT shared with mode-switcher tabs (which
    are square, 0). Two independent decisions — one structural, one conversational. */
-export const RADIUS_BUBBLE = 20;
+export const RADIUS_BUBBLE = 28;
 
 /* Card / spacing constants — used by the canvas layout maths. */
 export const CARD_W     = 200;   /* insight card width (reduced for compact layout) */
