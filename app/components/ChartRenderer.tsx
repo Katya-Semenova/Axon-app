@@ -166,9 +166,31 @@ function SplineAreaChart({ rows, expanded, containerWidth, containerHeight }: Ch
 }
 
 /* ── Donut ────────────────────────────────────────────── */
-function DonutChart({ rows, expanded, containerWidth, containerHeight }: ChartProps) {
+function DonutChart({ rows, columns, expanded, containerWidth, containerHeight }: ChartProps) {
   const W = containerWidth ?? 240;
   const H = containerHeight ?? 144;
+
+  /* Compatibility guard: Donut requires single-dimension, non-negative data.
+     Multi-column matrices or data with negative values produce invalid arcs. */
+  const donutCompatible =
+    columns.length <= 1 &&
+    rows.every(r => (r.values[0] ?? 0) >= 0);
+
+  if (!donutCompatible) {
+    return (
+      <svg viewBox={`0 0 ${W} ${H}`} fill="none" className="w-full h-auto" style={{ display: "block" }}>
+        <rect width={W} height={H} fill={BORDER} fillOpacity="0.18" />
+        <text x={W / 2} y={H / 2 - 7} textAnchor="middle"
+          fontSize="10" fill={T3} fontFamily={MONO_FAMILY} letterSpacing="0.03em">
+          Chart type unsupported
+        </text>
+        <text x={W / 2} y={H / 2 + 8} textAnchor="middle"
+          fontSize="9" fill={T3} fontFamily={MONO_FAMILY} fillOpacity="0.65">
+          for this data shape
+        </text>
+      </svg>
+    );
+  }
 
   /* Split: donut gets 62%, legend gets 38% */
   const legendColW   = Math.round(W * 0.38);
@@ -233,8 +255,10 @@ function DonutChart({ rows, expanded, containerWidth, containerHeight }: ChartPr
   const twoLine      = maxChars < 5 && rowH >= 22;
   const maxCharsFull = Math.floor((legendAvailW - LABEL_X) / (fSize * 0.60));
 
-  /* 9a: center (number + CHANNELS) pair vertically within the donut hole */
-  const numSize = Math.max(16, OR * 0.5);
+  /* 9a: center (number + CHANNELS) pair vertically within the donut hole.
+     Ratio 0.38 (was 0.5) keeps the number at ~38% of hole diameter, giving
+     ≥25px breathing room from the inner ring at compact card scale. */
+  const numSize = Math.max(13, OR * 0.38);
   const CHAN_SIZE = 7.5;
   const CHAN_GAP  = 5;
   const pairH  = numSize * 0.75 + CHAN_GAP + CHAN_SIZE;
