@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, type ReactNode } from "react";
+import { useRef, useEffect, useState, type ReactNode } from "react";
 import { SortableContext, useSortable, horizontalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { useWorkspaceStore } from "@/lib/store";
@@ -8,7 +8,6 @@ import type { Slide, VisualStyle } from "@/lib/types";
 import { MiniChart } from "../MiniChart";
 import { BORDER, NAVY, GOLD, T3, SURFACE_RAISE } from "../ui/tokens";
 
-const SLIDES_PER_PAGE = 4;
 const mono = "'JetBrains Mono', monospace";
 
 const STYLE_BG: Record<VisualStyle, string> = {
@@ -198,7 +197,8 @@ function NewDataSetSlot({ onClick }: { onClick: () => void }) {
 }
 
 /* ── PresentationStructure ────────────────────────────────────────────────
-   Bottom strip in Data Mode: paginated slide thumbnails.                  */
+   Bottom strip — horizontal-scrolling tray of slide thumbnails.
+   All slides are always reachable; no pagination.                        */
 export function PresentationStructure({ insertAt, isDraggingSlide }: {
   insertAt: number | null;
   isDraggingSlide: boolean;
@@ -212,19 +212,17 @@ export function PresentationStructure({ insertAt, isDraggingSlide }: {
   const removeSlide   = useWorkspaceStore(s => s.removeSlide);
   const addDataSet    = useWorkspaceStore(s => s.addDataSet);
 
-  const [page, setPage] = useState(0);
-  const prevLenRef      = useRef(slides.length);
+  const scrollRef  = useRef<HTMLDivElement>(null);
+  const prevLenRef = useRef(slides.length);
 
-  const totalPages = Math.max(1, Math.ceil(slides.length / SLIDES_PER_PAGE));
-  const safePage   = Math.min(page, totalPages - 1);
-  const pageSlides = slides.slice(safePage * SLIDES_PER_PAGE, (safePage + 1) * SLIDES_PER_PAGE);
-
+  /* Scroll the new item into view whenever a slide is added */
   useEffect(() => {
-    if (slides.length > prevLenRef.current) {
-      setPage(Math.floor((slides.length - 1) / SLIDES_PER_PAGE));
+    if (slides.length > prevLenRef.current && scrollRef.current) {
+      const newSlot = scrollRef.current.querySelector<HTMLElement>(`[data-slide-id="${slideOrder[slides.length - 1]}"]`);
+      newSlot?.scrollIntoView({ behavior: "smooth", inline: "end", block: "nearest" });
     }
     prevLenRef.current = slides.length;
-  }, [slides.length]);
+  }, [slides.length, slideOrder]);
 
   function handleRemove(id: string) {
     removeSlide(id);
@@ -237,11 +235,7 @@ export function PresentationStructure({ insertAt, isDraggingSlide }: {
   return (
     <section
       className="shrink-0 flex border-t"
-      style={{
-        height: 164,
-        borderColor: BORDER,
-        background: "#EDE9E0",
-      }}
+      style={{ height: 164, borderColor: BORDER, background: "#EDE9E0" }}
     >
       <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
         {/* Header */}
@@ -250,36 +244,36 @@ export function PresentationStructure({ insertAt, isDraggingSlide }: {
             {mode === "presentation" ? "Slides tray" : "Data set tray"}
           </span>
           <span style={{ fontFamily: mono, fontSize: 10, color: T3, opacity: 0.55, userSelect: "none" }}>·</span>
-          <span style={{ fontFamily: mono, fontSize: 10, color: T3 }}>
-            {slides.length}
-          </span>
+          <span style={{ fontFamily: mono, fontSize: 10, color: T3 }}>{slides.length}</span>
         </div>
 
-        {/* Thumbnails row — fixed-width items prevent aspect-ratio overflow */}
+        {/* Thumbnails row — horizontally scrollable, all slides always visible */}
         <SortableContext
-          items={pageSlides.map(s => s.id)}
+          items={slides.map(s => s.id)}
           strategy={horizontalListSortingStrategy}
         >
-          <div style={{
-            flex: 1, display: "flex",
-            alignItems: "center",
-            gap: 8,
-            paddingLeft: 20, paddingRight: 20,
-            paddingTop: 4, paddingBottom: 6,
-            overflow: "hidden",
-          }}>
-            {/* Translate global insertAt to a page-local index */}
+          <div
+            ref={scrollRef}
+            className="slide-scroll"
+            style={{
+              flex: 1,
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              paddingLeft: 20, paddingRight: 20,
+              paddingTop: 4, paddingBottom: 6,
+              overflowX: "auto",
+              overflowY: "hidden",
+            }}
+          >
             {(() => {
-              const pageInsertAt = insertAt !== null
-                ? insertAt - safePage * SLIDES_PER_PAGE : null;
-
-              const items: ReactNode[] = pageSlides.flatMap((slide, i) => {
+              const items: ReactNode[] = slides.flatMap((slide, i) => {
                 const nodes: ReactNode[] = [];
-                if (pageInsertAt !== null && i === pageInsertAt) {
+                if (insertAt !== null && i === insertAt) {
                   nodes.push(<InsertionLine key="__ins__" />);
                 }
                 nodes.push(
-                  <div key={slide.id} style={{ width: 116, flexShrink: 0 }}>
+                  <div key={slide.id} data-slide-id={slide.id} style={{ width: 116, flexShrink: 0 }}>
                     <SlideSlot
                       slide={slide}
                       isActive={activeSlideId === slide.id}
@@ -292,47 +286,20 @@ export function PresentationStructure({ insertAt, isDraggingSlide }: {
                 return nodes;
               });
 
-              /* Trailing insertion line — drop target is after the last slide */
-              if (pageInsertAt !== null && pageInsertAt >= pageSlides.length) {
+              /* Trailing insertion line — drop after last slide */
+              if (insertAt !== null && insertAt >= slides.length) {
                 items.push(<InsertionLine key="__ins_trail__" />);
               }
 
               return items;
             })()}
 
-            {/* + New data set — always the last item on the final page */}
-            {safePage === totalPages - 1 && (
-              <div style={{ width: 116, flexShrink: 0 }}>
-                <NewDataSetSlot onClick={addDataSet} />
-              </div>
-            )}
+            {/* + New data set — always at the end of the scroll row */}
+            <div style={{ width: 116, flexShrink: 0 }}>
+              <NewDataSetSlot onClick={addDataSet} />
+            </div>
           </div>
         </SortableContext>
-
-        {/* Pagination */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 3, padding: "3px 0 5px", flexShrink: 0 }}>
-          <button onClick={() => setPage(p => Math.max(0, p - 1))}
-            style={{ fontFamily: mono, fontSize: 9.5, color: T3, background: "none", border: "none", cursor: safePage === 0 ? "default" : "pointer", opacity: safePage === 0 ? 0.35 : 1, padding: "2px 6px" }}>
-            ← Prev
-          </button>
-          {Array.from({ length: totalPages }, (_, i) => (
-            <button key={i} onClick={() => setPage(i)}
-              style={{
-                fontFamily: mono, fontSize: 9.5, width: 20, height: 20,
-                display: "flex", alignItems: "center", justifyContent: "center",
-                borderRadius: 2, border: "none", cursor: "pointer",
-                background: i === safePage ? NAVY : "transparent",
-                color: i === safePage ? "#F5F2EA" : T3,
-                transition: "background 150ms, color 150ms",
-              }}>
-              {i + 1}
-            </button>
-          ))}
-          <button onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
-            style={{ fontFamily: mono, fontSize: 9.5, color: T3, background: "none", border: "none", cursor: safePage >= totalPages - 1 ? "default" : "pointer", opacity: safePage >= totalPages - 1 ? 0.35 : 1, padding: "2px 6px" }}>
-            Next →
-          </button>
-        </div>
       </div>
     </section>
   );
