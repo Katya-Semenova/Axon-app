@@ -384,6 +384,17 @@ export const INITIAL_DATASETS: DataSet[] = [
     ],
     wide: true,
   },
+  {
+    id: "ds-seed-04",
+    serial: 4,
+    title: "Q3 Churn Narrative",
+    chartType: "Bar",
+    columns: [],
+    /* No chart rows — this dataset exists solely to back a Quote archetype slide.
+       The narrative text lives on the Slide, not here. */
+    rows: [],
+    wide: false,
+  },
 ];
 
 /* ── Connections — two pre-seeded edges from the AI agent grouping ───────── */
@@ -408,6 +419,11 @@ export const INITIAL_CONNECTIONS: Connection[] = [
     fromInsightId: "ins-q3-narrative",
     toDataSetId:   "ds-seed-01",
   },
+  {
+    id: "c-ins-q3-narrative->ds-seed-04",
+    fromInsightId: "ins-q3-narrative",
+    toDataSetId:   "ds-seed-04",
+  },
 ];
 
 /* ── Slides — three, matching the existing presentation defaults ───────── */
@@ -429,4 +445,13 @@ export const INITIAL_SLIDES: Slide[] = [
   { id: "slide-seed-01", serial: 1, dataSetIds: ["ds-seed-01"], narrative: "", ...SLIDE_DEFAULTS },
   { id: "slide-seed-02", serial: 2, dataSetIds: ["ds-seed-02"], narrative: "", ...SLIDE_DEFAULTS },
   { id: "slide-seed-03", serial: 3, dataSetIds: ["ds-seed-03"], narrative: "", ...SLIDE_DEFAULTS },
+  {
+    id: "slide-seed-04", serial: 4, dataSetIds: ["ds-seed-04"],
+    narrative:
+      "Mid-market accounts drove 71% of Q3 churn. Two clusters: long-tenure customers " +
+      "downgrading to lower SKUs, and 90-day actives lapsing after onboarding gaps. " +
+      "Conversion held above goal everywhere except Paid.",
+    ...SLIDE_DEFAULTS,
+    archetype: "Quote" as SlideArchetype,
+  },
 ];

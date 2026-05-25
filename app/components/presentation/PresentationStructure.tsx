@@ -129,8 +129,33 @@ function SlideSlot({ slide, isActive, onClick, onDelete, isDraggingSlide }: {
               <text x="58" y="45" textAnchor="middle" fontSize="5.5" fill={T3} fontFamily={mono} fillOpacity="0.5">to populate</text>
             </>
           ) : ds.rows.length === 0 ? (
-            /* Dataset linked but no chart rows yet (e.g. only text insights connected) */
-            <text x="58" y="50" textAnchor="middle" fontSize="5.5" fill={T3} fontFamily={mono} fillOpacity="0.5">no chart data</text>
+            /* Dataset linked but no chart rows — Quote slide shows narrative snippet */
+            slide.archetype === "Quote" && slide.narrative?.trim() ? (
+              <>
+                <text x="7" y="34" fontSize="10" fontFamily="Georgia, serif" fill={T3} fillOpacity="0.35">&ldquo;</text>
+                <foreignObject x={13} y={27} width={97} height={44}>
+                  <div
+                    // @ts-ignore — xmlns needed for SVG foreignObject in React
+                    xmlns="http://www.w3.org/1999/xhtml"
+                    style={{
+                      fontFamily: "'Instrument Serif', Georgia, serif",
+                      fontSize: "4.5px",
+                      fontStyle: "italic",
+                      color: "#1B2840",
+                      lineHeight: 1.4,
+                      overflow: "hidden",
+                      display: "-webkit-box",
+                      WebkitLineClamp: 6,
+                      WebkitBoxOrient: "vertical",
+                    } as React.CSSProperties}
+                  >
+                    {slide.narrative!.trim()}
+                  </div>
+                </foreignObject>
+              </>
+            ) : (
+              <text x="58" y="50" textAnchor="middle" fontSize="5.5" fill={T3} fontFamily={mono} fillOpacity="0.5">no chart data</text>
+            )
           ) : (
             /* Fully populated */
             <g transform="translate(6, 30)">

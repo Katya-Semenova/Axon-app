@@ -404,33 +404,38 @@ function ArchTreemap({ rows, W, H }: ArchProps) {
 ══════════════════════════════════════════════════════════════════ */
 function ArchQuote({ narrative, title, W, H }: ArchProps) {
   const text = narrative?.trim() || title?.trim() || "—";
-  const quoteFontSz = Math.min(22, Math.max(14, W / 32));
+  /* Scale font with container width: 22px min, 36px max (capped so it doesn't
+     overwhelm very wide canvases).  At W≈860 → 36px, at W≈300 → 22px. */
+  const quoteFontSz = Math.min(36, Math.max(22, W / 24));
 
   return (
     <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} style={{ display: "block" }}>
-      {/* decorative opening quote mark */}
-      <text x={32} y={H * 0.42}
-        fontSize={80} fontFamily="Georgia, serif"
-        fill={BORDER} fontWeight="700">
+      {/* Decorative opening quote mark — sits behind the text block */}
+      <text x={28} y={H * 0.46}
+        fontSize={100} fontFamily="Georgia, serif"
+        fill={BORDER} fontWeight="700" fillOpacity="0.55">
         &ldquo;
       </text>
-      <foreignObject x={48} y={H * 0.28} width={W - 80} height={H * 0.55}>
+      {/* Quote body — Playfair Display italic, navy */}
+      <foreignObject x={44} y={H * 0.18} width={W - 72} height={H * 0.66}>
         <div
           // @ts-ignore — xmlns needed for SVG foreignObject in React
           xmlns="http://www.w3.org/1999/xhtml"
           style={{
-            fontFamily: "'Instrument Serif', Georgia, serif",
+            fontFamily: "'Playfair Display', 'Instrument Serif', Georgia, serif",
             fontSize: quoteFontSz,
             fontStyle: "italic",
-            color: "#0A0A0A",
-            lineHeight: 1.55,
+            color: NAVY,
+            lineHeight: 1.5,
+            overflow: "hidden",
           }}>
           {text}
         </div>
       </foreignObject>
-      <text x={48} y={H - 20}
+      {/* Attribution line */}
+      <text x={44} y={H - 18}
         fontSize={10} fontFamily={mono} letterSpacing="0.08em" fill={T3}>
-        — Axon
+        — {title || "Axon"}
       </text>
     </svg>
   );
