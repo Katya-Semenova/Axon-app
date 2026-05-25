@@ -126,7 +126,7 @@ export function ChatRail({ onBack }: { onBack: () => void }) {
             buildMessages.map(msg => (
               <div key={msg.id}>
                 {msg.role === "axon" ? (
-                  <div className="text-[13px] leading-[1.6]" style={{ color: T2 }}>
+                  <div className="text-[12px] leading-[1.6]" style={{ color: T2 }}>
                     <strong className="text-[#0A0A0A] font-medium">Axon</strong>
                     {" "}— {msg.content}
                     {msg.streaming && (
@@ -140,7 +140,7 @@ export function ChatRail({ onBack }: { onBack: () => void }) {
                   </div>
                 ) : (
                   <div
-                    className="self-end px-[14px] py-[9px] text-[13px] leading-[1.5] max-w-[88%] ml-auto"
+                    className="self-end px-[14px] py-[9px] text-[12px] leading-[1.5] max-w-[88%] ml-auto"
                     style={{ background: NAVY, color: "#F5F2EA", borderRadius: RADIUS_BUBBLE }}
                   >
                     {msg.content}
@@ -152,17 +152,17 @@ export function ChatRail({ onBack }: { onBack: () => void }) {
         ) : (
           /* ── Default (data/presentation) messages ── */
           <>
-            <div className="text-[13.5px] text-t2 leading-[1.55]">
+            <div className="text-[12px] text-t2 leading-[1.55]">
               <strong className="text-t1 font-medium">Axon</strong>
               {" "}— I&apos;ve parsed 3 files containing 47 tables and 218K rows. Strong signals in revenue, retention, and conversion. Where should I focus?
             </div>
             <div
-              className="self-end px-[16px] py-[10px] text-[13.5px] leading-[1.5] max-w-[88%]"
+              className="self-end px-[16px] py-[10px] text-[12px] leading-[1.5] max-w-[88%]"
               style={{ background: NAVY, color: "#F5F2EA", borderRadius: RADIUS_BUBBLE }}
             >
               Focus on revenue, conversion, and churn. Show me what&apos;s broken and what&apos;s working.
             </div>
-            <div className="text-[13.5px] text-t2 leading-[1.55]">
+            <div className="text-[12px] text-t2 leading-[1.55]">
               <strong className="text-t1 font-medium">Axon</strong>
               {" "}— Revenue took an 18% hit in Q3, driven by mid-market churn. Conversion sits at 3.2% vs a 5% goal. Surfacing the highest-signal cards now.
             </div>
