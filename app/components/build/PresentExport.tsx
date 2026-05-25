@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { MiniChart } from "../MiniChart";
 import { useWorkspaceStore } from "@/lib/store";
 import type { Slide, DataSet } from "@/lib/types";
-import { BORDER, NAVY, T2, T3, SURFACE, SURFACE_RAISE, SURFACE_MUTED } from "../ui/tokens";
+import { BORDER, GOLD, NAVY, T2, T3, SURFACE, SURFACE_RAISE, SURFACE_MUTED } from "../ui/tokens";
 
 /* ══════════════════════════════════════════════════════════════════════════
    PRESENT — the export gateway.
@@ -366,12 +366,10 @@ export function PresentExport({ modeSwitcher }: { modeSwitcher?: React.ReactNode
   );
 }
 
-/* ── Deck order tray — drag-to-reorder before BUILD (round-4 fix 6) ────────
-   Native HTML5 drag-and-drop keeps the implementation simple and avoids
-   nesting another @dnd-kit context inside the page-level one. Tiles are
-   roughly 2× the height of the small slide-tray thumbnail, render the
-   actual chart preview via MiniChart, and the strip scrolls horizontally
-   when the deck overflows. */
+/* ── Deck order tray — drag-to-reorder before BUILD ─────────────────────────
+   Native HTML5 drag-and-drop. Uses insertion-line semantics: a 2px gold
+   vertical bar appears between tiles to show where the dragged item will land,
+   matching the PresentationStructure slide-tray pattern.               */
 
 function DeckReorderTray({
   slideOrder, slidesById, dataSetsById, onReorder,
@@ -382,11 +380,27 @@ function DeckReorderTray({
   onReorder: (from: number, to: number) => void;
 }) {
   const [dragFrom, setDragFrom] = useState<number | null>(null);
-  const [overIdx,  setOverIdx]  = useState<number | null>(null);
+  const [insertAt, setInsertAt] = useState<number | null>(null);
 
   const tiles = slideOrder
     .map(id => slidesById[id])
     .filter((s): s is Slide => !!s);
+
+  function handleDrop() {
+    if (dragFrom !== null && insertAt !== null) {
+      /* insertAt is the gap index (0 = before first tile, n = after last).
+         Convert to array-splice target after the dragged item is removed. */
+      const to = dragFrom < insertAt ? insertAt - 1 : insertAt;
+      if (to !== dragFrom) onReorder(dragFrom, to);
+    }
+    setDragFrom(null);
+    setInsertAt(null);
+  }
+
+  function handleDragEnd() {
+    setDragFrom(null);
+    setInsertAt(null);
+  }
 
   if (tiles.length === 0) {
     return (
@@ -416,54 +430,77 @@ function DeckReorderTray({
         </span>
       </div>
 
+      {/* Flex strip — gaps are 12px sibling divs that host the gold insertion line */}
       <div
         className="slide-scroll"
+        onDragOver={e => e.preventDefault()}
+        onDrop={e => { e.preventDefault(); handleDrop(); }}
         style={{
-          display: "flex", gap: 12,
+          display: "flex", alignItems: "flex-start",
           overflowX: "auto", overflowY: "hidden",
           paddingBottom: 6,
         }}
       >
         {tiles.map((slide, idx) => {
           const ds = slide.dataSetIds[0] ? dataSetsById[slide.dataSetIds[0]] : null;
-          const isDragging = dragFrom === idx;
-          const isOver     = overIdx === idx && dragFrom !== null && dragFrom !== idx;
           return (
-            <DeckTile
-              key={slide.id}
-              idx={idx}
-              slide={slide}
-              ds={ds}
-              isDragging={isDragging}
-              isOver={isOver}
-              onDragStart={() => setDragFrom(idx)}
-              onDragOver={() => setOverIdx(idx)}
-              onDrop={() => {
-                if (dragFrom !== null && dragFrom !== idx) onReorder(dragFrom, idx);
-                setDragFrom(null);
-                setOverIdx(null);
-              }}
-              onDragEnd={() => { setDragFrom(null); setOverIdx(null); }}
-            />
+            <React.Fragment key={slide.id}>
+              <InsertionGap
+                show={insertAt === idx && dragFrom !== null}
+                onDragOver={() => setInsertAt(idx)}
+              />
+              <DeckTile
+                idx={idx}
+                slide={slide}
+                ds={ds}
+                isDragging={dragFrom === idx}
+                onDragStart={() => setDragFrom(idx)}
+                onDragOver={e => {
+                  const rect = e.currentTarget.getBoundingClientRect();
+                  setInsertAt(e.clientX < rect.left + rect.width / 2 ? idx : idx + 1);
+                }}
+                onDragEnd={handleDragEnd}
+              />
+            </React.Fragment>
           );
         })}
+        {/* Trailing gap — captures insertAt === tiles.length (drop after last) */}
+        <InsertionGap
+          show={insertAt === tiles.length && dragFrom !== null}
+          onDragOver={() => setInsertAt(tiles.length)}
+        />
       </div>
     </div>
   );
 }
 
+/* 12px-wide flex child that shows a 2px gold vertical line when active */
+function InsertionGap({ show, onDragOver }: { show: boolean; onDragOver: () => void }) {
+  return (
+    <div
+      style={{ flexShrink: 0, width: 12, alignSelf: "stretch", position: "relative" }}
+      onDragOver={e => { e.stopPropagation(); e.preventDefault(); onDragOver(); }}
+    >
+      {show && (
+        <div style={{
+          position: "absolute", left: "50%", transform: "translateX(-50%)",
+          top: 0, bottom: 0, width: 2, background: GOLD, pointerEvents: "none",
+        }} />
+      )}
+    </div>
+  );
+}
+
 function DeckTile({
-  idx, slide, ds, isDragging, isOver,
-  onDragStart, onDragOver, onDrop, onDragEnd,
+  idx, slide, ds, isDragging,
+  onDragStart, onDragOver, onDragEnd,
 }: {
   idx: number;
   slide: Slide;
   ds: DataSet | null;
   isDragging: boolean;
-  isOver: boolean;
   onDragStart: () => void;
-  onDragOver: () => void;
-  onDrop: () => void;
+  onDragOver: (e: React.DragEvent<HTMLDivElement>) => void;
   onDragEnd: () => void;
 }) {
   const W = 168, H = 130;
@@ -474,20 +511,18 @@ function DeckTile({
     <div
       draggable
       onDragStart={e => { e.dataTransfer.effectAllowed = "move"; onDragStart(); }}
-      onDragOver={e => { e.preventDefault(); e.dataTransfer.dropEffect = "move"; onDragOver(); }}
-      onDrop={e => { e.preventDefault(); onDrop(); }}
+      onDragOver={e => { e.preventDefault(); e.dataTransfer.dropEffect = "move"; onDragOver(e); }}
       onDragEnd={onDragEnd}
       style={{
         flexShrink: 0,
         width: W,
         background: "#FBF9F3",
-        border: `${isOver ? "2px solid #B89548" : "1px solid " + BORDER}`,
+        border: `1px solid ${BORDER}`,
         padding: 0,
         opacity: isDragging ? 0.4 : 1,
         cursor: "grab",
-        transition: "border-color 120ms, opacity 120ms",
+        transition: "opacity 120ms",
         userSelect: "none",
-        boxShadow: isOver ? "0 0 0 3px rgba(184,149,72,0.18)" : "none",
       }}
     >
       {/* Header — serial + drag-grip hint */}
