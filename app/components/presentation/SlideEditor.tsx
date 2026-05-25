@@ -498,9 +498,9 @@ export function SlideEditor({ modeSwitcher }: { modeSwitcher?: React.ReactNode }
                 <div style={{ minWidth: 0, flex: 1, display: "flex", alignItems: "baseline", gap: 10 }}>
                   <span style={{ fontFamily: mono, fontSize: 11, color: T3, flexShrink: 0 }}>{serial} /</span>
                   <span style={{
-                    fontFamily: STYLE_HEADLINE_FONT[activeSlide.visualStyle],
-                    fontSize: 19, fontWeight: 500, color: "#0A0A0A",
-                    lineHeight: 1.25,
+                    fontFamily: "'Playfair Display', 'Instrument Serif', Georgia, serif",
+                    fontSize: 32, fontWeight: 500, color: NAVY,
+                    lineHeight: 1.05, letterSpacing: "-0.3px",
                     overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
                   }}>
                     {activeDs.title}
