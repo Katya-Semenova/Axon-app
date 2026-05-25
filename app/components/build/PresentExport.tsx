@@ -126,7 +126,7 @@ export function PresentExport({ topRight }: { topRight?: React.ReactNode }) {
 
       {/* ── Page header ── */}
       <div
-        className="flex items-center justify-between border-b px-7 py-[14px] shrink-0"
+        className="flex items-center justify-between border-b px-7 h-[64px] shrink-0"
         style={{ background: SURFACE, borderColor: BORDER }}
       >
         <div className="flex items-center gap-3 min-w-0">

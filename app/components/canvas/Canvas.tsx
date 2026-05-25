@@ -210,7 +210,7 @@ export function Canvas({ topRight }: { topRight?: React.ReactNode }) {
     <section className="flex-1 min-h-0 flex flex-col overflow-hidden">
       {/* Toolbar */}
       <div
-        className="flex items-center justify-between shrink-0 border-b border-border px-6 py-[9px]"
+        className="flex items-center justify-between shrink-0 border-b border-border px-6 h-[64px]"
         style={{ background: SURFACE }}
       >
         <div className="flex items-center gap-[10px]">

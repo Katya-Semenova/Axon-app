@@ -436,7 +436,7 @@ export function SlideEditor({ topRight }: { topRight?: React.ReactNode }) {
 
       {/* ── Toolbar ── */}
       <div
-        className="flex items-center justify-between shrink-0 border-b px-6 py-[9px]"
+        className="flex items-center justify-between shrink-0 border-b px-6 h-[64px]"
         style={{ background: SURFACE, borderColor: BORDER }}
       >
         <div className="flex items-center gap-3 min-w-0">
