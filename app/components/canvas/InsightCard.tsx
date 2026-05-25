@@ -103,10 +103,23 @@ export function InsightCard({
         {insight.title}
       </div>
 
-      {/* Compact preview — one line only */}
-      <div style={{ fontFamily: mono, fontSize: 9.5, color: T3, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", marginBottom: 6 }}>
-        {previewText}
-      </div>
+      {/* Preview — text insight gets a styled annotation block; others get compact mono */}
+      {insight.kind === "text" && insight.text ? (
+        <div style={{
+          fontSize: 10.5, lineHeight: 1.5, color: T2, fontStyle: "italic",
+          fontFamily: "Inter, sans-serif", marginBottom: 6,
+          padding: "4px 6px", background: "rgba(27,40,64,0.035)",
+          borderLeft: `2px solid ${GOLD}`,
+          display: "-webkit-box", WebkitLineClamp: 3,
+          WebkitBoxOrient: "vertical" as const, overflow: "hidden",
+        }}>
+          {insight.text}
+        </div>
+      ) : (
+        <div style={{ fontFamily: mono, fontSize: 9.5, color: T3, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", marginBottom: 6 }}>
+          {previewText}
+        </div>
+      )}
 
       {/* Footer */}
       <div className="flex items-center justify-between border-t" style={{ borderColor: BORDER, paddingTop: 4 }}>
