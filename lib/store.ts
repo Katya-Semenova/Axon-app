@@ -16,7 +16,7 @@ import { DEFAULT_DATASET_SETTINGS } from "./types";
 /* ── Canvas layout constants ───────────────────────────────────────────── */
 const CARD_W      = 200;
 const CARD_H_EST  = 130;
-const DS_W        = 248;   /* DataSet card width — also matches the centre "+ NEW" placeholder */
+const DS_W        = 340;   /* DataSet card width — matches Canvas.tsx rendered card width */
 const ROW_GAP     = 18;
 const INS_COL_X   = 28;
 /* 2-column insight grid: each col is CARD_W + 12px gap. DS column starts 48px to the right. */
