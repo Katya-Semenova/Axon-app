@@ -773,18 +773,16 @@ function NarrativeBlock({
   narrativeText: string;
   onChange: (text: string) => void;
 }) {
-  const [editing, setEditing] = useState(false);
-  const [draft, setDraft]     = useState(narrativeText);
+  const [draft,   setDraft]   = useState(narrativeText);
+  const [focused, setFocused] = useState(false);
 
   useEffect(() => { setDraft(narrativeText); }, [narrativeText, slide.id]);
 
   function commit() {
-    setEditing(false);
-    if (draft.trim() && draft !== narrativeText) onChange(draft.trim());
+    if (draft.trim() !== narrativeText) onChange(draft.trim());
   }
 
   const isVoiceover = narrMode === "Voiceover script";
-  const cues        = isVoiceover ? voiceoverCues(narrativeText) : [];
 
   return (
     <div style={{
@@ -793,14 +791,7 @@ function NarrativeBlock({
       borderTop: `1px solid ${BORDER}`,
       background: "rgba(27,40,64,0.02)",
     }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
-        {/* mic icon */}
-        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke={T3} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
-          <path d="M9 2m0 3a3 3 0 0 1 3 -3h0a3 3 0 0 1 3 3v5a3 3 0 0 1 -3 3h0a3 3 0 0 1 -3 -3z" />
-          <path d="M5 10a7 7 0 0 0 14 0" />
-          <path d="M8 21l8 0" />
-          <path d="M12 17l0 4" />
-        </svg>
+      <div style={{ marginBottom: 6 }}>
         <span style={{
           fontFamily: mono, fontSize: 9, letterSpacing: "0.12em", textTransform: "uppercase", color: T3,
         }}>
@@ -808,53 +799,31 @@ function NarrativeBlock({
         </span>
       </div>
 
-      {editing ? (
-        /* Edit always operates on the raw prose regardless of display mode */
-        <textarea
-          autoFocus
-          value={draft}
-          onChange={(e) => setDraft(e.target.value)}
-          onBlur={commit}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) commit();
-            if (e.key === "Escape") { setDraft(narrativeText); setEditing(false); }
-          }}
-          rows={3}
-          style={{
-            width: "100%",
-            fontFamily: "Inter, sans-serif",
-            fontSize: 12, lineHeight: 1.55, color: T2,
-            background: "transparent",
-            border: "none", outline: "none", resize: "vertical",
-          }}
-        />
-      ) : isVoiceover ? (
-        /* Voiceover display — timestamped cue lines */
-        <div onClick={() => setEditing(true)} title="Click to edit" style={{ cursor: "text" }}>
-          {cues.map((cue, i) => (
-            <div key={i} style={{ display: "flex", gap: 10, marginBottom: i < cues.length - 1 ? 5 : 0 }}>
-              <span style={{
-                fontFamily: mono, fontSize: 9.5, color: T3, flexShrink: 0,
-                minWidth: 38, paddingTop: 2,
-              }}>
-                [{cue.time}]
-              </span>
-              <span style={{ fontFamily: "Inter, sans-serif", fontSize: 12, lineHeight: 1.55, color: T2 }}>
-                {cue.line}
-              </span>
-            </div>
-          ))}
-        </div>
-      ) : (
-        /* Speaker notes display — prose */
-        <div
-          onClick={() => setEditing(true)}
-          title="Click to edit"
-          style={{ fontFamily: "Inter, sans-serif", fontSize: 12, lineHeight: 1.55, color: T2, cursor: "text" }}
-        >
-          {narrativeText}
-        </div>
-      )}
+      {/* Always-visible textarea — no click-to-edit; bottom border signals editability */}
+      <textarea
+        value={draft}
+        onChange={(e) => setDraft(e.target.value)}
+        onFocus={() => setFocused(true)}
+        onBlur={() => { setFocused(false); commit(); }}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) (e.target as HTMLTextAreaElement).blur();
+          if (e.key === "Escape") { setDraft(narrativeText); (e.target as HTMLTextAreaElement).blur(); }
+        }}
+        rows={3}
+        placeholder="Add speaker notes…"
+        style={{
+          width: "100%",
+          fontFamily: "Inter, sans-serif",
+          fontSize: 12, lineHeight: 1.55, color: T2,
+          background: "transparent",
+          border: "none",
+          borderBottom: `1px solid ${focused ? NAVY : BORDER}`,
+          outline: "none",
+          resize: "none",
+          padding: "2px 0 6px",
+          transition: "border-color 150ms ease",
+        }}
+      />
     </div>
   );
 }
