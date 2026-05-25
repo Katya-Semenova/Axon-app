@@ -25,12 +25,12 @@
 | 3 | New dataset spawn position | ✅ Done (via Item 4B) | Anchor fixed to (600, 430), radius capped at 260px |
 | 4 | Second seeded dataset + spawn anchor | ✅ Done | `ds-seed-02` "Conversion by channel" (Treemap) + `slide-seed-02`; anchor fix |
 | 5 | Squarified treemap (d3-hierarchy) | ✅ Done | `ChartRenderer.tsx` + `MiniChart.tsx` — `treemapSquarify`; `@types/d3-hierarchy` installed |
-| 6 | Text annotation on dataset tile | 🔲 Not started | Render text-insight content on the insight card in canvas |
-| 7 | Mode switcher relocation | 🔲 Not started | Move pill from floating over canvas to top breadcrumb row |
+| 6 | Text annotation on dataset tile | ✅ Done | kind=text insights: 3-line italic pull-quote with gold left border |
+| 7 | Mode switcher relocation | ✅ Done | ModeTabs variant="bar" in toolbar right slot; floating div removed |
 | 8 | Spline Area missing from dropdown | ✅ Done | `ACTIVE_CHART_TYPES` in `types.ts`: added Spline Area, reordered to 10 entries |
 | 9 | Donut legend label/value overlap | ✅ Done (partial) | Fixed pixel-budget math, added two-line fallback — see open follow-ups below |
-| 10 | Chart Settings panel — style + wiring | 🔲 Not started | Dropdowns use native browser style; changing any option doesn't update chart |
-| 11 | Initial canvas seed: 3 datasets for wow effect | 🔲 Not started | Map (revenue) + Treemap (conversion) + Heatmap (correlation); all connected to insights |
+| 10 | Chart Settings panel — style + wiring | ✅ Done | PanelDropdown replaces native select (10a); filter wires to chart (10b) |
+| 11 | Initial canvas seed: 3 datasets for wow effect | ✅ Done | ds-seed-01 → Map, ds-seed-03 Heatmap added; all 3 wired + slide-seed-03 |
 
 **Item 8b (diagnosis):** `ins-cohort-retention` in `mockData.ts` (line 267) has `chartType: "Spline Area"` hardcoded as a seed value — it was always valid in the `ChartType` union but was never promoted into `ACTIVE_CHART_TYPES`. Not a fallback bug.
 
@@ -38,36 +38,28 @@
 
 ## Open Follow-Ups (do not fix until explicitly tasked)
 
-### 9a — Donut: CHANNELS label position (Canvas tile)
-`CHANNELS` label sits inside the donut hole but touches the ring at the bottom. It should be directly below the center number with proper spacing, both visually centered as a unit in the hole.
-- File: `app/components/ChartRenderer.tsx`, `DonutChart` function
-- The center text is at `y={CY + 5}` and `CHANNELS` is at `y={CY + OR*0.5 + 10}` — the offset is relative to font size, not the hole boundary.
+### 9a — ✅ DONE: Donut center label geometry
+numY/chanY computed to center number+CHANNELS pair in the donut hole.
 
-### 9b — Donut: Slides view legend spacing + CHANNELS visibility
-In the Slides editor, legend labels and values are too far apart (labels far left, values far right of container). Should be a tight pair with a small fixed gap, matching the canvas tile style. Also `CHANNELS` label has too low opacity/color — barely visible in the Slides context.
-- File: `app/components/ChartRenderer.tsx`, `DonutChart` — same component, different `containerWidth` from Slides view inflates the legend column.
+### 9b — ✅ DONE: Donut legend tight-pair + CHANNELS visibility
+Legend value now sits MIN_GAP after label text (not right-aligned to edge).
+CHANNELS fill upgraded T3→T2 for better visibility across contexts.
 
 ### 9c — Donut + time-series data compatibility (data/type issue, not layout)
 Values on "Monthly revenue, FY" are formatted as `820%`, `890%` etc. — the `%` suffix is hardcoded in DonutChart regardless of the column unit. Also a Donut + monthly time-series is conceptually mismatched (Donut encodes part-of-whole, not time). Flag for future: either block incompatible chart types per data shape, or strip `%` suffix when column name doesn't indicate percentage.
 - File: `app/components/ChartRenderer.tsx`, line rendering `{row.values[0]}%`
 
-### 10a — Chart Settings: native browser dropdown style (violates design system)
-Filter, Aggregation, Accent dropdowns in the expanded dataset view use native browser styling — bright blue active state, system font. Must match `ChartTypeDropdown`: JetBrains Mono 11px, `SURFACE_MUTED` active bg, navy text, checkmark, 2px menu radius.
-- File: wherever chart settings panel is rendered in expanded view (likely `DataSetExpandedView.tsx` or similar)
+### 10a — ✅ DONE: Chart Settings custom dropdowns
+PanelDropdown/AccentDropdown replace native <select>; match ChartTypeDropdown style.
 
-### 10b — Chart Settings: option changes don't update chart
-Changing Filter / Aggregation / Accent / segmented control (All / Paid / Pending / Failed) has no visible effect on the chart. Wiring to store or local state is missing.
-- Investigate which actions exist in `store.ts` and which are no-ops before fixing.
+### 10b — ✅ DONE (Filter): Filter wired to displayRows → chart updates visually.
+Status / Aggregation / Color-by / Accent persist to store; chart rendering
+will consume them in Phase 2 when ChartRenderer gains accentColor + groupBy props.
 
-### 11 spec — Three seeded datasets
-- `ds-seed-01`: "Monthly revenue, FY" → change `chartType` from `Lollipop` to `Map`
-- `ds-seed-02`: "Conversion by channel" → `Treemap` (already done in item 4)
-- `ds-seed-03` (new): "Metric correlation matrix" → `Heatmap`, connected to `ins-metric-correlation`
-- All three visible in Data set tray on load (`slide-seed-03` also needed)
-- Spec/reference screenshot will be in chat history
+### 11 spec — ✅ DONE: Three seeded datasets
 
-### DS_W mismatch (pre-existing, low priority)
-`store.ts` uses `DS_W = 248` for spawn centering; `Canvas.tsx` renders dataset cards at `DS_W = 340`. New cards spawn 46px off-center horizontally. Fix: change `DS_W` in `store.ts` to `340`.
+### DS_W mismatch — ✅ DONE
+`store.ts` DS_W corrected to 340 to match canvas card render width.
 
 ---
 
