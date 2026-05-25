@@ -380,6 +380,13 @@ export function Canvas({ modeSwitcher }: { modeSwitcher?: React.ReactNode }) {
                   onChartTypeChange={(type) => updateDsType(ds.id, type)}
                   onInputPortUp={() => handleDataSetInputPortUp(ds.id)}
                   onDelete={() => removeDataSet(ds.id)}
+                  textAnnotations={
+                    connections
+                      .filter(c => c.toDataSetId === ds.id)
+                      .map(c => insightsById[c.fromInsightId])
+                      .filter((ins): ins is Insight => ins?.kind === "text" && !!ins.text)
+                      .map(ins => ins.text!)
+                  }
                 />
               </div>
             ))}

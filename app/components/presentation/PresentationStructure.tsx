@@ -73,7 +73,7 @@ function SlideSlot({ slide, isActive, onClick, onDelete, isDraggingSlide }: {
   const showDropHighlight = isOver && !isDraggingSlide;
   const borderColor = showDropHighlight ? GOLD : isActive ? NAVY : hovered ? GOLD : BORDER;
   const borderWidth = showDropHighlight ? "2px" : isActive ? "1.5px" : "1px";
-  const borderStyle = isEmpty && !showDropHighlight ? "dashed" : "solid";
+  const borderStyle = !ds && !showDropHighlight ? "dashed" : "solid";
 
   return (
     <div
@@ -105,25 +105,38 @@ function SlideSlot({ slide, isActive, onClick, onDelete, isDraggingSlide }: {
           <rect width="116" height="76" fill={bg} />
           {wireDots}
           <text x="6" y="11" fontSize="5" fontWeight="500" fill={T3} fontFamily={mono} letterSpacing="0.08em">{serial} /</text>
-          {isEmpty ? (
+
+          {/* Dataset title — always shown whenever a dataset is linked */}
+          {ds && (
+            <text
+              x="6"
+              y={slide.visualStyle === "Magazine" ? 23 : 21}
+              fontSize={slide.visualStyle === "Magazine" ? 7.5 : 6.5}
+              fontWeight={slide.visualStyle === "Magazine" ? "600" : "500"}
+              fill="#0A0A0A"
+              fontFamily={headFont}
+            >
+              {headline}
+            </text>
+          )}
+
+          {/* Content area: drop hint / no-data notice / MiniChart */}
+          {!ds ? (
+            /* No dataset linked yet */
             <>
               <text x="58" y="36" textAnchor="middle" fontSize="6" fill={T3} fontFamily={mono} fillOpacity="0.7">
                 {showDropHighlight ? "Drop here" : "Drop a Data Set"}
               </text>
               <text x="58" y="45" textAnchor="middle" fontSize="5.5" fill={T3} fontFamily={mono} fillOpacity="0.5">to populate</text>
             </>
+          ) : ds.rows.length === 0 ? (
+            /* Dataset linked but no chart rows yet (e.g. only text insights connected) */
+            <text x="58" y="50" textAnchor="middle" fontSize="5.5" fill={T3} fontFamily={mono} fillOpacity="0.5">no chart data</text>
           ) : (
-            <>
-              <text x="6" y={slide.visualStyle === "Magazine" ? 23 : 21}
-                fontSize={slide.visualStyle === "Magazine" ? 7.5 : 6.5}
-                fontWeight={slide.visualStyle === "Magazine" ? "600" : "500"}
-                fill="#0A0A0A" fontFamily={headFont}>{headline}</text>
-              {ds && ds.rows.length > 0 && (
-                <g transform="translate(6, 30)">
-                  <MiniChart rows={ds.rows} chartType={ds.chartType} color={NAVY} W={104} H={34} />
-                </g>
-              )}
-            </>
+            /* Fully populated */
+            <g transform="translate(6, 30)">
+              <MiniChart rows={ds.rows} chartType={ds.chartType} color={NAVY} W={104} H={34} />
+            </g>
           )}
         </svg>
       </div>

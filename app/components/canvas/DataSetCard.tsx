@@ -3,9 +3,10 @@
 import { ChartRenderer } from "../ChartRenderer";
 import { ChartTypeDropdown } from "../ui/ChartTypeDropdown";
 import type { DataSet, ChartType } from "@/lib/types";
-import { GOLD, NAVY, BORDER, T3, SURFACE_RAISE, SURFACE_MUTED } from "../ui/tokens";
+import { GOLD, NAVY, BORDER, T2, T3, SURFACE_RAISE, SURFACE_MUTED } from "../ui/tokens";
 
-const mono = "'JetBrains Mono', monospace";
+const mono  = "'JetBrains Mono', monospace";
+const serif = "'Instrument Serif', Georgia, serif";
 
 export interface DataSetCardProps {
   dataSet: DataSet;
@@ -15,6 +16,8 @@ export interface DataSetCardProps {
   onChartTypeChange: (type: ChartType) => void;
   onInputPortUp: (e: React.MouseEvent) => void;
   onDelete?: () => void;
+  /** First-sentence snippets from connected kind="text" insights, canvas-only. */
+  textAnnotations?: string[];
 }
 
 /* ── DataSetCard ────────────────────────────────────────────────────────
@@ -24,6 +27,7 @@ export interface DataSetCardProps {
 export function DataSetCard({
   dataSet, isDraggingNode, isConnecting,
   onExpand, onChartTypeChange, onInputPortUp, onDelete,
+  textAnnotations,
 }: DataSetCardProps) {
   const isEmpty = dataSet.rows.length === 0;
   const padded  = String(dataSet.serial).padStart(2, "0");
@@ -114,6 +118,39 @@ export function DataSetCard({
       <div style={{ fontSize: 12, fontWeight: 500, color: "#1B2840", lineHeight: 1.35, marginBottom: 8 }}>
         {dataSet.title}
       </div>
+
+      {/* Text-insight annotations — canvas-only, between title and chart */}
+      {!isEmpty && textAnnotations && textAnnotations.length > 0 && (
+        <div style={{
+          borderLeft: `2px solid ${GOLD}`,
+          paddingLeft: 8,
+          marginBottom: 10,
+          display: "flex",
+          flexDirection: "column",
+          gap: 4,
+        }}>
+          {textAnnotations.map((text, i) => {
+            const firstSentence = text.split(/\.\s+/)[0] ?? text;
+            const snippet = firstSentence.length > 120
+              ? firstSentence.slice(0, 120) + "…"
+              : firstSentence;
+            return (
+              <p key={i} style={{
+                fontFamily: serif,
+                fontSize: 10,
+                fontStyle: "italic",
+                color: T2,
+                lineHeight: 1.45,
+                margin: 0,
+                overflow: "hidden",
+                display: "-webkit-box",
+                WebkitLineClamp: 3,
+                WebkitBoxOrient: "vertical",
+              }}>{snippet}</p>
+            );
+          })}
+        </div>
+      )}
 
       {/* Body — empty state or live chart */}
       {isEmpty ? (

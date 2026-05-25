@@ -403,6 +403,11 @@ export const INITIAL_CONNECTIONS: Connection[] = [
     fromInsightId: "ins-metric-correlation",
     toDataSetId:   "ds-seed-03",
   },
+  {
+    id: "c-ins-q3-narrative->ds-seed-01",
+    fromInsightId: "ins-q3-narrative",
+    toDataSetId:   "ds-seed-01",
+  },
 ];
 
 /* ── Slides — three, matching the existing presentation defaults ───────── */
