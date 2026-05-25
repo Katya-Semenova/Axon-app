@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChartFill } from "../ChartFill";
 import { ChartTypeDropdown } from "../ui/ChartTypeDropdown";
@@ -8,7 +9,7 @@ import { DataTable } from "../DataTable";
 import { useWorkspaceStore } from "@/lib/store";
 import type { DataSet, Insight, ChartType, ColorAccent, DataSetSettings } from "@/lib/types";
 import { DEFAULT_DATASET_SETTINGS } from "@/lib/types";
-import { BORDER, NAVY, T2, T3, SURFACE, SURFACE_RAISE } from "../ui/tokens";
+import { BORDER, NAVY, T2, T3, SURFACE, SURFACE_RAISE, SURFACE_MUTED } from "../ui/tokens";
 
 function DataSetExpandedView({ dataSet, insights }: {
   dataSet: DataSet;
@@ -25,6 +26,24 @@ function DataSetExpandedView({ dataSet, insights }: {
   const insightsByIdMap = Object.fromEntries(insights.map(ins => [ins.id, ins]));
 
   const serial = String(dataSet.serial).padStart(2, "0");
+
+  /* 10b: apply filter setting to rows before rendering the chart */
+  const displayRows = (() => {
+    const rows = dataSet.rows;
+    const f = settings.filter;
+    if (f === "All data" || rows.length === 0) return rows;
+    const sorted = [...rows].sort((a, b) => (b.values[0] ?? 0) - (a.values[0] ?? 0));
+    if (f === "Top 10") return sorted.slice(0, 10);
+    if (f === "Bottom 10") return sorted.slice(-10).reverse();
+    if (f === "Outliers") {
+      const vals = rows.map(r => r.values[0] ?? 0);
+      const mean = vals.reduce((s, v) => s + v, 0) / vals.length;
+      const std  = Math.sqrt(vals.reduce((s, v) => s + (v - mean) ** 2, 0) / vals.length);
+      const out  = rows.filter(r => Math.abs((r.values[0] ?? 0) - mean) > 1.5 * std);
+      return out.length > 0 ? out : rows;
+    }
+    return rows;
+  })();
 
   /* ── Resizable split ── */
   const [chartH, setChartH] = useState(260);
@@ -109,7 +128,7 @@ function DataSetExpandedView({ dataSet, insights }: {
           </span>
           <div style={{ flex: 1, minHeight: 0, maxWidth: 780, width: "100%", margin: "0 auto" }}>
             <ChartFill
-              rows={dataSet.rows}
+              rows={displayRows}
               columns={dataSet.columns}
               chartType={dataSet.chartType}
               expanded
@@ -193,28 +212,28 @@ function DataSetExpandedView({ dataSet, insights }: {
 
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
               <SettingField label="Status">
-                <PanelSelect<string>
+                <PanelDropdown<string>
                   value={settings.status}
                   options={["All", "Paid", "Pending", "Failed"]}
                   onChange={v => updateSettings(dataSet.id, { status: v })}
                 />
               </SettingField>
               <SettingField label="Aggregation">
-                <PanelSelect<DataSetSettings["aggregation"]>
+                <PanelDropdown<DataSetSettings["aggregation"]>
                   value={settings.aggregation}
                   options={["Daily", "Weekly", "Monthly", "Quarterly"]}
                   onChange={v => updateSettings(dataSet.id, { aggregation: v })}
                 />
               </SettingField>
               <SettingField label="Color by">
-                <PanelSelect<string>
+                <PanelDropdown<string>
                   value={settings.colorBy}
                   options={["Segment", "Status", "Channel", "Region", "None"]}
                   onChange={v => updateSettings(dataSet.id, { colorBy: v })}
                 />
               </SettingField>
               <SettingField label="Filter">
-                <PanelSelect<string>
+                <PanelDropdown<string>
                   value={settings.filter}
                   options={["All data", "Top 10", "Bottom 10", "Outliers"]}
                   onChange={v => updateSettings(dataSet.id, { filter: v })}
@@ -224,7 +243,7 @@ function DataSetExpandedView({ dataSet, insights }: {
 
             {/* Accent — full-width row with colour swatch */}
             <SettingField label="Accent">
-              <AccentSelect
+              <AccentDropdown
                 value={settings.accent}
                 onChange={v => updateSettings(dataSet.id, { accent: v })}
               />
@@ -253,36 +272,79 @@ function SettingField({ label, children }: { label: string; children: React.Reac
   );
 }
 
-function PanelSelect<T extends string>({
+/* 10a: custom portal dropdown matching ChartTypeDropdown design system */
+function PanelDropdown<T extends string>({
   value, options, onChange,
 }: {
   value: T;
   options: readonly T[];
   onChange: (v: T) => void;
 }) {
+  const [open, setOpen] = useState(false);
+  const [rect, setRect]  = useState<DOMRect | null>(null);
+  const btnRef = useRef<HTMLButtonElement>(null);
+
+  function handleToggle(e: React.MouseEvent) {
+    e.stopPropagation();
+    if (!open && btnRef.current) setRect(btnRef.current.getBoundingClientRect());
+    setOpen(v => !v);
+  }
+
   return (
-    <div style={{ position: "relative" }}>
-      <select
-        value={value}
-        onChange={e => onChange(e.target.value as T)}
+    <div>
+      <button
+        ref={btnRef}
+        onClick={handleToggle}
         style={{
-          width: "100%",
-          appearance: "none", WebkitAppearance: "none",
-          background: SURFACE_RAISE,
-          border: `1px solid ${BORDER}`,
-          borderRadius: 4,
-          fontFamily: "'JetBrains Mono', monospace",
-          fontSize: 10.5, color: NAVY,
-          padding: "6px 22px 6px 9px",
-          outline: "none", cursor: "pointer",
+          width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between",
+          fontFamily: "'JetBrains Mono', monospace", fontSize: 11, color: NAVY,
+          padding: "6px 8px", background: SURFACE_RAISE,
+          border: `1px solid ${BORDER}`, borderRadius: 2, cursor: "pointer", gap: 6,
         }}
       >
-        {options.map(o => <option key={o} value={o}>{o}</option>)}
-      </select>
-      <svg width="8" height="8" viewBox="0 0 8 8" fill="none" stroke={T3} strokeWidth="1.3" strokeLinecap="round"
-        style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }}>
-        <path d="M1 2.5l3 3 3-3" />
-      </svg>
+        <span style={{ flex: 1, textAlign: "left", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+          {value}
+        </span>
+        <svg width="8" height="8" viewBox="0 0 8 8" fill="none" stroke={T3} strokeWidth="1.3" strokeLinecap="round" style={{ flexShrink: 0 }}>
+          <path d="M1 2.5l3 3 3-3" />
+        </svg>
+      </button>
+
+      {open && createPortal(
+        <>
+          <div style={{ position: "fixed", inset: 0, zIndex: 9998 }} onClick={() => setOpen(false)} />
+          {rect && (
+            <div style={{
+              position: "fixed", top: rect.bottom + 4, left: rect.left,
+              zIndex: 9999, minWidth: rect.width,
+              border: `1px solid ${BORDER}`, borderRadius: 2, padding: "4px 0",
+              maxHeight: 240, overflowY: "auto",
+              background: SURFACE_RAISE, boxShadow: "0 6px 18px rgba(0,0,0,0.10)",
+            }} className="thin-scroll">
+              {options.map(opt => (
+                <button
+                  key={opt}
+                  onClick={(e) => { e.stopPropagation(); onChange(opt); setOpen(false); }}
+                  style={{
+                    width: "100%", display: "block", textAlign: "left",
+                    padding: "6px 12px",
+                    fontFamily: "'JetBrains Mono', monospace", fontSize: 11,
+                    color: opt === value ? NAVY : T2,
+                    fontWeight: opt === value ? 500 : 400,
+                    background: opt === value ? SURFACE_MUTED : "transparent",
+                    border: "none", cursor: "pointer",
+                  }}
+                  onMouseEnter={e => { if (opt !== value) e.currentTarget.style.background = SURFACE_MUTED; }}
+                  onMouseLeave={e => { if (opt !== value) e.currentTarget.style.background = "transparent"; }}
+                >
+                  {opt}
+                </button>
+              ))}
+            </div>
+          )}
+        </>,
+        document.body
+      )}
     </div>
   );
 }
@@ -294,36 +356,72 @@ const ACCENT_SWATCH: Record<ColorAccent, string> = {
   Graphite: "#2A3654",
 };
 
-function AccentSelect({ value, onChange }: { value: ColorAccent; onChange: (v: ColorAccent) => void }) {
+function AccentDropdown({ value, onChange }: { value: ColorAccent; onChange: (v: ColorAccent) => void }) {
   const options: ColorAccent[] = ["Navy", "Gold", "Slate", "Graphite"];
+  const [open, setOpen] = useState(false);
+  const [rect, setRect]  = useState<DOMRect | null>(null);
+  const btnRef = useRef<HTMLButtonElement>(null);
+
+  function handleToggle(e: React.MouseEvent) {
+    e.stopPropagation();
+    if (!open && btnRef.current) setRect(btnRef.current.getBoundingClientRect());
+    setOpen(v => !v);
+  }
+
   return (
-    <div style={{ position: "relative" }}>
-      <div style={{
-        position: "absolute", left: 9, top: "50%", transform: "translateY(-50%)",
-        width: 10, height: 10, background: ACCENT_SWATCH[value],
-        pointerEvents: "none",
-      }} />
-      <select
-        value={value}
-        onChange={e => onChange(e.target.value as ColorAccent)}
+    <div>
+      <button
+        ref={btnRef}
+        onClick={handleToggle}
         style={{
-          width: "100%",
-          appearance: "none", WebkitAppearance: "none",
-          background: SURFACE_RAISE,
-          border: `1px solid ${BORDER}`,
-          borderRadius: 4,
-          fontFamily: "'JetBrains Mono', monospace",
-          fontSize: 10.5, color: NAVY,
-          padding: "7px 22px 7px 26px",
-          outline: "none", cursor: "pointer",
+          width: "100%", display: "flex", alignItems: "center", gap: 8,
+          fontFamily: "'JetBrains Mono', monospace", fontSize: 11, color: NAVY,
+          padding: "6px 8px", background: SURFACE_RAISE,
+          border: `1px solid ${BORDER}`, borderRadius: 2, cursor: "pointer",
         }}
       >
-        {options.map(o => <option key={o} value={o}>{o}</option>)}
-      </select>
-      <svg width="8" height="8" viewBox="0 0 8 8" fill="none" stroke={T3} strokeWidth="1.3" strokeLinecap="round"
-        style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }}>
-        <path d="M1 2.5l3 3 3-3" />
-      </svg>
+        <span style={{ width: 10, height: 10, flexShrink: 0, background: ACCENT_SWATCH[value] }} />
+        <span style={{ flex: 1, textAlign: "left" }}>{value}</span>
+        <svg width="8" height="8" viewBox="0 0 8 8" fill="none" stroke={T3} strokeWidth="1.3" strokeLinecap="round" style={{ flexShrink: 0 }}>
+          <path d="M1 2.5l3 3 3-3" />
+        </svg>
+      </button>
+
+      {open && createPortal(
+        <>
+          <div style={{ position: "fixed", inset: 0, zIndex: 9998 }} onClick={() => setOpen(false)} />
+          {rect && (
+            <div style={{
+              position: "fixed", top: rect.bottom + 4, left: rect.left,
+              zIndex: 9999, minWidth: rect.width,
+              border: `1px solid ${BORDER}`, borderRadius: 2, padding: "4px 0",
+              background: SURFACE_RAISE, boxShadow: "0 6px 18px rgba(0,0,0,0.10)",
+            }}>
+              {options.map(opt => (
+                <button
+                  key={opt}
+                  onClick={(e) => { e.stopPropagation(); onChange(opt); setOpen(false); }}
+                  style={{
+                    width: "100%", display: "flex", alignItems: "center", gap: 8,
+                    padding: "6px 12px",
+                    fontFamily: "'JetBrains Mono', monospace", fontSize: 11,
+                    color: opt === value ? NAVY : T2,
+                    fontWeight: opt === value ? 500 : 400,
+                    background: opt === value ? SURFACE_MUTED : "transparent",
+                    border: "none", cursor: "pointer",
+                  }}
+                  onMouseEnter={e => { if (opt !== value) e.currentTarget.style.background = SURFACE_MUTED; }}
+                  onMouseLeave={e => { if (opt !== value) e.currentTarget.style.background = "transparent"; }}
+                >
+                  <span style={{ width: 10, height: 10, flexShrink: 0, background: ACCENT_SWATCH[opt] }} />
+                  {opt}
+                </button>
+              ))}
+            </div>
+          )}
+        </>,
+        document.body
+      )}
     </div>
   );
 }
