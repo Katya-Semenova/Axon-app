@@ -331,7 +331,7 @@ export const INITIAL_DATASETS: DataSet[] = [
     id: "ds-seed-01",
     serial: 1,
     title: "Monthly revenue, FY",
-    chartType: "Lollipop",
+    chartType: "Map",
     columns: ["Revenue (K)"],
     /* Rows pre-computed from ins-revenue-monthly. sourceInsightId matches
        the connection below so the edge renders immediately on canvas load. */
@@ -367,6 +367,23 @@ export const INITIAL_DATASETS: DataSet[] = [
     ],
     wide: false,
   },
+  {
+    id: "ds-seed-03",
+    serial: 3,
+    title: "Metric correlation matrix",
+    chartType: "Heatmap",
+    columns: ["Revenue", "Conv.", "Churn", "MRR", "Retention", "NPS"],
+    /* Rows pre-computed from ins-metric-correlation. */
+    rows: [
+      { id: "ins-metric-correlation-r1", label: "Revenue",   values: [1.00,  0.64, -0.71,  0.92,  0.78,  0.55], sourceInsightId: "ins-metric-correlation" },
+      { id: "ins-metric-correlation-r2", label: "Conv.",     values: [0.64,  1.00, -0.58,  0.61,  0.63,  0.47], sourceInsightId: "ins-metric-correlation" },
+      { id: "ins-metric-correlation-r3", label: "Churn",     values: [-0.71, -0.58,  1.00, -0.68, -0.82, -0.74], sourceInsightId: "ins-metric-correlation" },
+      { id: "ins-metric-correlation-r4", label: "MRR",       values: [0.92,  0.61, -0.68,  1.00,  0.71,  0.52], sourceInsightId: "ins-metric-correlation" },
+      { id: "ins-metric-correlation-r5", label: "Retention", values: [0.78,  0.63, -0.82,  0.71,  1.00,  0.69], sourceInsightId: "ins-metric-correlation" },
+      { id: "ins-metric-correlation-r6", label: "NPS",       values: [0.55,  0.47, -0.74,  0.52,  0.69,  1.00], sourceInsightId: "ins-metric-correlation" },
+    ],
+    wide: true,
+  },
 ];
 
 /* ── Connections — two pre-seeded edges from the AI agent grouping ───────── */
@@ -380,6 +397,11 @@ export const INITIAL_CONNECTIONS: Connection[] = [
     id: "c-ins-conversion-channel->ds-seed-02",
     fromInsightId: "ins-conversion-channel",
     toDataSetId:   "ds-seed-02",
+  },
+  {
+    id: "c-ins-metric-correlation->ds-seed-03",
+    fromInsightId: "ins-metric-correlation",
+    toDataSetId:   "ds-seed-03",
   },
 ];
 
@@ -401,4 +423,5 @@ const SLIDE_DEFAULTS = {
 export const INITIAL_SLIDES: Slide[] = [
   { id: "slide-seed-01", serial: 1, dataSetIds: ["ds-seed-01"], narrative: "", ...SLIDE_DEFAULTS },
   { id: "slide-seed-02", serial: 2, dataSetIds: ["ds-seed-02"], narrative: "", ...SLIDE_DEFAULTS },
+  { id: "slide-seed-03", serial: 3, dataSetIds: ["ds-seed-03"], narrative: "", ...SLIDE_DEFAULTS },
 ];
