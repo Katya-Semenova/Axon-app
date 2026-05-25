@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useWorkspaceStore } from "@/lib/store";
 import { MiniChart } from "../MiniChart";
 import { ComboLayoutDropdown } from "../ui/ComboLayoutDropdown";
@@ -353,7 +353,7 @@ function SlideThumbnail({ slide, isActive, onClick, onDelete }: {
      2. Slide card — bordered container: header (2-line title + chart dropdown)
                      + resizable body (chart panel / splitter / data+settings)
      3. Bottom strip — thumbnail rail (excl. active) + Viz Style + Build CTA   */
-export function SlideEditor() {
+export function SlideEditor({ topRight }: { topRight?: React.ReactNode }) {
   /* setMode and clearBuildMessages were only used by the removed
      "Build Presentation" CTA — no longer subscribed here. */
   const slideOrder        = useWorkspaceStore(s => s.slideOrder);
@@ -454,8 +454,7 @@ export function SlideEditor() {
             </>
           )}
         </div>
-        {/* Top-right tab nav lives at page level (ModeTabs) — gutter reserves space. */}
-        <div style={{ width: 280 }} aria-hidden />
+        {topRight ?? <div style={{ width: 280 }} aria-hidden />}
       </div>
 
       {/* ── Main row — slide card (centre) + Visualization Style rail (right) ── */}

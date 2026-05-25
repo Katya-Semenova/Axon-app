@@ -121,12 +121,14 @@ function Page2({ onBack }: { onBack: () => void }) {
   const activeSlideGhostTitle = activeSlideGhostDsId
     ? (dataSetsById[activeSlideGhostDsId]?.title ?? "Empty slide") : "Empty slide";
 
+  const modeTabs = !drillInOpen ? <ModeTabs variant="bar" /> : undefined;
+
   /* Surface mounted per mode */
   const Surface = mode === "data"
-    ? <Canvas />
+    ? <Canvas topRight={modeTabs} />
     : mode === "presentation"
-    ? <SlideEditor />
-    : <PresentExport />;
+    ? <SlideEditor topRight={modeTabs} />
+    : <PresentExport topRight={modeTabs} />;
 
   /* Data set tray — CANVAS + SLIDES only. Hidden in PRESENT (export gateway). */
   const showDataSetTray = mode === "data" || mode === "presentation";
@@ -154,15 +156,6 @@ function Page2({ onBack }: { onBack: () => void }) {
 
         {/* ── Right column — main surface ── */}
         <div className="flex-1 min-w-0 min-h-0 relative flex flex-col overflow-hidden">
-
-          {/* Mode switcher — centered over the canvas viewport at the same
-              coordinates formerly occupied by the "+ New data set" button.
-              Hidden while a drill-in overlay is active. */}
-          {!drillInOpen && (
-            <div style={{ position: "absolute", top: 62, left: "50%", transform: "translateX(-50%)", zIndex: 25 }}>
-              <ModeTabs />
-            </div>
-          )}
 
           {Surface}
 

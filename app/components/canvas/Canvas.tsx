@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { roundTo } from "@/lib/charts";
 import { useWorkspaceStore } from "@/lib/store";
 import type { Insight, DataSet } from "@/lib/types";
@@ -20,7 +20,7 @@ const DS_COL_X       = INS_COL_X + 2 * INS_COL_STRIDE + 48;  /* = 500 */
 const DS_W           = 340;
 void COL_GAP;
 
-export function Canvas() {
+export function Canvas({ topRight }: { topRight?: React.ReactNode }) {
   const insightOrder  = useWorkspaceStore(s => s.insightOrder);
   const insightsById  = useWorkspaceStore(s => s.insightsById);
   const dataSetOrder  = useWorkspaceStore(s => s.dataSetOrder);
@@ -220,6 +220,7 @@ export function Canvas() {
           </span>
         </div>
         <div className="flex items-center gap-2">
+          {topRight}
           <button onClick={undo} disabled={!canUndo} title="Undo"
             className="w-[28px] h-[28px] rounded-sm border border-border flex items-center justify-center text-t2 disabled:opacity-30 hover:border-[#B89548] hover:text-[#B89548] transition-colors">
             <svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">

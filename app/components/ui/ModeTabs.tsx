@@ -14,9 +14,11 @@ import { NAVY, BORDER, T2 } from "./tokens";
  *   SLIDES  → mode "presentation"  — slide editor + data set tray
  *   PRESENT → mode "build"         — export gateway (PresentExport)
  */
-export function ModeTabs() {
+export function ModeTabs({ variant = "floating" }: { variant?: "floating" | "bar" }) {
   const mode    = useWorkspaceStore(s => s.mode);
   const setMode = useWorkspaceStore(s => s.setMode);
+
+  const isBar = variant === "bar";
 
   return (
     <div
@@ -25,33 +27,33 @@ export function ModeTabs() {
       style={{
         display: "inline-flex",
         alignItems: "center",
-        border: `1px solid ${BORDER}`,
+        border: isBar ? "none" : `1px solid ${BORDER}`,
         borderRadius: 0,
-        padding: 2,
-        background: "rgba(245,242,234,0.92)",
-        backdropFilter: "blur(8px)",
+        padding: isBar ? 0 : 2,
+        background: isBar ? "transparent" : "rgba(245,242,234,0.92)",
+        backdropFilter: isBar ? undefined : "blur(8px)",
         fontFamily: "'JetBrains Mono', monospace",
         fontSize: 10.5,
         letterSpacing: "0.07em",
         userSelect: "none",
-        boxShadow: "0 4px 18px rgba(27,40,64,0.18)",
+        boxShadow: isBar ? "none" : "0 4px 18px rgba(27,40,64,0.18)",
       }}
     >
-      <Tab label="Canvas"  active={mode === "data"}         onClick={() => mode !== "data"         && setMode("data")} />
-      <Tab label="Slides"  active={mode === "presentation"} onClick={() => mode !== "presentation" && setMode("presentation")} />
-      <Tab label="Present" active={mode === "build"}        onClick={() => mode !== "build"        && setMode("build")} />
+      <Tab label="Canvas"  active={mode === "data"}         onClick={() => mode !== "data"         && setMode("data")}         compact={isBar} />
+      <Tab label="Slides"  active={mode === "presentation"} onClick={() => mode !== "presentation" && setMode("presentation")} compact={isBar} />
+      <Tab label="Present" active={mode === "build"}        onClick={() => mode !== "build"        && setMode("build")}        compact={isBar} />
     </div>
   );
 }
 
-function Tab({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
+function Tab({ label, active, onClick, compact }: { label: string; active: boolean; onClick: () => void; compact?: boolean }) {
   return (
     <button
       role="tab"
       aria-selected={active}
       onClick={onClick}
       style={{
-        padding: "15px 20px",
+        padding: compact ? "7px 12px" : "15px 20px",
         borderRadius: 0,
         border: "none",
         cursor: active ? "default" : "pointer",

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { MiniChart } from "../MiniChart";
 import { useWorkspaceStore } from "@/lib/store";
@@ -85,7 +85,7 @@ const OUTPUT_FORMATS: { id: OutputFormat; title: string; tagline: string; icon: 
 
 /* ── Component ─────────────────────────────────────────────────────────── */
 
-export function PresentExport() {
+export function PresentExport({ topRight }: { topRight?: React.ReactNode }) {
   const slideOrder    = useWorkspaceStore(s => s.slideOrder);
   const slidesById    = useWorkspaceStore(s => s.slidesById);
   const dataSetsById  = useWorkspaceStore(s => s.dataSetsById);
@@ -138,8 +138,7 @@ export function PresentExport() {
             {slideCount === 0 ? "no slides yet" : `${slideCount} slide${slideCount !== 1 ? "s" : ""} ready to export`}
           </span>
         </div>
-        {/* Right gutter clears space for ModeTabs (rendered by page.tsx) */}
-        <div style={{ width: 280 }} aria-hidden />
+        {topRight ?? <div style={{ width: 280 }} aria-hidden />}
       </div>
 
       {/* ── Body ── */}
