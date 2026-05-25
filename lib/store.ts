@@ -124,10 +124,13 @@ function seedNodePositions(): NodePositionMap {
     const row = Math.floor(i / 2);
     p[ins.id] = { x: INS_COL_X + col * INS_COL_STRIDE, y: 28 + row * (CARD_H_EST + ROW_GAP) };
   });
-  /* Initial datasets from the AI agent — seeded in the dataset column (DS_COL_X = 500),
-     stacked from the top with the same row-gap as insights. */
+  /* Initial datasets — hard-coded Y positions to avoid overlap.
+     CARD_H_EST (130) severely underestimates actual rendered height
+     (~285px for Map/Heatmap, ~260px for Treemap), so we hard-code
+     the three seed positions instead of computing them. */
+  const SEED_DS_Y = [28, 325, 597];
   INITIAL_DATASETS.forEach((ds, i) => {
-    p[ds.id] = { x: DS_COL_X, y: 28 + i * (CARD_H_EST + ROW_GAP) };
+    p[ds.id] = { x: DS_COL_X, y: SEED_DS_Y[i] ?? 28 + i * 300 };
   });
   return p;
 }
@@ -230,8 +233,8 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => {
     expandedDataSetId: null,
     activeSlideId:     INITIAL_SLIDES[0]?.id ?? null,
     nodePositions:     seedNodePositions(),
-    /* Slightly zoomed-out so all 6 insight cards are visible on startup. */
-    canvasTransform:   { x: 20, y: 20, zoom: 0.85 },
+    /* Zoomed out to 0.75 so all 3 seed datasets fit without vertical clipping. */
+    canvasTransform:   { x: 20, y: 20, zoom: 0.75 },
 
     buildAudience:      "CEO",
     buildTone:          "Neutral",

@@ -415,7 +415,7 @@ export function Canvas({ modeSwitcher }: { modeSwitcher?: React.ReactNode }) {
               <path d="M1 5h8" />
             </svg>
           </button>
-          <button onClick={() => setCanvasTransform({ x: 20, y: 20, zoom: 0.85 })} title="Reset view"
+          <button onClick={() => setCanvasTransform({ x: 20, y: 20, zoom: 0.75 })} title="Reset view"
             style={{ padding: "0 10px", height: 28, display: "flex", alignItems: "center", border: "none", background: "transparent", cursor: "pointer", fontFamily: "'JetBrains Mono',monospace", fontSize: 10, color: T2 }}
             onMouseEnter={e => { e.currentTarget.style.background = SURFACE_MUTED; }}
             onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}>
