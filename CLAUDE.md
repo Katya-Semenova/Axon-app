@@ -45,6 +45,9 @@ numY/chanY computed to center number+CHANNELS pair in the donut hole.
 Legend value now sits MIN_GAP after label text (not right-aligned to edge).
 CHANNELS fill upgraded T3→T2 for better visibility across contexts.
 
+### Q — Backlog: Connection edges faint at 0.75 zoom
+Bezier connection lines between Insight and DataSet cards are faint / near-invisible at the default 0.75 zoom. They become visible when zooming in. Likely a z-order or SVG clipping issue at sub-1 scale. Do NOT fix in Phase 1.
+
 ### 9c — Donut + time-series data compatibility (data/type issue, not layout)
 Values on "Monthly revenue, FY" are formatted as `820%`, `890%` etc. — the `%` suffix is hardcoded in DonutChart regardless of the column unit. Also a Donut + monthly time-series is conceptually mismatched (Donut encodes part-of-whole, not time). Flag for future: either block incompatible chart types per data shape, or strip `%` suffix when column name doesn't indicate percentage.
 - File: `app/components/ChartRenderer.tsx`, line rendering `{row.values[0]}%`
