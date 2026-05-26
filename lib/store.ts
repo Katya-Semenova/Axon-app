@@ -396,9 +396,24 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => {
 
       const wasEmpty = ds.rows.length === 0;
       const update   = computeDataSetUpdate(toDataSetId, newConns, s.insightsById, ds, wasEmpty);
+
+      const ins = s.insightsById[fromInsightId];
+      let slidesById = s.slidesById;
+      if (ins?.kind === "text" && ins.text) {
+        const updatedSlides = { ...s.slidesById };
+        for (const sid of s.slideOrder) {
+          const slide = updatedSlides[sid];
+          if (slide?.dataSetIds.includes(toDataSetId) && slide.archetype !== "Quote") {
+            updatedSlides[sid] = { ...slide, archetype: "Quote" as SlideArchetype, narrative: ins.text };
+          }
+        }
+        slidesById = updatedSlides;
+      }
+
       return {
         connections:  newConns,
         dataSetsById: { ...s.dataSetsById, [toDataSetId]: { ...ds, ...update } },
+        slidesById,
       };
     }),
 
