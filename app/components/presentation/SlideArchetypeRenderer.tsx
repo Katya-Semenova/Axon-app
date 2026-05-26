@@ -406,7 +406,7 @@ function ArchQuote({ narrative, title, W, H }: ArchProps) {
   const text = narrative?.trim() || title?.trim() || "—";
   /* Scale font with container width: 22px min, 36px max (capped so it doesn't
      overwhelm very wide canvases).  At W≈860 → 36px, at W≈300 → 22px. */
-  const quoteFontSz = Math.min(36, Math.max(22, W / 24));
+  const quoteFontSz = Math.min(28, Math.max(22, W / 24));
 
   return (
     <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} style={{ display: "block" }}>
