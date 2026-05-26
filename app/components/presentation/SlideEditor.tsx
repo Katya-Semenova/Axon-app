@@ -516,12 +516,14 @@ export function SlideEditor({ modeSwitcher }: { modeSwitcher?: React.ReactNode }
                 </div>
               </div>
 
-              {/* ── Block 2: Summary — PROMINENT, gold-left-border, beige bg ── */}
-              <SummaryBlock
-                slide={activeSlide}
-                summaryText={activeSlide.summary ?? NARRATIVES[audience]?.[tone] ?? deriveSlideSummary(activeDs.rows, activeDs.columns)}
-                onChange={(s) => updateSlide(activeSlide.id, { summary: s })}
-              />
+              {/* ── Block 2: Summary — hidden on Quote slides (quote is the message) ── */}
+              {activeSlide.archetype !== "Quote" && (
+                <SummaryBlock
+                  slide={activeSlide}
+                  summaryText={activeSlide.summary ?? NARRATIVES[audience]?.[tone] ?? deriveSlideSummary(activeDs.rows, activeDs.columns)}
+                  onChange={(s) => updateSlide(activeSlide.id, { summary: s })}
+                />
+              )}
 
               {/* ── Block 3: Chart — just the visualization ── */}
               <div style={{
