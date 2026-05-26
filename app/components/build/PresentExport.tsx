@@ -558,7 +558,25 @@ function DeckTile({
       {/* Chart preview */}
       <div style={{ padding: "0 10px 10px" }}>
         <svg viewBox={`0 0 ${W - 20} 60`} fill="none" style={{ width: "100%", height: 60, display: "block" }}>
-          {ds && ds.rows.length > 0 ? (
+          {slide.archetype === "Quote" ? (
+            <foreignObject x={0} y={0} width={W - 20} height={60}>
+              <div style={{
+                padding: "5px 8px",
+                fontFamily: serif,
+                fontSize: 9.5,
+                fontStyle: "italic",
+                color: NAVY,
+                lineHeight: 1.4,
+                overflow: "hidden",
+                height: 60,
+                boxSizing: "border-box",
+              }}>
+                {slide.narrative?.trim()
+                  ? `“${slide.narrative.slice(0, 80)}${slide.narrative.length > 80 ? "…”" : "”"}`
+                  : ""}
+              </div>
+            </foreignObject>
+          ) : ds && ds.rows.length > 0 ? (
             <MiniChart rows={ds.rows} chartType={ds.chartType} color={NAVY} W={W - 20} H={60} />
           ) : (
             <text x={(W - 20) / 2} y="32" textAnchor="middle"
