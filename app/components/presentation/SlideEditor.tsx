@@ -775,57 +775,93 @@ function NarrativeBlock({
   narrativeText: string;
   onChange: (text: string) => void;
 }) {
-  const [draft,   setDraft]   = useState(narrativeText);
-  const [focused, setFocused] = useState(false);
+  const [draft,             setDraft]             = useState(narrativeText);
+  const [focused,           setFocused]           = useState(false);
+  const [narrativeExpanded, setNarrativeExpanded] = useState(() =>
+    Boolean(slide.narrative?.trim())
+  );
 
   useEffect(() => { setDraft(narrativeText); }, [narrativeText, slide.id]);
+  useEffect(() => {
+    setNarrativeExpanded(Boolean(slide.narrative?.trim()));
+  }, [slide.id]);
 
   function commit() {
     if (draft.trim() !== narrativeText) onChange(draft.trim());
   }
 
   const isVoiceover = narrMode === "Voiceover script";
+  const label = isVoiceover ? "Voiceover script · AI · editable" : "Speaker narrative · AI · editable";
 
   return (
     <div style={{
       flexShrink: 0,
-      padding: "12px 32px 14px",
       borderTop: `1px solid ${BORDER}`,
       background: "rgba(27,40,64,0.02)",
     }}>
-      <div style={{ marginBottom: 6 }}>
+      {/* Clickable label row — full width, chevron on right */}
+      <div
+        onClick={() => setNarrativeExpanded(v => !v)}
+        style={{
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+          padding: "10px 32px",
+          cursor: "pointer",
+          userSelect: "none",
+        }}
+      >
         <span style={{
-          fontFamily: mono, fontSize: 9, letterSpacing: "0.12em", textTransform: "uppercase", color: T3,
+          fontFamily: mono, fontSize: 9, letterSpacing: "0.12em",
+          textTransform: "uppercase", color: T3,
         }}>
-          {isVoiceover ? "Voiceover script · AI · editable" : "Speaker narrative · AI · editable"}
+          {label}
         </span>
+        <svg
+          width="12" height="12" viewBox="0 0 12 12"
+          fill="none" stroke={NAVY} strokeWidth="1.5" strokeLinecap="round"
+          style={{
+            flexShrink: 0,
+            transform: narrativeExpanded ? "rotate(180deg)" : "rotate(0deg)",
+            transition: "transform 200ms ease",
+          }}
+        >
+          <path d="M2 4.5l4 4 4-4" />
+        </svg>
       </div>
 
-      {/* Always-visible textarea — no click-to-edit; bottom border signals editability */}
-      <textarea
-        value={draft}
-        onChange={(e) => setDraft(e.target.value)}
-        onFocus={() => setFocused(true)}
-        onBlur={() => { setFocused(false); commit(); }}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) (e.target as HTMLTextAreaElement).blur();
-          if (e.key === "Escape") { setDraft(narrativeText); (e.target as HTMLTextAreaElement).blur(); }
-        }}
-        rows={3}
-        placeholder="Add speaker notes…"
-        style={{
-          width: "100%",
-          fontFamily: "Inter, sans-serif",
-          fontSize: 12, lineHeight: 1.55, color: T2,
-          background: "transparent",
-          border: "none",
-          borderBottom: `1px solid ${focused ? NAVY : BORDER}`,
-          outline: "none",
-          resize: "none",
-          padding: "2px 0 6px",
-          transition: "border-color 150ms ease",
-        }}
-      />
+      {/* Animated textarea wrapper */}
+      <div style={{
+        overflow: "hidden",
+        maxHeight: narrativeExpanded ? 200 : 0,
+        opacity: narrativeExpanded ? 1 : 0,
+        transition: "max-height 250ms ease-out, opacity 200ms ease-out",
+      }}>
+        <div style={{ padding: "0 32px 14px" }}>
+          <textarea
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            onFocus={() => setFocused(true)}
+            onBlur={() => { setFocused(false); commit(); }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) (e.target as HTMLTextAreaElement).blur();
+              if (e.key === "Escape") { setDraft(narrativeText); (e.target as HTMLTextAreaElement).blur(); }
+            }}
+            rows={3}
+            placeholder="Add speaker notes…"
+            style={{
+              width: "100%",
+              fontFamily: "Inter, sans-serif",
+              fontSize: 12, lineHeight: 1.55, color: T2,
+              background: "transparent",
+              border: "none",
+              borderBottom: `1px solid ${focused ? NAVY : BORDER}`,
+              outline: "none",
+              resize: "none",
+              padding: "2px 0 6px",
+              transition: "border-color 150ms ease",
+            }}
+          />
+        </div>
+      </div>
     </div>
   );
 }
