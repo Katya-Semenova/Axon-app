@@ -31,6 +31,10 @@
 | 9 | Donut legend label/value overlap | ✅ Done (partial) | Fixed pixel-budget math, added two-line fallback — see open follow-ups below |
 | 10 | Chart Settings panel — style + wiring | ✅ Done | PanelDropdown replaces native select (10a); filter wires to chart (10b) |
 | 11 | Initial canvas seed: 3 datasets for wow effect | ✅ Done | ds-seed-01 → Map, ds-seed-03 Heatmap added; all 3 wired + slide-seed-03 |
+| A–N | Phase 1 batch items (toolbar, mode switcher, tray, charts, slides) | ✅ Done | See git log — Items A through N committed on feature/disruptive-visual |
+| O | Text-insight multi-connection | ✅ Done | DataSetCard 3-state + store.ts addConnection → Quote slide on text wire |
+| P | Tray thumbnail color rendering | ✅ Done | MiniChart.tsx — all 10 renderers now use same GOLD/SERIES tokens as full charts |
+| Q | Connection edges faint at 0.75 zoom | 🗂 Backlog | See Open Follow-Ups § Q — do not fix in Phase 1 |
 
 **Item 8b (diagnosis):** `ins-cohort-retention` in `mockData.ts` (line 267) has `chartType: "Spline Area"` hardcoded as a seed value — it was always valid in the `ChartType` union but was never promoted into `ACTIVE_CHART_TYPES`. Not a fallback bug.
 
