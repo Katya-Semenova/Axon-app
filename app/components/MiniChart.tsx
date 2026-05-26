@@ -6,6 +6,16 @@ import type { DataRow, ChartType } from "@/lib/mockData";
 
 const r = roundTo;
 
+/* ── Color tokens — must match ChartRenderer.tsx exactly ── */
+const NAVY     = "#1B2840";
+const NAVY_700 = "#2A3654";
+const NAVY_500 = "#4A5878";
+const NAVY_300 = "#8892AA";
+const NAVY_100 = "#B8C2D0";
+const GOLD     = "#B89548";
+const GOLD_300 = "#C9A961";
+const SERIES   = [NAVY, NAVY_500, GOLD, NAVY_300, GOLD_300, NAVY_100];
+
 interface MiniChartProps {
   rows: DataRow[];
   chartType: ChartType;
@@ -53,7 +63,7 @@ function MiniSpline({ rows, color, W, H }: { rows: DataRow[]; color: string; W: 
     <>
       <path d={areaD} fill={color} fillOpacity="0.12" />
       <path d={pd} stroke={color} strokeWidth="1.5" fill="none" strokeLinecap="round" />
-      <circle cx={r(last.x)} cy={r(last.y)} r="2" fill={color} />
+      <circle cx={r(last.x)} cy={r(last.y)} r="2" fill={GOLD} />
     </>
   );
 }
@@ -64,6 +74,7 @@ function MiniLollipop({ rows, color, W, H }: { rows: DataRow[]; color: string; W
   const mn = Math.min(...data, 0), mx = Math.max(...data) || 1;
   const range = mx - mn;
   const n = data.length;
+  const lastIdx = data.length - 1;
   const xv = (i: number) => r(((i + 0.5) / n) * W);
   const yv = (v: number) => r(H - 1 - ((v - mn) / range) * (H - 3));
   return (
@@ -72,7 +83,7 @@ function MiniLollipop({ rows, color, W, H }: { rows: DataRow[]; color: string; W
         <g key={i}>
           <line x1={xv(i)} y1={H - 1} x2={xv(i)} y2={yv(v)}
             stroke={color} strokeWidth="1" strokeOpacity="0.55" />
-          <circle cx={xv(i)} cy={yv(v)} r="1.8" fill={color} fillOpacity="0.85" />
+          <circle cx={xv(i)} cy={yv(v)} r="1.8" fill={i === lastIdx ? GOLD : color} fillOpacity="0.85" />
         </g>
       ))}
     </>
@@ -95,8 +106,8 @@ function MiniColumns({ rows, color, W, H }: { rows: DataRow[]; color: string; W:
             x={r(step * i + step / 2 - barW / 2)}
             y={r(H - 2 - bh)}
             width={r(barW)} height={r(bh)}
-            fill={color}
-            fillOpacity={v === Math.max(...data) ? 0.9 : 0.35 + (v / mx) * 0.45}
+            fill={v === Math.max(...data) ? GOLD : color}
+            fillOpacity={v === Math.max(...data) ? 1 : 0.35 + (v / mx) * 0.45}
           />
         );
       })}
@@ -132,7 +143,7 @@ function MiniWaterfall({ rows, color, W, H }: { rows: DataRow[]; color: string; 
             x={r(step * i + step / 2 - barW / 2)}
             y={r(Math.min(y1, y2))}
             width={r(barW)} height={r(bh)}
-            fill={color} fillOpacity={b.pos ? 0.75 : 0.45}
+            fill={b.pos ? color : GOLD} fillOpacity="0.85"
           />
         );
       })}
@@ -159,7 +170,7 @@ function MiniStacked({ rows, color, W, H }: { rows: DataRow[]; color: string; W:
                 <rect key={j}
                   x={r(xOff)} y={y}
                   width={bw} height={r(rowH)}
-                  fill={color} fillOpacity={j === 0 ? 0.85 : 0.45}
+                  fill={SERIES[j % SERIES.length]}
                 />
               );
               xOff += bw + 1;
@@ -205,7 +216,7 @@ function MiniDonut({ rows, color, W, H }: { rows: DataRow[]; color: string; W: n
   return (
     <>
       {slices.map((s, i) => (
-        <path key={i} d={arc(s)} fill={color} fillOpacity={s.op} />
+        <path key={i} d={arc(s)} fill={SERIES[i % SERIES.length]} />
       ))}
     </>
   );
@@ -226,8 +237,8 @@ function MiniScatter({ rows, color, W, H }: { rows: DataRow[]; color: string; W:
           cx={xv(row.values[0] ?? 0)}
           cy={yv(row.values[1] ?? row.values[0] ?? 0)}
           r="2"
-          fill={color}
-          fillOpacity={0.45 + (i / rows.length) * 0.4}
+          fill={i === 0 ? GOLD : color}
+          fillOpacity={i === 0 ? 1 : 0.45 + (i / rows.length) * 0.4}
         />
       ))}
     </>
@@ -248,7 +259,7 @@ function MiniTreemap({ rows, color, W, H }: { rows: DataRow[]; color: string; W:
     .padding(1)
     (root)
     .leaves();
-  const opacs = [1, 0.65, 0.45, 0.8, 0.35, 0.6];
+  const fills = [NAVY, NAVY_700, GOLD, NAVY_500, GOLD_300, NAVY_300, NAVY_100];
   const r = Math.round;
   return (
     <>
@@ -256,7 +267,7 @@ function MiniTreemap({ rows, color, W, H }: { rows: DataRow[]; color: string; W:
         <rect key={i}
           x={r(leaf.x0)} y={r(leaf.y0)}
           width={r(leaf.x1 - leaf.x0)} height={r(leaf.y1 - leaf.y0)}
-          fill={color} fillOpacity={opacs[i % opacs.length]}
+          fill={fills[i % fills.length]}
         />
       ))}
     </>
@@ -283,7 +294,6 @@ function MiniMap({ rows, color, W, H }: { rows: DataRow[]; color: string; W: num
     allocated += count;
   });
 
-  const opacs = [1, 0.55, 0.72, 0.38, 0.62, 0.45];
   return (
     <>
       {regionOf.slice(0, totalDots).map((ri, i) => {
@@ -291,7 +301,7 @@ function MiniMap({ rows, color, W, H }: { rows: DataRow[]; color: string; W: num
         const row = Math.floor(i / cols);
         const cx  = col * step + dotR;
         const cy  = row * step + dotR;
-        return <circle key={i} cx={r(cx)} cy={r(cy)} r={dotR} fill={color} fillOpacity={opacs[ri % opacs.length]} />;
+        return <circle key={i} cx={r(cx)} cy={r(cy)} r={dotR} fill={SERIES[ri % SERIES.length]} fillOpacity="0.8" />;
       })}
     </>
   );
@@ -382,14 +392,11 @@ function MiniDotMatrix({ rows, color, W, H }: { rows: DataRow[]; color: string; 
     .sort((a, b) => b.frac - a.frac);
   for (let i = 0; i < remainder && fracs.length; i++) counts[fracs[i % fracs.length].idx]++;
 
-  /* Single colour passed in — tier the row tones via opacity ramp so the
-     mini stays readable even when called with a flat NAVY default. */
-  const ramp = [1, 0.65, 0.42, 0.85, 0.32, 0.55];
-  const dotOp: (number | null)[] = [];
+  const dotFill: (string | null)[] = [];
   rows.forEach((_, ri) => {
-    for (let i = 0; i < counts[ri]; i++) dotOp.push(ramp[ri % ramp.length]);
+    for (let i = 0; i < counts[ri]; i++) dotFill.push(SERIES[ri % SERIES.length]);
   });
-  while (dotOp.length < 100) dotOp.push(null);
+  while (dotFill.length < 100) dotFill.push(null);
 
   const dotW = Math.min(W / COLS, H / GRID_ROWS);
   const gridW = dotW * COLS;
@@ -404,11 +411,11 @@ function MiniDotMatrix({ rows, color, W, H }: { rows: DataRow[]; color: string; 
         const col = i % COLS, row = Math.floor(i / COLS);
         const cx = sx + col * dotW + dotW / 2;
         const cy = sy + row * dotW + dotW / 2;
-        const op = dotOp[i];
+        const fill = dotFill[i];
         return (
           <circle key={i} cx={r(cx)} cy={r(cy)} r={r(dotR)}
-            fill={op == null ? "#D9D3C2" : color}
-            fillOpacity={op == null ? 0.5 : op} />
+            fill={fill ?? "#D9D3C2"}
+            fillOpacity={fill ? 1 : 0.5} />
         );
       })}
     </>
