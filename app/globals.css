@@ -1,3 +1,4 @@
+@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500&display=swap");
 @import "tailwindcss";
 
 @theme inline {
@@ -13,6 +14,11 @@
   --color-surface-raised: #FBF9F3;  /* dropdowns, popovers, slide thumbs */
   --color-surface-muted:  #E5E0D2;  /* nested elements, file chips, count badges */
   --color-border-subtle:  #D9D3C2;
+
+  /* ── Slate-blue ramp — from reference palette inner rings ── */
+  --color-slate-mid:    #A9AFBD;  /* mid ring */
+  --color-slate-inner:  #D1D5DC;  /* inner ring */
+  --color-insight-card: #F3F4F6;  /* insight card surface */
   --color-border-strong:  #B8AE96;
 
   /* ── Navy ramp — structural / primary data ── */
@@ -54,10 +60,15 @@
   --color-second:  #B89548;   /* was #B8924A → gold-500 */
   --color-muted:   #E5E0D2;   /* was #C8CDD8 (COOL BLUE!) → surface-muted */
 
-  /* ── Radii — STRICT bimodal+pill system ── */
-  --radius-none: 0px;
-  --radius-sm:   4px;
-  --radius-pill: 999px;
+  /* ── Radii ──
+     none / sm / card  → structural elements (toolbars, mode tabs, cards)
+     bubble            → conversational UI only (chat message bubbles)
+     pill              → CTAs and toggle controls that are explicitly pill-shaped */
+  --radius-none:   0px;
+  --radius-sm:     4px;
+  --radius-card:   4px;
+  --radius-bubble: 20px;
+  --radius-pill:   999px;
 
   /* ── Typography ── */
   --font-sans:  var(--font-inter);
@@ -85,7 +96,13 @@
 }
 
 /* ── Base ── */
+html {
+  height: 100%;
+  overflow: hidden;   /* viewport is the scroll root — nothing scrolls at page level */
+}
 body {
+  height: 100%;
+  overflow: hidden;   /* workspace fills exactly the viewport; landing page is also fit-to-screen */
   background-color: #EDE9E0;          /* canvas */
   color:            #1B2840;          /* text-primary */
   font-family: var(--font-inter), -apple-system, system-ui, sans-serif;
