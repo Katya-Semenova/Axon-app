@@ -19,6 +19,7 @@ export function LandingPage({ onNavigate }: { onNavigate: () => void }) {
         <div className="flex items-center gap-9">
           <ul className="flex list-none gap-8 max-sm:hidden">
             <li><a href="#" className="text-[13.5px] text-t2 hover:text-t1 transition-colors duration-200">Projects</a></li>
+            <li><a href="/storybook" className="text-[13.5px] text-t2 hover:text-t1 transition-colors duration-200">Storybook</a></li>
             <li><a href="#" className="text-[13.5px] text-t2 hover:text-t1 transition-colors duration-200">Docs</a></li>
           </ul>
           <div className="w-8 h-8 rounded-full border border-border bg-card flex items-center justify-center font-mono text-[11px] font-medium text-t2 cursor-pointer select-none">KS</div>
