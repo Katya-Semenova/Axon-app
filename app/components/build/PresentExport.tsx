@@ -415,7 +415,7 @@ function DeckReorderTray({
   }
 
   return (
-    <div style={{ border: `1px solid ${BORDER}`, background: SURFACE, padding: "16px 20px 18px" }}>
+    <div>
       <div style={{
         display: "flex", alignItems: "baseline", justifyContent: "space-between",
         marginBottom: 12, gap: 12, flexWrap: "wrap",
@@ -430,45 +430,36 @@ function DeckReorderTray({
         </span>
       </div>
 
-      {/* Flex strip — gaps are 12px sibling divs that host the gold insertion line */}
+      {/* Grid strip — matches format-grid column layout exactly */}
       <div
-        className="slide-scroll"
         onDragOver={e => e.preventDefault()}
         onDrop={e => { e.preventDefault(); handleDrop(); }}
         style={{
-          display: "flex", alignItems: "flex-start",
-          overflowX: "auto", overflowY: "hidden",
-          paddingBottom: 6,
+          display: "grid",
+          gridTemplateColumns: `repeat(${tiles.length}, 1fr)`,
+          gap: 12,
         }}
       >
         {tiles.map((slide, idx) => {
           const ds = slide.dataSetIds[0] ? dataSetsById[slide.dataSetIds[0]] : null;
           return (
-            <React.Fragment key={slide.id}>
-              <InsertionGap
-                show={insertAt === idx && dragFrom !== null}
-                onDragOver={() => setInsertAt(idx)}
-              />
-              <DeckTile
-                idx={idx}
-                slide={slide}
-                ds={ds}
-                isDragging={dragFrom === idx}
-                onDragStart={() => setDragFrom(idx)}
-                onDragOver={e => {
-                  const rect = e.currentTarget.getBoundingClientRect();
-                  setInsertAt(e.clientX < rect.left + rect.width / 2 ? idx : idx + 1);
-                }}
-                onDragEnd={handleDragEnd}
-              />
-            </React.Fragment>
+            <DeckTile
+              key={slide.id}
+              idx={idx}
+              slide={slide}
+              ds={ds}
+              isDragging={dragFrom === idx}
+              onDragStart={() => setDragFrom(idx)}
+              onDragOver={e => {
+                const rect = e.currentTarget.getBoundingClientRect();
+                setInsertAt(e.clientX < rect.left + rect.width / 2 ? idx : idx + 1);
+              }}
+              onDragEnd={handleDragEnd}
+              insertBefore={insertAt === idx && dragFrom !== null}
+              insertAfter={idx === tiles.length - 1 && insertAt === tiles.length && dragFrom !== null}
+            />
           );
         })}
-        {/* Trailing gap — captures insertAt === tiles.length (drop after last) */}
-        <InsertionGap
-          show={insertAt === tiles.length && dragFrom !== null}
-          onDragOver={() => setInsertAt(tiles.length)}
-        />
       </div>
     </div>
   );
@@ -494,6 +485,7 @@ function InsertionGap({ show, onDragOver }: { show: boolean; onDragOver: () => v
 function DeckTile({
   idx, slide, ds, isDragging,
   onDragStart, onDragOver, onDragEnd,
+  insertBefore, insertAfter,
 }: {
   idx: number;
   slide: Slide;
@@ -502,6 +494,8 @@ function DeckTile({
   onDragStart: () => void;
   onDragOver: (e: React.DragEvent<HTMLDivElement>) => void;
   onDragEnd: () => void;
+  insertBefore: boolean;
+  insertAfter: boolean;
 }) {
   const W = 168, H = 130;
   const serial = String(slide.serial).padStart(2, "0");
@@ -514,15 +508,19 @@ function DeckTile({
       onDragOver={e => { e.preventDefault(); e.dataTransfer.dropEffect = "move"; onDragOver(e); }}
       onDragEnd={onDragEnd}
       style={{
-        flexShrink: 0,
-        width: W,
+        width: "100%",
         background: "#FBF9F3",
         border: `1px solid ${BORDER}`,
         padding: 0,
         opacity: isDragging ? 0.4 : 1,
         cursor: "grab",
-        transition: "opacity 120ms",
+        transition: "opacity 120ms, box-shadow 80ms",
         userSelect: "none",
+        boxShadow: insertBefore
+          ? `inset 2px 0 0 ${GOLD}`
+          : insertAfter
+          ? `inset -2px 0 0 ${GOLD}`
+          : "none",
       }}
     >
       {/* Header — serial + drag-grip hint */}
