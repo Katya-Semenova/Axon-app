@@ -8,6 +8,7 @@ import { SlideArchetypeRenderer, deriveSlideSummary } from "./SlideArchetypeRend
 import type { Slide, VisualStyle, ColorAccent, RenderEngine, BuildAudience, BuildTone, NarrationMode, SlideArchetype } from "@/lib/types";
 import { RENDER_ENGINES, NARRATION_MODES, SLIDE_FORMAT_OPTIONS } from "@/lib/types";
 import { BORDER, NAVY, GOLD, T2, T3, SURFACE, SURFACE_RAISE, SURFACE_MUTED } from "../ui/tokens";
+import { openOnboarding } from "../ui/OnboardingModal";
 
 /* ── Speaker narrative — 2–4 sentence first-person prose derived from
    the slide's title + data summary. Replaces the per-tone variants in
@@ -455,7 +456,21 @@ export function SlideEditor({ modeSwitcher }: { modeSwitcher?: React.ReactNode }
           )}
         </div>
         <div className="flex justify-center">{modeSwitcher}</div>
-        <div />
+        <div className="flex items-center justify-end">
+          <button
+            onClick={openOnboarding}
+            title="How it works"
+            className="flex items-center gap-1.5 h-[28px] px-3 border border-border text-t2 hover:border-[#B89548] hover:text-[#B89548] transition-colors"
+            style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 10.5, letterSpacing: "0.04em", borderRadius: 0 }}
+          >
+            <svg width="11" height="11" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="7" cy="7" r="6" />
+              <path d="M7 10v-.5" />
+              <path d="M7 4.5c0-.83.67-1.5 1.5-1.5S10 3.67 10 4.5c0 1-1.5 1.5-1.5 2.5" />
+            </svg>
+            How it works
+          </button>
+        </div>
       </div>
 
       {/* ── Main row — slide card (centre) + Visualization Style rail (right) ── */}

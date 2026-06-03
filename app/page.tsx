@@ -16,6 +16,7 @@ import { SlideEditor } from "@/app/components/presentation/SlideEditor";
 import { PresentationStructure } from "@/app/components/presentation/PresentationStructure";
 import { PresentExport } from "@/app/components/build/PresentExport";
 import { ModeTabs } from "@/app/components/ui/ModeTabs";
+import { OnboardingModal } from "@/app/components/ui/OnboardingModal";
 
 /* ── Modifier: pin the DragOverlay top-left to the live cursor. ── */
 const snapToPointer: Modifier = ({ activatorEvent, draggingNodeRect, transform }) => {
@@ -165,6 +166,7 @@ function Page2({ onBack }: { onBack: () => void }) {
           {/* Expanded overlays — fire on demand inside any mode */}
           <InsightExpandedViewOverlay />
           <DataSetExpandedViewOverlay />
+          <OnboardingModal />
         </div>
       </div>
 

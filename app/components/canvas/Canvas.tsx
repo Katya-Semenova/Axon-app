@@ -10,6 +10,7 @@ import {
   GOLD, NAVY_300, BORDER, T2, T3, SURFACE, SURFACE_MUTED,
   CARD_W, CARD_H_EST, COL_GAP,
 } from "../ui/tokens";
+import { openOnboarding } from "../ui/OnboardingModal";
 
 const r = roundTo;
 
@@ -232,6 +233,20 @@ export function Canvas({ modeSwitcher }: { modeSwitcher?: React.ReactNode }) {
             <svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
               <path d="M12 5H6a4 4 0 000 8h4M12 5l-3-3M12 5l-3 3" />
             </svg>
+          </button>
+          <div className="w-px h-4 shrink-0" style={{ background: BORDER }} />
+          <button
+            onClick={openOnboarding}
+            title="How it works"
+            className="flex items-center gap-1.5 h-[28px] px-3 border border-border text-t2 hover:border-[#B89548] hover:text-[#B89548] transition-colors"
+            style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 10.5, letterSpacing: "0.04em", borderRadius: 0 }}
+          >
+            <svg width="11" height="11" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="7" cy="7" r="6" />
+              <path d="M7 10v-.5" />
+              <path d="M7 4.5c0-.83.67-1.5 1.5-1.5S10 3.67 10 4.5c0 1-1.5 1.5-1.5 2.5" />
+            </svg>
+            How it works
           </button>
         </div>
       </div>
