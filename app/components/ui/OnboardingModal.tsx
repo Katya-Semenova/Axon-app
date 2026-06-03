@@ -88,12 +88,12 @@ export function OnboardingModal() {
       style={{ background: "rgba(27,40,64,0.55)", backdropFilter: "blur(4px)" }}
       onClick={(e) => { if (e.target === e.currentTarget) dismiss(); }}
     >
-      {/* Modal shell */}
+      {/* Modal shell — single unified background */}
       <div
         className="relative flex flex-col"
         style={{
           width: "clamp(320px, 90vw, 780px)",
-          background: SURFACE_RAISE,
+          background: "#EDE9E0",
           border: `1px solid ${BORDER}`,
           boxShadow: "0 24px 64px rgba(27,40,64,0.22)",
         }}
@@ -111,29 +111,25 @@ export function OnboardingModal() {
           </svg>
         </button>
 
-        {/* Image area */}
-        <div
-          className="w-full flex items-center justify-center"
-          style={{ background: "#EDE9E0" }}
-        >
+        {/* Image + text — unified content block */}
+        <div className="flex flex-col items-center px-7 pt-8 pb-8 gap-3">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             key={step}
             src={STEPS[step].src}
             alt={STEPS[step].alt}
-            style={{ display: "block", maxWidth: "100%", maxHeight: "62vh", objectFit: "contain" }}
+            style={{ display: "block", maxWidth: "100%", maxHeight: "280px", objectFit: "contain" }}
             draggable={false}
           />
-        </div>
 
-        {/* Text */}
-        <div className="px-7 pt-5 pb-1">
-          <h3 className="font-display text-[1.75rem] text-[#1A2742] mb-[10px]">
-            {STEPS[step].title}
-          </h3>
-          <p className="font-sans text-[13px] text-gray-500 leading-[1.55]">
-            {STEPS[step].description}
-          </p>
+          <div className="w-full text-center space-y-1">
+            <h3 className="font-display text-[1.75rem] text-[#1A2742]">
+              {STEPS[step].title}
+            </h3>
+            <p className="font-sans text-[13px] text-gray-500 leading-[1.55]">
+              {STEPS[step].description}
+            </p>
+          </div>
         </div>
 
         {/* Footer */}

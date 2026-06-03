@@ -216,7 +216,7 @@ export function Canvas({ modeSwitcher }: { modeSwitcher?: React.ReactNode }) {
       >
         <div className="flex items-center gap-[10px]">
           <span className="font-mono text-[10.5px] uppercase tracking-[0.1em] text-t3">Canvas</span>
-          <span className="font-mono text-[10.5px] text-t3 rounded-sm px-[8px] py-0.5" style={{ background: SURFACE_MUTED }}>
+          <span className="font-mono text-[10.5px] text-t3">
             {insights.length} insights · {dataSets.length} data sets
           </span>
         </div>

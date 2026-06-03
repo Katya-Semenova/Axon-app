@@ -63,7 +63,7 @@ export function ChatRail({ onBack }: { onBack: () => void }) {
   return (
     <aside className="hidden lg:flex w-[280px] shrink-0 border-r border-border bg-card flex-col h-screen overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between px-5 py-5 border-b border-border shrink-0">
+      <div className="flex items-center justify-between px-5 border-b border-border shrink-0 h-[64px]">
         <button
           onClick={onBack}
           title="Return to home"
