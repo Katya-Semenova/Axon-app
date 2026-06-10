@@ -99,11 +99,11 @@
 /* ── Base ── */
 html {
   height: 100%;
-  overflow: hidden;   /* viewport is the scroll root — nothing scrolls at page level */
+  /* No page-level overflow lock: the workspace shell self-clips to h-screen,
+     while the landing page (min-h-screen) must be free to scroll. */
 }
 body {
-  height: 100%;
-  overflow: hidden;   /* workspace fills exactly the viewport; landing page is also fit-to-screen */
+  min-height: 100%;
   background-color: #EDE9E0;          /* canvas */
   color:            #1B2840;          /* text-primary */
   font-family: var(--font-inter), -apple-system, system-ui, sans-serif;

@@ -18,9 +18,12 @@ export function LandingPage({ onNavigate }: { onNavigate: () => void }) {
         <span className="font-mono text-[13px] font-medium tracking-[0.14em]">AXON</span>
         <div className="flex items-center gap-9">
           <ul className="flex list-none gap-8 max-sm:hidden">
-            <li><a href="#" className="text-[13.5px] text-t2 hover:text-t1 transition-colors duration-200">Projects</a></li>
+            {/* Projects / Docs — destinations not built yet. Rendered as inert,
+                muted labels (not links) so the nav reads as intentional rather
+                than broken. Swap back to <a href> once the pages exist. */}
+            <li><span aria-disabled="true" className="text-[13.5px] text-t3 cursor-default select-none">Projects</span></li>
             <li><a href="/storybook" className="text-[13.5px] text-t2 hover:text-t1 transition-colors duration-200">Storybook</a></li>
-            <li><a href="#" className="text-[13.5px] text-t2 hover:text-t1 transition-colors duration-200">Docs</a></li>
+            <li><span aria-disabled="true" className="text-[13.5px] text-t3 cursor-default select-none">Docs</span></li>
           </ul>
           <div className="w-8 h-8 rounded-full border border-border bg-card flex items-center justify-center font-mono text-[11px] font-medium text-t2 cursor-pointer select-none">KS</div>
         </div>
