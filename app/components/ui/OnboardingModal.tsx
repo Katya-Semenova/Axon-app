@@ -64,6 +64,12 @@ export function OnboardingModal() {
     return () => window.removeEventListener(OPEN_EVENT, handler);
   }, []);
 
+  /* Preload every step image so paginating swaps src instantly — no blank
+     frame on first view while the next file decodes from the network. */
+  useEffect(() => {
+    STEPS.forEach(({ src }) => { const img = new Image(); img.src = src; });
+  }, []);
+
   const dismiss = useCallback(() => {
     localStorage.setItem(STORAGE_KEY, "1");
     setOpen(false);
@@ -115,7 +121,6 @@ export function OnboardingModal() {
         <div className="flex flex-col items-center px-7 pt-8 pb-8 gap-3">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            key={step}
             src={STEPS[step].src}
             alt={STEPS[step].alt}
             style={{ display: "block", maxWidth: "100%", maxHeight: "280px", objectFit: "contain" }}
