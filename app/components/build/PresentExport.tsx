@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { MiniChart } from "../MiniChart";
 import { useWorkspaceStore } from "@/lib/store";
 import type { Slide, DataSet } from "@/lib/types";
+import { PRESENTATION_THEMES } from "@/lib/types";
 import { BORDER, GOLD, NAVY, T2, T3, SURFACE, SURFACE_RAISE, SURFACE_MUTED } from "../ui/tokens";
 
 /* ══════════════════════════════════════════════════════════════════════════
@@ -386,6 +387,12 @@ function DeckReorderTray({
   const [dragFrom, setDragFrom] = useState<number | null>(null);
   const [insertAt, setInsertAt] = useState<number | null>(null);
 
+  /* Active deck theme — applied as --slide-* on the strip so the tiles reflect
+     the same Editorial/Soft look chosen in SLIDES mode. */
+  const presentationThemeId = useWorkspaceStore(s => s.presentationThemeId);
+  const theme = PRESENTATION_THEMES.find(t => t.id === presentationThemeId) ?? PRESENTATION_THEMES[0];
+  const themeVars = theme.vars as React.CSSProperties;
+
   const tiles = slideOrder
     .map(id => slidesById[id])
     .filter((s): s is Slide => !!s);
@@ -442,6 +449,7 @@ function DeckReorderTray({
         onDragOver={e => e.preventDefault()}
         onDrop={e => { e.preventDefault(); handleDrop(); }}
         style={{
+          ...themeVars,
           display: "flex",
           gap: 12,
           overflowX: "auto",
@@ -524,8 +532,9 @@ function DeckTile({
         flexShrink: 0,
         flexBasis: "calc((100% - 36px) / 4)",
         minWidth: "calc((100% - 36px) / 4)",
-        background: "#FBF9F3",
-        border: `1px solid ${BORDER}`,
+        background: "var(--slide-bg)",
+        border: "1px solid var(--slide-border)",
+        borderRadius: "var(--slide-radius)",
         padding: 0,
         opacity: isDragging ? 0.4 : 1,
         cursor: "grab",
@@ -542,9 +551,9 @@ function DeckTile({
       <div style={{
         display: "flex", alignItems: "center", justifyContent: "space-between",
         padding: "8px 10px 4px",
-        borderBottom: `1px solid ${BORDER}`,
+        borderBottom: "1px solid var(--slide-border)",
       }}>
-        <span style={{ fontFamily: mono, fontSize: 9, letterSpacing: "0.1em", color: T3 }}>
+        <span style={{ fontFamily: "var(--slide-font-mono)", fontSize: 9, letterSpacing: "0.1em", color: T3 }}>
           {serial} /
         </span>
         {/* ti-grip-vertical */}
@@ -561,7 +570,7 @@ function DeckTile({
       {/* Title */}
       <div style={{
         padding: "8px 10px 6px",
-        fontFamily: "Inter, sans-serif", fontSize: 11.5, fontWeight: 500, color: NAVY,
+        fontFamily: "var(--slide-font-body)", fontSize: 11.5, fontWeight: 500, color: "var(--slide-title)",
         lineHeight: 1.25,
         overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
       }}>
