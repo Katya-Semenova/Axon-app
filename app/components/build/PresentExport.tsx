@@ -147,7 +147,10 @@ export function PresentExport({ modeSwitcher }: { modeSwitcher?: React.ReactNode
         className="flex-1 min-h-0 overflow-y-auto thin-scroll"
         style={{ background: SURFACE_RAISE }}
       >
-        <div style={{ maxWidth: 880, margin: "0 auto", padding: "44px 32px 64px", display: "flex", flexDirection: "column", gap: 36 }}>
+        <div style={{ maxWidth: 880, margin: "0 auto", padding: "44px 32px 64px", display: "flex", flexDirection: "column", gap: 48 }}>
+
+          {/* ── Group 1: title + subtitle + format picker — one semantic unit ── */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
 
           {/* Hero serif title */}
           <div>
@@ -225,8 +228,9 @@ export function PresentExport({ modeSwitcher }: { modeSwitcher?: React.ReactNode
               );
             })}
           </div>
+          </div>{/* ── end Group 1 ── */}
 
-          {/* ── 2. Deck order — final reorder before BUILD (round-4 fix 6) ── */}
+          {/* ── Group 2: Deck order — final reorder before BUILD ── */}
           <DeckReorderTray
             slideOrder={slideOrder}
             slidesById={slidesById}
@@ -430,14 +434,19 @@ function DeckReorderTray({
         </span>
       </div>
 
-      {/* Grid strip — matches format-grid column layout exactly */}
+      {/* Horizontal-scroll strip — tiles keep a fixed width and the row scrolls
+          when they exceed the container, instead of shrinking to fit (matches
+          the SLIDES slide-tray pattern). */}
       <div
+        className="slide-scroll"
         onDragOver={e => e.preventDefault()}
         onDrop={e => { e.preventDefault(); handleDrop(); }}
         style={{
-          display: "grid",
-          gridTemplateColumns: `repeat(${tiles.length}, 1fr)`,
+          display: "flex",
           gap: 12,
+          overflowX: "auto",
+          overflowY: "hidden",
+          paddingBottom: 6,
         }}
       >
         {tiles.map((slide, idx) => {
@@ -508,7 +517,13 @@ function DeckTile({
       onDragOver={e => { e.preventDefault(); e.dataTransfer.dropEffect = "move"; onDragOver(e); }}
       onDragEnd={onDragEnd}
       style={{
-        width: "100%",
+        /* Width is sized for 4 tiles across the strip: with ≤4 slides they grow
+           to fill the row (no gap on the right); with >4 they stay at this width
+           and the strip scrolls horizontally. (36px = 3 gaps of 12px.) */
+        flexGrow: 1,
+        flexShrink: 0,
+        flexBasis: "calc((100% - 36px) / 4)",
+        minWidth: "calc((100% - 36px) / 4)",
         background: "#FBF9F3",
         border: `1px solid ${BORDER}`,
         padding: 0,

@@ -240,6 +240,63 @@ export const RENDER_ENGINES: { id: RenderEngine; label: string; subtitle: string
   { id: "D3",         label: "D3.js",      subtitle: "Custom"  },
 ];
 
+/* ── Presentation theme — deck-wide visual preset ───────────────────────────
+   Distinct from RenderEngine (per-slide, chart-only): a theme restyles the
+   WHOLE deck — typography, colour, radius, density — by overriding the
+   --slide-* custom properties applied at the presentation root. Consumed in
+   SLIDES mode; the picker lives as a second sub-block in the right rail. */
+
+export type PresentationThemeId = "editorial" | "soft";
+
+export interface PresentationTheme {
+  id: PresentationThemeId;
+  label: string;
+  blurb: string;
+  /** Values for the --slide-* custom properties applied at the deck root. */
+  vars: Record<string, string>;
+}
+
+export const PRESENTATION_THEMES: PresentationTheme[] = [
+  {
+    id: "editorial",
+    label: "Editorial",
+    blurb: "Sharp · serif display · hairline",
+    vars: {
+      "--slide-font-display": "'Playfair Display', 'Instrument Serif', Georgia, serif",
+      "--slide-font-body":    "var(--font-inter), system-ui, sans-serif",
+      "--slide-font-mono":    "'JetBrains Mono', monospace",
+      "--slide-title":        "#1B2840",
+      "--slide-text":         "#5C6478",
+      "--slide-accent":       "#B89548",
+      "--slide-bg":           "#FBF9F3",
+      "--slide-border":       "#D9D3C2",
+      "--slide-muted":        "#E5E0D2",
+      "--slide-radius":       "0px",
+      "--slide-block-pad":    "18px 32px",
+      "--slide-title-align":  "left",
+    },
+  },
+  {
+    id: "soft",
+    label: "Soft",
+    blurb: "Pinterest · rounded · airy",
+    vars: {
+      "--slide-font-display": "'Fraunces', 'Playfair Display', Georgia, serif",
+      "--slide-font-body":    "var(--font-inter), system-ui, sans-serif",
+      "--slide-font-mono":    "var(--font-inter), system-ui, sans-serif",
+      "--slide-title":        "#3A2E2A",
+      "--slide-text":         "#7A6A60",
+      "--slide-accent":       "#C97B5A",
+      "--slide-bg":           "#FBF6EF",
+      "--slide-border":       "#EBE0D4",
+      "--slide-muted":        "#F1E8DE",
+      "--slide-radius":       "16px",
+      "--slide-block-pad":    "26px 36px",
+      "--slide-title-align":  "center",
+    },
+  },
+];
+
 /* ── Connections — Insight → DataSet ───────────────────────────────────── */
 
 /**

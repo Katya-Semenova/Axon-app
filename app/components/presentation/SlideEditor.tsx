@@ -6,7 +6,7 @@ import { MiniChart } from "../MiniChart";
 import { ComboLayoutDropdown } from "../ui/ComboLayoutDropdown";
 import { SlideArchetypeRenderer, deriveSlideSummary } from "./SlideArchetypeRenderer";
 import type { Slide, VisualStyle, ColorAccent, RenderEngine, BuildAudience, BuildTone, NarrationMode, SlideArchetype } from "@/lib/types";
-import { RENDER_ENGINES, NARRATION_MODES, SLIDE_FORMAT_OPTIONS } from "@/lib/types";
+import { RENDER_ENGINES, NARRATION_MODES, SLIDE_FORMAT_OPTIONS, PRESENTATION_THEMES } from "@/lib/types";
 import { BORDER, NAVY, GOLD, T2, T3, SURFACE, SURFACE_RAISE, SURFACE_MUTED } from "../ui/tokens";
 import { openOnboarding } from "../ui/OnboardingModal";
 
@@ -372,6 +372,7 @@ export function SlideEditor({ modeSwitcher }: { modeSwitcher?: React.ReactNode }
   const audience          = useWorkspaceStore(s => s.buildAudience);
   const tone              = useWorkspaceStore(s => s.buildTone);
   const narrMode          = useWorkspaceStore(s => s.buildNarrationMode);
+  const presentationThemeId = useWorkspaceStore(s => s.presentationThemeId);
 
   const [page, setPage] = useState(0);
 
@@ -430,7 +431,13 @@ export function SlideEditor({ modeSwitcher }: { modeSwitcher?: React.ReactNode }
     setActiveSlide(remaining[0]?.id ?? null);
   }
 
-  const slideBg = activeSlide ? STYLE_BG[activeSlide.visualStyle] : SURFACE_RAISE;
+  /* Deck-wide theme — its --slide-* vars are applied at the main-row root
+     below, so the slide card reads them via var(). Falls back to editorial. */
+  const theme = PRESENTATION_THEMES.find(t => t.id === presentationThemeId) ?? PRESENTATION_THEMES[0];
+  const themeVars = theme.vars as React.CSSProperties;
+  /* Slide card background now comes from the active theme (deck-wide), not the
+     per-slide visualStyle. */
+  const slideBg = "var(--slide-bg)";
 
   return (
     <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
@@ -473,10 +480,12 @@ export function SlideEditor({ modeSwitcher }: { modeSwitcher?: React.ReactNode }
         </div>
       </div>
 
-      {/* ── Main row — slide card (centre) + Visualization Style rail (right) ── */}
+      {/* ── Main row — slide card (centre) + Visualization Style rail (right) ──
+          The active theme's --slide-* custom properties are applied here so the
+          whole slide subtree reads them via var(). */}
       <div
         className="flex-1 min-h-0 overflow-hidden"
-        style={{ background: SURFACE_RAISE, display: "flex", flexDirection: "row" }}
+        style={{ background: SURFACE_RAISE, display: "flex", flexDirection: "row", ...themeVars }}
       >
 
         {/* ── Centre — pure presentation-ready slide card ───────────────────
@@ -497,7 +506,8 @@ export function SlideEditor({ modeSwitcher }: { modeSwitcher?: React.ReactNode }
                 width: "100%", maxWidth: 940,
                 flex: 1, minHeight: 0,
                 display: "flex", flexDirection: "column",
-                border: `1px solid ${BORDER}`,
+                border: "1px solid var(--slide-border)",
+                borderRadius: "var(--slide-radius)",
                 background: slideBg,
                 overflow: "hidden",
               }}
@@ -505,16 +515,16 @@ export function SlideEditor({ modeSwitcher }: { modeSwitcher?: React.ReactNode }
               {/* ── Block 1: Title ── */}
               <div style={{
                 padding: "18px 32px 14px",
-                borderBottom: `1px solid ${BORDER}`,
+                borderBottom: "1px solid var(--slide-border)",
                 flexShrink: 0,
                 display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16,
                 background: slideBg,
               }}>
                 <div style={{ minWidth: 0, flex: 1, display: "flex", alignItems: "baseline", gap: 10 }}>
-                  <span style={{ fontFamily: mono, fontSize: 11, color: T3, flexShrink: 0 }}>{serial} /</span>
+                  <span style={{ fontFamily: "var(--slide-font-mono)", fontSize: 11, color: T3, flexShrink: 0 }}>{serial} /</span>
                   <span style={{
-                    fontFamily: "'Playfair Display', 'Instrument Serif', Georgia, serif",
-                    fontSize: 32, fontWeight: 500, color: NAVY,
+                    fontFamily: "var(--slide-font-display)",
+                    fontSize: 32, fontWeight: 500, color: "var(--slide-title)",
                     lineHeight: 1.05, letterSpacing: "-0.3px",
                     overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
                   }}>
@@ -587,13 +597,8 @@ export function SlideEditor({ modeSwitcher }: { modeSwitcher?: React.ReactNode }
           )}
         </div>
 
-        {/* ── Right rail — Visualization Style picker (~170 px) ───────────── */}
-        {activeSlide && (
-          <VisualizationStyleRail
-            slide={activeSlide}
-            onChange={(engine) => updateSlide(activeSlide.id, { renderEngine: engine })}
-          />
-        )}
+        {/* Right rail (Visualization Style) is now hoisted to page.tsx as a
+            full-height column spanning the slide area + tray — see T5. */}
       </div>
 
       {/* The duplicate bottom strip (thumbnail rail + viz-style panel) was
@@ -637,11 +642,11 @@ function SummaryBlock({
       flexShrink: 0,
       margin: "14px 28px 4px",
       background: "#FAF8F2",
-      borderLeft: "4px solid #C9A75A",
+      borderLeft: "4px solid var(--slide-accent)",
       padding: "18px 22px",
     }}>
       <div style={{
-        fontFamily: mono, fontSize: 9, letterSpacing: "0.12em", textTransform: "uppercase",
+        fontFamily: "var(--slide-font-mono)", fontSize: 9, letterSpacing: "0.12em", textTransform: "uppercase",
         color: T3, marginBottom: 8,
       }}>
         Summary · AUTO
@@ -656,9 +661,9 @@ function SummaryBlock({
           rows={2}
           style={{
             width: "100%",
-            fontFamily: "Inter, sans-serif",
+            fontFamily: "var(--slide-font-body)",
             fontSize: 19, fontWeight: 500, lineHeight: 1.4,
-            color: "#1B2332",
+            color: "var(--slide-title)",
             background: "transparent",
             border: "none", outline: "none", resize: "vertical",
           }}
@@ -668,9 +673,9 @@ function SummaryBlock({
           onClick={() => setEditing(true)}
           title="Click to edit"
           style={{
-            fontFamily: "Inter, sans-serif",
+            fontFamily: "var(--slide-font-body)",
             fontSize: 19, fontWeight: 500, lineHeight: 1.4,
-            color: "#1B2332",
+            color: "var(--slide-title)",
             cursor: "text",
           }}
         >
@@ -882,14 +887,26 @@ function NarrativeBlock({
 }
 
 /* ── Right rail: Visualization Style picker — 3 engine cards ── */
-function VisualizationStyleRail({
-  slide, onChange,
-}: {
-  slide: Slide;
-  onChange: (engine: RenderEngine) => void;
-}) {
+export function VisualizationStyleRail() {
+  /* Self-sufficient: the rail is rendered as a full-height right column by
+     page.tsx (SLIDES mode), so it reads the active slide from the store rather
+     than via props. */
+  const slideOrder    = useWorkspaceStore(s => s.slideOrder);
+  const slidesById    = useWorkspaceStore(s => s.slidesById);
+  const activeSlideId = useWorkspaceStore(s => s.activeSlideId);
+  const updateSlide   = useWorkspaceStore(s => s.updateSlide);
+  const activeSlide   = (activeSlideId ? slidesById[activeSlideId] : null)
+                      ?? (slideOrder[0] ? slidesById[slideOrder[0]] : null);
+
   /* SciChart is the default if no choice has been made yet. */
-  const current: RenderEngine = slide.renderEngine ?? "SciChart";
+  const current: RenderEngine = activeSlide?.renderEngine ?? "SciChart";
+  const onChange = (engine: RenderEngine) => {
+    if (activeSlide) updateSlide(activeSlide.id, { renderEngine: engine });
+  };
+
+  /* Presentation theme is deck-wide (not per-slide) — read straight from store. */
+  const themeId  = useWorkspaceStore(s => s.presentationThemeId);
+  const setTheme = useWorkspaceStore(s => s.setPresentationTheme);
 
   return (
     <aside
@@ -907,7 +924,7 @@ function VisualizationStyleRail({
         fontFamily: mono, fontSize: 9, letterSpacing: "0.12em", textTransform: "uppercase",
         color: T3,
       }}>
-        Visualization style
+        Diagrams style
       </div>
 
       {RENDER_ENGINES.map(({ id, label, subtitle }) => {
@@ -951,10 +968,79 @@ function VisualizationStyleRail({
       })}
 
       <div style={{
+        paddingTop: 4,
+        fontFamily: mono, fontSize: 8.5, color: T3, lineHeight: 1.5,
+      }}>
+        Engine drives how this slide&apos;s chart is rendered.
+      </div>
+
+      {/* ── Divider between the two sub-blocks ── */}
+      <div style={{ height: 1, background: BORDER, margin: "14px 0" }} />
+
+      {/* ── Sub-block 2: presentation theme (deck-wide) ── */}
+      <div style={{
+        fontFamily: mono, fontSize: 9, letterSpacing: "0.12em", textTransform: "uppercase",
+        color: T3,
+      }}>
+        Presentation theme
+      </div>
+
+      {PRESENTATION_THEMES.map((t) => {
+        const active = t.id === themeId;
+        return (
+          <button
+            key={t.id}
+            onClick={() => setTheme(t.id)}
+            style={{
+              width: "100%",
+              display: "flex", flexDirection: "column", gap: 6,
+              padding: 10,
+              background: active ? SURFACE_RAISE : "transparent",
+              border: `${active ? "1.5px" : "1px"} solid ${active ? NAVY : BORDER}`,
+              borderRadius: 4,
+              cursor: active ? "default" : "pointer",
+              color: T2,
+              textAlign: "left",
+              transition: "border-color 150ms, background 150ms",
+            }}
+            onMouseEnter={(e) => { if (!active) e.currentTarget.style.borderColor = NAVY; }}
+            onMouseLeave={(e) => { if (!active) e.currentTarget.style.borderColor = BORDER; }}
+          >
+            {/* Mini preview — rendered in the theme's OWN tokens so the font,
+                accent and corner radius read at a glance. */}
+            <div style={{
+              ...(t.vars as React.CSSProperties),
+              background: "var(--slide-bg)",
+              border: "1px solid var(--slide-border)",
+              borderRadius: "var(--slide-radius)",
+              padding: "7px 9px",
+              display: "flex", alignItems: "center", gap: 6,
+            }}>
+              <span style={{ fontFamily: "var(--slide-font-display)", color: "var(--slide-title)", fontSize: 15, lineHeight: 1 }}>Aa</span>
+              <span style={{ flex: 1 }} />
+              <span style={{ width: 16, height: 6, borderRadius: 3, background: "var(--slide-accent)" }} />
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
+              <span style={{
+                fontFamily: mono, fontSize: 10.5, color: NAVY, fontWeight: active ? 500 : 400,
+              }}>
+                {t.label}
+              </span>
+              <span style={{
+                fontFamily: mono, fontSize: 8.5, letterSpacing: "0.04em", color: T3, lineHeight: 1.4,
+              }}>
+                {t.blurb}
+              </span>
+            </div>
+          </button>
+        );
+      })}
+
+      <div style={{
         marginTop: "auto", paddingTop: 8,
         fontFamily: mono, fontSize: 8.5, color: T3, lineHeight: 1.5,
       }}>
-        Engine drives how this slide&apos;s chart is rendered. Data-level settings live on the data&nbsp;set drill-in.
+        Theme restyles the whole deck — fonts, colour, shape.
       </div>
     </aside>
   );

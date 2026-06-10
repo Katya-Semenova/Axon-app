@@ -12,7 +12,7 @@ import { ChatRail } from "@/app/components/chat/ChatRail";
 import { Canvas } from "@/app/components/canvas/Canvas";
 import { InsightExpandedViewOverlay } from "@/app/components/canvas/InsightExpandedView";
 import { DataSetExpandedViewOverlay } from "@/app/components/canvas/DataSetExpandedView";
-import { SlideEditor } from "@/app/components/presentation/SlideEditor";
+import { SlideEditor, VisualizationStyleRail } from "@/app/components/presentation/SlideEditor";
 import { PresentationStructure } from "@/app/components/presentation/PresentationStructure";
 import { PresentExport } from "@/app/components/build/PresentExport";
 import { ModeTabs } from "@/app/components/ui/ModeTabs";
@@ -155,13 +155,22 @@ function Page2({ onBack }: { onBack: () => void }) {
           </button>
         </div>
 
-        {/* ── Right column — main surface ── */}
-        <div className="flex-1 min-w-0 min-h-0 relative flex flex-col overflow-hidden">
+        {/* ── Right column — main surface ──
+            In SLIDES mode the Visualization Style rail is a full-height right
+            column: the surface + tray stack in the left sub-column (so the tray
+            is narrower), and the rail spans the whole height beside them. */}
+        <div className="flex-1 min-w-0 min-h-0 relative flex flex-row overflow-hidden">
 
-          {Surface}
+          {/* Left sub-column — surface + bottom tray */}
+          <div className="flex-1 min-w-0 min-h-0 flex flex-col overflow-hidden">
+            {Surface}
 
-          {/* Bottom data set tray — CANVAS + SLIDES only */}
-          {showDataSetTray && <PresentationStructure insertAt={insertAt} isDraggingSlide={!!activeDragSlideId} />}
+            {/* Bottom data set tray — CANVAS + SLIDES only */}
+            {showDataSetTray && <PresentationStructure insertAt={insertAt} isDraggingSlide={!!activeDragSlideId} />}
+          </div>
+
+          {/* Full-height Visualization Style rail — SLIDES mode only */}
+          {mode === "presentation" && slideOrder.length > 0 && <VisualizationStyleRail />}
 
           {/* Expanded overlays — fire on demand inside any mode */}
           <InsightExpandedViewOverlay />

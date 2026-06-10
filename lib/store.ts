@@ -9,7 +9,7 @@ import type {
   NodePositionMap, WorkspaceSnapshot,
   ChartType, DataRow, SlideArchetype,
   BuildAudience, BuildTone, BuildMessage,
-  DataSetSettings, NarrationMode,
+  DataSetSettings, NarrationMode, PresentationThemeId,
 } from "./types";
 import { DEFAULT_DATASET_SETTINGS } from "./types";
 
@@ -155,6 +155,9 @@ interface WorkspaceStateShape extends WorkspaceSnapshot {
   buildNarration:     boolean;        /* legacy on/off — preserved for any old consumer */
   buildNarrationMode: NarrationMode;  /* round-4: tristate delivery picker */
   buildMessages:  BuildMessage[];
+
+  /* ── Presentation theme ─ deck-wide visual preset (SLIDES mode). ─ */
+  presentationThemeId: PresentationThemeId;
 }
 
 interface WorkspaceActions {
@@ -201,6 +204,9 @@ interface WorkspaceActions {
   addBuildMessage:      (msg: BuildMessage) => void;
   updateBuildMessage:   (id: string, update: Partial<BuildMessage>) => void;
   clearBuildMessages:   () => void;
+
+  /* ── Presentation theme ─ */
+  setPresentationTheme: (id: PresentationThemeId) => void;
 }
 
 export type WorkspaceStore = WorkspaceStateShape & WorkspaceActions;
@@ -241,6 +247,8 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => {
     buildNarration:     false,
     buildNarrationMode: "Speaker notes included",
     buildMessages:  [],
+
+    presentationThemeId: "editorial",
 
     /* ── history ─ */
     undo: () => {
@@ -508,6 +516,7 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => {
     setCanvasTransform: (canvasTransform) => set({ canvasTransform }),
 
     /* ── build mode ─ */
+    setPresentationTheme: (presentationThemeId) => set({ presentationThemeId }),
     setBuildAudience:     (buildAudience) => set({ buildAudience }),
     setBuildTone:         (buildTone)     => set({ buildTone }),
     toggleBuildNarration: ()              => set((s) => ({ buildNarration: !s.buildNarration })),
