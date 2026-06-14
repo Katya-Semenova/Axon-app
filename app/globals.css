@@ -85,8 +85,8 @@
   /* ── Typography ── */
   --font-sans:    var(--font-inter);
   --font-mono:    var(--font-jetbrains);
-  --font-serif:   var(--font-instrument);
-  --font-display: var(--font-instrument);  /* alias → Instrument Serif, used for modal/hero headings */
+  --font-serif:   var(--font-instrument), var(--font-old-standard), Georgia, serif;
+  --font-display: var(--font-instrument), var(--font-old-standard), Georgia, serif;  /* стек per-glyph: латиница → Instrument Serif, кириллица → Old Standard TT */
 
   /* ── Animations ── */
   --animate-shimmer:   shimmer 1.6s infinite linear;

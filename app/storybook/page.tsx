@@ -344,7 +344,7 @@ function TypographySection() {
     <>
       <SectionHeader
         title="Typography"
-        subtitle="Three font families. Inter for body copy, JetBrains Mono for all UI controls and data labels, Instrument Serif for editorial slide headings."
+        subtitle="Inter for body copy, JetBrains Mono for UI controls and data labels, and an editorial serif stack — Instrument Serif (Latin) + Old Standard TT (Cyrillic) — for headings."
       />
       <div style={{ display: "flex", flexDirection: "column", gap: 32 }}>
         {fontBlock("--font-sans · Inter · body copy", { fontFamily: "var(--font-inter), -apple-system, sans-serif" }, [
@@ -359,7 +359,7 @@ function TypographySection() {
           { text: "10.5px / 0.07em — mode tab labels", size: 10.5, extra: { color: T2, letterSpacing: "0.07em", textTransform: "uppercase" as const } },
           { text: "10px — token names, micro metadata", size: 10, extra: { color: T3 } },
         ])}
-        {fontBlock("--font-serif · Instrument Serif · editorial headings", { fontFamily: "var(--font-instrument), 'Instrument Serif', Georgia, serif" }, [
+        {fontBlock("--font-serif · Instrument Serif (lat) / Old Standard TT (cyr)", { fontFamily: "var(--font-instrument), var(--font-old-standard), Georgia, serif" }, [
           { text: "Data tells a story", size: 36, extra: { lineHeight: 1.1 } },
           { text: "Pull-quote, italic — editorial accent", size: 22, extra: { fontStyle: "italic" as const, color: T2 } },
           { text: "Slide headline, regular weight", size: 18, extra: { color: NAVY } },

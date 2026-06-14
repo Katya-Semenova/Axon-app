@@ -58,13 +58,13 @@ colors:
   info-foreground:     "#F5F2EA"
 typography:
   display:
-    fontFamily: "Instrument Serif"
+    fontFamily: "Instrument Serif (lat) / Old Standard TT (cyr)"
     fontSize: "64px"
     fontWeight: "400"
     lineHeight: "68px"
     letterSpacing: "-0.015em"
   heading:
-    fontFamily: "Instrument Serif"
+    fontFamily: "Instrument Serif (lat) / Old Standard TT (cyr)"
     fontSize: "24px"
     fontWeight: "400"
     lineHeight: "29px"
@@ -140,11 +140,11 @@ components:
 
 ## Typography
 
-- **Display / Heading — Instrument Serif** (с italic-акцентами): hero (фактически `clamp(40px,5.8vw,68px)`) и заголовки модалок. Лицо бренда.
+- **Display / Heading — сериф-стек per-glyph (решение 2026-06-14):** `--font-serif`/`--font-display` = `Instrument Serif → Old Standard TT → Georgia`. **Латиница (EN) рисуется Instrument Serif** (изящный editorial-италик, лицо бренда), **кириллица (RU) — Old Standard TT** (у Instrument нет кириллицы, поэтому русские буквы подхватываются следующим в стеке — per-glyph fallback). Оба грузятся через next/font (weight 400 + italic; Old Standard — subsets latin+cyrillic). Hero (`clamp(40px,5.8vw,68px)`) и заголовки модалок.
 - **Body / UI — Inter:** body 16/1.6; UI-текст и инпуты 13.5–14; подписи 12.
 - **Лейблы и данные — JetBrains Mono:** секц-лейблы 10.5–11 uppercase + letter-spacing 0.1em (wordmark «AXON», «Recent Projects», «AI Agent Chat»); числа — tabular (`'tnum' 1` глобально).
 - Шкала компактная; крупный размер — только у hero.
-- *Очистка: `globals.css` грузит `@import` Playfair Display + Fraunces, но serif-токен = Instrument Serif — мёртвые импорты убрать.*
+- *Примечание: `globals.css` грузит `@import` Playfair Display + Fraunces — это НЕ мёртвый код (проверено 2026-06-14): Playfair Display используется в цитатах слайдов (`SlideArchetypeRenderer`), Fraunces — запасной в серифе графиков (`ChartRenderer`). У обоих есть кириллица.*
 
 ## Layout
 
