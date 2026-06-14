@@ -199,5 +199,37 @@
     "noData": "Нет данных",
     "speakerNotes": "Заметки докладчика",
     "noNotes": "Для этого слайда нет заметок докладчика."
+  },
+  "Export": {
+    "present": "Показ",
+    "noSlidesYet": "слайдов пока нет",
+    "slidesReady": "{count, plural, one {# слайд готов к экспорту} few {# слайда готовы к экспорту} many {# слайдов готовы к экспорту} other {# слайдов готовы к экспорту}}",
+    "outputFormat": "Формат вывода",
+    "heroTitle": "Как эта дека будет путешествовать?",
+    "heroSubtitle": "Выберите одно. Всё ниже подстроится под выбранный формат.",
+    "format": {
+      "pptx": { "title": "PPTX", "tagline": "Редактируемая дека" },
+      "pdf": { "title": "PDF", "tagline": "Готов к печати" },
+      "viewLink": { "title": "Ссылка для просмотра", "tagline": "Статичный дашборд" },
+      "interactive": { "title": "Интерактив", "tagline": "Живой дашборд" }
+    },
+    "addSlidesFirst": "Добавьте слайды перед сборкой",
+    "buildStats": "{count, plural, one {# слайд} few {# слайда} many {# слайдов} other {# слайдов}} · ~{mb} МБ · {narr}",
+    "fileOutput": "Файл",
+    "shareableLink": "Ссылка для доступа",
+    "narrNone": "без озвучки",
+    "narrVoiceover": "с голосовой озвучкой",
+    "narrIncluded": "с озвучкой",
+    "build": "Собрать",
+    "readyFormat": "Готово · {format}",
+    "expires": "Истекает через 7 дней",
+    "download": "Скачать",
+    "copied": "Скопировано",
+    "copyLink": "Копировать ссылку",
+    "open": "Открыть",
+    "buildAgain": "собрать заново",
+    "noSlidesReorder": "Нет слайдов для перестановки — перейдите на ХОЛСТ и отправьте дата-сет в лоток.",
+    "deckOrder": "Порядок деки",
+    "dragReorder": "перетащите для порядка"
   }
 }

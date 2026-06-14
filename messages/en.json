@@ -199,5 +199,37 @@
     "noData": "No data",
     "speakerNotes": "Speaker Notes",
     "noNotes": "No speaker notes for this slide."
+  },
+  "Export": {
+    "present": "Present",
+    "noSlidesYet": "no slides yet",
+    "slidesReady": "{count, plural, one {# slide ready to export} other {# slides ready to export}}",
+    "outputFormat": "Output format",
+    "heroTitle": "How should this deck travel?",
+    "heroSubtitle": "Pick one. Everything below adapts to the format you choose.",
+    "format": {
+      "pptx": { "title": "PPTX", "tagline": "Editable deck" },
+      "pdf": { "title": "PDF", "tagline": "Print-ready" },
+      "viewLink": { "title": "View link", "tagline": "Static dashboard" },
+      "interactive": { "title": "Interactive", "tagline": "Live dashboard" }
+    },
+    "addSlidesFirst": "Add slides before building",
+    "buildStats": "{count, plural, one {# slide} other {# slides}} · ~{mb} MB · {narr}",
+    "fileOutput": "File output",
+    "shareableLink": "Shareable link",
+    "narrNone": "no narration",
+    "narrVoiceover": "voiceover included",
+    "narrIncluded": "narration included",
+    "build": "Build",
+    "readyFormat": "Ready · {format}",
+    "expires": "Expires in 7 days",
+    "download": "Download",
+    "copied": "Copied",
+    "copyLink": "Copy link",
+    "open": "Open",
+    "buildAgain": "build again",
+    "noSlidesReorder": "No slides to reorder — switch to CANVAS and send a Data Set to the data set tray first.",
+    "deckOrder": "Deck order",
+    "dragReorder": "drag to reorder"
   }
 }

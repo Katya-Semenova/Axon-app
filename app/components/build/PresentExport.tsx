@@ -7,6 +7,7 @@ import { useWorkspaceStore } from "@/lib/store";
 import type { Slide, DataSet } from "@/lib/types";
 import { PRESENTATION_THEMES } from "@/lib/types";
 import { BORDER, GOLD, NAVY, T2, T3, SURFACE, SURFACE_RAISE, SURFACE_MUTED } from "../ui/tokens";
+import { useTranslations } from "next-intl";
 
 /* ══════════════════════════════════════════════════════════════════════════
    PRESENT — the export gateway.
@@ -81,12 +82,18 @@ const OUTPUT_FORMATS: { id: OutputFormat; title: string; tagline: string; icon: 
   },
 ];
 
+/* id → безопасный ключ перевода (id остаётся значением логики format). */
+const FORMAT_KEY: Record<OutputFormat, string> = {
+  "PPTX": "pptx", "PDF": "pdf", "View Link": "viewLink", "Interactive": "interactive",
+};
+
 /* Delivery settings (Audience / Tone / Narration) moved to SLIDES mode
    in round-4 — see DeliverySettingsStrip in SlideEditor.tsx. */
 
 /* ── Component ─────────────────────────────────────────────────────────── */
 
 export function PresentExport({ modeSwitcher }: { modeSwitcher?: React.ReactNode }) {
+  const t             = useTranslations("Export");
   const slideOrder    = useWorkspaceStore(s => s.slideOrder);
   const slidesById    = useWorkspaceStore(s => s.slidesById);
   const dataSetsById  = useWorkspaceStore(s => s.dataSetsById);
@@ -100,7 +107,7 @@ export function PresentExport({ modeSwitcher }: { modeSwitcher?: React.ReactNode
   const slideCount = slideOrder.length;
   /* Rough estimate — ~1.5 MB per slide + narration overhead */
   const sizeMB     = Math.max(1, Math.round(slideCount * 1.5 + (narration === "Voiceover script" ? 2 : 0)));
-  const narrLine   = narration === "None" ? "no narration" : narration === "Voiceover script" ? "voiceover included" : "narration included";
+  const narrLine   = narration === "None" ? t("narrNone") : narration === "Voiceover script" ? t("narrVoiceover") : t("narrIncluded");
 
   function handleBuild() {
     if (slideCount === 0) return;
@@ -132,11 +139,11 @@ export function PresentExport({ modeSwitcher }: { modeSwitcher?: React.ReactNode
       >
         <div className="flex items-center gap-3 min-w-0">
           <span style={{ fontFamily: mono, fontSize: 10.5, letterSpacing: "0.1em", textTransform: "uppercase", color: T3 }}>
-            Present
+            {t("present")}
           </span>
           <span style={{ color: BORDER, fontSize: 10 }}>|</span>
           <span style={{ fontFamily: mono, fontSize: 10.5, color: T3 }}>
-            {slideCount === 0 ? "no slides yet" : `${slideCount} slide${slideCount !== 1 ? "s" : ""} ready to export`}
+            {slideCount === 0 ? t("noSlidesYet") : t("slidesReady", { count: slideCount })}
           </span>
         </div>
         <div className="flex justify-center">{modeSwitcher}</div>
@@ -158,16 +165,16 @@ export function PresentExport({ modeSwitcher }: { modeSwitcher?: React.ReactNode
             <span style={{
               fontFamily: mono, fontSize: 10, letterSpacing: "0.12em", textTransform: "uppercase", color: T3,
             }}>
-              Output format
+              {t("outputFormat")}
             </span>
             <h1 style={{
               fontFamily: serif, fontSize: 28, lineHeight: 1.15, color: NAVY,
               margin: "6px 0 4px", fontWeight: 400,
             }}>
-              How should this deck travel?
+              {t("heroTitle")}
             </h1>
             <p style={{ fontFamily: "Inter, sans-serif", fontSize: 13.5, color: T2, margin: 0 }}>
-              Pick one. Everything below adapts to the format you choose.
+              {t("heroSubtitle")}
             </p>
           </div>
 
@@ -206,10 +213,10 @@ export function PresentExport({ modeSwitcher }: { modeSwitcher?: React.ReactNode
                   <div style={{ color: active ? NAVY : T2 }}>{f.icon}</div>
                   <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
                     <span style={{ fontFamily: "Inter, sans-serif", fontSize: 14, fontWeight: 500, color: NAVY, lineHeight: 1.2 }}>
-                      {f.title}
+                      {t(`format.${FORMAT_KEY[f.id]}.title`)}
                     </span>
                     <span style={{ fontFamily: mono, fontSize: 10, color: T3, lineHeight: 1.3 }}>
-                      {f.tagline}
+                      {t(`format.${FORMAT_KEY[f.id]}.tagline`)}
                     </span>
                   </div>
                   {/* Checkmark badge */}
@@ -258,10 +265,10 @@ export function PresentExport({ modeSwitcher }: { modeSwitcher?: React.ReactNode
               >
                 <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
                   <span style={{ fontFamily: mono, fontSize: 11.5, color: NAVY, fontWeight: 500 }}>
-                    {slideCount === 0 ? "Add slides before building" : `${slideCount} slide${slideCount !== 1 ? "s" : ""} · ~${sizeMB} MB · ${narrLine}`}
+                    {slideCount === 0 ? t("addSlidesFirst") : t("buildStats", { count: slideCount, mb: sizeMB, narr: narrLine })}
                   </span>
                   <span style={{ fontFamily: mono, fontSize: 9.5, color: T3, letterSpacing: "0.05em" }}>
-                    {format === "PPTX" || format === "PDF" ? "File output" : "Shareable link"} · {format}
+                    {format === "PPTX" || format === "PDF" ? t("fileOutput") : t("shareableLink")} · {format}
                   </span>
                 </div>
                 <button
@@ -288,7 +295,7 @@ export function PresentExport({ modeSwitcher }: { modeSwitcher?: React.ReactNode
                     <path d="M11.414 10l-7.383 7.418a2.091 2.091 0 0 0 0 2.967a2.11 2.11 0 0 0 2.976 0l7.407 -7.385" />
                     <path d="M18.121 15.293l2.586 -2.586a1 1 0 0 0 0 -1.414l-7.586 -7.586a1 1 0 0 0 -1.414 0l-2.586 2.586a1 1 0 0 0 0 1.414l7.586 7.586a1 1 0 0 0 1.414 0z" />
                   </svg>
-                  Build
+                  {t("build")}
                 </button>
               </motion.div>
             ) : (
@@ -307,7 +314,7 @@ export function PresentExport({ modeSwitcher }: { modeSwitcher?: React.ReactNode
                 <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16 }}>
                   <div style={{ display: "flex", flexDirection: "column", gap: 8, minWidth: 0, flex: 1 }}>
                     <span style={{ fontFamily: mono, fontSize: 9.5, letterSpacing: "0.11em", textTransform: "uppercase", color: NAVY, fontWeight: 500 }}>
-                      Ready · {format}
+                      {t("readyFormat", { format })}
                     </span>
                     {built.kind === "file" ? (
                       <>
@@ -323,14 +330,14 @@ export function PresentExport({ modeSwitcher }: { modeSwitcher?: React.ReactNode
                         <span style={{ fontFamily: mono, fontSize: 12, color: NAVY, wordBreak: "break-all" }}>
                           {built.url}
                         </span>
-                        <span style={{ fontFamily: mono, fontSize: 10, color: T3 }}>Expires in 7 days</span>
+                        <span style={{ fontFamily: mono, fontSize: 10, color: T3 }}>{t("expires")}</span>
                       </>
                     )}
                   </div>
                   <div style={{ display: "flex", flexDirection: "column", gap: 8, alignItems: "flex-end", flexShrink: 0 }}>
                     {built.kind === "file" ? (
                       <ResultButton primary onClick={() => {/* mock download */}}>
-                        Download
+                        {t("download")}
                       </ResultButton>
                     ) : (
                       <>
@@ -342,10 +349,10 @@ export function PresentExport({ modeSwitcher }: { modeSwitcher?: React.ReactNode
                             setTimeout(() => setCopied(false), 1600);
                           }}
                         >
-                          {copied ? "Copied" : "Copy link"}
+                          {copied ? t("copied") : t("copyLink")}
                         </ResultButton>
                         <ResultButton onClick={() => window.open(built.url, "_blank")}>
-                          Open
+                          {t("open")}
                         </ResultButton>
                       </>
                     )}
@@ -357,7 +364,7 @@ export function PresentExport({ modeSwitcher }: { modeSwitcher?: React.ReactNode
                         cursor: "pointer", textDecoration: "underline",
                       }}
                     >
-                      build again
+                      {t("buildAgain")}
                     </button>
                   </div>
                 </div>
@@ -390,8 +397,9 @@ function DeckReorderTray({
   /* Active deck theme — applied as --slide-* on the strip so the tiles reflect
      the same Editorial/Soft look chosen in SLIDES mode. */
   const presentationThemeId = useWorkspaceStore(s => s.presentationThemeId);
-  const theme = PRESENTATION_THEMES.find(t => t.id === presentationThemeId) ?? PRESENTATION_THEMES[0];
+  const theme = PRESENTATION_THEMES.find(pt => pt.id === presentationThemeId) ?? PRESENTATION_THEMES[0];
   const themeVars = theme.vars as React.CSSProperties;
+  const t = useTranslations("Export");
 
   const tiles = slideOrder
     .map(id => slidesById[id])
@@ -420,7 +428,7 @@ function DeckReorderTray({
         padding: "22px 18px", textAlign: "center",
         fontFamily: mono, fontSize: 10.5, color: T3, letterSpacing: "0.05em",
       }}>
-        No slides to reorder — switch to CANVAS and send a Data Set to the data set tray first.
+        {t("noSlidesReorder")}
       </div>
     );
   }
@@ -434,10 +442,10 @@ function DeckReorderTray({
         <span style={{
           fontFamily: mono, fontSize: 9.5, letterSpacing: "0.11em", textTransform: "uppercase", color: T3,
         }}>
-          Deck order
+          {t("deckOrder")}
         </span>
         <span style={{ fontFamily: mono, fontSize: 9.5, color: T3, opacity: 0.75 }}>
-          drag to reorder
+          {t("dragReorder")}
         </span>
       </div>
 
