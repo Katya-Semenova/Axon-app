@@ -111,5 +111,31 @@
       "quote": "цитата",
       "noData": "нет данных"
     }
+  },
+  "Drill": {
+    "backToCanvas": "Назад к холсту",
+    "undo": "Отменить",
+    "redo": "Повторить",
+    "collapse": "Свернуть",
+    "insight": {
+      "headerCount": "{rows} строк · {cols} столб.",
+      "fileRows": "{rows} строк",
+      "fileColumns": "{cols} столбцов",
+      "confidence": "Достоверность {pct}%",
+      "colsLabel": "столбцы:"
+    },
+    "dataset": {
+      "badge": "ДАТА-СЕТ",
+      "aggregateChart": "Сводный график",
+      "dragResize": "Потяните, чтобы изменить размер",
+      "dataCount": "Данные ({count} строк)",
+      "noData": "Пока нет данных — подключите инсайт к входному порту этой карточки на холсте.",
+      "chartSettings": "Настройки графика",
+      "fieldStatus": "Статус",
+      "fieldAggregation": "Агрегация",
+      "fieldColorBy": "Цвет по",
+      "fieldFilter": "Фильтр",
+      "fieldAccent": "Акцент"
+    }
   }
 }

@@ -11,6 +11,7 @@ import type { DataSet, Insight, ChartType, ColorAccent, DataSetSettings } from "
 import { DEFAULT_DATASET_SETTINGS } from "@/lib/types";
 import { BORDER, NAVY, T2, T3, SURFACE, SURFACE_RAISE, SURFACE_MUTED } from "../ui/tokens";
 import { BackButton } from "../ui/BackButton";
+import { useTranslations } from "next-intl";
 
 function DataSetExpandedView({ dataSet, insights }: {
   dataSet: DataSet;
@@ -27,6 +28,7 @@ function DataSetExpandedView({ dataSet, insights }: {
   const insightsByIdMap = Object.fromEntries(insights.map(ins => [ins.id, ins]));
 
   const serial = String(dataSet.serial).padStart(2, "0");
+  const t = useTranslations("Drill");
 
   /* 10b: apply filter setting to rows before rendering the chart */
   const displayRows = (() => {
@@ -85,7 +87,7 @@ function DataSetExpandedView({ dataSet, insights }: {
         style={{ borderColor: BORDER, background: SURFACE }}
       >
         <div className="flex items-center gap-3 min-w-0">
-          <BackButton onClick={() => setExpDataSet(null)}>Back to Canvas</BackButton>
+          <BackButton onClick={() => setExpDataSet(null)}>{t("backToCanvas")}</BackButton>
           <span className="text-[11px] select-none" style={{ color: BORDER }}>|</span>
           <span className="font-mono text-[11px] shrink-0" style={{ color: T3 }}>{serial} /</span>
           <span style={{
@@ -93,7 +95,7 @@ function DataSetExpandedView({ dataSet, insights }: {
             letterSpacing: "0.1em", color: "#1B2840",
             background: "rgba(27,40,64,0.06)", border: `1px solid ${BORDER}`,
             padding: "1px 5px", borderRadius: 2,
-          }}>DATA SET</span>
+          }}>{t("dataset.badge")}</span>
           <span className="text-[13.5px] font-medium truncate" style={{ color: "#0A0A0A" }}>{dataSet.title}</span>
         </div>
 
@@ -114,7 +116,7 @@ function DataSetExpandedView({ dataSet, insights }: {
           display: "flex", flexDirection: "column",
         }}>
           <span className="font-mono uppercase tracking-[0.1em] mb-2 block" style={{ fontSize: 10, color: T3 }}>
-            Aggregate Chart
+            {t("dataset.aggregateChart")}
           </span>
           <div style={{ flex: 1, minHeight: 0, maxWidth: 780, width: "100%", margin: "0 auto" }}>
             <ChartFill
@@ -129,7 +131,7 @@ function DataSetExpandedView({ dataSet, insights }: {
         {/* ── Splitter handle ── */}
         <div
           onMouseDown={handleSplitterDown}
-          title="Drag to resize"
+          title={t("dataset.dragResize")}
           style={{
             height: 10, flexShrink: 0,
             cursor: "row-resize",
@@ -163,7 +165,7 @@ function DataSetExpandedView({ dataSet, insights }: {
             className="thin-scroll"
           >
             <span className="font-mono uppercase tracking-[0.1em] mb-4 block" style={{ fontSize: 10, color: T3 }}>
-              Data ({dataSet.rows.length} rows)
+              {t("dataset.dataCount", { count: dataSet.rows.length })}
             </span>
 
             {dataSet.rows.length === 0 ? (
@@ -173,7 +175,7 @@ function DataSetExpandedView({ dataSet, insights }: {
                 border: `1px dashed ${BORDER}`,
                 borderRadius: 2, padding: "24px", textAlign: "center",
               }}>
-                No data yet — wire an Insight to this card's input port on the canvas.
+                {t("dataset.noData")}
               </div>
             ) : (
               <DataTable
@@ -197,32 +199,32 @@ function DataSetExpandedView({ dataSet, insights }: {
             className="thin-scroll"
           >
             <span className="font-mono uppercase tracking-[0.1em]" style={{ fontSize: 10, color: T3 }}>
-              Chart Settings
+              {t("dataset.chartSettings")}
             </span>
 
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-              <SettingField label="Status">
+              <SettingField label={t("dataset.fieldStatus")}>
                 <PanelDropdown<string>
                   value={settings.status}
                   options={["All", "Paid", "Pending", "Failed"]}
                   onChange={v => updateSettings(dataSet.id, { status: v })}
                 />
               </SettingField>
-              <SettingField label="Aggregation">
+              <SettingField label={t("dataset.fieldAggregation")}>
                 <PanelDropdown<DataSetSettings["aggregation"]>
                   value={settings.aggregation}
                   options={["Daily", "Weekly", "Monthly", "Quarterly"]}
                   onChange={v => updateSettings(dataSet.id, { aggregation: v })}
                 />
               </SettingField>
-              <SettingField label="Color by">
+              <SettingField label={t("dataset.fieldColorBy")}>
                 <PanelDropdown<string>
                   value={settings.colorBy}
                   options={["Segment", "Status", "Channel", "Region", "None"]}
                   onChange={v => updateSettings(dataSet.id, { colorBy: v })}
                 />
               </SettingField>
-              <SettingField label="Filter">
+              <SettingField label={t("dataset.fieldFilter")}>
                 <PanelDropdown<string>
                   value={settings.filter}
                   options={["All data", "Top 10", "Bottom 10", "Outliers"]}
@@ -232,7 +234,7 @@ function DataSetExpandedView({ dataSet, insights }: {
             </div>
 
             {/* Accent — full-width row with colour swatch */}
-            <SettingField label="Accent">
+            <SettingField label={t("dataset.fieldAccent")}>
               <AccentDropdown
                 value={settings.accent}
                 onChange={v => updateSettings(dataSet.id, { accent: v })}

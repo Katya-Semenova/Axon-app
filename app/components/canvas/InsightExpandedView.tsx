@@ -6,6 +6,7 @@ import { useWorkspaceStore } from "@/lib/store";
 import type { Insight } from "@/lib/types";
 import { GOLD, BORDER, T2, T3, SURFACE, SURFACE_RAISE, SURFACE_MUTED, NAVY } from "../ui/tokens";
 import { BackButton } from "../ui/BackButton";
+import { useTranslations } from "next-intl";
 
 const mono = "'JetBrains Mono', monospace";
 
@@ -22,6 +23,7 @@ function InsightExpandedView({ insight, insightsById }: {
 
   const serial  = String(insight.serial).padStart(2, "0");
   const hasData = insight.kind === "data" && !!insight.data;
+  const t       = useTranslations("Drill");
 
   return (
     <motion.div
@@ -38,7 +40,7 @@ function InsightExpandedView({ insight, insightsById }: {
         style={{ borderColor: BORDER, background: SURFACE }}
       >
         <div className="flex items-center gap-3 min-w-0">
-          <BackButton onClick={() => setExpanded(null)}>Back to Canvas</BackButton>
+          <BackButton onClick={() => setExpanded(null)}>{t("backToCanvas")}</BackButton>
           <span className="text-[11px] select-none" style={{ color: BORDER }}>|</span>
           <span className="font-mono text-[11px] shrink-0" style={{ color: T3 }}>{serial} /</span>
           <span className="text-[13.5px] font-medium truncate" style={{ color: "#0A0A0A" }}>{insight.title}</span>
@@ -47,23 +49,23 @@ function InsightExpandedView({ insight, insightsById }: {
               className="font-mono text-[10px] shrink-0 px-2 py-[2px]"
               style={{ background: SURFACE_MUTED, border: `1px solid ${BORDER}`, color: T3 }}
             >
-              {insight.data!.rows.length} rows · {insight.data!.columns.length} cols
+              {t("insight.headerCount", { rows: insight.data!.rows.length, cols: insight.data!.columns.length })}
             </span>
           )}
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
-          <IconBtn onClick={undo} disabled={!canUndo} title="Undo">
+          <IconBtn onClick={undo} disabled={!canUndo} title={t("undo")}>
             <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
               <path d="M2 5h6a4 4 0 010 8H4M2 5l3-3M2 5l3 3" />
             </svg>
           </IconBtn>
-          <IconBtn onClick={redo} disabled={!canRedo} title="Redo">
+          <IconBtn onClick={redo} disabled={!canRedo} title={t("redo")}>
             <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
               <path d="M12 5H6a4 4 0 000 8h4M12 5l-3-3M12 5l-3 3" />
             </svg>
           </IconBtn>
-          <IconBtn onClick={() => setExpanded(null)} title="Collapse">
+          <IconBtn onClick={() => setExpanded(null)} title={t("collapse")}>
             <svg width="11" height="11" viewBox="0 0 11 11" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
               <path d="M4 1v3H1M7 10v-3h3M1 1l3 3M10 10l-3-3" />
             </svg>
@@ -110,15 +112,15 @@ function InsightExpandedView({ insight, insightsById }: {
               </span>
               <div className="flex items-center gap-3">
                 <span style={{ fontFamily: mono, fontSize: 9.5, color: T3 }}>
-                  {insight.data!.rows.length} rows
+                  {t("insight.fileRows", { rows: insight.data!.rows.length })}
                 </span>
                 <span style={{ color: BORDER, fontSize: 9 }}>·</span>
                 <span style={{ fontFamily: mono, fontSize: 9.5, color: T3 }}>
-                  {insight.data!.columns.length + 1} columns
+                  {t("insight.fileColumns", { cols: insight.data!.columns.length + 1 })}
                 </span>
                 <span style={{ color: BORDER, fontSize: 9 }}>·</span>
                 <span style={{ fontFamily: mono, fontSize: 9.5, color: T3 }}>
-                  Confidence {insight.confPct}%
+                  {t("insight.confidence", { pct: insight.confPct })}
                 </span>
               </div>
             </div>
@@ -127,7 +129,7 @@ function InsightExpandedView({ insight, insightsById }: {
 
             {/* Column chips */}
             <div className="flex items-center gap-1 flex-wrap justify-end">
-              <span style={{ fontFamily: mono, fontSize: 8.5, color: T3, marginRight: 4 }}>cols:</span>
+              <span style={{ fontFamily: mono, fontSize: 8.5, color: T3, marginRight: 4 }}>{t("insight.colsLabel")}</span>
               {["label", ...insight.data!.columns].map(col => (
                 <span
                   key={col}

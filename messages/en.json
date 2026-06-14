@@ -111,5 +111,31 @@
       "quote": "quote",
       "noData": "no data"
     }
+  },
+  "Drill": {
+    "backToCanvas": "Back to Canvas",
+    "undo": "Undo",
+    "redo": "Redo",
+    "collapse": "Collapse",
+    "insight": {
+      "headerCount": "{rows} rows · {cols} cols",
+      "fileRows": "{rows} rows",
+      "fileColumns": "{cols} columns",
+      "confidence": "Confidence {pct}%",
+      "colsLabel": "cols:"
+    },
+    "dataset": {
+      "badge": "DATA SET",
+      "aggregateChart": "Aggregate Chart",
+      "dragResize": "Drag to resize",
+      "dataCount": "Data ({count} rows)",
+      "noData": "No data yet — wire an Insight to this card's input port on the canvas.",
+      "chartSettings": "Chart Settings",
+      "fieldStatus": "Status",
+      "fieldAggregation": "Aggregation",
+      "fieldColorBy": "Color by",
+      "fieldFilter": "Filter",
+      "fieldAccent": "Accent"
+    }
   }
 }
