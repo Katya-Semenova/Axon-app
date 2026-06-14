@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { Reorder, useDragControls } from "framer-motion";
 import type { DataRow, Insight } from "@/lib/types";
 
@@ -61,6 +62,7 @@ function DraggableRow({
   const controls   = useDragControls();
   const [hovered, setHovered]   = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const t = useTranslations("Table");
 
   function updateLabel(label: string) { onChange({ ...row, label }); }
   function updateValue(i: number, raw: string) {
@@ -107,7 +109,7 @@ function DraggableRow({
             width: COL_GRIP, color: hovered ? T2 : T3,
             flexShrink: 0, alignSelf: "stretch", display: "flex",
           }}
-          title="Drag to reorder"
+          title={t("dragReorder")}
         >
           <GripIcon />
         </div>
@@ -139,9 +141,9 @@ function DraggableRow({
           <div
             className="text-[11px] font-mono truncate"
             style={{ flex: 1, minWidth: 60, color: sourceInsight ? NAVY : T3, paddingLeft: 8 }}
-            title={sourceInsight?.title ?? "no source insight"}
+            title={sourceInsight?.title ?? t("noSourceInsight")}
           >
-            {sourceInsight ? `INSIGHT ${sourceInsight.serial}` : "—"}
+            {sourceInsight ? t("insightN", { n: sourceInsight.serial }) : "—"}
           </div>
         )}
 
@@ -179,8 +181,8 @@ function DraggableRow({
                 padding: "4px 0", margin: 0, listStyle: "none", minWidth: 132,
               }}>
                 {[
-                  { label: "Duplicate row", action: () => { onDuplicate(); setMenuOpen(false); } },
-                  { label: "Delete row",    action: () => { onDelete();    setMenuOpen(false); }, danger: true },
+                  { label: t("duplicateRow"), action: () => { onDuplicate(); setMenuOpen(false); } },
+                  { label: t("deleteRow"),    action: () => { onDelete();    setMenuOpen(false); }, danger: true },
                 ].map(item => (
                   <li key={item.label}>
                     <button
@@ -211,6 +213,7 @@ function DraggableRow({
 }
 
 export function DataTable({ columns, rows, onRowsChange, insightsById }: DataTableProps) {
+  const t = useTranslations("Table");
   function updateRow(id: string, updated: DataRow) {
     onRowsChange(rows.map(r => (r.id === id ? updated : r)));
   }
@@ -238,14 +241,14 @@ export function DataTable({ columns, rows, onRowsChange, insightsById }: DataTab
         style={{ background: "#faf9f5", paddingTop: 4, paddingBottom: 6, gap: 0 }}
       >
         <div style={{ width: COL_GRIP, flexShrink: 0 }} />
-        <div className={headerCell} style={{ flex: 1, minWidth: 0, paddingRight: 4 }}>Label</div>
+        <div className={headerCell} style={{ flex: 1, minWidth: 0, paddingRight: 4 }}>{t("label")}</div>
         {columns.map(col => (
           <div key={col} className={`${headerCell} text-right`} style={{ width: COL_VALUE, flexShrink: 0 }}>
             {col}
           </div>
         ))}
         {insightsById && (
-          <div className={headerCell} style={{ flex: 1, minWidth: 60, paddingLeft: 8 }}>Data Set</div>
+          <div className={headerCell} style={{ flex: 1, minWidth: 60, paddingLeft: 8 }}>{t("dataSet")}</div>
         )}
         <div style={{ width: COL_ACTIONS, flexShrink: 0 }} />
       </div>

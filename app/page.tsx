@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import {
   DndContext, DragOverlay, PointerSensor, useSensor, useSensors,
   type DragEndEvent, type DragStartEvent, type DragOverEvent, type Modifier,
@@ -115,13 +116,14 @@ function Page2({ onBack }: { onBack: () => void }) {
   }
 
   const activeDs = activeDragDataSetId ? dataSetsById[activeDragDataSetId] : null;
+  const t = useTranslations("SlideTray");
   const insertAt = (activeDragSlideId && dragOverSlideId)
     ? slideOrder.indexOf(dragOverSlideId) : null;
 
   const activeSlideGhost      = activeDragSlideId ? slidesById[activeDragSlideId] : null;
   const activeSlideGhostDsId  = activeSlideGhost?.dataSetIds[0] ?? null;
   const activeSlideGhostTitle = activeSlideGhostDsId
-    ? (dataSetsById[activeSlideGhostDsId]?.title ?? "Empty slide") : "Empty slide";
+    ? (dataSetsById[activeSlideGhostDsId]?.title ?? t("emptySlide")) : t("emptySlide");
 
   const modeTabs = !drillInOpen ? <ModeTabs variant="bar" /> : undefined;
 

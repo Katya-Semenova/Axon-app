@@ -17,6 +17,11 @@
     "recent": {
       "title": "Recent Projects",
       "viewAll": "View all"
+    },
+    "status": {
+      "ready": "ready",
+      "draft": "draft",
+      "generating": "generating"
     }
   },
   "LanguageSwitcher": {
@@ -231,5 +236,20 @@
     "noSlidesReorder": "No slides to reorder — switch to CANVAS and send a Data Set to the data set tray first.",
     "deckOrder": "Deck order",
     "dragReorder": "drag to reorder"
+  },
+  "Table": {
+    "dragReorder": "Drag to reorder",
+    "noSourceInsight": "no source insight",
+    "insightN": "INSIGHT {n}",
+    "duplicateRow": "Duplicate row",
+    "deleteRow": "Delete row",
+    "label": "Label",
+    "dataSet": "Data Set"
+  },
+  "Desktop": {
+    "workspace": "Workspace",
+    "title": "Axon is built for desktop",
+    "body": "The canvas, drag-and-drop cards and AI chat need a wide screen. Open the project on a laptop or desktop for full access.",
+    "backToProjects": "Back to projects"
   }
 }

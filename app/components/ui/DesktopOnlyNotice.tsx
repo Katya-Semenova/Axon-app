@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { BackButton } from "./BackButton";
+import { useTranslations } from "next-intl";
 
 /**
  * DesktopOnlyNotice — экран-заглушка для воркспейса на узких экранах (<lg / 1024px).
@@ -20,6 +21,7 @@ export interface DesktopOnlyNoticeProps {
 }
 
 export function DesktopOnlyNotice({ onBack }: DesktopOnlyNoticeProps) {
+  const t = useTranslations("Desktop");
   return (
     <div className="fixed inset-0 z-40 lg:hidden flex flex-col bg-bg">
       {/* Шапка — wordmark */}
@@ -41,21 +43,20 @@ export function DesktopOnlyNotice({ onBack }: DesktopOnlyNoticeProps) {
         </svg>
 
         <div className="font-mono text-[10.5px] uppercase tracking-[0.14em] text-t3">
-          Рабочее пространство
+          {t("workspace")}
         </div>
 
         <h1 className="font-display text-[27px] leading-tight text-t1 max-w-[18ch]">
-          Axon рассчитано на десктоп
+          {t("title")}
         </h1>
 
         <p className="text-[13.5px] leading-relaxed text-t2 max-w-[34ch]">
-          Холст, перетаскивание карточек и AI-чат требуют широкого экрана.
-          Открой проект на ноутбуке или десктопе для полного доступа.
+          {t("body")}
         </p>
 
         {onBack && (
           <div className="pt-1">
-            <BackButton onClick={onBack}>К проектам</BackButton>
+            <BackButton onClick={onBack}>{t("backToProjects")}</BackButton>
           </div>
         )}
       </div>

@@ -4,6 +4,7 @@ import { MiniSparkline } from "./MiniSparkline";
 import { Card } from "../ui/Card";
 import { Badge } from "../ui/Badge";
 import { GOLD, NAVY } from "../ui/tokens";
+import { useTranslations } from "next-intl";
 
 export type ProjectStatus = "ready" | "generating" | "draft";
 
@@ -26,13 +27,14 @@ const STATUS_BADGE: Record<ProjectStatus, { variant: "success" | "warning" | "in
 };
 
 export function ProjectCard({ project, onClick }: { project: Project; onClick: () => void }) {
+  const t = useTranslations("Landing");
   const s = STATUS_BADGE[project.status];
   const sparkColor = project.status === "generating" ? GOLD : NAVY;
   return (
     <Card variant="interactive" onClick={onClick} className="p-7">
       <div className="flex items-start justify-between mb-5">
         <div className="text-[15px] font-medium text-t1 leading-[1.4] max-w-[70%]">{project.name}</div>
-        <Badge variant={s.variant} size="sm">{s.label}</Badge>
+        <Badge variant={s.variant} size="sm">{t(`status.${project.status}`)}</Badge>
       </div>
       <div className="mb-4">
         <MiniSparkline data={project.data} color={sparkColor} />
