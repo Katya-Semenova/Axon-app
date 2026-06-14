@@ -9,6 +9,7 @@ import type { Slide, VisualStyle, ColorAccent, RenderEngine, BuildAudience, Buil
 import { RENDER_ENGINES, NARRATION_MODES, SLIDE_FORMAT_OPTIONS, PRESENTATION_THEMES } from "@/lib/types";
 import { BORDER, NAVY, GOLD, T2, T3, SURFACE, SURFACE_RAISE, SURFACE_MUTED } from "../ui/tokens";
 import { openOnboarding } from "../ui/OnboardingModal";
+import { useTranslations } from "next-intl";
 
 /* ── Speaker narrative — 2–4 sentence first-person prose derived from
    the slide's title + data summary. Replaces the per-tone variants in
@@ -250,10 +251,11 @@ function SlideThumbnail({ slide, isActive, onClick, onDelete }: {
   const [chartSize, setChartSize] = useState({ w: 104, h: 54 });
   const chartDivRef               = useRef<HTMLDivElement>(null);
   const dataSetsById              = useWorkspaceStore(s => s.dataSetsById);
+  const t                         = useTranslations("SlideEditor");
   const ds                        = slide.dataSetIds[0] ? dataSetsById[slide.dataSetIds[0]] : null;
 
   const serial      = String(slide.serial).padStart(2, "0");
-  const headline    = (ds?.title ?? "Untitled").slice(0, 28) + ((ds?.title ?? "").length > 28 ? "…" : "");
+  const headline    = (ds?.title ?? t("untitled")).slice(0, 28) + ((ds?.title ?? "").length > 28 ? "…" : "");
   const accentColor = ACCENT_COLOR[slide.colorAccent];
   const bg          = STYLE_BG[slide.visualStyle];
   const headFont    = STYLE_HEADLINE_FONT[slide.visualStyle];
@@ -328,7 +330,7 @@ function SlideThumbnail({ slide, isActive, onClick, onDelete }: {
 
       <button
         onClick={(e) => { e.stopPropagation(); onDelete(); }}
-        title="Remove slide"
+        title={t("removeSlide")}
         style={{
           position: "absolute", top: 3, right: 3, width: 15, height: 15,
           display: "flex", alignItems: "center", justifyContent: "center",
@@ -357,6 +359,7 @@ function SlideThumbnail({ slide, isActive, onClick, onDelete }: {
 export function SlideEditor({ modeSwitcher }: { modeSwitcher?: React.ReactNode }) {
   /* setMode and clearBuildMessages were only used by the removed
      "Build Presentation" CTA — no longer subscribed here. */
+  const t                 = useTranslations("SlideEditor");
   const slideOrder        = useWorkspaceStore(s => s.slideOrder);
   const slidesById        = useWorkspaceStore(s => s.slidesById);
   const slides            = slideOrder.map(id => slidesById[id]).filter(Boolean) as Slide[];
@@ -449,7 +452,7 @@ export function SlideEditor({ modeSwitcher }: { modeSwitcher?: React.ReactNode }
       >
         <div className="flex items-center gap-3 min-w-0">
           <span style={{ fontFamily: mono, fontSize: 10.5, letterSpacing: "0.1em", textTransform: "uppercase" as const, color: T3, flexShrink: 0 }}>
-            Slides
+            {t("slides")}
           </span>
           {activeSlide && (
             <>
@@ -466,7 +469,7 @@ export function SlideEditor({ modeSwitcher }: { modeSwitcher?: React.ReactNode }
         <div className="flex items-center justify-end">
           <button
             onClick={openOnboarding}
-            title="How it works"
+            title={t("howItWorks")}
             className="flex items-center gap-1.5 h-[28px] px-3 border border-border text-t2 hover:border-[#B89548] hover:text-[#B89548] transition-colors"
             style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 10.5, letterSpacing: "0.04em", borderRadius: 0 }}
           >
@@ -475,7 +478,7 @@ export function SlideEditor({ modeSwitcher }: { modeSwitcher?: React.ReactNode }
               <path d="M7 10v-.5" />
               <path d="M7 4.5c0-.83.67-1.5 1.5-1.5S10 3.67 10 4.5c0 1-1.5 1.5-1.5 2.5" />
             </svg>
-            How it works
+            {t("howItWorks")}
           </button>
         </div>
       </div>
@@ -628,6 +631,8 @@ function SummaryBlock({
 
   useEffect(() => { setDraft(summaryText); }, [summaryText, slide.id]);
 
+  const t = useTranslations("SlideEditor");
+
   function commit() {
     setEditing(false);
     if (draft.trim() && draft !== summaryText) onChange(draft.trim());
@@ -649,7 +654,7 @@ function SummaryBlock({
         fontFamily: "var(--slide-font-mono)", fontSize: 9, letterSpacing: "0.12em", textTransform: "uppercase",
         color: T3, marginBottom: 8,
       }}>
-        Summary · AUTO
+        {t("summaryAuto")}
       </div>
       {editing ? (
         <textarea
@@ -671,7 +676,7 @@ function SummaryBlock({
       ) : (
         <div
           onClick={() => setEditing(true)}
-          title="Click to edit"
+          title={t("clickToEdit")}
           style={{
             fontFamily: "var(--slide-font-body)",
             fontSize: 19, fontWeight: 500, lineHeight: 1.4,
@@ -694,6 +699,7 @@ const AUDIENCE_OPTIONS: BuildAudience[] = ["CEO", "Board", "Investor", "Team", "
 const TONE_OPTIONS:     BuildTone[]     = ["Formal", "Neutral", "Casual"];
 
 function DeliverySettingsStrip() {
+  const t             = useTranslations("SlideEditor");
   const audience      = useWorkspaceStore(s => s.buildAudience);
   const tone          = useWorkspaceStore(s => s.buildTone);
   const narrMode      = useWorkspaceStore(s => s.buildNarrationMode);
@@ -727,39 +733,39 @@ function DeliverySettingsStrip() {
           fontFamily: mono, fontSize: 9, letterSpacing: "0.12em", textTransform: "uppercase",
           color: T3,
         }}>
-          Delivery settings
+          {t("deliverySettings")}
         </span>
         <span style={{
           fontFamily: mono, fontSize: 9, color: T3, opacity: 0.7,
         }}>
-          applies to whole deck
+          {t("appliesToDeck")}
         </span>
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 12 }}>
         <PanelSelect
-          label="Audience"
+          label={t("labelAudience")}
           value={audience}
           options={AUDIENCE_OPTIONS}
           getLabel={(a) => a === "CEO" ? "CEO / Exec" : a}
           onChange={(v) => setAudience(v as BuildAudience)}
         />
         <PanelSelect
-          label="Tone"
+          label={t("labelTone")}
           value={tone}
           options={TONE_OPTIONS}
           getLabel={(t) => t === "Formal" ? "Direct, factual" : t === "Neutral" ? "Narrative" : t}
           onChange={(v) => setTone(v as BuildTone)}
         />
         <PanelSelect
-          label="Narration"
+          label={t("labelNarration")}
           value={narrMode}
           options={NARRATION_MODES}
           triggerFormat={(v) => NARRATION_TRIGGER[v as NarrationMode] ?? v}
           onChange={(v) => setNarrMode(v as NarrationMode)}
         />
         <PanelSelect
-          label="Slide format"
+          label={t("labelSlideFormat")}
           value={slideFormatValue}
           options={slideFormatOptions}
           onChange={handleSlideFormat}
@@ -797,6 +803,7 @@ function NarrativeBlock({
 }) {
   const [draft,             setDraft]             = useState(narrativeText);
   const [focused,           setFocused]           = useState(false);
+  const t = useTranslations("SlideEditor");
   const [narrativeExpanded, setNarrativeExpanded] = useState(() =>
     Boolean(slide.narrative?.trim())
   );
@@ -811,7 +818,7 @@ function NarrativeBlock({
   }
 
   const isVoiceover = narrMode === "Voiceover script";
-  const label = isVoiceover ? "Voiceover script · AI · editable" : "Speaker narrative · AI · editable";
+  const label = isVoiceover ? t("narrativeVoiceover") : t("narrativeSpeaker");
 
   return (
     <div style={{
@@ -866,7 +873,7 @@ function NarrativeBlock({
               if (e.key === "Escape") { setDraft(narrativeText); (e.target as HTMLTextAreaElement).blur(); }
             }}
             rows={3}
-            placeholder="Add speaker notes…"
+            placeholder={t("addSpeakerNotes")}
             style={{
               width: "100%",
               fontFamily: "Inter, sans-serif",
@@ -895,6 +902,7 @@ export function VisualizationStyleRail() {
   const slidesById    = useWorkspaceStore(s => s.slidesById);
   const activeSlideId = useWorkspaceStore(s => s.activeSlideId);
   const updateSlide   = useWorkspaceStore(s => s.updateSlide);
+  const t             = useTranslations("SlideEditor");
   const activeSlide   = (activeSlideId ? slidesById[activeSlideId] : null)
                       ?? (slideOrder[0] ? slidesById[slideOrder[0]] : null);
 
@@ -924,7 +932,7 @@ export function VisualizationStyleRail() {
         fontFamily: mono, fontSize: 9, letterSpacing: "0.12em", textTransform: "uppercase",
         color: T3,
       }}>
-        Diagrams style
+        {t("diagramsStyle")}
       </div>
 
       {RENDER_ENGINES.map(({ id, label, subtitle }) => {
@@ -971,7 +979,7 @@ export function VisualizationStyleRail() {
         paddingTop: 4,
         fontFamily: mono, fontSize: 8.5, color: T3, lineHeight: 1.5,
       }}>
-        Engine drives how this slide&apos;s chart is rendered.
+        {t("engineHint")}
       </div>
 
       {/* ── Divider between the two sub-blocks ── */}
@@ -982,7 +990,7 @@ export function VisualizationStyleRail() {
         fontFamily: mono, fontSize: 9, letterSpacing: "0.12em", textTransform: "uppercase",
         color: T3,
       }}>
-        Presentation theme
+        {t("presentationTheme")}
       </div>
 
       {PRESENTATION_THEMES.map((t) => {
@@ -1040,7 +1048,7 @@ export function VisualizationStyleRail() {
         marginTop: "auto", paddingTop: 8,
         fontFamily: mono, fontSize: 8.5, color: T3, lineHeight: 1.5,
       }}>
-        Theme restyles the whole deck — fonts, colour, shape.
+        {t("themeHint")}
       </div>
     </aside>
   );

@@ -148,5 +148,26 @@
     "noChartData": "no chart data",
     "removeSlide": "Remove slide",
     "newDataSet": "+ NEW DATA SET"
+  },
+  "SlideEditor": {
+    "untitled": "Untitled",
+    "removeSlide": "Remove slide",
+    "slides": "Slides",
+    "howItWorks": "How it works",
+    "summaryAuto": "Summary · AUTO",
+    "clickToEdit": "Click to edit",
+    "deliverySettings": "Delivery settings",
+    "appliesToDeck": "applies to whole deck",
+    "labelAudience": "Audience",
+    "labelTone": "Tone",
+    "labelNarration": "Narration",
+    "labelSlideFormat": "Slide format",
+    "narrativeVoiceover": "Voiceover script · AI · editable",
+    "narrativeSpeaker": "Speaker narrative · AI · editable",
+    "addSpeakerNotes": "Add speaker notes…",
+    "diagramsStyle": "Diagrams style",
+    "engineHint": "Engine drives how this slide's chart is rendered.",
+    "presentationTheme": "Presentation theme",
+    "themeHint": "Theme restyles the whole deck — fonts, colour, shape."
   }
 }
