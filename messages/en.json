@@ -1,0 +1,25 @@
+{
+  "Landing": {
+    "nav": {
+      "projects": "Projects",
+      "storybook": "Storybook",
+      "docs": "Docs"
+    },
+    "hero": {
+      "titleLine1": "Your data,",
+      "titleLine2": "in plain English.",
+      "subtitle": "Drop any data file and get a canvas of editorial insight cards — ready to curate and present."
+    },
+    "dropzone": {
+      "cta": "Drop a file or click to upload",
+      "formats": "Supports .sql · .csv · .xlsx · .txt · .png · .jpg — up to 50 MB"
+    },
+    "recent": {
+      "title": "Recent Projects",
+      "viewAll": "View all"
+    }
+  },
+  "LanguageSwitcher": {
+    "label": "Language"
+  }
+}
