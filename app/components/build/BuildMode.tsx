@@ -9,6 +9,7 @@ import { useWorkspaceStore } from "@/lib/store";
 import type { Slide, BuildAudience, BuildTone, DataSet, BuildMessage, SlideArchetype } from "@/lib/types";
 import { NON_CHART_ARCHETYPES } from "@/lib/types";
 import { BORDER, NAVY, T2, T3, SURFACE, SURFACE_RAISE, SURFACE_MUTED } from "../ui/tokens";
+import { useTranslations } from "next-intl";
 
 const mono = "'JetBrains Mono', monospace";
 
@@ -125,6 +126,7 @@ function buildFirstMessage(slides: Slide[], dataSetsById: Record<string, DataSet
 ───────────────────────────────────────────────────────────── */
 
 export function BuildMode() {
+  const t                    = useTranslations("Build");
   const setMode              = useWorkspaceStore(s => s.setMode);
   const slideOrder           = useWorkspaceStore(s => s.slideOrder);
   const slidesById           = useWorkspaceStore(s => s.slidesById);
@@ -504,13 +506,13 @@ export function BuildMode() {
               onMouseEnter={e => { e.currentTarget.style.textDecoration = "underline"; e.currentTarget.style.color = T2; }}
               onMouseLeave={e => { e.currentTarget.style.textDecoration = "none"; e.currentTarget.style.color = T3; }}
             >
-              Presentation
+              {t("breadcrumbPresentation")}
             </button>
             <span style={{ fontFamily: mono, fontSize: 10, color: T3, opacity: 0.45, userSelect: "none" }}>›</span>
             <span style={{
               fontFamily: mono, fontSize: 10.5, letterSpacing: "0.08em", textTransform: "uppercase", color: NAVY,
             }}>
-              Build
+              {t("breadcrumbBuild")}
             </span>
             {activeSlide && (
               <>
@@ -522,7 +524,7 @@ export function BuildMode() {
             )}
           </div>
           <span style={{ fontFamily: mono, fontSize: 10, color: T3 }}>
-            {localSlides.length} slide{localSlides.length !== 1 ? "s" : ""}
+            {t("slideCount", { count: localSlides.length })}
           </span>
         </div>
 
@@ -614,7 +616,7 @@ export function BuildMode() {
                 </AnimatePresence>
               ) : (
                 <span style={{ fontFamily: mono, fontSize: 11, color: T3 }}>
-                  {localSlides.length === 0 ? "No slides — go back to Presentation Mode and add data sets." : "Select a slide below."}
+                  {localSlides.length === 0 ? t("emptyNoSlides") : t("selectSlide")}
                 </span>
               )}
               </div>{/* end pan container */}
@@ -638,7 +640,7 @@ export function BuildMode() {
                 </div>
                 <button
                   onClick={handleFitToScreen}
-                  title="Fit to screen"
+                  title={t("fitToScreen")}
                   style={{
                     width: 32, height: 32,
                     display: "flex", alignItems: "center", justifyContent: "center",
@@ -684,7 +686,7 @@ export function BuildMode() {
                   <div style={{ padding: "10px 28px 12px", height: "100%", display: "flex", flexDirection: "column", gap: 7 }}>
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0 }}>
                       <span style={{ fontFamily: mono, fontSize: 8.5, letterSpacing: "0.09em", textTransform: "uppercase", color: T3 }}>
-                        Speaker Note — {buildTone}
+                        {t("speakerNoteTone", { tone: buildTone })}
                       </span>
                       <button
                         onClick={() => playNote(speakerNote)}
@@ -700,7 +702,7 @@ export function BuildMode() {
                         <svg width="9" height="10" viewBox="0 0 9 10" fill="currentColor">
                           <path d="M1 1.5v7l7-3.5L1 1.5z" />
                         </svg>
-                        Play
+                        {t("play")}
                       </button>
                     </div>
                     <div style={{
@@ -794,7 +796,7 @@ export function BuildMode() {
                 onMouseEnter={e => { if (localSlides.length > 0) e.currentTarget.style.opacity = "0.88"; }}
                 onMouseLeave={e => { e.currentTarget.style.opacity = "1"; }}
               >
-                PRESENT
+                {t("present")}
               </button>
 
               {/* EXPORT */}
@@ -810,7 +812,7 @@ export function BuildMode() {
                     transition: "border-color 150ms",
                   }}
                 >
-                  <span>EXPORT</span>
+                  <span>{t("export")}</span>
                   <svg width="8" height="8" viewBox="0 0 8 8" fill="none" stroke={T3} strokeWidth="1.3" strokeLinecap="round"
                     style={{ transform: exportOpen ? "rotate(180deg)" : "none", transition: "transform 150ms" }}>
                     <path d="M1 2.5l3 3 3-3" />
@@ -847,7 +849,7 @@ export function BuildMode() {
                           onMouseEnter={e => { e.currentTarget.style.opacity = "0.85"; }}
                           onMouseLeave={e => { e.currentTarget.style.opacity = "1"; }}
                         >
-                          Download {exportFmt}
+                          {t("download", { fmt: exportFmt })}
                         </button>
                       </div>
                     </motion.div>
@@ -868,7 +870,7 @@ export function BuildMode() {
                     transition: "border-color 150ms",
                   }}
                 >
-                  <span>SHARE</span>
+                  <span>{t("share")}</span>
                   <svg width="8" height="8" viewBox="0 0 8 8" fill="none" stroke={T3} strokeWidth="1.3" strokeLinecap="round"
                     style={{ transform: shareOpen ? "rotate(180deg)" : "none", transition: "transform 150ms" }}>
                     <path d="M1 2.5l3 3 3-3" />
@@ -897,7 +899,7 @@ export function BuildMode() {
                             style={{ padding: "7px 0", fontFamily: mono, fontSize: 9.5, color: NAVY, background: "transparent", border: `1px solid ${NAVY}`, borderRadius: 0, cursor: "pointer", transition: "opacity 150ms" }}
                             onMouseEnter={e => { e.currentTarget.style.opacity = "0.7"; }}
                             onMouseLeave={e => { e.currentTarget.style.opacity = "1"; }}
-                          >Generate link</button>
+                          >{t("generateLink")}</button>
                         ) : (
                           <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                             <div style={{ fontFamily: mono, fontSize: 9, color: T3, background: SURFACE_MUTED, border: `1px solid ${BORDER}`, padding: "5px 7px", wordBreak: "break-all", lineHeight: 1.5 }}>
@@ -905,9 +907,9 @@ export function BuildMode() {
                             </div>
                             <button onClick={() => handleCopy(shareTab === "view" ? mockLink : mockEmbed)}
                               style={{ padding: "5px 0", fontFamily: mono, fontSize: 9.5, color: copied ? "#2A7A4A" : T2, background: "transparent", border: `1px solid ${copied ? "#2A7A4A" : BORDER}`, borderRadius: 0, cursor: "pointer", transition: "all 200ms" }}>
-                              {copied ? "Copied!" : "Copy"}
+                              {copied ? t("copied") : t("copy")}
                             </button>
-                            <span style={{ fontFamily: mono, fontSize: 8, color: T3 }}>Expires in 7 days</span>
+                            <span style={{ fontFamily: mono, fontSize: 8, color: T3 }}>{t("expires")}</span>
                           </div>
                         )}
                       </div>
@@ -922,13 +924,13 @@ export function BuildMode() {
               {/* Quick Settings */}
               <div style={{ display: "flex", flexDirection: "column", gap: 11 }}>
                 <span style={{ fontFamily: mono, fontSize: 8, letterSpacing: "0.09em", textTransform: "uppercase", color: T3 }}>
-                  Quick Settings
+                  {t("quickSettings")}
                 </span>
 
                 {/* Audience */}
                 <div>
                   <div style={{ fontFamily: mono, fontSize: 7.5, letterSpacing: "0.07em", textTransform: "uppercase", color: T3, marginBottom: 5 }}>
-                    Audience
+                    {t("audience")}
                   </div>
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 4 }}>
                     {AUDIENCE_OPTIONS.map(a => (
@@ -966,7 +968,7 @@ export function BuildMode() {
                           onChange={e => setCustomText(e.target.value)}
                           onBlur={() => { if (customText.trim()) handleAudienceChange("Custom"); }}
                           rows={2}
-                          placeholder="Describe your audience…"
+                          placeholder={t("describeAudience")}
                           style={{
                             width: "100%", marginTop: 6,
                             fontFamily: mono, fontSize: 9.5, color: T2,
@@ -987,7 +989,7 @@ export function BuildMode() {
                 {/* Tone */}
                 <div>
                   <div style={{ fontFamily: mono, fontSize: 7.5, letterSpacing: "0.07em", textTransform: "uppercase", color: T3, marginBottom: 5 }}>
-                    Tone
+                    {t("tone")}
                   </div>
                   <div style={{ display: "flex", border: `1px solid ${BORDER}`, overflow: "hidden" }}>
                     {TONE_OPTIONS.map((t, i) => (
@@ -1012,11 +1014,11 @@ export function BuildMode() {
 
                 {/* Narration */}
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                  <span style={{ fontFamily: mono, fontSize: 9.5, color: T2 }}>Narration</span>
+                  <span style={{ fontFamily: mono, fontSize: 9.5, color: T2 }}>{t("narration")}</span>
                   <button
                     onClick={handleNarrationToggle}
                     style={{ background: "none", border: "none", padding: 0, cursor: "pointer" }}
-                    aria-label="Toggle narration"
+                    aria-label={t("toggleNarration")}
                   >
                     <div style={{ position: "relative", width: 28, height: 15 }}>
                       <div style={{ position: "absolute", inset: 0, borderRadius: 999, background: buildNarration ? NAVY : BORDER, transition: "background 150ms" }} />

@@ -169,5 +169,35 @@
     "engineHint": "Engine drives how this slide's chart is rendered.",
     "presentationTheme": "Presentation theme",
     "themeHint": "Theme restyles the whole deck — fonts, colour, shape."
+  },
+  "Build": {
+    "breadcrumbPresentation": "Presentation",
+    "breadcrumbBuild": "Build",
+    "slideCount": "{count, plural, one {# slide} other {# slides}}",
+    "emptyNoSlides": "No slides — go back to Presentation Mode and add data sets.",
+    "selectSlide": "Select a slide below.",
+    "fitToScreen": "Fit to screen",
+    "speakerNoteTone": "Speaker Note — {tone}",
+    "play": "Play",
+    "present": "PRESENT",
+    "export": "EXPORT",
+    "download": "Download {fmt}",
+    "share": "SHARE",
+    "generateLink": "Generate link",
+    "copied": "Copied!",
+    "copy": "Copy",
+    "expires": "Expires in 7 days",
+    "quickSettings": "Quick Settings",
+    "audience": "Audience",
+    "describeAudience": "Describe your audience…",
+    "tone": "Tone",
+    "narration": "Narration",
+    "toggleNarration": "Toggle narration"
+  },
+  "Present": {
+    "notes": "NOTES",
+    "noData": "No data",
+    "speakerNotes": "Speaker Notes",
+    "noNotes": "No speaker notes for this slide."
   }
 }

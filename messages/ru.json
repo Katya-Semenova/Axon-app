@@ -169,5 +169,35 @@
     "engineHint": "Движок определяет, как рисуется график этого слайда.",
     "presentationTheme": "Тема презентации",
     "themeHint": "Тема меняет оформление всей деки — шрифты, цвет, форму."
+  },
+  "Build": {
+    "breadcrumbPresentation": "Презентация",
+    "breadcrumbBuild": "Сборка",
+    "slideCount": "{count, plural, one {# слайд} few {# слайда} many {# слайдов} other {# слайдов}}",
+    "emptyNoSlides": "Нет слайдов — вернитесь в режим презентации и добавьте дата-сеты.",
+    "selectSlide": "Выберите слайд ниже.",
+    "fitToScreen": "Вписать в экран",
+    "speakerNoteTone": "Речь докладчика — {tone}",
+    "play": "Воспроизвести",
+    "present": "ПОКАЗ",
+    "export": "ЭКСПОРТ",
+    "download": "Скачать {fmt}",
+    "share": "ПОДЕЛИТЬСЯ",
+    "generateLink": "Создать ссылку",
+    "copied": "Скопировано!",
+    "copy": "Копировать",
+    "expires": "Истекает через 7 дней",
+    "quickSettings": "Быстрые настройки",
+    "audience": "Аудитория",
+    "describeAudience": "Опишите вашу аудиторию…",
+    "tone": "Тон",
+    "narration": "Озвучка",
+    "toggleNarration": "Переключить озвучку"
+  },
+  "Present": {
+    "notes": "ЗАМЕТКИ",
+    "noData": "Нет данных",
+    "speakerNotes": "Заметки докладчика",
+    "noNotes": "Для этого слайда нет заметок докладчика."
   }
 }

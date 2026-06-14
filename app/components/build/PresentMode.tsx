@@ -6,6 +6,7 @@ import { ChartFill } from "../ChartFill";
 import { useWorkspaceStore } from "@/lib/store";
 import type { Slide } from "@/lib/types";
 import { T3 } from "../ui/tokens";
+import { useTranslations } from "next-intl";
 
 const STYLE_FONT: Record<string, string> = {
   Modern:    "Inter, sans-serif",
@@ -31,6 +32,7 @@ export function PresentMode({
   onToggleNotes: () => void;
 }) {
   const dataSetsById = useWorkspaceStore(s => s.dataSetsById);
+  const t = useTranslations("Present");
 
   const goNext = useCallback(() => {
     if (currentIdx < slides.length - 1) onChangeIdx(currentIdx + 1);
@@ -100,7 +102,7 @@ export function PresentMode({
               background: "none", border: "none", cursor: "pointer", transition: "color 150ms",
             }}
           >
-            NOTES
+            {t("notes")}
           </button>
           <button
             onClick={onExit}
@@ -195,7 +197,7 @@ export function PresentMode({
                   height: "100%", display: "flex", alignItems: "center", justifyContent: "center",
                   fontFamily: mono, fontSize: 12, color: "#A8A8A2",
                 }}>
-                  No data
+                  {t("noData")}
                 </div>
               )}
             </div>
@@ -240,10 +242,10 @@ export function PresentMode({
           >
             <div style={{ padding: "14px 72px" }}>
               <div style={{ fontFamily: mono, fontSize: 9, color: "rgba(255,255,255,0.3)", marginBottom: 7, letterSpacing: "0.09em", textTransform: "uppercase" }}>
-                Speaker Notes
+                {t("speakerNotes")}
               </div>
               <div style={{ fontSize: 13.5, color: "rgba(255,255,255,0.55)", lineHeight: 1.65, fontFamily: "Inter, sans-serif" }}>
-                {slide.narrative || "No speaker notes for this slide."}
+                {slide.narrative || t("noNotes")}
               </div>
             </div>
           </motion.div>
