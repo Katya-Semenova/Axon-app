@@ -37,9 +37,12 @@
    `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy` (camera/mic/geolocation off).
    CSP — отложен (для Next нужен nonce, иначе ломает inline-стили). Проверить `curl -I` после деплоя.
 
-### ⚠️ Backlog (не блокеры)
-2. **C — убрать `dangerouslySetInnerHTML`** в `app/storybook/page.tsx:225` (`DecisionList`).
-   Сейчас безопасно (только статичные строки), но паттерн лучше заменить — гигиена на будущее.
+2. **C — `dangerouslySetInnerHTML` убран** (2026-06-14): `DecisionList` переведён на `ReactNode[]`,
+   строки с `<code>` оформлены как JSX. Сборка зелёная. Паттерн в коде больше не встречается.
+
+### ⚠️ Backlog (осознанно отложено, не блокер)
+- **CSP-заголовок** — требует nonce для Next (иначе ломает inline-стили, которых в Axon много).
+  Вернуться при работе с бэкендом/строгой настройкой. Пока остальные заголовки + HSTS закрывают базу.
 
 ## Вывод
 Axon — чистый фронтенд без секретов, БД, auth и серверного ввода. Класс атак,

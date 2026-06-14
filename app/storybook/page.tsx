@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import {
   NAVY, GOLD, BORDER, T2, T3,
   SURFACE, SURFACE_MUTED, CANVAS_BG,
@@ -217,12 +217,14 @@ function PropsTable({ rows }: { rows: { name: string; type: string; desc: string
   );
 }
 
-function DecisionList({ items }: { items: string[] }) {
+const MONO = "'JetBrains Mono', monospace";
+
+function DecisionList({ items }: { items: ReactNode[] }) {
   return (
     <div style={{ marginTop: 20 }}>
       <Label>Design decisions</Label>
       <ul style={{ margin: 0, padding: "0 0 0 16px", color: T2, fontSize: 12.5, lineHeight: 1.9 }}>
-        {items.map((item, i) => <li key={i} dangerouslySetInnerHTML={{ __html: item }} />)}
+        {items.map((item, i) => <li key={i}>{item}</li>)}
       </ul>
     </div>
   );
@@ -494,10 +496,10 @@ function ModeTabsSection() {
 // Canvas overlay — bordered, blurred bg, drop shadow
 <ModeTabs variant="floating" />`} />
       <DecisionList items={[
-        '<code style="font-family:\'JetBrains Mono\',monospace">border-radius: 0</code> (square) — intentional, matches editorial grid aesthetic',
+        <><code style={{ fontFamily: MONO }}>border-radius: 0</code> (square) — intentional, matches editorial grid aesthetic</>,
         "JetBrains Mono 10.5px, uppercase, 0.07em letter-spacing on all tabs",
         "Active tab: navy-900 fill with surface text; inactive: transparent with T2",
-        "Sizing matches &ldquo;+ New data set&rdquo; button (15px&nbsp;20px padding) per Art Director review",
+        "Sizing matches “+ New data set” button (15px 20px padding) per Art Director review",
       ]} />
     </>
   );
@@ -517,7 +519,7 @@ function ModeToggleSection() {
 
 <ModeToggle />`} />
       <DecisionList items={[
-        '<code style="font-family:\'JetBrains Mono\',monospace">border-radius: 999px</code> — deliberately different from ModeTabs (conversational vs. structural)',
+        <><code style={{ fontFamily: MONO }}>border-radius: 999px</code> — deliberately different from ModeTabs (conversational vs. structural)</>,
         "Pill-shaped container with 2px inner padding, 6px 16px per button",
         "No border on individual buttons; outer container has border-border",
         "Shares the same store as ModeTabs — switching one switches both",
@@ -556,7 +558,7 @@ const [chartType, setChartType] = useState<ChartType>("Treemap");
         { name: "mounted",  type: "boolean (default true)",  desc: "gates the portal; pass false during SSR edge cases" },
       ]} />
       <DecisionList items={[
-        "Portaled to <code>document.body</code> — the canvas has <code>overflow:hidden</code> which would clip a non-portaled menu",
+        <>Portaled to <code style={{ fontFamily: MONO }}>document.body</code> — the canvas has <code style={{ fontFamily: MONO }}>overflow:hidden</code> which would clip a non-portaled menu</>,
         "JetBrains Mono 11px, SURFACE_RAISE bg, navy active text — same pattern as all system dropdowns",
         "Hover state via inline onMouseEnter/onMouseLeave (not CSS class) to avoid conflicts with canvas pointer events",
       ]} />
