@@ -1,6 +1,7 @@
 "use client";
 
 import type { Insight } from "@/lib/types";
+import { useTranslations } from "next-intl";
 import { GOLD, NAVY, BORDER, T2, T3, INSIGHT_CARD_BG } from "../ui/tokens";
 
 export interface InsightCardProps {
@@ -16,17 +17,18 @@ export function InsightCard({
 }: InsightCardProps) {
   const padded = String(insight.serial).padStart(2, "0");
   const mono = "'JetBrains Mono', monospace";
+  const t = useTranslations("Canvas");
 
   /* Compact one-line preview — avoids tall border-boxes that push cards apart. */
   const previewText = (() => {
     if (insight.kind === "data" && insight.data)
-      return `${insight.data.rows.length} rows × ${insight.data.columns.length + 1} cols`;
+      return t("insight.previewRows", { rows: insight.data.rows.length, cols: insight.data.columns.length + 1 });
     if (insight.kind === "text" && insight.text)
       return insight.text.slice(0, 60) + (insight.text.length > 60 ? "…" : "");
     if (insight.kind === "sql" && insight.sql)
       return insight.sql.split("\n")[0].slice(0, 60);
     if (insight.kind === "code" && insight.code)
-      return `${insight.code.language} · ${insight.code.source.split("\n").length} lines`;
+      return t("insight.previewCode", { lang: insight.code.language, lines: insight.code.source.split("\n").length });
     return "—";
   })();
 
@@ -46,7 +48,7 @@ export function InsightCard({
       {/* Right output port */}
       <div
         data-port="output"
-        title="Drag to connect to a Data Set"
+        title={t("insight.outputPort")}
         className="absolute top-1/2"
         style={{
           right: -5, width: 10, height: 10, transform: "translateY(-50%)", zIndex: 10,
@@ -83,7 +85,7 @@ export function InsightCard({
         </div>
         <button
           onClick={(e) => { e.stopPropagation(); onExpand(); }}
-          title="Expand"
+          title={t("insight.expand")}
           style={{
             width: 18, height: 18, display: "flex", alignItems: "center", justifyContent: "center",
             color: T3, border: `1px solid ${BORDER}`, borderRadius: 2, background: "transparent",
@@ -123,9 +125,9 @@ export function InsightCard({
 
       {/* Footer */}
       <div className="flex items-center justify-between border-t" style={{ borderColor: BORDER, paddingTop: 4 }}>
-        <span style={{ fontFamily: mono, fontSize: 9, color: T3 }}>Conf {insight.confPct}%</span>
+        <span style={{ fontFamily: mono, fontSize: 9, color: T3 }}>{t("insight.conf", { pct: insight.confPct })}</span>
         {isConnecting && (
-          <span style={{ fontFamily: mono, fontSize: 9, color: GOLD }}>connecting…</span>
+          <span style={{ fontFamily: mono, fontSize: 9, color: GOLD }}>{t("insight.connecting")}</span>
         )}
       </div>
     </div>

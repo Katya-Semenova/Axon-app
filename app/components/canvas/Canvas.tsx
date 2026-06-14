@@ -3,6 +3,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { roundTo } from "@/lib/charts";
 import { useWorkspaceStore } from "@/lib/store";
+import { useTranslations } from "next-intl";
 import type { Insight, DataSet } from "@/lib/types";
 import { InsightCard } from "./InsightCard";
 import { DataSetCard } from "./DataSetCard";
@@ -47,6 +48,7 @@ export function Canvas({ modeSwitcher }: { modeSwitcher?: React.ReactNode }) {
   const redo    = useWorkspaceStore(s => s.redo);
   const canUndo = useWorkspaceStore(s => s.canUndo());
   const canRedo = useWorkspaceStore(s => s.canRedo());
+  const t       = useTranslations("Canvas");
 
   const [isPanning,    setIsPanning]    = useState(false);
   const [draggingNode, setDraggingNode] = useState<string | null>(null);
@@ -215,20 +217,20 @@ export function Canvas({ modeSwitcher }: { modeSwitcher?: React.ReactNode }) {
         style={{ background: SURFACE }}
       >
         <div className="flex items-center gap-[10px]">
-          <span className="font-mono text-[10.5px] uppercase tracking-[0.1em] text-t3">Canvas</span>
+          <span className="font-mono text-[10.5px] uppercase tracking-[0.1em] text-t3">{t("toolbar.canvas")}</span>
           <span className="font-mono text-[10.5px] text-t3">
-            {insights.length} insights · {dataSets.length} data sets
+            {t("toolbar.counts", { insights: insights.length, datasets: dataSets.length })}
           </span>
         </div>
         <div className="flex justify-center">{modeSwitcher}</div>
         <div className="flex items-center justify-end gap-2">
-          <button onClick={undo} disabled={!canUndo} title="Undo"
+          <button onClick={undo} disabled={!canUndo} title={t("toolbar.undo")}
             className="w-[28px] h-[28px] rounded-sm border border-border flex items-center justify-center text-t2 disabled:opacity-30 hover:border-[#B89548] hover:text-[#B89548] transition-colors">
             <svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
               <path d="M2 5h6a4 4 0 010 8H4M2 5l3-3M2 5l3 3" />
             </svg>
           </button>
-          <button onClick={redo} disabled={!canRedo} title="Redo"
+          <button onClick={redo} disabled={!canRedo} title={t("toolbar.redo")}
             className="w-[28px] h-[28px] rounded-sm border border-border flex items-center justify-center text-t2 disabled:opacity-30 hover:border-[#B89548] hover:text-[#B89548] transition-colors">
             <svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
               <path d="M12 5H6a4 4 0 000 8h4M12 5l-3-3M12 5l-3 3" />
@@ -237,7 +239,7 @@ export function Canvas({ modeSwitcher }: { modeSwitcher?: React.ReactNode }) {
           <div className="w-px h-4 shrink-0" style={{ background: BORDER }} />
           <button
             onClick={openOnboarding}
-            title="How it works"
+            title={t("toolbar.howItWorks")}
             className="flex items-center gap-1.5 h-[28px] px-3 border border-border text-t2 hover:border-[#B89548] hover:text-[#B89548] transition-colors"
             style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 10.5, letterSpacing: "0.04em", borderRadius: 0 }}
           >
@@ -246,7 +248,7 @@ export function Canvas({ modeSwitcher }: { modeSwitcher?: React.ReactNode }) {
               <path d="M7 10v-.5" />
               <path d="M7 4.5c0-.83.67-1.5 1.5-1.5S10 3.67 10 4.5c0 1-1.5 1.5-1.5 2.5" />
             </svg>
-            How it works
+            {t("toolbar.howItWorks")}
           </button>
         </div>
       </div>
@@ -418,7 +420,7 @@ export function Canvas({ modeSwitcher }: { modeSwitcher?: React.ReactNode }) {
             background: SURFACE, border: `1px solid ${BORDER}`, borderRadius: 4, overflow: "hidden",
           }}
         >
-          <button onClick={() => zoomBy(1.2)} title="Zoom in"
+          <button onClick={() => zoomBy(1.2)} title={t("toolbar.zoomIn")}
             style={{ width: 28, height: 28, display: "flex", alignItems: "center", justifyContent: "center", border: "none", borderRight: `1px solid ${BORDER}`, background: "transparent", cursor: "pointer", color: T2 }}
             onMouseEnter={e => { e.currentTarget.style.background = SURFACE_MUTED; }}
             onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}>
@@ -429,7 +431,7 @@ export function Canvas({ modeSwitcher }: { modeSwitcher?: React.ReactNode }) {
           <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 10, color: T2, padding: "0 8px", minWidth: 42, textAlign: "center" }}>
             {Math.round(canvasTransform.zoom * 100)}%
           </span>
-          <button onClick={() => zoomBy(1 / 1.2)} title="Zoom out"
+          <button onClick={() => zoomBy(1 / 1.2)} title={t("toolbar.zoomOut")}
             style={{ width: 28, height: 28, display: "flex", alignItems: "center", justifyContent: "center", border: "none", borderLeft: `1px solid ${BORDER}`, borderRight: `1px solid ${BORDER}`, background: "transparent", cursor: "pointer", color: T2 }}
             onMouseEnter={e => { e.currentTarget.style.background = SURFACE_MUTED; }}
             onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}>
@@ -437,11 +439,11 @@ export function Canvas({ modeSwitcher }: { modeSwitcher?: React.ReactNode }) {
               <path d="M1 5h8" />
             </svg>
           </button>
-          <button onClick={() => setCanvasTransform({ x: 20, y: 20, zoom: 0.75 })} title="Reset view"
+          <button onClick={() => setCanvasTransform({ x: 20, y: 20, zoom: 0.75 })} title={t("toolbar.resetView")}
             style={{ padding: "0 10px", height: 28, display: "flex", alignItems: "center", border: "none", background: "transparent", cursor: "pointer", fontFamily: "'JetBrains Mono',monospace", fontSize: 10, color: T2 }}
             onMouseEnter={e => { e.currentTarget.style.background = SURFACE_MUTED; }}
             onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}>
-            Reset
+            {t("toolbar.reset")}
           </button>
         </div>
 
@@ -453,7 +455,7 @@ export function Canvas({ modeSwitcher }: { modeSwitcher?: React.ReactNode }) {
             color: T3, background: SURFACE, border: `1px solid ${BORDER}`,
             borderRadius: 4, padding: "4px 10px", pointerEvents: "none",
           }}>
-            Click edge to remove connection
+            {t("toolbar.removeEdgeHint")}
           </div>
         )}
       </div>

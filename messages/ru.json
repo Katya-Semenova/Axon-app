@@ -78,5 +78,38 @@
         "alt": "Шаг 5 — Покажите и сдайте"
       }
     }
+  },
+  "Canvas": {
+    "toolbar": {
+      "canvas": "Холст",
+      "counts": "{insights} инсайтов · {datasets} дата-сетов",
+      "undo": "Отменить",
+      "redo": "Повторить",
+      "howItWorks": "Как это работает",
+      "zoomIn": "Приблизить",
+      "zoomOut": "Отдалить",
+      "resetView": "Сбросить вид",
+      "reset": "Сброс",
+      "removeEdgeHint": "Нажмите на связь, чтобы удалить"
+    },
+    "insight": {
+      "expand": "Развернуть",
+      "outputPort": "Потяните, чтобы соединить с дата-сетом",
+      "conf": "Дост. {pct}%",
+      "connecting": "соединяю…",
+      "previewRows": "{rows} строк × {cols} столб.",
+      "previewCode": "{lang} · {lines} строк кода"
+    },
+    "dataset": {
+      "badge": "ДАТА-СЕТ",
+      "inputPort": "Вход — подключите сюда инсайт",
+      "remove": "Удалить дата-сет",
+      "expand": "Развернуть",
+      "emptyHint1": "Подключите инсайт,",
+      "emptyHint2": "чтобы построить график",
+      "rows": "{count, plural, one {# строка} few {# строки} many {# строк} other {# строк}}",
+      "quote": "цитата",
+      "noData": "нет данных"
+    }
   }
 }

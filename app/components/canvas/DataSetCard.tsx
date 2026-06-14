@@ -3,6 +3,7 @@
 import { ChartRenderer } from "../ChartRenderer";
 import { ChartTypeDropdown } from "../ui/ChartTypeDropdown";
 import type { DataSet, ChartType } from "@/lib/types";
+import { useTranslations } from "next-intl";
 import { GOLD, NAVY, BORDER, T2, T3, SURFACE_RAISE, SURFACE_MUTED } from "../ui/tokens";
 
 const mono  = "'JetBrains Mono', monospace";
@@ -34,6 +35,7 @@ export function DataSetCard({
   const isTextOnly = !hasRows && hasText;
   const isEmpty    = !hasRows && !hasText;
   const padded     = String(dataSet.serial).padStart(2, "0");
+  const t          = useTranslations("Canvas");
 
   return (
     <div
@@ -53,7 +55,7 @@ export function DataSetCard({
       {/* Left input port */}
       <div
         data-port="input"
-        title="Input — wire an Insight here"
+        title={t("dataset.inputPort")}
         className="absolute top-1/2"
         style={{
           left: -5, width: 12, height: 12, transform: "translateY(-50%)", zIndex: 10,
@@ -86,7 +88,7 @@ export function DataSetCard({
       {isEmpty && onDelete && (
         <button
           onClick={(e) => { e.stopPropagation(); onDelete(); }}
-          title="Remove data set"
+          title={t("dataset.remove")}
           style={{
             position: "absolute", top: 3, right: 3, width: 16, height: 16,
             display: "flex", alignItems: "center", justifyContent: "center",
@@ -110,7 +112,7 @@ export function DataSetCard({
             fontFamily: mono, fontSize: 7.5, letterSpacing: "0.1em",
             color: NAVY, background: "rgba(27,40,64,0.06)",
             border: `1px solid ${BORDER}`, padding: "1px 5px", borderRadius: 2,
-          }}>DATA SET</span>
+          }}>{t("dataset.badge")}</span>
         </div>
         {hasRows && (
           <ChartTypeDropdown value={dataSet.chartType} onChange={onChartTypeChange} />
@@ -168,7 +170,7 @@ export function DataSetCard({
             <path d="M9 6v3l2 2" />
           </svg>
           <span style={{ fontFamily: mono, fontSize: 9.5, color: T3, textAlign: "center", lineHeight: 1.5 }}>
-            Wire an Insight to<br />generate chart data
+            {t("dataset.emptyHint1")}<br />{t("dataset.emptyHint2")}
           </span>
         </div>
       ) : isTextOnly ? (
@@ -201,11 +203,11 @@ export function DataSetCard({
       {hasRows && (
         <div className="flex items-center justify-between" style={{ paddingBottom: 8 }}>
           <span style={{ fontFamily: mono, fontSize: 10, color: T3 }}>
-            {dataSet.rows.length} rows
+            {t("dataset.rows", { count: dataSet.rows.length })}
           </span>
           <button
             onClick={(e) => { e.stopPropagation(); onExpand(); }}
-            title="Expand"
+            title={t("dataset.expand")}
             style={{
               width: 24, height: 24, display: "flex", alignItems: "center", justifyContent: "center",
               color: T3, border: `1px solid ${BORDER}`, borderRadius: 2, background: "transparent",
@@ -224,10 +226,10 @@ export function DataSetCard({
       {/* Text-only footer */}
       {isTextOnly && (
         <div className="flex items-center justify-between" style={{ paddingBottom: 8 }}>
-          <span style={{ fontFamily: mono, fontSize: 10, color: T3 }}>quote</span>
+          <span style={{ fontFamily: mono, fontSize: 10, color: T3 }}>{t("dataset.quote")}</span>
           <button
             onClick={(e) => { e.stopPropagation(); onExpand(); }}
-            title="Expand"
+            title={t("dataset.expand")}
             style={{
               width: 24, height: 24, display: "flex", alignItems: "center", justifyContent: "center",
               color: T3, border: `1px solid ${BORDER}`, borderRadius: 2, background: "transparent",
@@ -246,10 +248,10 @@ export function DataSetCard({
       {/* Empty state footer */}
       {isEmpty && (
         <div className="flex items-center justify-between" style={{ paddingBottom: 10 }}>
-          <span style={{ fontFamily: mono, fontSize: 10, color: T3 }}>no data</span>
+          <span style={{ fontFamily: mono, fontSize: 10, color: T3 }}>{t("dataset.noData")}</span>
           <button
             onClick={(e) => { e.stopPropagation(); onExpand(); }}
-            title="Expand"
+            title={t("dataset.expand")}
             style={{
               width: 24, height: 24, display: "flex", alignItems: "center", justifyContent: "center",
               color: T3, border: `1px solid ${BORDER}`, borderRadius: 2, background: "transparent",

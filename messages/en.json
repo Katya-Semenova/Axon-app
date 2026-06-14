@@ -78,5 +78,38 @@
         "alt": "Step 5 — Present and deliver"
       }
     }
+  },
+  "Canvas": {
+    "toolbar": {
+      "canvas": "Canvas",
+      "counts": "{insights} insights · {datasets} data sets",
+      "undo": "Undo",
+      "redo": "Redo",
+      "howItWorks": "How it works",
+      "zoomIn": "Zoom in",
+      "zoomOut": "Zoom out",
+      "resetView": "Reset view",
+      "reset": "Reset",
+      "removeEdgeHint": "Click edge to remove connection"
+    },
+    "insight": {
+      "expand": "Expand",
+      "outputPort": "Drag to connect to a Data Set",
+      "conf": "Conf {pct}%",
+      "connecting": "connecting…",
+      "previewRows": "{rows} rows × {cols} cols",
+      "previewCode": "{lang} · {lines} lines"
+    },
+    "dataset": {
+      "badge": "DATA SET",
+      "inputPort": "Input — wire an Insight here",
+      "remove": "Remove data set",
+      "expand": "Expand",
+      "emptyHint1": "Wire an Insight to",
+      "emptyHint2": "generate chart data",
+      "rows": "{count, plural, one {# row} other {# rows}}",
+      "quote": "quote",
+      "noData": "no data"
+    }
   }
 }
