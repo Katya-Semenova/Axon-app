@@ -137,5 +137,16 @@
       "fieldFilter": "Filter",
       "fieldAccent": "Accent"
     }
+  },
+  "SlideTray": {
+    "traySlides": "Slides tray",
+    "trayDataSets": "Data set tray",
+    "emptySlide": "Empty slide",
+    "dropHere": "Drop here",
+    "dropDataSet": "Drop a Data Set",
+    "toPopulate": "to populate",
+    "noChartData": "no chart data",
+    "removeSlide": "Remove slide",
+    "newDataSet": "+ NEW DATA SET"
   }
 }

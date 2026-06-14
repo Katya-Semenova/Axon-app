@@ -137,5 +137,16 @@
       "fieldFilter": "Фильтр",
       "fieldAccent": "Акцент"
     }
+  },
+  "SlideTray": {
+    "traySlides": "Лоток слайдов",
+    "trayDataSets": "Лоток дата-сетов",
+    "emptySlide": "Пустой слайд",
+    "dropHere": "Отпустите здесь",
+    "dropDataSet": "Перетащите дата-сет",
+    "toPopulate": "чтобы заполнить",
+    "noChartData": "нет данных для графика",
+    "removeSlide": "Удалить слайд",
+    "newDataSet": "+ НОВЫЙ ДАТА-СЕТ"
   }
 }

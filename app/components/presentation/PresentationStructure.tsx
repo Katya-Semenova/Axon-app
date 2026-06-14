@@ -6,6 +6,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { useWorkspaceStore } from "@/lib/store";
 import type { Slide, VisualStyle } from "@/lib/types";
 import { MiniChart } from "../MiniChart";
+import { useTranslations } from "next-intl";
 import { BORDER, NAVY, GOLD, T3, SURFACE_RAISE } from "../ui/tokens";
 
 const mono = "'JetBrains Mono', monospace";
@@ -43,6 +44,7 @@ function SlideSlot({ slide, isActive, onClick, onDelete, isDraggingSlide }: {
   isDraggingSlide: boolean;
 }) {
   const [hovered, setHovered] = useState(false);
+  const t = useTranslations("SlideTray");
   const dataSetsById = useWorkspaceStore(s => s.dataSetsById);
   const ds           = slide.dataSetIds[0] ? dataSetsById[slide.dataSetIds[0]] : null;
   const isEmpty      = !ds || ds.rows.length === 0;
@@ -56,7 +58,7 @@ function SlideSlot({ slide, isActive, onClick, onDelete, isDraggingSlide }: {
   });
 
   const serial   = String(slide.serial).padStart(2, "0");
-  const headline = ds ? (ds.title.length > 28 ? ds.title.slice(0, 28) + "…" : ds.title) : "Empty slide";
+  const headline = ds ? (ds.title.length > 28 ? ds.title.slice(0, 28) + "…" : ds.title) : t("emptySlide");
   const bg       = STYLE_BG[slide.visualStyle];
   const headFont = STYLE_HEADLINE_FONT[slide.visualStyle];
 
@@ -124,9 +126,9 @@ function SlideSlot({ slide, isActive, onClick, onDelete, isDraggingSlide }: {
             /* No dataset linked yet */
             <>
               <text x="58" y="36" textAnchor="middle" fontSize="6" fill={T3} fontFamily={mono} fillOpacity="0.7">
-                {showDropHighlight ? "Drop here" : "Drop a Data Set"}
+                {showDropHighlight ? t("dropHere") : t("dropDataSet")}
               </text>
-              <text x="58" y="45" textAnchor="middle" fontSize="5.5" fill={T3} fontFamily={mono} fillOpacity="0.5">to populate</text>
+              <text x="58" y="45" textAnchor="middle" fontSize="5.5" fill={T3} fontFamily={mono} fillOpacity="0.5">{t("toPopulate")}</text>
             </>
           ) : ds.rows.length === 0 ? (
             /* Dataset linked but no chart rows — Quote slide shows narrative snippet */
@@ -154,7 +156,7 @@ function SlideSlot({ slide, isActive, onClick, onDelete, isDraggingSlide }: {
                 </foreignObject>
               </>
             ) : (
-              <text x="58" y="50" textAnchor="middle" fontSize="5.5" fill={T3} fontFamily={mono} fillOpacity="0.5">no chart data</text>
+              <text x="58" y="50" textAnchor="middle" fontSize="5.5" fill={T3} fontFamily={mono} fillOpacity="0.5">{t("noChartData")}</text>
             )
           ) : (
             /* Fully populated */
@@ -169,7 +171,7 @@ function SlideSlot({ slide, isActive, onClick, onDelete, isDraggingSlide }: {
       <button
         onClick={(e) => { e.stopPropagation(); onDelete(); }}
         onPointerDown={(e) => e.stopPropagation()}
-        title="Remove slide"
+        title={t("removeSlide")}
         style={{
           position: "absolute", top: 3, right: 3, width: 15, height: 15,
           display: "flex", alignItems: "center", justifyContent: "center",
@@ -195,6 +197,7 @@ function SlideSlot({ slide, isActive, onClick, onDelete, isDraggingSlide }: {
 function NewDataSetSlot({ onClick }: { onClick: () => void }) {
   const [hovered, setHovered] = useState(false);
   const accent = hovered ? GOLD : T3;
+  const t = useTranslations("SlideTray");
 
   return (
     <div
@@ -215,7 +218,7 @@ function NewDataSetSlot({ onClick }: { onClick: () => void }) {
         <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
           <path d="M6 2v8M2 6h8" />
         </svg>
-        <span style={{ fontFamily: mono, fontSize: 8, letterSpacing: "0.08em" }}>+ NEW DATA SET</span>
+        <span style={{ fontFamily: mono, fontSize: 8, letterSpacing: "0.08em" }}>{t("newDataSet")}</span>
       </div>
     </div>
   );
@@ -229,6 +232,7 @@ export function PresentationStructure({ insertAt, isDraggingSlide }: {
   isDraggingSlide: boolean;
 }) {
   const mode          = useWorkspaceStore(s => s.mode);
+  const t             = useTranslations("SlideTray");
   const slideOrder    = useWorkspaceStore(s => s.slideOrder);
   const slidesById    = useWorkspaceStore(s => s.slidesById);
   const dataSetsById  = useWorkspaceStore(s => s.dataSetsById);
@@ -273,7 +277,7 @@ export function PresentationStructure({ insertAt, isDraggingSlide }: {
         {/* Header */}
         <div className="flex items-center gap-2 shrink-0 px-5 pt-2 pb-1">
           <span style={{ fontFamily: mono, fontSize: 10, letterSpacing: "0.1em", textTransform: "uppercase", color: T3 }}>
-            {mode === "presentation" ? "Slides tray" : "Data set tray"}
+            {mode === "presentation" ? t("traySlides") : t("trayDataSets")}
           </span>
           <span style={{ fontFamily: mono, fontSize: 10, color: T3, opacity: 0.55, userSelect: "none" }}>·</span>
           <span style={{ fontFamily: mono, fontSize: 10, color: T3 }}>{slides.length}</span>
