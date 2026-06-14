@@ -1,6 +1,7 @@
 "use client";
 
 import { useWorkspaceStore } from "@/lib/store";
+import { useTranslations } from "next-intl";
 import { NAVY, BORDER, T2 } from "./tokens";
 
 /**
@@ -15,13 +16,14 @@ import { NAVY, BORDER, T2 } from "./tokens";
 export function ModeToggle() {
   const mode    = useWorkspaceStore(s => s.mode);
   const setMode = useWorkspaceStore(s => s.setMode);
+  const t       = useTranslations("ModeToggle");
 
   const isData = mode === "data";
 
   return (
     <div
       role="tablist"
-      aria-label="Workspace mode"
+      aria-label={t("ariaLabel")}
       style={{
         display: "inline-flex",
         alignItems: "center",
@@ -51,7 +53,7 @@ export function ModeToggle() {
           textTransform: "uppercase",
         }}
       >
-        Data Mode
+        {t("data")}
       </button>
       <button
         role="tab"
@@ -69,7 +71,7 @@ export function ModeToggle() {
           textTransform: "uppercase",
         }}
       >
-        Presentation
+        {t("presentation")}
       </button>
     </div>
   );

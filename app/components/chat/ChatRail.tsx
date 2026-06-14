@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { useWorkspaceStore } from "@/lib/store";
+import { useTranslations } from "next-intl";
 import { BORDER, NAVY, T2, T3, RADIUS_BUBBLE } from "../ui/tokens";
 import { Textarea } from "../ui/Textarea";
 import { Chip } from "../ui/Chip";
@@ -37,6 +38,7 @@ export function ChatRail({ onBack }: { onBack: () => void }) {
 
   const [draftText, setDraftText] = useState("");
   const isBuild = mode === "build";
+  const t = useTranslations("Chat");
 
   /* ── Collapsed state: narrow strip with only the expand chevron ── */
   if (chatCollapsed) {
@@ -47,7 +49,7 @@ export function ChatRail({ onBack }: { onBack: () => void }) {
       >
         <button
           onClick={toggleChat}
-          title="Expand chat"
+          title={t("expandChat")}
           className="flex items-center justify-center rounded-sm transition-colors duration-200"
           style={{ width: 28, height: 28, color: T3, border: `1px solid ${BORDER}` }}
           onMouseEnter={e => { e.currentTarget.style.color = "#0A0A0A"; e.currentTarget.style.borderColor = NAVY; }}
@@ -67,7 +69,7 @@ export function ChatRail({ onBack }: { onBack: () => void }) {
       <div className="flex items-center justify-between px-5 border-b border-border shrink-0 h-[64px]">
         <button
           onClick={onBack}
-          title="Return to home"
+          title={t("returnHome")}
           className="font-mono text-[13px] font-medium tracking-[0.14em] hover:underline transition-all duration-150"
           style={{ background: "none", border: "none", padding: 0, cursor: "pointer" }}
         >
@@ -76,7 +78,7 @@ export function ChatRail({ onBack }: { onBack: () => void }) {
         {/* Collapse chevron */}
         <button
           onClick={toggleChat}
-          title="Collapse chat"
+          title={t("collapseChat")}
           className="flex items-center justify-center rounded-sm transition-colors duration-200"
           style={{ width: 24, height: 24, color: T3, border: `1px solid ${BORDER}` }}
           onMouseEnter={e => { e.currentTarget.style.color = "#0A0A0A"; e.currentTarget.style.borderColor = NAVY; }}
@@ -91,7 +93,7 @@ export function ChatRail({ onBack }: { onBack: () => void }) {
       {/* File chips — only in non-build modes */}
       {!isBuild && (
         <div className="px-5 pb-3 pt-4">
-          <div className="font-mono text-[10.5px] uppercase tracking-[0.1em] text-t3 mb-4">AI Agent Chat</div>
+          <div className="font-mono text-[10.5px] uppercase tracking-[0.1em] text-t3 mb-4">{t("agentChat")}</div>
           <div className="flex flex-wrap gap-[6px] mb-2">
             {["stripe_prod.sql", "analytics_dw.sql", "events_log.db"].map((f) => (
               <Chip key={f} icon={
@@ -106,7 +108,7 @@ export function ChatRail({ onBack }: { onBack: () => void }) {
 
       {isBuild && (
         <div className="px-5 pt-4 pb-2 shrink-0">
-          <div className="font-mono text-[10.5px] uppercase tracking-[0.1em] text-t3">Build Chat</div>
+          <div className="font-mono text-[10.5px] uppercase tracking-[0.1em] text-t3">{t("buildChat")}</div>
         </div>
       )}
 
@@ -172,7 +174,7 @@ export function ChatRail({ onBack }: { onBack: () => void }) {
                     style={{ animationDelay: `${i * 0.2}s` }} />
                 ))}
               </div>
-              Generating insights…
+              {t("generating")}
             </div>
           </>
         )}
@@ -194,7 +196,7 @@ export function ChatRail({ onBack }: { onBack: () => void }) {
                 }
               }}
               rows={2}
-              placeholder="Refine the presentation…"
+              placeholder={t("placeholderRefine")}
               className="flex-1 min-h-[54px] max-h-[120px]"
             />
             <button
@@ -206,7 +208,7 @@ export function ChatRail({ onBack }: { onBack: () => void }) {
               }}
               className="w-[34px] h-[34px] rounded-pill flex items-center justify-center shrink-0 hover:opacity-85 transition-opacity duration-200"
               style={{ background: NAVY, color: "#F5F2EA" }}
-              aria-label="Send"
+              aria-label={t("send")}
             >
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M7 1v12M1 7l6-6 6 6" />
@@ -215,11 +217,11 @@ export function ChatRail({ onBack }: { onBack: () => void }) {
           </>
         ) : (
           <>
-            <ChatTextarea placeholder="Ask anything about your data…" />
+            <ChatTextarea placeholder={t("placeholderData")} />
             <button
               className="w-[34px] h-[34px] rounded-pill flex items-center justify-center shrink-0 hover:opacity-85 transition-opacity duration-200"
               style={{ background: NAVY, color: "#F5F2EA" }}
-              aria-label="Send"
+              aria-label={t("send")}
             >
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M7 1v12M1 7l6-6 6 6" />

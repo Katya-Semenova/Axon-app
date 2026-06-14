@@ -3,41 +3,18 @@
 import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import { NAVY, GOLD, SURFACE_RAISE, BORDER, T2, NAVY_300 } from "./tokens";
+import { useTranslations } from "next-intl";
 
 const STORAGE_KEY = "axon_onboarding_done";
 const OPEN_EVENT  = "axon:open-onboarding";
 
-const STEPS = [
-  {
-    src: "/onboarding/onboarding-1.png",
-    alt: "Step 1 — Drop your data",
-    title: "Drop your data.",
-    description: "Export as PPTX, PDF, live link. Present in minutes, not days.",
-  },
-  {
-    src: "/onboarding/onboarding-2.png",
-    alt: "Step 2 — The AI agent thinks",
-    title: "The AI agent thinks.",
-    description: "It reads tables, finds patterns, surfaces what matters.",
-  },
-  {
-    src: "/onboarding/onboarding-3.png",
-    alt: "Step 3 — Insights connect",
-    title: "Insights connect.",
-    description: "The agent groups findings into datasets, ready to visualize.",
-  },
-  {
-    src: "/onboarding/onboarding-4.png",
-    alt: "Step 4 — Stories visualize themselves",
-    title: "Stories visualize themselves.",
-    description: "Export as PPTX, PDF, live link. Present in minutes, not days.",
-  },
-  {
-    src: "/onboarding/onboarding-5.png",
-    alt: "Step 5 — Present and deliver",
-    title: "Present and deliver.",
-    description: "Export. Share. Ship the story before the meeting starts.",
-  },
+// Только пути к картинкам; тексты шагов — в словарях (namespace Onboarding.steps.N).
+const STEP_IMAGES = [
+  "/onboarding/onboarding-1.png",
+  "/onboarding/onboarding-2.png",
+  "/onboarding/onboarding-3.png",
+  "/onboarding/onboarding-4.png",
+  "/onboarding/onboarding-5.png",
 ];
 
 /* Call from anywhere to re-open the tour (e.g. NavBar "How it works" link). */
@@ -50,6 +27,7 @@ export function openOnboarding() {
 export function OnboardingModal() {
   const [open, setOpen]   = useState(false);
   const [step, setStep]   = useState(0);
+  const t = useTranslations("Onboarding");
 
   /* Auto-show on first visit. */
   useEffect(() => {
@@ -75,20 +53,20 @@ export function OnboardingModal() {
   }, []);
 
   const next = useCallback(() => {
-    if (step < STEPS.length - 1) setStep(s => s + 1);
+    if (step < STEP_IMAGES.length - 1) setStep(s => s + 1);
     else dismiss();
   }, [step, dismiss]);
 
   if (!open) return null;
 
-  const isLast = step === STEPS.length - 1;
+  const isLast = step === STEP_IMAGES.length - 1;
 
   return (
     /* Backdrop */
     <div
       role="dialog"
       aria-modal="true"
-      aria-label="Onboarding tour"
+      aria-label={t("ariaTour")}
       className="fixed inset-0 z-[9999] flex items-center justify-center"
       style={{ background: "rgba(27,40,64,0.55)", backdropFilter: "blur(4px)" }}
       onClick={(e) => { if (e.target === e.currentTarget) dismiss(); }}
@@ -106,7 +84,7 @@ export function OnboardingModal() {
         {/* Close ✕ */}
         <button
           onClick={dismiss}
-          aria-label="Close tour"
+          aria-label={t("ariaClose")}
           className="absolute top-4 right-4 z-10 flex items-center justify-center w-7 h-7 transition-opacity hover:opacity-70"
           style={{ color: NAVY_300 }}
         >
@@ -120,8 +98,8 @@ export function OnboardingModal() {
         <div className="flex flex-col items-center px-7 pt-8 pb-8 gap-3">
           {/* next/image: авто WebP/AVIF + адаптивный размер (мобилка не грузит 1064px-PNG) */}
           <Image
-            src={STEPS[step].src}
-            alt={STEPS[step].alt}
+            src={STEP_IMAGES[step]}
+            alt={t(`steps.${step + 1}.alt`)}
             width={1064}
             height={760}
             sizes="(max-width: 480px) 90vw, 392px"
@@ -131,10 +109,10 @@ export function OnboardingModal() {
 
           <div className="w-full text-center space-y-1">
             <h3 className="font-display text-[1.75rem] text-[#1A2742]">
-              {STEPS[step].title}
+              {t(`steps.${step + 1}.title`)}
             </h3>
             <p className="font-sans text-[13px] text-gray-500 leading-[1.55]">
-              {STEPS[step].description}
+              {t(`steps.${step + 1}.description`)}
             </p>
           </div>
         </div>
@@ -146,11 +124,11 @@ export function OnboardingModal() {
         >
           {/* Step dots */}
           <div className="flex items-center gap-1.5">
-            {STEPS.map((_, i) => (
+            {STEP_IMAGES.map((_, i) => (
               <button
                 key={i}
                 onClick={() => setStep(i)}
-                aria-label={`Go to step ${i + 1}`}
+                aria-label={t("ariaGoToStep", { n: i + 1 })}
                 style={{
                   width: i === step ? 18 : 6,
                   height: 6,
@@ -174,7 +152,7 @@ export function OnboardingModal() {
                 className="font-mono text-[11.5px] transition-opacity hover:opacity-70"
                 style={{ color: T2, background: "none", border: "none", cursor: "pointer", padding: "6px 0" }}
               >
-                Skip
+                {t("skip")}
               </button>
             )}
             <button
@@ -190,9 +168,9 @@ export function OnboardingModal() {
                 letterSpacing: "0.04em",
               }}
             >
-              {isLast ? "Get started" : (
+              {isLast ? t("getStarted") : (
                 <>
-                  Next
+                  {t("next")}
                   <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M2 5h6M5.5 2.5 8 5l-2.5 2.5" />
                   </svg>

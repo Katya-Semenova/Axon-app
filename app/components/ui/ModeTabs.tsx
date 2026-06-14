@@ -1,6 +1,7 @@
 "use client";
 
 import { useWorkspaceStore } from "@/lib/store";
+import { useTranslations } from "next-intl";
 import { NAVY, BORDER, T2 } from "./tokens";
 
 /**
@@ -17,13 +18,14 @@ import { NAVY, BORDER, T2 } from "./tokens";
 export function ModeTabs({ variant = "floating" }: { variant?: "floating" | "bar" }) {
   const mode    = useWorkspaceStore(s => s.mode);
   const setMode = useWorkspaceStore(s => s.setMode);
+  const t       = useTranslations("ModeTabs");
 
   const isBar = variant === "bar";
 
   return (
     <div
       role="tablist"
-      aria-label="Workspace mode"
+      aria-label={t("ariaLabel")}
       style={{
         display: "inline-flex",
         alignItems: "center",
@@ -39,9 +41,9 @@ export function ModeTabs({ variant = "floating" }: { variant?: "floating" | "bar
         boxShadow: isBar ? "none" : "0 4px 18px rgba(27,40,64,0.18)",
       }}
     >
-      <Tab label="Canvas"  active={mode === "data"}         onClick={() => mode !== "data"         && setMode("data")}         compact={isBar} />
-      <Tab label="Slides"  active={mode === "presentation"} onClick={() => mode !== "presentation" && setMode("presentation")} compact={isBar} />
-      <Tab label="Present" active={mode === "build"}        onClick={() => mode !== "build"        && setMode("build")}        compact={isBar} />
+      <Tab label={t("canvas")}  active={mode === "data"}         onClick={() => mode !== "data"         && setMode("data")}         compact={isBar} />
+      <Tab label={t("slides")}  active={mode === "presentation"} onClick={() => mode !== "presentation" && setMode("presentation")} compact={isBar} />
+      <Tab label={t("present")} active={mode === "build"}        onClick={() => mode !== "build"        && setMode("build")}        compact={isBar} />
     </div>
   );
 }

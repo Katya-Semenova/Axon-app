@@ -21,5 +21,62 @@
   },
   "LanguageSwitcher": {
     "label": "Language"
+  },
+  "Chat": {
+    "expandChat": "Expand chat",
+    "collapseChat": "Collapse chat",
+    "returnHome": "Return to home",
+    "agentChat": "AI Agent Chat",
+    "buildChat": "Build Chat",
+    "generating": "Generating insights…",
+    "placeholderData": "Ask anything about your data…",
+    "placeholderRefine": "Refine the presentation…",
+    "send": "Send"
+  },
+  "ModeTabs": {
+    "ariaLabel": "Workspace mode",
+    "canvas": "Canvas",
+    "slides": "Slides",
+    "present": "Present"
+  },
+  "ModeToggle": {
+    "ariaLabel": "Workspace mode",
+    "data": "Data Mode",
+    "presentation": "Presentation"
+  },
+  "Onboarding": {
+    "ariaTour": "Onboarding tour",
+    "ariaClose": "Close tour",
+    "ariaGoToStep": "Go to step {n}",
+    "skip": "Skip",
+    "next": "Next",
+    "getStarted": "Get started",
+    "steps": {
+      "1": {
+        "title": "Drop your data.",
+        "description": "Export as PPTX, PDF, live link. Present in minutes, not days.",
+        "alt": "Step 1 — Drop your data"
+      },
+      "2": {
+        "title": "The AI agent thinks.",
+        "description": "It reads tables, finds patterns, surfaces what matters.",
+        "alt": "Step 2 — The AI agent thinks"
+      },
+      "3": {
+        "title": "Insights connect.",
+        "description": "The agent groups findings into datasets, ready to visualize.",
+        "alt": "Step 3 — Insights connect"
+      },
+      "4": {
+        "title": "Stories visualize themselves.",
+        "description": "Export as PPTX, PDF, live link. Present in minutes, not days.",
+        "alt": "Step 4 — Stories visualize themselves"
+      },
+      "5": {
+        "title": "Present and deliver.",
+        "description": "Export. Share. Ship the story before the meeting starts.",
+        "alt": "Step 5 — Present and deliver"
+      }
+    }
   }
 }
