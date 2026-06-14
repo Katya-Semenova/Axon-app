@@ -9,6 +9,22 @@ import { ModeTabs } from "@/app/components/ui/ModeTabs";
 import { ModeToggle } from "@/app/components/ui/ModeToggle";
 import { ChartTypeDropdown } from "@/app/components/ui/ChartTypeDropdown";
 import type { ChartType } from "@/lib/types";
+// ─── UI Kit (новые компоненты на токенах) ───
+import { Button } from "@/app/components/ui/Button";
+import { Badge } from "@/app/components/ui/Badge";
+import { Card, CardHeader, CardContent, CardFooter } from "@/app/components/ui/Card";
+import { Avatar } from "@/app/components/ui/Avatar";
+import { Input } from "@/app/components/ui/Input";
+import { Textarea } from "@/app/components/ui/Textarea";
+import { FormField } from "@/app/components/ui/FormField";
+import { Skeleton } from "@/app/components/ui/Skeleton";
+import { Spinner } from "@/app/components/ui/Spinner";
+import { Chip } from "@/app/components/ui/Chip";
+import { BackButton } from "@/app/components/ui/BackButton";
+import { Modal } from "@/app/components/ui/Modal";
+import { AlertDialog } from "@/app/components/ui/AlertDialog";
+import { Toast, ToastProvider, useToast } from "@/app/components/ui/Toast";
+import { DropdownMenu } from "@/app/components/ui/DropdownMenu";
 
 // ─── Nav config ───────────────────────────────────────────────────────────────
 
@@ -33,12 +49,40 @@ const NAV_GROUPS = [
       { id: "chart-dropdown" as const, label: "ChartTypeDropdown" },
     ],
   },
+  {
+    label: "UI KIT",
+    items: [
+      { id: "kit-button" as const,    label: "Button" },
+      { id: "kit-badge" as const,     label: "Badge" },
+      { id: "kit-chip" as const,      label: "Chip" },
+      { id: "kit-backbutton" as const, label: "BackButton" },
+      { id: "kit-card" as const,      label: "Card" },
+      { id: "kit-avatar" as const,    label: "Avatar" },
+      { id: "kit-input" as const,     label: "Input" },
+      { id: "kit-textarea" as const,  label: "Textarea" },
+      { id: "kit-formfield" as const, label: "FormField" },
+      { id: "kit-skeleton" as const,  label: "Skeleton" },
+      { id: "kit-spinner" as const,   label: "Spinner" },
+    ],
+  },
+  {
+    label: "ORGANISMS",
+    items: [
+      { id: "org-modal" as const,    label: "Modal" },
+      { id: "org-alert" as const,    label: "AlertDialog" },
+      { id: "org-toast" as const,    label: "Toast" },
+      { id: "org-dropdown" as const, label: "DropdownMenu" },
+    ],
+  },
 ] as const;
 
 type SectionId =
   | "colors-surfaces" | "colors-navy" | "colors-gold" | "colors-text"
   | "typography" | "radii" | "animations"
-  | "modetabs" | "modetoggle" | "chart-dropdown";
+  | "modetabs" | "modetoggle" | "chart-dropdown"
+  | "kit-button" | "kit-badge" | "kit-card" | "kit-avatar"
+  | "kit-input" | "kit-textarea" | "kit-formfield" | "kit-skeleton" | "kit-spinner" | "kit-chip" | "kit-backbutton"
+  | "org-modal" | "org-alert" | "org-toast" | "org-dropdown";
 
 // ─── Atoms ────────────────────────────────────────────────────────────────────
 
@@ -520,6 +564,362 @@ const [chartType, setChartType] = useState<ChartType>("Treemap");
   );
 }
 
+// ─── UI Kit sections ──────────────────────────────────────────────────────────
+
+const KIT_BTN_VARIANTS = ["primary", "secondary", "outline", "ghost", "destructive", "link"] as const;
+const KIT_BTN_SIZES = ["sm", "md", "lg", "icon"] as const;
+
+function ControlSelect<T extends string>({ label, value, options, onChange }: {
+  label: string; value: T; options: readonly T[]; onChange: (v: T) => void;
+}) {
+  return (
+    <label style={{ display: "flex", flexDirection: "column", gap: 4, fontFamily: "'JetBrains Mono', monospace", fontSize: 10, color: T3 }}>
+      {label}
+      <select
+        value={value}
+        onChange={e => onChange(e.target.value as T)}
+        style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 11, padding: "4px 8px", border: `1px solid ${BORDER}`, borderRadius: 4, background: SURFACE, color: NAVY, cursor: "pointer" }}
+      >
+        {options.map(o => <option key={o} value={o}>{o}</option>)}
+      </select>
+    </label>
+  );
+}
+
+function ControlCheck({ label, checked, onChange }: { label: string; checked: boolean; onChange: (v: boolean) => void }) {
+  return (
+    <label style={{ display: "flex", alignItems: "center", gap: 6, fontFamily: "'JetBrains Mono', monospace", fontSize: 11, color: T2, cursor: "pointer" }}>
+      <input type="checkbox" checked={checked} onChange={e => onChange(e.target.checked)} />
+      {label}
+    </label>
+  );
+}
+
+function KitButtonSection() {
+  const [variant, setVariant] = useState<(typeof KIT_BTN_VARIANTS)[number]>("primary");
+  const [size, setSize] = useState<(typeof KIT_BTN_SIZES)[number]>("md");
+  const [disabled, setDisabled] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const code =
+    `<Button variant="${variant}" size="${size}"${disabled ? " disabled" : ""}${loading ? " loading" : ""}>\n  ${size === "icon" ? "+" : "Сохранить"}\n</Button>`;
+  return (
+    <>
+      <SectionHeader title="Button" subtitle="Кнопки кита — все варианты через variant, размеры через size, состояния (hover/focus/disabled/loading) внутри. Только токены DESIGN.md." />
+      <PreviewBox label="Variants">
+        {KIT_BTN_VARIANTS.map(v => <Button key={v} variant={v}>{v}</Button>)}
+      </PreviewBox>
+      <PreviewBox label="Sizes">
+        <Button size="sm">sm</Button>
+        <Button size="md">md</Button>
+        <Button size="lg">lg</Button>
+        <Button size="icon" aria-label="add">+</Button>
+      </PreviewBox>
+      <PreviewBox label="States">
+        <Button>default</Button>
+        <Button disabled>disabled</Button>
+        <Button loading>loading</Button>
+      </PreviewBox>
+      <Label>Interactive</Label>
+      <div style={{ display: "flex", gap: 18, alignItems: "flex-end", flexWrap: "wrap", marginBottom: 12 }}>
+        <ControlSelect label="variant" value={variant} options={KIT_BTN_VARIANTS} onChange={setVariant} />
+        <ControlSelect label="size" value={size} options={KIT_BTN_SIZES} onChange={setSize} />
+        <ControlCheck label="disabled" checked={disabled} onChange={setDisabled} />
+        <ControlCheck label="loading" checked={loading} onChange={setLoading} />
+      </div>
+      <PreviewBox>
+        <Button variant={variant} size={size} disabled={disabled} loading={loading}>
+          {size === "icon" ? "+" : "Сохранить"}
+        </Button>
+      </PreviewBox>
+      <CodeBlock code={code} />
+    </>
+  );
+}
+
+function KitBadgeSection() {
+  return (
+    <>
+      <SectionHeader title="Badge" subtitle="Статусы (ready/draft/generating), semantic (success/warning/error/info) и «Beta» для упрощённого разбора файлов (EC-1)." />
+      <PreviewBox label="Variants">
+        <Badge>default</Badge>
+        <Badge variant="outline">outline</Badge>
+        <Badge variant="success">ready</Badge>
+        <Badge variant="warning">draft</Badge>
+        <Badge variant="info">generating</Badge>
+        <Badge variant="error">error</Badge>
+        <Badge variant="beta">Beta</Badge>
+      </PreviewBox>
+      <PreviewBox label="Sizes">
+        <Badge size="sm">sm</Badge>
+        <Badge size="md">md</Badge>
+      </PreviewBox>
+      <CodeBlock code={`<Badge variant="success">ready</Badge>\n<Badge variant="beta">Beta</Badge>`} />
+    </>
+  );
+}
+
+function KitChipSection() {
+  const fileIcon = (
+    <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+      <path d="M7.5 1H3a1 1 0 00-1 1v8a1 1 0 001 1h6a1 1 0 001-1V4.5L7.5 1zM7 1v3.5H10" />
+    </svg>
+  );
+  return (
+    <>
+      <SectionHeader title="Chip" subtitle="Строчный тег/метка с опциональной иконкой (имена файлов, источники). В отличие от Badge — НЕ uppercase, нейтральный (surface-muted)." />
+      <PreviewBox label="С иконкой файла (как в чат-рейле)">
+        <Chip icon={fileIcon}>stripe_prod.sql</Chip>
+        <Chip icon={fileIcon}>analytics_dw.sql</Chip>
+        <Chip icon={fileIcon}>events_log.db</Chip>
+      </PreviewBox>
+      <PreviewBox label="Без иконки">
+        <Chip>csv</Chip>
+        <Chip>tag</Chip>
+      </PreviewBox>
+      <CodeBlock code={`<Chip icon={<FileIcon/>}>stripe_prod.sql</Chip>`} />
+    </>
+  );
+}
+
+function KitBackButtonSection() {
+  return (
+    <>
+      <SectionHeader title="BackButton" subtitle="Голая текст-ссылка «назад» с шевроном (mono, без фона/паддинга). DRY-ит навигацию возврата: Back / Back to Canvas. Мигрированы page.tsx + drill-in вью." />
+      <PreviewBox label="Варианты текста">
+        <BackButton>Back</BackButton>
+        <BackButton>Back to Canvas</BackButton>
+      </PreviewBox>
+      <CodeBlock code={`<BackButton onClick={onBack}>Back to Canvas</BackButton>`} />
+    </>
+  );
+}
+
+function KitCardSection() {
+  return (
+    <>
+      <SectionHeader title="Card" subtitle="Поверхность контента (проекты, инсайты, секции). variant: default / raised / interactive." />
+      <PreviewBox label="Variants">
+        <Card style={{ width: 200 }}>
+          <CardHeader><div style={{ fontSize: 13, fontWeight: 500, color: NAVY }}>Default</div></CardHeader>
+          <CardContent><div style={{ fontSize: 12, color: T2 }}>surface + border + radius 4</div></CardContent>
+        </Card>
+        <Card variant="raised" style={{ width: 200 }}>
+          <CardContent><div style={{ fontSize: 12, color: T2 }}>raised — surface-raised</div></CardContent>
+        </Card>
+        <Card variant="interactive" style={{ width: 200 }}>
+          <CardContent><div style={{ fontSize: 12, color: T2 }}>interactive — hover-граница</div></CardContent>
+        </Card>
+      </PreviewBox>
+      <CodeBlock code={`<Card variant="interactive">\n  <CardHeader>…</CardHeader>\n  <CardContent>…</CardContent>\n  <CardFooter>…</CardFooter>\n</Card>`} />
+    </>
+  );
+}
+
+function KitAvatarSection() {
+  return (
+    <>
+      <SectionHeader title="Avatar" subtitle="Инициалы-фолбэк (статичный «KS» в текущем коде)." />
+      <PreviewBox label="Sizes (xs / sm / md / lg)">
+        <Avatar initials="KS" size="xs" />
+        <Avatar initials="KS" size="sm" />
+        <Avatar initials="KS" size="md" />
+        <Avatar initials="KS" size="lg" />
+      </PreviewBox>
+      <CodeBlock code={`<Avatar initials="KS" size="sm" />`} />
+    </>
+  );
+}
+
+function KitInputSection() {
+  const [invalid, setInvalid] = useState(false);
+  const [disabled, setDisabled] = useState(false);
+  return (
+    <>
+      <SectionHeader title="Input" subtitle="Поле формы (login/signup/settings, поиск). states: default / focus (золотой ring) / invalid / disabled." />
+      <PreviewBox label="Sizes">
+        <div style={{ display: "flex", flexDirection: "column", gap: 10, width: "100%", maxWidth: 320 }}>
+          <Input inputSize="sm" placeholder="sm" />
+          <Input inputSize="md" placeholder="md" />
+          <Input inputSize="lg" placeholder="lg" />
+        </div>
+      </PreviewBox>
+      <Label>Interactive</Label>
+      <div style={{ display: "flex", gap: 18, marginBottom: 12 }}>
+        <ControlCheck label="invalid" checked={invalid} onChange={setInvalid} />
+        <ControlCheck label="disabled" checked={disabled} onChange={setDisabled} />
+      </div>
+      <PreviewBox>
+        <div style={{ width: "100%", maxWidth: 320 }}>
+          <Input placeholder="you@example.com" invalid={invalid} disabled={disabled} />
+        </div>
+      </PreviewBox>
+      <CodeBlock code={`<Input placeholder="you@example.com" invalid={hasError} />`} />
+    </>
+  );
+}
+
+function KitTextareaSection() {
+  return (
+    <>
+      <SectionHeader title="Textarea" subtitle="Многострочное поле (чат-инпут, narrative слайда)." />
+      <PreviewBox>
+        <div style={{ width: "100%", maxWidth: 380 }}>
+          <Textarea placeholder="Ask anything about your data…" rows={3} />
+        </div>
+      </PreviewBox>
+      <CodeBlock code={`<Textarea placeholder="…" rows={3} invalid={false} />`} />
+    </>
+  );
+}
+
+function KitFormFieldSection() {
+  return (
+    <>
+      <SectionHeader title="FormField" subtitle="Молекула: Label + контрол + ошибка/подсказка. Передаёшь error → красный текст под полем и invalid-контрол." />
+      <PreviewBox>
+        <div style={{ width: "100%", maxWidth: 320, display: "flex", flexDirection: "column", gap: 18 }}>
+          <FormField label="Email" htmlFor="sb-email" required hint="Рабочая почта">
+            <Input id="sb-email" placeholder="you@example.com" />
+          </FormField>
+          <FormField label="Пароль" htmlFor="sb-pass" error="Неверный email или пароль">
+            <Input id="sb-pass" type="password" invalid defaultValue="123" />
+          </FormField>
+        </div>
+      </PreviewBox>
+      <CodeBlock code={`<FormField label="Email" required error={error}>\n  <Input invalid={!!error} />\n</FormField>`} />
+    </>
+  );
+}
+
+function KitSkeletonSection() {
+  return (
+    <>
+      <SectionHeader title="Skeleton" subtitle="Плейсхолдер загрузки на системном .shimmer. variant: text / circular / rectangular." />
+      <PreviewBox label="Variants">
+        <div style={{ display: "flex", alignItems: "center", gap: 20, width: "100%" }}>
+          <Skeleton variant="circular" className="w-10 h-10" />
+          <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 8 }}>
+            <Skeleton variant="text" className="w-2/3" />
+            <Skeleton variant="text" className="w-1/2" />
+          </div>
+          <Skeleton variant="rectangular" className="w-24 h-16" />
+        </div>
+      </PreviewBox>
+      <CodeBlock code={`<Skeleton variant="text" className="w-2/3" />\n<Skeleton variant="circular" className="w-10 h-10" />`} />
+    </>
+  );
+}
+
+function KitSpinnerSection() {
+  return (
+    <>
+      <SectionHeader title="Spinner" subtitle="Индикатор загрузки, цвет наследуется (currentColor). sizes: sm / md / lg." />
+      <PreviewBox label="Sizes">
+        <div style={{ color: NAVY, display: "flex", alignItems: "center", gap: 24 }}>
+          <Spinner size="sm" />
+          <Spinner size="md" />
+          <Spinner size="lg" />
+        </div>
+      </PreviewBox>
+      <PreviewBox label="В кнопке (loading)" dark>
+        <Button loading>Сохраняю…</Button>
+      </PreviewBox>
+      <CodeBlock code={`<Spinner size="md" />\n<Button loading>Сохраняю…</Button>`} />
+    </>
+  );
+}
+
+// ─── Organisms ────────────────────────────────────────────────────────────────
+
+function OrgModalSection() {
+  const [open, setOpen] = useState(false);
+  return (
+    <>
+      <SectionHeader title="Modal" subtitle="Диалог поверх контента (детали, формы). Портал в body, Esc и клик по фону закрывают. Слоты title / children / footer; размеры sm/md/lg." />
+      <PreviewBox><Button onClick={() => setOpen(true)}>Открыть Modal</Button></PreviewBox>
+      <Modal
+        open={open}
+        onClose={() => setOpen(false)}
+        title="Заголовок диалога"
+        footer={<><Button variant="ghost" onClick={() => setOpen(false)}>Отмена</Button><Button onClick={() => setOpen(false)}>Ок</Button></>}
+      >
+        Контент модалки — текст, форма или детали. Закрывается по Esc, клику по фону или крестику.
+      </Modal>
+      <CodeBlock code={`const [open, setOpen] = useState(false);\n<Modal open={open} onClose={() => setOpen(false)} title="…" footer={…}>\n  …контент…\n</Modal>`} />
+    </>
+  );
+}
+
+function OrgAlertSection() {
+  const [open, setOpen] = useState(false);
+  return (
+    <>
+      <SectionHeader title="AlertDialog" subtitle="Подтверждение поверх Modal (удаление слайда/инсайта/дата-сета, выход с правками). destructive → красная кнопка." />
+      <PreviewBox><Button variant="destructive" onClick={() => setOpen(true)}>Удалить слайд…</Button></PreviewBox>
+      <AlertDialog
+        open={open}
+        onClose={() => setOpen(false)}
+        onConfirm={() => {}}
+        destructive
+        title="Удалить слайд?"
+        description="Действие необратимо. Слайд будет удалён из презентации."
+        confirmLabel="Удалить"
+        cancelLabel="Отмена"
+      />
+      <CodeBlock code={`<AlertDialog open={open} onClose={…} onConfirm={…} destructive\n  title="Удалить слайд?" description="…" confirmLabel="Удалить" />`} />
+    </>
+  );
+}
+
+function ToastDemoButtons() {
+  const { toast } = useToast();
+  return (
+    <PreviewBox>
+      <Button variant="secondary" onClick={() => toast("Проект сохранён", { variant: "success" })}>success</Button>
+      <Button variant="secondary" onClick={() => toast("Не удалось загрузить", { variant: "error" })}>error</Button>
+      <Button variant="secondary" onClick={() => toast("Ссылка скопирована", { variant: "info" })}>info</Button>
+    </PreviewBox>
+  );
+}
+
+function OrgToastSection() {
+  return (
+    <>
+      <SectionHeader title="Toast" subtitle="Уведомление (сохранено, экспортировано, ссылка скопирована, ошибка). Через <ToastProvider> + useToast(). Авто-скрытие ~3.5 с, крестик." />
+      <Label>Статичные варианты</Label>
+      <PreviewBox dark>
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          <Toast variant="success">Проект сохранён</Toast>
+          <Toast variant="error">Не удалось загрузить</Toast>
+          <Toast variant="info">Ссылка скопирована</Toast>
+        </div>
+      </PreviewBox>
+      <Label>Интерактивно (через провайдер — тосты появятся снизу-справа)</Label>
+      <ToastProvider><ToastDemoButtons /></ToastProvider>
+      <CodeBlock code={`// обернуть приложение: <ToastProvider>…</ToastProvider>\nconst { toast } = useToast();\ntoast("Проект сохранён", { variant: "success" });`} />
+    </>
+  );
+}
+
+function OrgDropdownSection() {
+  return (
+    <>
+      <SectionHeader title="DropdownMenu" subtitle="Меню по триггеру (меню под аватаром, выбор формата экспорта). Клик вне и Esc закрывают; separatorBefore — разделитель, destructive — красный пункт." />
+      <PreviewBox>
+        <DropdownMenu
+          trigger={<Avatar initials="KS" size="sm" className="cursor-pointer" />}
+          items={[
+            { label: "Профиль", onClick: () => {} },
+            { label: "Настройки", onClick: () => {} },
+            { label: "Выход", destructive: true, separatorBefore: true, onClick: () => {} },
+          ]}
+        />
+      </PreviewBox>
+      <CodeBlock code={`<DropdownMenu trigger={<Avatar initials="KS" />} items={[\n  { label: "Профиль", onClick },\n  { label: "Настройки", onClick },\n  { label: "Выход", destructive: true, separatorBefore: true, onClick },\n]} />`} />
+    </>
+  );
+}
+
 // ─── Section router ───────────────────────────────────────────────────────────
 
 function Section({ id }: { id: SectionId }) {
@@ -534,6 +934,21 @@ function Section({ id }: { id: SectionId }) {
     case "modetabs":         return <ModeTabsSection />;
     case "modetoggle":       return <ModeToggleSection />;
     case "chart-dropdown":   return <ChartDropdownSection />;
+    case "kit-button":       return <KitButtonSection />;
+    case "kit-badge":        return <KitBadgeSection />;
+    case "kit-chip":         return <KitChipSection />;
+    case "kit-backbutton":   return <KitBackButtonSection />;
+    case "kit-card":         return <KitCardSection />;
+    case "kit-avatar":       return <KitAvatarSection />;
+    case "kit-input":        return <KitInputSection />;
+    case "kit-textarea":     return <KitTextareaSection />;
+    case "kit-formfield":    return <KitFormFieldSection />;
+    case "kit-skeleton":     return <KitSkeletonSection />;
+    case "kit-spinner":      return <KitSpinnerSection />;
+    case "org-modal":        return <OrgModalSection />;
+    case "org-alert":        return <OrgAlertSection />;
+    case "org-toast":        return <OrgToastSection />;
+    case "org-dropdown":     return <OrgDropdownSection />;
   }
 }
 

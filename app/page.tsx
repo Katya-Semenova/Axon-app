@@ -17,6 +17,7 @@ import { PresentationStructure } from "@/app/components/presentation/Presentatio
 import { PresentExport } from "@/app/components/build/PresentExport";
 import { ModeTabs } from "@/app/components/ui/ModeTabs";
 import { OnboardingModal } from "@/app/components/ui/OnboardingModal";
+import { DesktopOnlyNotice } from "@/app/components/ui/DesktopOnlyNotice";
 
 /* ── Modifier: pin the DragOverlay top-left to the live cursor. ── */
 const snapToPointer: Modifier = ({ activatorEvent, draggingNodeRect, transform }) => {
@@ -141,19 +142,9 @@ function Page2({ onBack }: { onBack: () => void }) {
         {/* ── Left: AI Chat Rail — always visible across all three modes ── */}
         <ChatRail onBack={onBack} />
 
-        {/* ── Mobile top bar ── */}
-        <div className="lg:hidden flex items-center justify-between px-4 py-[14px] border-b border-border bg-card shrink-0 fixed top-0 left-0 right-0 z-30">
-          <span className="font-mono text-[13px] font-medium tracking-[0.14em]">AXON</span>
-          <button
-            onClick={onBack}
-            className="flex items-center gap-[5px] font-mono text-[11.5px] text-t2 hover:text-t1 transition-colors duration-200"
-          >
-            <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
-              <path d="M9 2L4 7l5 5" />
-            </svg>
-            Back
-          </button>
-        </div>
+        {/* ── Узкий экран (<lg): воркспейс рассчитан на десктоп — показываем
+            аккуратную заглушку вместо «сжатого» десктопа (как Figma/Miro). ── */}
+        <DesktopOnlyNotice onBack={onBack} />
 
         {/* ── Right column — main surface ──
             In SLIDES mode the Visualization Style rail is a full-height right

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { ProjectCard, PROJECTS } from "./ProjectCard";
+import { Avatar } from "../ui/Avatar";
 
 /**
  * Landing — entry point before a workspace is opened. Mostly static
@@ -25,7 +26,7 @@ export function LandingPage({ onNavigate }: { onNavigate: () => void }) {
             <li><a href="/storybook" className="text-[13.5px] text-t2 hover:text-t1 transition-colors duration-200">Storybook</a></li>
             <li><span aria-disabled="true" className="text-[13.5px] text-t3 cursor-default select-none">Docs</span></li>
           </ul>
-          <div className="w-8 h-8 rounded-full border border-border bg-card flex items-center justify-center font-mono text-[11px] font-medium text-t2 cursor-pointer select-none">KS</div>
+          <Avatar initials="KS" size="sm" className="cursor-pointer" />
         </div>
       </nav>
 
@@ -41,7 +42,7 @@ export function LandingPage({ onNavigate }: { onNavigate: () => void }) {
 
         <div
           className={`mx-12 mb-[80px] border-[1.5px] border-dashed rounded-none py-[56px] px-12 text-center cursor-pointer transition-colors duration-200 relative max-md:mx-6 max-md:mb-16 max-sm:mx-4 max-sm:mb-12 max-sm:py-9 max-sm:px-6
-            ${dragOver ? "border-[#B89548] bg-[rgba(184,149,72,0.05)]" : "border-[#D9D3C2] hover:border-[#B89548] hover:bg-[rgba(184,149,72,0.04)]"}`}
+            ${dragOver ? "border-gold-500 bg-gold-500/5" : "border-border hover:border-gold-500 hover:bg-gold-500/[0.04]"}`}
           onClick={onNavigate}
           onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
           onDragLeave={() => setDragOver(false)}

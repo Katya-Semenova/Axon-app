@@ -26,7 +26,7 @@ export function ModeToggle() {
         display: "inline-flex",
         alignItems: "center",
         border: `1px solid ${BORDER}`,
-        borderRadius: 999,
+        borderRadius: 4,
         padding: 2,
         background: "transparent",
         fontFamily: "'JetBrains Mono', monospace",
@@ -41,7 +41,7 @@ export function ModeToggle() {
         onClick={() => setMode("data")}
         style={{
           padding: "6px 16px",
-          borderRadius: 999,
+          borderRadius: 4,
           border: "none",
           cursor: isData ? "default" : "pointer",
           background: isData ? NAVY : "transparent",
@@ -59,7 +59,7 @@ export function ModeToggle() {
         onClick={() => setMode("presentation")}
         style={{
           padding: "6px 16px",
-          borderRadius: 999,
+          borderRadius: 4,
           border: "none",
           cursor: !isData ? "default" : "pointer",
           background: !isData ? NAVY : "transparent",

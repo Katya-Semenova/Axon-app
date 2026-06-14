@@ -5,6 +5,7 @@ import { DataTable } from "../DataTable";
 import { useWorkspaceStore } from "@/lib/store";
 import type { Insight } from "@/lib/types";
 import { GOLD, BORDER, T2, T3, SURFACE, SURFACE_RAISE, SURFACE_MUTED, NAVY } from "../ui/tokens";
+import { BackButton } from "../ui/BackButton";
 
 const mono = "'JetBrains Mono', monospace";
 
@@ -33,22 +34,11 @@ function InsightExpandedView({ insight, insightsById }: {
     >
       {/* Header */}
       <div
-        className="flex items-center justify-between gap-3 border-b px-6 py-[13px] shrink-0 flex-wrap"
+        className="flex items-center justify-between gap-3 border-b px-6 h-[64px] shrink-0 flex-wrap"
         style={{ borderColor: BORDER, background: SURFACE }}
       >
         <div className="flex items-center gap-3 min-w-0">
-          <button
-            onClick={() => setExpanded(null)}
-            className="flex items-center gap-[5px] font-mono text-[11.5px] shrink-0 transition-colors duration-200"
-            style={{ color: T2 }}
-            onMouseEnter={e => (e.currentTarget.style.color = "#0A0A0A")}
-            onMouseLeave={e => (e.currentTarget.style.color = T2)}
-          >
-            <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
-              <path d="M9 2L4 7l5 5" />
-            </svg>
-            Back to Canvas
-          </button>
+          <BackButton onClick={() => setExpanded(null)}>Back to Canvas</BackButton>
           <span className="text-[11px] select-none" style={{ color: BORDER }}>|</span>
           <span className="font-mono text-[11px] shrink-0" style={{ color: T3 }}>{serial} /</span>
           <span className="text-[13.5px] font-medium truncate" style={{ color: "#0A0A0A" }}>{insight.title}</span>

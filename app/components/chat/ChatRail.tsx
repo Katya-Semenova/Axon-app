@@ -2,7 +2,9 @@
 
 import { useRef, useState } from "react";
 import { useWorkspaceStore } from "@/lib/store";
-import { BORDER, NAVY, T2, T3, SURFACE_MUTED, RADIUS_BUBBLE } from "../ui/tokens";
+import { BORDER, NAVY, T2, T3, RADIUS_BUBBLE } from "../ui/tokens";
+import { Textarea } from "../ui/Textarea";
+import { Chip } from "../ui/Chip";
 
 function ChatTextarea({ placeholder }: { placeholder: string }) {
   const ref = useRef<HTMLTextAreaElement>(null);
@@ -13,13 +15,12 @@ function ChatTextarea({ placeholder }: { placeholder: string }) {
     el.style.height = Math.min(el.scrollHeight, 120) + "px";
   }
   return (
-    <textarea
+    <Textarea
       ref={ref}
       onInput={expand}
       rows={2}
       placeholder={placeholder}
-      className="flex-1 border border-border rounded-sm px-3 py-2 text-[13.5px] font-sans text-t1 resize-none outline-none transition-colors duration-200 placeholder:text-t3 min-h-[76px] max-h-[160px] leading-relaxed"
-      style={{ background: SURFACE_MUTED }}
+      className="flex-1 min-h-[76px] max-h-[160px]"
     />
   );
 }
@@ -93,13 +94,11 @@ export function ChatRail({ onBack }: { onBack: () => void }) {
           <div className="font-mono text-[10.5px] uppercase tracking-[0.1em] text-t3 mb-4">AI Agent Chat</div>
           <div className="flex flex-wrap gap-[6px] mb-2">
             {["stripe_prod.sql", "analytics_dw.sql", "events_log.db"].map((f) => (
-              <span key={f} className="flex items-center gap-[5px] font-mono text-[10.5px] text-t2 rounded-sm px-[10px] py-1"
-                style={{ background: SURFACE_MUTED }}>
+              <Chip key={f} icon={
                 <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
                   <path d="M7.5 1H3a1 1 0 00-1 1v8a1 1 0 001 1h6a1 1 0 001-1V4.5L7.5 1zM7 1v3.5H10" />
                 </svg>
-                {f}
-              </span>
+              }>{f}</Chip>
             ))}
           </div>
         </div>
@@ -183,7 +182,7 @@ export function ChatRail({ onBack }: { onBack: () => void }) {
       <div className="px-5 py-4 border-t border-border flex gap-[10px] items-end shrink-0">
         {isBuild ? (
           <>
-            <textarea
+            <Textarea
               value={draftText}
               onChange={e => setDraftText(e.target.value)}
               onKeyDown={e => {
@@ -196,8 +195,7 @@ export function ChatRail({ onBack }: { onBack: () => void }) {
               }}
               rows={2}
               placeholder="Refine the presentation…"
-              className="flex-1 border border-border rounded-sm px-3 py-2 text-[13.5px] font-sans text-t1 resize-none outline-none transition-colors duration-200 placeholder:text-t3 min-h-[54px] max-h-[120px] leading-relaxed"
-              style={{ background: SURFACE_MUTED }}
+              className="flex-1 min-h-[54px] max-h-[120px]"
             />
             <button
               onClick={() => {

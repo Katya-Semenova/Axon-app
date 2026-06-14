@@ -1,6 +1,8 @@
 "use client";
 
 import { MiniSparkline } from "./MiniSparkline";
+import { Card } from "../ui/Card";
+import { Badge } from "../ui/Badge";
 import { GOLD, NAVY } from "../ui/tokens";
 
 export type ProjectStatus = "ready" | "generating" | "draft";
@@ -14,27 +16,23 @@ export interface Project {
 }
 
 /**
- * Tone-on-tone status indicators — no red/green/yellow, palette-strict.
- * Picked to stay legible on the warm canvas without resorting to alert hues.
+ * Статус проекта — цветной semantic Badge из кита (решение миграции на кит):
+ * ready → success, draft → warning, generating → info.
  */
-const STATUS_MAP: Record<ProjectStatus, { dotCls: string; label: string }> = {
-  ready:      { dotCls: "bg-[#1B2840]", label: "ready"      },
-  generating: { dotCls: "bg-[#B89548]", label: "generating" },
-  draft:      { dotCls: "bg-[#8A8B87]", label: "draft"      },
+const STATUS_BADGE: Record<ProjectStatus, { variant: "success" | "warning" | "info"; label: string }> = {
+  ready:      { variant: "success", label: "ready"      },
+  draft:      { variant: "warning", label: "draft"      },
+  generating: { variant: "info",    label: "generating" },
 };
 
 export function ProjectCard({ project, onClick }: { project: Project; onClick: () => void }) {
-  const s = STATUS_MAP[project.status];
+  const s = STATUS_BADGE[project.status];
   const sparkColor = project.status === "generating" ? GOLD : NAVY;
   return (
-    <div onClick={onClick}
-      className="bg-card border border-border rounded-none p-7 cursor-pointer transition-colors duration-200 hover:border-[rgba(27,40,64,0.25)]">
+    <Card variant="interactive" onClick={onClick} className="p-7">
       <div className="flex items-start justify-between mb-5">
         <div className="text-[15px] font-medium text-t1 leading-[1.4] max-w-[70%]">{project.name}</div>
-        <span className="flex items-center gap-1.5 font-mono text-[10.5px] text-t2">
-          <span className={`w-[5px] h-[5px] rounded-full shrink-0 ${s.dotCls}`} />
-          {s.label}
-        </span>
+        <Badge variant={s.variant} size="sm">{s.label}</Badge>
       </div>
       <div className="mb-4">
         <MiniSparkline data={project.data} color={sparkColor} />
@@ -43,7 +41,7 @@ export function ProjectCard({ project, onClick }: { project: Project; onClick: (
         <span className="font-mono text-[10.5px] text-t3">{project.file}</span>
         <span className="font-mono text-[10.5px] text-t3">{project.time}</span>
       </div>
-    </div>
+    </Card>
   );
 }
 

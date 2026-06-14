@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import Image from "next/image";
 import { NAVY, GOLD, SURFACE_RAISE, BORDER, T2, NAVY_300 } from "./tokens";
 
 const STORAGE_KEY = "axon_onboarding_done";
@@ -64,11 +65,9 @@ export function OnboardingModal() {
     return () => window.removeEventListener(OPEN_EVENT, handler);
   }, []);
 
-  /* Preload every step image so paginating swaps src instantly — no blank
-     frame on first view while the next file decodes from the network. */
-  useEffect(() => {
-    STEPS.forEach(({ src }) => { const img = new Image(); img.src = src; });
-  }, []);
+  /* Загрузку картинок шагов теперь ведёт next/image (оптимизация + кэш):
+     ручной preload через new Image() убран, иначе грузились бы неоптимизированные
+     оригиналы вдобавок к оптимизированным версиям (двойной трафик). */
 
   const dismiss = useCallback(() => {
     localStorage.setItem(STORAGE_KEY, "1");
@@ -119,11 +118,14 @@ export function OnboardingModal() {
 
         {/* Image + text — unified content block */}
         <div className="flex flex-col items-center px-7 pt-8 pb-8 gap-3">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
+          {/* next/image: авто WebP/AVIF + адаптивный размер (мобилка не грузит 1064px-PNG) */}
+          <Image
             src={STEPS[step].src}
             alt={STEPS[step].alt}
-            style={{ display: "block", maxWidth: "100%", maxHeight: "280px", objectFit: "contain" }}
+            width={1064}
+            height={760}
+            sizes="(max-width: 480px) 90vw, 392px"
+            className="block w-auto h-auto max-w-full max-h-[280px] object-contain select-none"
             draggable={false}
           />
 
