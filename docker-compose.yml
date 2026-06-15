@@ -1,0 +1,13 @@
+services:
+  web:
+    build: .
+    ports:
+      - "127.0.0.1:3000:3000"   # только localhost — наружу отдаёт nginx
+    restart: unless-stopped      # сам поднимется после падения/перезагрузки сервера
+    mem_limit: 512m              # потолок памяти: контейнер не съест весь бокс (1 ГБ)
+    healthcheck:                 # Docker сам видит, «жив» ли контейнер
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3000/ >/dev/null 2>&1 || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 40s
