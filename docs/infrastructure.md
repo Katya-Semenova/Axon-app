@@ -32,8 +32,8 @@ Next.js-фронтенд в Docker-контейнере на **российск�
 
 ## HTTPS
 - Let's Encrypt через **Certbot** (`--nginx`), авто-продление (`certbot.timer`).
-- ⏳ Статус 2026-06-15: сертификат ещё НЕ выпущен — ждём распространения DNS нового домена.
-  Повторить: `certbot --nginx -d axon-app.ru -d www.axon-app.ru` когда домен начнёт публично резолвиться.
+- ✅ Статус 2026-06-15: **сертификат выпущен** на `axon-app.ru` + `www`, действует до **2026-09-13**, продление автоматическое.
+  Команда выпуска (если понадобится повторить): `certbot --nginx -d axon-app.ru -d www.axon-app.ru --non-interactive --agree-tos -m jelsominobergamo@gmail.com --redirect`.
 
 ## Код (GitHub) и доставка на сервер
 - Репозиторий: `git@github.com:Katya-Semenova/Axon-app.git` (по SSH)
@@ -51,10 +51,12 @@ Next.js-фронтенд в Docker-контейнере на **российск�
 - Файлы в репо: `Dockerfile`, `docker-compose.yml`, `.dockerignore`, `next.config.ts` (`output: "standalone"`).
 
 ## nginx
-- Конфиг: `/etc/nginx/sites-available/axon-app` (symlink в `sites-enabled/`)
-- Reverse-proxy `→ 127.0.0.1:3000`, `server_name axon-app.ru www.axon-app.ru`
-- После выпуска сертификата Certbot добавит блок 443 + редирект http→https.
-- TODO (полировка после cert): HSTS, кэш `/_next/static/`, 301-редирект www↔apex.
+- Конфиг: `/etc/nginx/sites-available/axon-app` (symlink в `sites-enabled/`; рядом бэкапы `.bak.*`)
+- Reverse-proxy `→ 127.0.0.1:3000`, три server-блока:
+  - **443** для `axon-app.ru` (основной) — HSTS (`max-age=63072000; includeSubDomains`), кэш `/_next/static/` (`immutable`, 1 год);
+  - **443** для `www.axon-app.ru` → 301 на голый `axon-app.ru` (канонический домен);
+  - **80** → 301 на https.
+- Полировка (HSTS / кэш статики / www↔apex) **выполнена 2026-06-15**.
 
 ## Безопасность
 - Вход на сервер: **только по SSH-ключу** (`~/.ssh/id_ed25519`); пароль отключён
@@ -79,6 +81,6 @@ Next.js-фронтенд в Docker-контейнере на **российск�
 - Вход root по ключу без отдельного sudo-пользователя.
 
 ## Что дальше
-- **Остаток Фазы 5:** выпустить сертификат (как DNS разойдётся) + погасить Vercel после проверки стабильности.
+- **Остаток Фазы 5:** погасить Vercel после нескольких дней стабильной работы VPS (HTTPS уже выпущен ✅).
 - **Урок 4:** PostgreSQL контейнером в этом же docker-compose, аккаунты/auth, бэкап БД → появятся секреты.
 - Опционально: вынести сборку образа с сервера (CI/GHCR), zero-downtime (blue-green).
