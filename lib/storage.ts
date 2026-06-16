@@ -22,7 +22,7 @@ function client(): S3Client | null {
       endpoint,
       region,
       credentials: { accessKeyId, secretAccessKey },
-      forcePathStyle: true, // совместимость с S3-провайдерами по кастомному endpoint
+      forcePathStyle: false, // vHosted-адресация: <bucket>.s3.<region>.storage.selcloud.ru
     });
   }
   return _client;
