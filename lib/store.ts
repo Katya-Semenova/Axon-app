@@ -151,6 +151,29 @@ export function initialBoardData(): BoardData {
   };
 }
 
+/**
+ * Снимок ТЕКУЩЕГО состояния холста для сохранения в БД (Урок 4).
+ * Используется и автосейвом (BoardSync), и переносом гостевого холста в аккаунт
+ * (Шаг 7b) — единый источник того, «что именно сохраняем».
+ */
+export function currentBoardData(): BoardData {
+  const s = useWorkspaceStore.getState();
+  return {
+    snapshot: {
+      insightsById: s.insightsById,
+      dataSetsById: s.dataSetsById,
+      slidesById:   s.slidesById,
+      insightOrder: s.insightOrder,
+      dataSetOrder: s.dataSetOrder,
+      slideOrder:   s.slideOrder,
+      connections:  s.connections,
+    },
+    nodePositions:       s.nodePositions,
+    canvasTransform:     s.canvasTransform,
+    presentationThemeId: s.presentationThemeId,
+  };
+}
+
 /* ── Shape ─────────────────────────────────────────────────────────────── */
 
 interface WorkspaceStateShape extends WorkspaceSnapshot {

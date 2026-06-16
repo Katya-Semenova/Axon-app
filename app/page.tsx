@@ -20,6 +20,8 @@ import { ModeTabs } from "@/app/components/ui/ModeTabs";
 import { OnboardingModal } from "@/app/components/ui/OnboardingModal";
 import { DesktopOnlyNotice } from "@/app/components/ui/DesktopOnlyNotice";
 import { BoardSync } from "@/app/components/BoardSync";
+import { GuestSaveButton } from "@/app/components/GuestSaveButton";
+import { ToastProvider } from "@/app/components/ui/Toast";
 
 /* ── Modifier: pin the DragOverlay top-left to the live cursor. ── */
 const snapToPointer: Modifier = ({ activatorEvent, draggingNodeRect, transform }) => {
@@ -239,11 +241,17 @@ export default function Home() {
   };
 
   return (
-    <>
+    <ToastProvider>
       <BoardSync boardId={boardId} />
       {view === "landing"
         ? <LandingPage onNavigate={openWorkspace} />
-        : <Page2 onBack={() => setView("landing")} />}
-    </>
+        : (
+          <>
+            <Page2 onBack={() => setView("landing")} />
+            {/* Гость в воркспейсе — кнопка «Сохранить» (вход + перенос холста, Шаг 7b). */}
+            <GuestSaveButton boardId={boardId} onSaved={setBoardId} />
+          </>
+        )}
+    </ToastProvider>
   );
 }

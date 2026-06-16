@@ -80,6 +80,25 @@ export async function createProject(title?: string): Promise<string | null> {
   return board.id;
 }
 
+/**
+ * Создать проект из ГОТОВОГО содержимого холста (Урок 4, Шаг 7b).
+ * Используется при переносе гостевого холста в аккаунт: доска создаётся сразу
+ * с данными гостя (а не пустой). Владелец — из серверной сессии. id или null (гость).
+ */
+export async function createProjectFromData(data: BoardData, title?: string): Promise<string | null> {
+  const userId = await currentUserId();
+  if (!userId) return null;
+  const board = await prisma.board.create({
+    data: {
+      title: (title?.trim() || "Мой первый проект").slice(0, 120),
+      data: data as unknown as Prisma.InputJsonValue,
+      ownerId: userId,
+    },
+    select: { id: true },
+  });
+  return board.id;
+}
+
 /** Удалить проект — только владелец. true при успехе. */
 export async function deleteProject(id: string): Promise<boolean> {
   const userId = await currentUserId();

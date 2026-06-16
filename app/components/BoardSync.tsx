@@ -1,28 +1,8 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { useWorkspaceStore, initialBoardData } from "@/lib/store";
+import { useWorkspaceStore, initialBoardData, currentBoardData } from "@/lib/store";
 import { getBoard, saveBoard } from "@/app/actions/board";
-import type { BoardData } from "@/lib/types";
-
-/** Собрать из стора то, что сохраняем в БД. */
-function extractBoardData(): BoardData {
-  const s = useWorkspaceStore.getState();
-  return {
-    snapshot: {
-      insightsById: s.insightsById,
-      dataSetsById: s.dataSetsById,
-      slidesById:   s.slidesById,
-      insightOrder: s.insightOrder,
-      dataSetOrder: s.dataSetOrder,
-      slideOrder:   s.slideOrder,
-      connections:  s.connections,
-    },
-    nodePositions:       s.nodePositions,
-    canvasTransform:     s.canvasTransform,
-    presentationThemeId: s.presentationThemeId,
-  };
-}
 
 /**
  * Синхронизация холста с базой (Урок 4).
@@ -75,7 +55,7 @@ export function BoardSync({ boardId }: { boardId: string | null }) {
       if (!loadedRef.current) return;
       if (timer) clearTimeout(timer);
       timer = setTimeout(() => {
-        const data = extractBoardData();
+        const data = currentBoardData();
         const json = JSON.stringify(data);
         if (json === lastSavedRef.current) return;
         lastSavedRef.current = json;
