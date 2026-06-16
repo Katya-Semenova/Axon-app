@@ -1,6 +1,6 @@
 import * as React from "react";
 import { Button, Heading, Text } from "@react-email/components";
-import { Layout, COLORS, type EmailLocale } from "./Layout";
+import { Layout, COLORS, headingStyle, type EmailLocale } from "./Layout";
 
 /** Приветственное письмо после регистрации (Урок 4, Шаг 6). */
 
@@ -29,10 +29,10 @@ export function Welcome({ name = "", locale = "en" }: { name?: string; locale?: 
   const displayName = name.trim() || (locale === "ru" ? "друг" : "there");
   return (
     <Layout preview={t.preview} locale={locale}>
-      <Heading style={{ fontSize: 20, color: COLORS.NAVY, margin: "0 0 16px" }}>{t.heading(displayName)}</Heading>
+      <Heading style={headingStyle}>{t.heading(displayName)}</Heading>
       <Text style={{ fontSize: 14, lineHeight: "22px", color: COLORS.NAVY, margin: "0 0 16px" }}>{t.intro}</Text>
       <Text style={{ fontSize: 14, lineHeight: "22px", color: COLORS.NAVY, margin: "0 0 24px" }}>{t.body}</Text>
-      <Button href="https://axon-app.ru" style={{ backgroundColor: COLORS.NAVY, color: COLORS.PAPER, fontSize: 14, fontWeight: 600, padding: "12px 24px", borderRadius: 2, textDecoration: "none", display: "inline-block" }}>
+      <Button href="https://axon-app.ru" style={{ backgroundColor: COLORS.NAVY, color: COLORS.PAPER, fontSize: 14, fontWeight: 600, padding: "12px 24px", borderRadius: 4, textDecoration: "none", display: "inline-block" }}>
         {t.button}
       </Button>
     </Layout>

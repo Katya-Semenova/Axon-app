@@ -1,6 +1,6 @@
 import * as React from "react";
 import { Heading, Link, Text } from "@react-email/components";
-import { Layout, COLORS, type EmailLocale } from "./Layout";
+import { Layout, COLORS, headingStyle, type EmailLocale } from "./Layout";
 
 /** Уведомление «пароль изменён» (Урок 4, Шаг 6) — отправляется после смены/сброса. */
 
@@ -26,11 +26,11 @@ export function PasswordChanged({ locale = "en" }: { locale?: EmailLocale }) {
   const resetUrl = "https://axon-app.ru/forgot-password";
   return (
     <Layout preview={t.preview} locale={locale}>
-      <Heading style={{ fontSize: 20, color: COLORS.NAVY, margin: "0 0 16px" }}>{t.heading}</Heading>
+      <Heading style={headingStyle}>{t.heading}</Heading>
       <Text style={{ fontSize: 14, lineHeight: "22px", color: COLORS.NAVY, margin: "0 0 16px" }}>{t.intro}</Text>
       <Text style={{ fontSize: 12.5, lineHeight: "18px", color: COLORS.MUTED, margin: 0 }}>
         {t.warn}<br />
-        <Link href={resetUrl} style={{ color: COLORS.GOLD }}>{resetUrl}</Link>
+        <Link href={resetUrl} style={{ color: COLORS.GOLD_300 }}>{resetUrl}</Link>
       </Text>
     </Layout>
   );

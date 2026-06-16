@@ -1,6 +1,6 @@
 import * as React from "react";
 import { Button, Heading, Link, Text } from "@react-email/components";
-import { Layout, COLORS, type EmailLocale } from "./Layout";
+import { Layout, COLORS, headingStyle, type EmailLocale } from "./Layout";
 
 /** Письмо сброса пароля (Урок 4, Шаг 6). url — ссылка от Better Auth с токеном. */
 
@@ -32,16 +32,16 @@ export function PasswordReset({ url, locale = "en" }: { url: string; locale?: Em
   const t = T[locale];
   return (
     <Layout preview={t.preview} locale={locale}>
-      <Heading style={{ fontSize: 20, color: COLORS.NAVY, margin: "0 0 16px" }}>{t.heading}</Heading>
+      <Heading style={headingStyle}>{t.heading}</Heading>
       <Text style={{ fontSize: 14, lineHeight: "22px", color: COLORS.NAVY, margin: "0 0 24px" }}>{t.intro}</Text>
-      <Button href={url} style={{ backgroundColor: COLORS.NAVY, color: COLORS.PAPER, fontSize: 14, fontWeight: 600, padding: "12px 24px", borderRadius: 2, textDecoration: "none", display: "inline-block" }}>
+      <Button href={url} style={{ backgroundColor: COLORS.NAVY, color: COLORS.PAPER, fontSize: 14, fontWeight: 600, padding: "12px 24px", borderRadius: 4, textDecoration: "none", display: "inline-block" }}>
         {t.button}
       </Button>
       <Text style={{ fontSize: 12.5, lineHeight: "18px", color: COLORS.MUTED, margin: "24px 0 4px" }}>{t.expires}</Text>
       <Text style={{ fontSize: 12.5, lineHeight: "18px", color: COLORS.MUTED, margin: "0 0 16px" }}>{t.ignore}</Text>
       <Text style={{ fontSize: 12, lineHeight: "18px", color: COLORS.MUTED, margin: 0 }}>
         {t.fallback}<br />
-        <Link href={url} style={{ color: COLORS.GOLD, wordBreak: "break-all" }}>{url}</Link>
+        <Link href={url} style={{ color: COLORS.GOLD_300, wordBreak: "break-all" }}>{url}</Link>
       </Text>
     </Layout>
   );
