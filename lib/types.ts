@@ -347,3 +347,12 @@ export interface WorkspaceSnapshot {
   slideOrder: string[];
   connections: Connection[];
 }
+
+/* ── Board persistence (Урок 4) ─────────────────────────────────────────────
+   Что кладём в Board.data (одно JSON-поле в БД): снимок холста + раскладка. */
+export interface BoardData {
+  snapshot: WorkspaceSnapshot;
+  nodePositions: NodePositionMap;
+  canvasTransform: { x: number; y: number; zoom: number };
+  presentationThemeId: PresentationThemeId;
+}

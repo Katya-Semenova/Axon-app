@@ -6,7 +6,7 @@ import {
 } from "./mockData";
 import type {
   Insight, DataSet, Slide, Connection, Mode,
-  NodePositionMap, WorkspaceSnapshot,
+  NodePositionMap, WorkspaceSnapshot, BoardData,
   ChartType, DataRow, SlideArchetype,
   BuildAudience, BuildTone, BuildMessage,
   DataSetSettings, NarrationMode, PresentationThemeId,
@@ -166,6 +166,9 @@ interface WorkspaceActions {
   canUndo: () => boolean;
   canRedo: () => boolean;
 
+  /** Загрузить доску из БД (снимок + раскладка), сбросив историю. */
+  hydrate: (data: BoardData) => void;
+
   setMode:         (mode: Mode) => void;
   toggleMode:      () => void;
   toggleChat:      () => void;
@@ -265,6 +268,17 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => {
     },
     canUndo: () => get().historyIdx > 0,
     canRedo: () => get().historyIdx < get().history.length - 1,
+
+    /* ── load board from DB (Урок 4) ─ */
+    hydrate: (data) => set((s) => ({
+      ...applySnapshot(s, data.snapshot),
+      nodePositions:       data.nodePositions ?? s.nodePositions,
+      canvasTransform:     data.canvasTransform ?? s.canvasTransform,
+      presentationThemeId: data.presentationThemeId ?? s.presentationThemeId,
+      history:    [data.snapshot],
+      historyIdx: 0,
+      activeSlideId: data.snapshot.slideOrder[0] ?? null,
+    })),
 
     /* ── mode & chat ─ */
     setMode:          (mode) => set({ mode }),

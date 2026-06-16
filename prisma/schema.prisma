@@ -1,0 +1,43 @@
+// Prisma schema — Axon (Урок 4, Шаг 3)
+// «План таблиц»: по нему Prisma создаёт таблицы в PostgreSQL и общается с базой.
+// Решение по слою данных — docs/decisions/ADR-003-data-layer.md
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/// Пользователь — владелец досок.
+/// Поля совместимы с Better Auth (Шаг 5): там добавятся служебные таблицы
+/// Session / Account / Verification и подключатся к этому же User.
+model User {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  name          String
+  emailVerified Boolean  @default(false)
+  image         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  boards        Board[]
+}
+
+/// Доска = проект пользователя.
+/// Весь холст (инсайты, датасеты, слайды, связи, позиции) хранится ОДНИМ
+/// JSON-полем `data` — см. ADR-003 (доски как документы).
+model Board {
+  id        String   @id @default(cuid())
+  title     String
+  data      Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  ownerId   String
+  owner     User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  @@index([ownerId])
+}

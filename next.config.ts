@@ -7,6 +7,9 @@ const nextConfig: NextConfig = {
   // Автономная сборка (server.js) для упаковки в Docker (Урок 3 — переезд на VPS).
   // На Vercel безопасно: платформа использует собственную сборку.
   output: "standalone",
+  // Линт отвязан от сборки: ESLint гоняем отдельно (npm run lint / ревью на Шаге 11),
+  // чтобы давние замечания в коде не валили прод-сборку и деплой.
+  eslint: { ignoreDuringBuilds: true },
   images: {
     // next/image отдаёт современные форматы (в 2–4× легче PNG/JPG)
     formats: ["image/avif", "image/webp"],

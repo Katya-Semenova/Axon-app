@@ -19,6 +19,7 @@ import { PresentExport } from "@/app/components/build/PresentExport";
 import { ModeTabs } from "@/app/components/ui/ModeTabs";
 import { OnboardingModal } from "@/app/components/ui/OnboardingModal";
 import { DesktopOnlyNotice } from "@/app/components/ui/DesktopOnlyNotice";
+import { BoardSync } from "@/app/components/BoardSync";
 
 /* ── Modifier: pin the DragOverlay top-left to the live cursor. ── */
 const snapToPointer: Modifier = ({ activatorEvent, draggingNodeRect, transform }) => {
@@ -229,7 +230,12 @@ function Page2({ onBack }: { onBack: () => void }) {
 ══════════════════════════════════════════════════════ */
 export default function Home() {
   const [view, setView] = useState<"landing" | "workspace">("landing");
-  return view === "landing"
-    ? <LandingPage onNavigate={() => setView("workspace")} />
-    : <Page2 onBack={() => setView("landing")} />;
+  return (
+    <>
+      <BoardSync />
+      {view === "landing"
+        ? <LandingPage onNavigate={() => setView("workspace")} />
+        : <Page2 onBack={() => setView("landing")} />}
+    </>
+  );
 }

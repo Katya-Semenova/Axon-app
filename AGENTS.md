@@ -34,4 +34,4 @@
 Текущий рабочий журнал и статус задач — пока в `CLAUDE.md`.
 
 ## История решений
-См. `docs/memory/INDEX.md` (ADR, findings, sessions) *(появится на следующих уроках)*.
+См. `docs/decisions/INDEX.md` (оглавление ADR; разделы findings/sessions — позже).

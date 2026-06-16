@@ -1,6 +1,8 @@
 services:
   web:
     build: .
+    environment:
+      DATABASE_URL: ${DATABASE_URL}   # адрес базы (из .env.production) — для серверных экшенов
     ports:
       - "127.0.0.1:3000:3000"   # только localhost — наружу отдаёт nginx
     restart: unless-stopped      # сам поднимется после падения/перезагрузки сервера
@@ -11,3 +13,28 @@ services:
       timeout: 5s
       retries: 3
       start_period: 40s
+
+  # ── База данных (Урок 4) — PostgreSQL рядом с сайтом ──────────────────────
+  db:
+    image: postgres:16-alpine    # сама база (лёгкая версия)
+    restart: unless-stopped      # сама поднимется после перезагрузки сервера
+    mem_limit: 256m              # потолок памяти (бокс всего 1 ГБ)
+    environment:                 # логин/пароль/имя базы — из .env.production
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - pgdata:/var/lib/postgresql/data   # данные переживают перезапуск контейнера
+    ports:
+      # ТОЛЬКО localhost сервера (для SSH-туннеля и Prisma Studio).
+      # bind на 127.0.0.1 => из интернета НЕ доступно (loopback + UFW).
+      - "127.0.0.1:5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U axon -d axon"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+volumes:
+  pgdata:                        # именованный том = «полки» базы на диске сервера
