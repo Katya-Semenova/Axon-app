@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { authClient } from "@/lib/auth-client";
 import { currentBoardData } from "@/lib/store";
 import { createProjectFromData } from "@/app/actions/board";
@@ -20,6 +21,7 @@ export function GuestSaveButton({
 }: { boardId: string | null; onSaved: (id: string) => void }) {
   const { data: session } = authClient.useSession();
   const { toast } = useToast();
+  const t = useTranslations("SaveFlow");
   const [modalOpen, setModalOpen] = useState(false);
   const [saving, setSaving] = useState(false);
 
@@ -33,12 +35,12 @@ export function GuestSaveButton({
       if (id) {
         setModalOpen(false);
         onSaved(id);
-        toast("Проект сохранён", { variant: "success" });
+        toast(t("toastSaved"), { variant: "success" });
       } else {
-        toast("Не удалось сохранить — попробуйте ещё раз", { variant: "error" });
+        toast(t("toastError"), { variant: "error" });
       }
     } catch {
-      toast("Не удалось сохранить — попробуйте ещё раз", { variant: "error" });
+      toast(t("toastError"), { variant: "error" });
     } finally {
       setSaving(false);
     }
@@ -51,9 +53,14 @@ export function GuestSaveButton({
 
   return (
     <>
-      <div className="hidden lg:block fixed top-[76px] right-5 z-40">
-        <Button onClick={handleClick} loading={saving} className="shadow-[0_4px_14px_rgba(27,40,64,0.25)]">
-          Сохранить
+      <div className="hidden lg:block fixed top-[74px] right-5 z-40">
+        <Button size="sm" onClick={handleClick} loading={saving} leftIcon={
+          <svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M11 5v6a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1h4l3 3z" />
+            <path d="M5 2v3h3" />
+          </svg>
+        } className="shadow-[0_3px_10px_rgba(27,40,64,0.18)]">
+          {t("button")}
         </Button>
       </div>
       <AuthModal open={modalOpen} onClose={() => setModalOpen(false)} onAuthed={doSave} />

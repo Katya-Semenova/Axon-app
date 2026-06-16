@@ -278,5 +278,21 @@
     "title": "Axon is built for desktop",
     "body": "The canvas, drag-and-drop cards and AI chat need a wide screen. Open the project on a laptop or desktop for full access.",
     "backToProjects": "Back to projects"
+  },
+  "SaveFlow": {
+    "button": "Save",
+    "toastSaved": "Project saved",
+    "toastError": "Couldn’t save — please try again",
+    "modalTitle": "Save project",
+    "modalSubtitle": "Sign in or create an account — your current work will be saved to it.",
+    "tabRegister": "Sign up",
+    "tabLogin": "Sign in",
+    "name": "Name",
+    "email": "Email",
+    "password": "Password",
+    "submitRegister": "Sign up & save",
+    "submitLogin": "Sign in & save",
+    "errRegister": "Couldn’t sign up",
+    "errLogin": "Wrong email or password"
   }
 }
