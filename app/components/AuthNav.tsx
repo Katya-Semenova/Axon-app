@@ -1,0 +1,50 @@
+"use client";
+
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { authClient } from "@/lib/auth-client";
+import { Avatar } from "./ui/Avatar";
+
+/**
+ * Состояние входа в шапке (Урок 4, Шаг 5).
+ * Гость — ссылка «Войти». Вошедший — аватар + «Выйти».
+ */
+export function AuthNav() {
+  const router = useRouter();
+  const { data: session, isPending } = authClient.useSession();
+
+  if (isPending) {
+    return <div className="w-7 h-7" aria-hidden />;
+  }
+
+  if (!session) {
+    return (
+      <Link
+        href="/login"
+        className="text-[13.5px] text-t2 hover:text-t1 transition-colors duration-200"
+      >
+        Войти
+      </Link>
+    );
+  }
+
+  const user = session.user;
+  const initials = (user.name || user.email || "?").slice(0, 2).toUpperCase();
+
+  async function handleLogout() {
+    await authClient.signOut();
+    router.refresh();
+  }
+
+  return (
+    <div className="flex items-center gap-3">
+      <Avatar initials={initials} size="sm" />
+      <button
+        onClick={handleLogout}
+        className="text-[13px] text-t2 hover:text-t1 transition-colors duration-200 cursor-pointer"
+      >
+        Выйти
+      </button>
+    </div>
+  );
+}

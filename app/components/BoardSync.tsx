@@ -3,10 +3,10 @@
 import { useEffect, useRef } from "react";
 import { useWorkspaceStore } from "@/lib/store";
 import { getBoard, saveBoard } from "@/app/actions/board";
+import { authClient } from "@/lib/auth-client";
 import type { BoardData } from "@/lib/types";
 
-/* Пока вход не сделан (Шаг 5), работаем с одной демо-доской.
-   На Шаге 5/7 заменим на доску(и) вошедшего пользователя. */
+/* Пока вход не разведён по пользователям (Шаг 7), работаем с одной демо-доской. */
 const DEMO_BOARD_ID = "demo-board";
 
 /** Собрать из стора то, что сохраняем в БД. */
@@ -29,15 +29,19 @@ function extractBoardData(): BoardData {
 }
 
 /**
- * Синхронизация холста с базой (Урок 4, Шаг 4).
- * - при монтировании: грузим доску из БД и подставляем в стор
- *   (если доска пустая — оставляем демо-сид и сразу сохраняем его);
- * - при изменениях: авто-сохранение с задержкой ~1с (без дублей).
+ * Синхронизация холста с базой (Урок 4).
+ * - Шаг 4: загрузка доски при открытии, авто-сохранение изменений (~1с).
+ * - Шаг 5: сохраняем ТОЛЬКО когда есть вход — гость работает с холстом, но в
+ *   базу не пишет. (Per-user доски — Шаг 7; пока вошедшие пишут в общую демо-доску.)
  * Невидимый служебный компонент (рендерит null).
  */
 export function BoardSync() {
   const loadedRef    = useRef(false);
   const lastSavedRef = useRef<string>("");
+
+  const { data: session } = authClient.useSession();
+  const sessionRef = useRef(session);
+  useEffect(() => { sessionRef.current = session; }, [session]);
 
   /* загрузка один раз */
   useEffect(() => {
@@ -50,13 +54,12 @@ export function BoardSync() {
           useWorkspaceStore.getState().hydrate(data);
           lastSavedRef.current = JSON.stringify(data);
         } else {
-          /* пустая доска → берём текущий демо-сид и сохраняем как стартовое содержимое */
+          /* пустая доска: оставляем демо из стора; сид сохраняем только если вошли */
           const seed = extractBoardData();
           lastSavedRef.current = JSON.stringify(seed);
-          await saveBoard(DEMO_BOARD_ID, seed);
+          if (sessionRef.current) await saveBoard(DEMO_BOARD_ID, seed);
         }
       } catch (err) {
-        /* база недоступна — не падаем, просто работаем без сохранения */
         console.error("[BoardSync] не удалось загрузить доску:", err);
       } finally {
         loadedRef.current = true;
@@ -65,13 +68,15 @@ export function BoardSync() {
     return () => { cancelled = true; };
   }, []);
 
-  /* авто-сохранение при изменениях */
+  /* авто-сохранение при изменениях — только для вошедших */
   useEffect(() => {
     let timer: ReturnType<typeof setTimeout> | null = null;
     const unsub = useWorkspaceStore.subscribe(() => {
       if (!loadedRef.current) return;
+      if (!sessionRef.current) return;
       if (timer) clearTimeout(timer);
       timer = setTimeout(() => {
+        if (!sessionRef.current) return;
         const data = extractBoardData();
         const json = JSON.stringify(data);
         if (json === lastSavedRef.current) return;

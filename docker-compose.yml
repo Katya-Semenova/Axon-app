@@ -2,7 +2,9 @@ services:
   web:
     build: .
     environment:
-      DATABASE_URL: ${DATABASE_URL}   # адрес базы (из .env.production) — для серверных экшенов
+      DATABASE_URL: ${DATABASE_URL}             # адрес базы (из .env.production)
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET} # секрет сессий входа (Шаг 5)
+      BETTER_AUTH_URL: ${BETTER_AUTH_URL}       # публичный адрес сайта (Шаг 5)
     ports:
       - "127.0.0.1:3000:3000"   # только localhost — наружу отдаёт nginx
     restart: unless-stopped      # сам поднимется после падения/перезагрузки сервера

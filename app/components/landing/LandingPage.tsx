@@ -3,8 +3,8 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { ProjectCard, PROJECTS } from "./ProjectCard";
-import { Avatar } from "../ui/Avatar";
 import { LanguageSwitcher } from "../ui/LanguageSwitcher";
+import { AuthNav } from "../AuthNav";
 
 /**
  * Landing — entry point before a workspace is opened. Mostly static
@@ -30,7 +30,7 @@ export function LandingPage({ onNavigate }: { onNavigate: () => void }) {
             <li><span aria-disabled="true" className="text-[13.5px] text-t3 cursor-default select-none">{t("nav.docs")}</span></li>
           </ul>
           <LanguageSwitcher />
-          <Avatar initials="KS" size="sm" className="cursor-pointer" />
+          <AuthNav />
         </div>
       </nav>
 
