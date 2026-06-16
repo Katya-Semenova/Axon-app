@@ -20,9 +20,17 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ key
   const obj = await getObject(path);
   if (!obj) return NextResponse.json({ error: "not-found" }, { status: 404 });
 
+  // Отдаём только безопасные image-типы; всё прочее (в т.ч. svg/html) — как бинарь
+  // на скачивание. + nosniff/CSP/sandbox, чтобы браузер ничего не исполнял на нашем домене.
+  const SAFE = new Set(["image/png", "image/jpeg", "image/webp", "image/gif"]);
+  const safe = SAFE.has(obj.contentType);
+
   return new NextResponse(Buffer.from(obj.bytes), {
     headers: {
-      "Content-Type": obj.contentType,
+      "Content-Type": safe ? obj.contentType : "application/octet-stream",
+      "Content-Disposition": safe ? 'inline; filename="avatar"' : 'attachment; filename="file"',
+      "X-Content-Type-Options": "nosniff",
+      "Content-Security-Policy": "default-src 'none'; sandbox",
       "Cache-Control": "public, max-age=31536000, immutable",
     },
   });
