@@ -37,8 +37,9 @@ export async function POST(req: NextRequest) {
 
   try {
     const key = `avatars/${session.user.id}-${Date.now()}.${kind.ext}`;
-    const url = await putObject(key, buf, kind.type);
-    return NextResponse.json({ url });
+    await putObject(key, buf, kind.type);
+    // Показываем через наш домен, а не публичный URL провайдера.
+    return NextResponse.json({ url: `/api/files/${key}` });
   } catch (err) {
     console.error("[avatar] upload failed:", err);
     return NextResponse.json({ error: "upload-failed" }, { status: 500 });
