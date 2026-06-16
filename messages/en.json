@@ -36,7 +36,8 @@
       "renamePrompt": "New project name:",
       "untitled": "Untitled",
       "updated": "updated {date}"
-    }
+    },
+    "guestHint": "Sign in to save your projects and come back to them"
   },
   "LanguageSwitcher": {
     "label": "Language"

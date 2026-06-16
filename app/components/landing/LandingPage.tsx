@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { ProjectCard, PROJECTS } from "./ProjectCard";
 import { MyProjects } from "./MyProjects";
 import { LanguageSwitcher } from "../ui/LanguageSwitcher";
 import { AuthNav } from "../AuthNav";
@@ -82,17 +81,13 @@ export function LandingPage({ onNavigate }: { onNavigate: (boardId: string | nul
           /* Вошедший — реальные проекты пользователя (Шаг 7). */
           <MyProjects onOpen={(id) => onNavigate(id)} />
         ) : (
-          /* Гость — статичная витрина-тизер; клик открывает гостевой холст в памяти. */
+          /* Гость — без фейковых проектов; тихое приглашение войти (Шаг 7b). */
           <div className="px-12 pb-[96px] max-md:px-6 max-md:pb-[72px] max-sm:px-4 max-sm:pb-[60px]">
-            <div className="flex items-center justify-between mb-7">
-              <span className="font-mono text-[11px] uppercase tracking-[0.1em] text-t3">{t("recent.title")}</span>
-              <a href="#" className="font-mono text-[11.5px] text-t2 hover:text-t1 transition-colors duration-200">{t("recent.viewAll")}</a>
-            </div>
-            <div className="grid grid-cols-3 gap-4 max-md:grid-cols-2 max-sm:grid-cols-1">
-              {PROJECTS.map((p, i) => (
-                <ProjectCard key={i} project={p} onClick={() => onNavigate(null)} />
-              ))}
-            </div>
+            <p className="text-center font-mono text-[11.5px] text-t3">
+              <a href="/login" className="text-t2 hover:text-t1 underline underline-offset-4 transition-colors duration-200">
+                {t("guestHint")}
+              </a>
+            </p>
           </div>
         )}
       </div>
