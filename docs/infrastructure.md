@@ -29,6 +29,9 @@ Next.js-фронтенд в Docker-контейнере на **российск�
 - NS: ns1–4.timeweb.ru/org
 - DNS-записи: `A @ → 176.114.91.231`, `A www → 176.114.91.231`
 - TXT/MX — почта Timeweb, не трогаем.
+- **Письма Resend (Шаг 6):** добавлены DNS-записи Resend и пройдена верификация домена
+  (2026-06-16) — DKIM (`TXT resend._domainkey`), SPF (`TXT send` = amazonses), MX (`send`),
+  опц. DMARC (`TXT _dmarc`). Отправитель писем — `noreply@axon-app.ru`. См. [ADR-005](decisions/ADR-005-email-provider.md).
 
 ## HTTPS
 - Let's Encrypt через **Certbot** (`--nginx`), авто-продление (`certbot.timer`).
@@ -94,7 +97,9 @@ Next.js-фронтенд в Docker-контейнере на **российск�
   (`/var/www/axon-app/.env.production`, права **600**, владелец root, вне git). Шаблон без
   значений — `.env.example` в репозитории (в git, по исключению в `.gitignore`).
 - **Текущие переменные:** `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`, `DATABASE_URL`
-  (база данных, Шаг 1). Дальше добавится секрет Better Auth (Шаг 5) и др.
+  (БД, Шаг 1), `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL` (auth, Шаг 5),
+  `RESEND_API_KEY` (письма, Шаг 6 — на сервере обязателен для реальной отправки;
+  локально не нужен).
 - `docker compose` на сервере читает их через `--env-file .env.production` (см. `deploy.sh`).
   rsync при деплое **исключает** `.env*` — секреты на сервере не перезаписываются.
 - Резервная копия секретов → **Bitwarden** (НЕ iCloud, НЕ git).

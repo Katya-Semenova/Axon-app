@@ -52,6 +52,9 @@ export default function LoginPage() {
           <CardFooter className="flex flex-col gap-3">
             <Button type="submit" loading={loading} className="w-full">Войти</Button>
             <p className="text-[12px] text-t3 text-center">
+              <Link href="/forgot-password" className="text-t1 underline underline-offset-4">Забыли пароль?</Link>
+            </p>
+            <p className="text-[12px] text-t3 text-center">
               Нет аккаунта?{" "}
               <Link href="/register" className="text-t1 underline underline-offset-4">Зарегистрироваться</Link>
             </p>

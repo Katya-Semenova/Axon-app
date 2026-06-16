@@ -27,6 +27,17 @@ function detectFromAcceptLanguage(accept: string | null): Locale {
   return defaultLocale;
 }
 
+// Резолвер локали из «сырого» объекта Headers (Request.headers) — для контекстов
+// вне getRequestConfig, например колбэков отправки писем Better Auth (Шаг 6).
+// Приоритет тот же: cookie выбора → Accept-Language → fallback.
+export function resolveLocaleFromHeaders(h: Headers): Locale {
+  const cookie = h.get("cookie") ?? "";
+  const match = cookie.match(new RegExp(`(?:^|;\\s*)${LOCALE_COOKIE}=([^;]+)`));
+  const cookieValue = match?.[1];
+  if (cookieValue && locales.includes(cookieValue as Locale)) return cookieValue as Locale;
+  return detectFromAcceptLanguage(h.get("accept-language"));
+}
+
 // Приоритет: 1) явный выбор пользователя (cookie) → 2) язык браузера → 3) fallback.
 export default getRequestConfig(async () => {
   const cookieStore = await cookies();
