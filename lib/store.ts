@@ -135,6 +135,22 @@ function seedNodePositions(): NodePositionMap {
   return p;
 }
 
+/**
+ * Свежая демо-доска (wow-сид) для нового проекта (Урок 4, Шаг 7).
+ * Возвращает ту же раскладку, что и начальное состояние стора, но как
+ * независимый снимок — поэтому новый проект всегда наполняется демо-данными,
+ * а не контентом ранее открытой доски. Используется в BoardSync при открытии
+ * только что созданного (пустого) проекта.
+ */
+export function initialBoardData(): BoardData {
+  return {
+    snapshot:            INITIAL_SNAPSHOT,
+    nodePositions:       seedNodePositions(),
+    canvasTransform:     { x: 20, y: 20, zoom: 0.75 },
+    presentationThemeId: "editorial",
+  };
+}
+
 /* ── Shape ─────────────────────────────────────────────────────────────── */
 
 interface WorkspaceStateShape extends WorkspaceSnapshot {

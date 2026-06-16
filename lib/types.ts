@@ -356,3 +356,10 @@ export interface BoardData {
   canvasTransform: { x: number; y: number; zoom: number };
   presentationThemeId: PresentationThemeId;
 }
+
+/** Краткое описание проекта для списка «Мои проекты» (Урок 4, Шаг 7). */
+export interface ProjectSummary {
+  id: string;
+  title: string;
+  updatedAt: string; // ISO — сериализуемо для передачи клиенту
+}

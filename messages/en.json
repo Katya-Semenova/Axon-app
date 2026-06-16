@@ -22,6 +22,20 @@
       "ready": "ready",
       "draft": "draft",
       "generating": "generating"
+    },
+    "my": {
+      "title": "My Projects",
+      "new": "New project",
+      "empty": "No projects yet",
+      "emptyCta": "Create your first project",
+      "loading": "Loading…",
+      "open": "Open",
+      "rename": "Rename",
+      "delete": "Delete",
+      "deleteConfirm": "Delete project \"{title}\"?",
+      "renamePrompt": "New project name:",
+      "untitled": "Untitled",
+      "updated": "updated {date}"
     }
   },
   "LanguageSwitcher": {
@@ -213,10 +227,22 @@
     "heroTitle": "How should this deck travel?",
     "heroSubtitle": "Pick one. Everything below adapts to the format you choose.",
     "format": {
-      "pptx": { "title": "PPTX", "tagline": "Editable deck" },
-      "pdf": { "title": "PDF", "tagline": "Print-ready" },
-      "viewLink": { "title": "View link", "tagline": "Static dashboard" },
-      "interactive": { "title": "Interactive", "tagline": "Live dashboard" }
+      "pptx": {
+        "title": "PPTX",
+        "tagline": "Editable deck"
+      },
+      "pdf": {
+        "title": "PDF",
+        "tagline": "Print-ready"
+      },
+      "viewLink": {
+        "title": "View link",
+        "tagline": "Static dashboard"
+      },
+      "interactive": {
+        "title": "Interactive",
+        "tagline": "Live dashboard"
+      }
     },
     "addSlidesFirst": "Add slides before building",
     "buildStats": "{count, plural, one {# slide} other {# slides}} · ~{mb} MB · {narr}",

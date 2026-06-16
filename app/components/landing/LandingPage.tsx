@@ -3,18 +3,36 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { ProjectCard, PROJECTS } from "./ProjectCard";
+import { MyProjects } from "./MyProjects";
 import { LanguageSwitcher } from "../ui/LanguageSwitcher";
 import { AuthNav } from "../AuthNav";
+import { authClient } from "@/lib/auth-client";
+import { createProject } from "@/app/actions/board";
 
 /**
- * Landing — entry point before a workspace is opened. Mostly static
- * content: nav, hero, dropzone, recent projects grid. Clicking the
- * dropzone or any project navigates into the workspace; we don't yet
- * differentiate which one (single-workspace prototype).
+ * Landing — entry point before a workspace is opened: nav, hero, dropzone,
+ * projects grid. Шаг 7: вошедший видит реальные «Мои проекты» (свои доски);
+ * гость — статичную витрину-тизер и работу в памяти (без сохранения).
+ *
+ * onNavigate(boardId): boardId — id открываемой доски, либо null для гостя
+ * (холст живёт в памяти, в базу не пишем).
  */
-export function LandingPage({ onNavigate }: { onNavigate: () => void }) {
+export function LandingPage({ onNavigate }: { onNavigate: (boardId: string | null) => void }) {
   const [dragOver, setDragOver] = useState(false);
   const t = useTranslations("Landing");
+  const { data: session } = authClient.useSession();
+
+  /* Клик/дроп по dropzone: вошедший — создаём новый проект и открываем его;
+     гость — открываем гостевой холст в памяти (boardId = null). */
+  const handleStart = async () => {
+    if (!session) { onNavigate(null); return; }
+    try {
+      const id = await createProject();
+      onNavigate(id);
+    } catch (err) {
+      console.error("[LandingPage] не удалось создать проект:", err);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-bg animate-fade-in">
@@ -47,10 +65,10 @@ export function LandingPage({ onNavigate }: { onNavigate: () => void }) {
         <div
           className={`mx-12 mb-[80px] border-[1.5px] border-dashed rounded-none py-[56px] px-12 text-center cursor-pointer transition-colors duration-200 relative max-md:mx-6 max-md:mb-16 max-sm:mx-4 max-sm:mb-12 max-sm:py-9 max-sm:px-6
             ${dragOver ? "border-gold-500 bg-gold-500/5" : "border-border hover:border-gold-500 hover:bg-gold-500/[0.04]"}`}
-          onClick={onNavigate}
+          onClick={handleStart}
           onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
           onDragLeave={() => setDragOver(false)}
-          onDrop={(e) => { e.preventDefault(); setDragOver(false); onNavigate(); }}
+          onDrop={(e) => { e.preventDefault(); setDragOver(false); handleStart(); }}
         >
           <svg className="w-10 h-10 mx-auto mb-4 text-t3" viewBox="0 0 40 40" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="M20 26V14M20 14l-5 5M20 14l5 5" />
@@ -60,17 +78,23 @@ export function LandingPage({ onNavigate }: { onNavigate: () => void }) {
           <p className="font-mono text-[11.5px] text-t3">{t("dropzone.formats")}</p>
         </div>
 
-        <div className="px-12 pb-[96px] max-md:px-6 max-md:pb-[72px] max-sm:px-4 max-sm:pb-[60px]">
-          <div className="flex items-center justify-between mb-7">
-            <span className="font-mono text-[11px] uppercase tracking-[0.1em] text-t3">{t("recent.title")}</span>
-            <a href="#" className="font-mono text-[11.5px] text-t2 hover:text-t1 transition-colors duration-200">{t("recent.viewAll")}</a>
+        {session ? (
+          /* Вошедший — реальные проекты пользователя (Шаг 7). */
+          <MyProjects onOpen={(id) => onNavigate(id)} />
+        ) : (
+          /* Гость — статичная витрина-тизер; клик открывает гостевой холст в памяти. */
+          <div className="px-12 pb-[96px] max-md:px-6 max-md:pb-[72px] max-sm:px-4 max-sm:pb-[60px]">
+            <div className="flex items-center justify-between mb-7">
+              <span className="font-mono text-[11px] uppercase tracking-[0.1em] text-t3">{t("recent.title")}</span>
+              <a href="#" className="font-mono text-[11.5px] text-t2 hover:text-t1 transition-colors duration-200">{t("recent.viewAll")}</a>
+            </div>
+            <div className="grid grid-cols-3 gap-4 max-md:grid-cols-2 max-sm:grid-cols-1">
+              {PROJECTS.map((p, i) => (
+                <ProjectCard key={i} project={p} onClick={() => onNavigate(null)} />
+              ))}
+            </div>
           </div>
-          <div className="grid grid-cols-3 gap-4 max-md:grid-cols-2 max-sm:grid-cols-1">
-            {PROJECTS.map((p, i) => (
-              <ProjectCard key={i} project={p} onClick={onNavigate} />
-            ))}
-          </div>
-        </div>
+        )}
       </div>
     </div>
   );

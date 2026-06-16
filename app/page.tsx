@@ -230,11 +230,19 @@ function Page2({ onBack }: { onBack: () => void }) {
 ══════════════════════════════════════════════════════ */
 export default function Home() {
   const [view, setView] = useState<"landing" | "workspace">("landing");
+  /* Доска, открытая в воркспейсе (Шаг 7). null — гостевой холст в памяти. */
+  const [boardId, setBoardId] = useState<string | null>(null);
+
+  const openWorkspace = (id: string | null) => {
+    setBoardId(id);
+    setView("workspace");
+  };
+
   return (
     <>
-      <BoardSync />
+      <BoardSync boardId={boardId} />
       {view === "landing"
-        ? <LandingPage onNavigate={() => setView("workspace")} />
+        ? <LandingPage onNavigate={openWorkspace} />
         : <Page2 onBack={() => setView("landing")} />}
     </>
   );

@@ -22,6 +22,20 @@
       "ready": "готов",
       "draft": "черновик",
       "generating": "генерация"
+    },
+    "my": {
+      "title": "Мои проекты",
+      "new": "Новый проект",
+      "empty": "Пока нет проектов",
+      "emptyCta": "Создать первый проект",
+      "loading": "Загрузка…",
+      "open": "Открыть",
+      "rename": "Переименовать",
+      "delete": "Удалить",
+      "deleteConfirm": "Удалить проект «{title}»?",
+      "renamePrompt": "Новое название проекта:",
+      "untitled": "Без названия",
+      "updated": "обновлён {date}"
     }
   },
   "LanguageSwitcher": {
@@ -213,10 +227,22 @@
     "heroTitle": "Как эта дека будет путешествовать?",
     "heroSubtitle": "Выберите одно. Всё ниже подстроится под выбранный формат.",
     "format": {
-      "pptx": { "title": "PPTX", "tagline": "Редактируемая дека" },
-      "pdf": { "title": "PDF", "tagline": "Готов к печати" },
-      "viewLink": { "title": "Ссылка для просмотра", "tagline": "Статичный дашборд" },
-      "interactive": { "title": "Интерактив", "tagline": "Живой дашборд" }
+      "pptx": {
+        "title": "PPTX",
+        "tagline": "Редактируемая дека"
+      },
+      "pdf": {
+        "title": "PDF",
+        "tagline": "Готов к печати"
+      },
+      "viewLink": {
+        "title": "Ссылка для просмотра",
+        "tagline": "Статичный дашборд"
+      },
+      "interactive": {
+        "title": "Интерактив",
+        "tagline": "Живой дашборд"
+      }
     },
     "addSlidesFirst": "Добавьте слайды перед сборкой",
     "buildStats": "{count, plural, one {# слайд} few {# слайда} many {# слайдов} other {# слайдов}} · ~{mb} МБ · {narr}",
