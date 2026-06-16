@@ -10,5 +10,11 @@ import { SettingsForm } from "./SettingsForm";
 export default async function SettingsPage() {
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session) redirect("/login");
-  return <SettingsForm initialName={session.user.name ?? ""} email={session.user.email} />;
+  return (
+    <SettingsForm
+      initialName={session.user.name ?? ""}
+      email={session.user.email}
+      initialImage={session.user.image ?? null}
+    />
+  );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
@@ -9,18 +9,52 @@ import { Card, CardHeader, CardContent, CardFooter } from "@/app/components/ui/C
 import { FormField } from "@/app/components/ui/FormField";
 import { Input } from "@/app/components/ui/Input";
 import { Button } from "@/app/components/ui/Button";
+import { Avatar } from "@/app/components/ui/Avatar";
 
 type Msg = { kind: "ok" | "err"; text: string } | null;
 const MIN_LEN = 8;
+const MAX_AVATAR = 2 * 1024 * 1024;
 
 /**
  * Личный кабинет (Урок 4, Шаг 7): Профиль (имя), Безопасность (смена пароля),
  * Выход и «Опасная зона» (удаление аккаунта с подтверждением паролем).
  * Двуязычный (RU/EN). Сообщения — инлайн под каждым блоком.
  */
-export function SettingsForm({ initialName, email }: { initialName: string; email: string }) {
+export function SettingsForm({ initialName, email, initialImage }: { initialName: string; email: string; initialImage: string | null }) {
   const t = useTranslations("Settings");
   const router = useRouter();
+
+  /* ── Аватар ── */
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [image, setImage] = useState<string | null>(initialImage);
+  const [avatarMsg, setAvatarMsg] = useState<Msg>(null);
+  const [avatarLoading, setAvatarLoading] = useState(false);
+  const initials = (initialName || email || "?").slice(0, 2).toUpperCase();
+
+  async function onPickAvatar(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = ""; // позволить повторно выбрать тот же файл
+    if (!file) return;
+    setAvatarMsg(null);
+    if (file.size > MAX_AVATAR) { setAvatarMsg({ kind: "err", text: t("avatarTooLarge") }); return; }
+    if (!/^image\/(png|jpe?g|webp)$/.test(file.type)) { setAvatarMsg({ kind: "err", text: t("avatarBadType") }); return; }
+    setAvatarLoading(true);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      const res = await fetch("/api/avatar", { method: "POST", body: fd });
+      if (!res.ok) throw new Error("upload failed");
+      const { url } = await res.json();
+      await authClient.updateUser({ image: url });
+      setImage(url);
+      setAvatarMsg({ kind: "ok", text: t("avatarSaved") });
+      router.refresh();
+    } catch {
+      setAvatarMsg({ kind: "err", text: t("avatarError") });
+    } finally {
+      setAvatarLoading(false);
+    }
+  }
 
   /* ── Профиль ── */
   const [name, setName] = useState(initialName);
@@ -95,6 +129,22 @@ export function SettingsForm({ initialName, email }: { initialName: string; emai
             {t("back")}
           </Link>
         </div>
+
+        {/* Аватар */}
+        <Card>
+          <CardHeader><h2 className="font-sans text-[15px] font-semibold text-t1">{t("avatarTitle")}</h2></CardHeader>
+          <CardContent className="flex items-center gap-4">
+            <Avatar initials={initials} src={image} size="lg" />
+            <div className="flex flex-col gap-1.5">
+              <input ref={fileRef} type="file" accept="image/png,image/jpeg,image/webp" onChange={onPickAvatar} className="hidden" />
+              <Button type="button" variant="outline" size="sm" loading={avatarLoading} onClick={() => fileRef.current?.click()}>
+                {t("upload")}
+              </Button>
+              <p className="text-[11px] text-t3">{t("avatarHint")}</p>
+              {msgLine(avatarMsg)}
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Профиль */}
         <Card>

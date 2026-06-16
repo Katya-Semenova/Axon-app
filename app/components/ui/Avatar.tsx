@@ -14,13 +14,25 @@ const sizes: Record<Size, string> = {
 
 export function Avatar({
   initials,
+  src,
   size = "sm",
   className,
 }: {
   initials: string;
+  src?: string | null;
   size?: Size;
   className?: string;
 }) {
+  if (src) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={src}
+        alt={initials}
+        className={cn("inline-block rounded-pill object-cover border border-border select-none", sizes[size], className)}
+      />
+    );
+  }
   return (
     <span
       className={cn(

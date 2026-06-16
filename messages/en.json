@@ -319,6 +319,13 @@
     "dangerPassword": "Enter your password to confirm",
     "delete": "Delete account",
     "deleteConfirm": "Delete your account and all projects? This cannot be undone.",
-    "wrongPassword": "Wrong password"
+    "wrongPassword": "Wrong password",
+    "avatarTitle": "Profile photo",
+    "upload": "Upload photo",
+    "avatarHint": "PNG, JPG or WEBP — up to 2 MB",
+    "avatarSaved": "Photo updated",
+    "avatarError": "Couldn’t upload the photo",
+    "avatarTooLarge": "File is too large (max 2 MB)",
+    "avatarBadType": "Only PNG, JPG or WEBP"
   }
 }

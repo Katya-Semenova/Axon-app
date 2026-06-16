@@ -75,6 +75,14 @@ Next.js-фронтенд в Docker-контейнере на **российск�
   настоящий пароль — лишь в серверном `.env.production`. Создание таблиц делали на сервере
   (вариант A: пароль не покидал сервер).
 
+## Файловое хранилище (Object Storage) — Урок 4, Шаг 8
+- **Selectel Object Storage** (S3-совместимое), отдельно от VPS — файлы не нагружают
+  маленький бокс, данные в РФ. Подключение `@aws-sdk/client-s3`, код — `lib/storage.ts`.
+- Первая фича — **аватар** (`User.image`): загрузка через `app/api/avatar` (проверка
+  сессии, валидация по содержимому, лимит 2 МБ), бакет с публичным чтением.
+- Ключи/параметры — в `.env.production` (`S3_*`, см. «Секреты»). Решение — [ADR-006](decisions/ADR-006-file-storage.md).
+- Для секретных файлов (исходные данные) позже — приватный бакет + signed URLs + проверка владельца.
+
 ## nginx
 - Конфиг: `/etc/nginx/sites-available/axon-app` (symlink в `sites-enabled/`; рядом бэкапы `.bak.*`)
 - Reverse-proxy `→ 127.0.0.1:3000`, три server-блока:
@@ -99,7 +107,10 @@ Next.js-фронтенд в Docker-контейнере на **российск�
 - **Текущие переменные:** `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`, `DATABASE_URL`
   (БД, Шаг 1), `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL` (auth, Шаг 5),
   `RESEND_API_KEY` (письма, Шаг 6 — на сервере обязателен для реальной отправки;
-  локально не нужен).
+  локально не нужен),
+  `S3_ENDPOINT` / `S3_REGION` / `S3_ACCESS_KEY_ID` / `S3_SECRET_ACCESS_KEY` /
+  `S3_BUCKET` / `S3_PUBLIC_URL` (файловое хранилище Selectel Object Storage, Шаг 8 —
+  ключи на сервере; см. [ADR-006](decisions/ADR-006-file-storage.md)).
 - `docker compose` на сервере читает их через `--env-file .env.production` (см. `deploy.sh`).
   rsync при деплое **исключает** `.env*` — секреты на сервере не перезаписываются.
 - Резервная копия секретов → **Bitwarden** (НЕ iCloud, НЕ git).

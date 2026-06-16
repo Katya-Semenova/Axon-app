@@ -319,6 +319,13 @@
     "dangerPassword": "Введите пароль для подтверждения",
     "delete": "Удалить аккаунт",
     "deleteConfirm": "Удалить аккаунт и все проекты? Это нельзя отменить.",
-    "wrongPassword": "Неверный пароль"
+    "wrongPassword": "Неверный пароль",
+    "avatarTitle": "Фото профиля",
+    "upload": "Загрузить фото",
+    "avatarHint": "PNG, JPG или WEBP — до 2 МБ",
+    "avatarSaved": "Фото обновлено",
+    "avatarError": "Не удалось загрузить фото",
+    "avatarTooLarge": "Файл слишком большой (макс. 2 МБ)",
+    "avatarBadType": "Только PNG, JPG или WEBP"
   }
 }
