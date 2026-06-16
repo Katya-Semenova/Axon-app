@@ -10,6 +10,10 @@
  * Локаль письма берётся из заголовков запроса (cookie выбора / Accept-Language).
  * Любой сбой отправки изолирован (try/catch) и НЕ ломает вход/регистрацию.
  *
+ * Шаг 9 — защита входа: rate-limit на чувствительные эндпоинты (перебор пароля,
+ * «бомбинг» письмами сброса). Реальный IP приходит через X-Forwarded-For от nginx.
+ * Cookie сессии у Better Auth по умолчанию HttpOnly + Secure (на HTTPS) + SameSite=lax.
+ *
  * Секрет — BETTER_AUTH_SECRET, адрес — BETTER_AUTH_URL, ключ писем — RESEND_API_KEY.
  */
 import { betterAuth } from "better-auth";
@@ -27,6 +31,20 @@ function localeFrom(headers?: Headers | null): Locale {
 export const auth = betterAuth({
   baseURL: process.env.BETTER_AUTH_URL ?? "http://localhost:3000",
   database: prismaAdapter(prisma, { provider: "postgresql" }),
+  /* ── Защита входа (Шаг 9) ─ rate-limit по IP (хранение в памяти, без миграции). ─
+     Базовый лимит — мягкий, чувствительные пути — строгие. */
+  rateLimit: {
+    enabled: true,            // включаем и локально (по умолчанию — только прод)
+    window: 10,
+    max: 100,
+    customRules: {
+      "/sign-in/email":          { window: 60, max: 10 }, // перебор пароля
+      "/sign-up/email":          { window: 60, max: 5 },  // спам-регистрации
+      "/request-password-reset": { window: 60, max: 3 },  // «бомбинг» письмами
+      "/forget-password":        { window: 60, max: 3 },
+      "/reset-password":         { window: 60, max: 5 },
+    },
+  },
   user: {
     // Удаление аккаунта (Шаг 7, «Опасная зона»). Без письма-подтверждения —
     // удаляем сразу; на клиенте требуем пароль. Каскад в схеме удалит и доски.
