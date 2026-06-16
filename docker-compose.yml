@@ -5,6 +5,7 @@ services:
       DATABASE_URL: ${DATABASE_URL}             # адрес базы (из .env.production)
       BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET} # секрет сессий входа (Шаг 5)
       BETTER_AUTH_URL: ${BETTER_AUTH_URL}       # публичный адрес сайта (Шаг 5)
+      RESEND_API_KEY: ${RESEND_API_KEY}         # ключ отправки писем Resend (Шаг 6)
     ports:
       - "127.0.0.1:3000:3000"   # только localhost — наружу отдаёт nginx
     restart: unless-stopped      # сам поднимется после падения/перезагрузки сервера
