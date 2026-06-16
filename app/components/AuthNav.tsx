@@ -38,7 +38,9 @@ export function AuthNav() {
 
   return (
     <div className="flex items-center gap-3">
-      <Avatar initials={initials} size="sm" />
+      <Link href="/settings" title="Настройки" className="transition-opacity duration-200 hover:opacity-80">
+        <Avatar initials={initials} size="sm" />
+      </Link>
       <button
         onClick={handleLogout}
         className="text-[13px] text-t2 hover:text-t1 transition-colors duration-200 cursor-pointer"

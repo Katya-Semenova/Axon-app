@@ -27,6 +27,11 @@ function localeFrom(headers?: Headers | null): Locale {
 export const auth = betterAuth({
   baseURL: process.env.BETTER_AUTH_URL ?? "http://localhost:3000",
   database: prismaAdapter(prisma, { provider: "postgresql" }),
+  user: {
+    // Удаление аккаунта (Шаг 7, «Опасная зона»). Без письма-подтверждения —
+    // удаляем сразу; на клиенте требуем пароль. Каскад в схеме удалит и доски.
+    deleteUser: { enabled: true },
+  },
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: false,

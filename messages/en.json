@@ -294,5 +294,31 @@
     "submitLogin": "Sign in & save",
     "errRegister": "Couldn’t sign up",
     "errLogin": "Wrong email or password"
+  },
+  "Settings": {
+    "title": "Settings",
+    "back": "Back to projects",
+    "signOut": "Sign out",
+    "genericError": "Something went wrong, please try again",
+    "profileTitle": "Profile",
+    "name": "Name",
+    "save": "Save",
+    "saved": "Name updated",
+    "nameRequired": "Name can’t be empty",
+    "securityTitle": "Security",
+    "current": "Current password",
+    "new": "New password",
+    "confirm": "Confirm new password",
+    "change": "Change password",
+    "changed": "Password changed",
+    "mismatch": "Passwords don’t match",
+    "tooShort": "Password must be at least 8 characters",
+    "wrongCurrent": "Wrong current password",
+    "dangerTitle": "Danger zone",
+    "dangerDesc": "Deleting your account permanently removes it and all your projects. This can’t be undone.",
+    "dangerPassword": "Enter your password to confirm",
+    "delete": "Delete account",
+    "deleteConfirm": "Delete your account and all projects? This cannot be undone.",
+    "wrongPassword": "Wrong password"
   }
 }
