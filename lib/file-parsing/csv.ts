@@ -14,11 +14,14 @@ export async function parseCsv(file: File, rowCap: number): Promise<ParsedTable>
   const text = await file.text();
   if (!text.trim()) throw new FileParseError("empty", "CSV пустой");
 
+  // Парсим весь файл (как xlsx-ветка), чтобы ЧЕСТНО посчитать усечение: при
+  // preview результат обрезался на rowCap+1 и truncatedRows всегда выходил 0 —
+  // пользователь не узнавал, что данные урезаны. Защита от зависания — лимит
+  // размера файла (MAX_FILE_BYTES, 50 МБ), а не обрезка парсинга.
   const result = Papa.parse<string[]>(text, {
     header: false,
     skipEmptyLines: "greedy",
     dynamicTyping: false, // типизацию делает движок; парсер отдаёт строки как есть
-    preview: rowCap + 1, // заголовок + rowCap строк — не токенизируем весь файл (защита от зависания)
   });
 
   const matrix = result.data;
