@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { roundTo } from "@/lib/charts";
 import { useWorkspaceStore } from "@/lib/store";
 import { useTranslations } from "next-intl";
@@ -54,6 +54,16 @@ export function Canvas({ modeSwitcher }: { modeSwitcher?: React.ReactNode }) {
   const [draggingNode, setDraggingNode] = useState<string | null>(null);
   /* Edge that the mouse is hovering over — shows gold highlight + delete cursor. */
   const [hoveredConnId, setHoveredConnId] = useState<string | null>(null);
+
+  /* После смены набора карточек (загрузка доски / добавление) форсим один
+     ре-рендер: cardHeightRef заполняется реальными высотами во время коммита,
+     но сам по себе перерисовку не вызывает — без этого связи целятся по запасной
+     высоте (CARD_H_EST) и мажут мимо портов, пока не сдвинешь зум/пан.
+     Ключ — строка из id (стабильная) → ровно один лишний рендер, без циклов
+     и без лишних рендеров при перетаскивании (порядок при drag не меняется). */
+  const [, bumpMeasure] = useState(0);
+  const cardKey = insightOrder.join() + "|" + dataSetOrder.join();
+  useLayoutEffect(() => { bumpMeasure((n) => n + 1); }, [cardKey]);
 
   type ActiveConn = { fromId: string; startX: number; startY: number; mouseX: number; mouseY: number };
   const [activeConn, setActiveConn] = useState<ActiveConn | null>(null);

@@ -1,12 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { MyProjects } from "./MyProjects";
 import { LanguageSwitcher } from "../ui/LanguageSwitcher";
 import { AuthNav } from "../AuthNav";
 import { authClient } from "@/lib/auth-client";
-import { createProject } from "@/app/actions/board";
+import { createProject, createProjectFromData } from "@/app/actions/board";
+import { useWorkspaceStore } from "@/lib/store";
+import type { ParseErrorCode } from "@/lib/file-parsing";
 
 /**
  * Landing — entry point before a workspace is opened: nav, hero, dropzone,
@@ -18,11 +20,14 @@ import { createProject } from "@/app/actions/board";
  */
 export function LandingPage({ onNavigate }: { onNavigate: (boardId: string | null) => void }) {
   const [dragOver, setDragOver] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [errorCode, setErrorCode] = useState<ParseErrorCode | "generic" | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const t = useTranslations("Landing");
   const { data: session } = authClient.useSession();
 
-  /* Клик/дроп по dropzone: вошедший — создаём новый проект и открываем его;
-     гость — открываем гостевой холст в памяти (boardId = null). */
+  /* Открыть воркспейс без разбора данных (beta-форматы и вход без файла):
+     вошедший — новый проект; гость — гостевой холст в памяти (boardId = null). */
   const handleStart = async () => {
     if (!session) { onNavigate(null); return; }
     try {
@@ -32,6 +37,52 @@ export function LandingPage({ onNavigate }: { onNavigate: (boardId: string | nul
       console.error("[LandingPage] не удалось создать проект:", err);
     }
   };
+
+  /* Реальный разбор CSV/Excel (Шаг 10): файл → таблица → инсайты/графики → холст.
+     Тяжёлые модули (парсер + движок) грузим динамически — вне бандла лендинга. */
+  const handleFile = async (file?: File) => {
+    setErrorCode(null);
+    if (!file) return;
+
+    const fp = await import("@/lib/file-parsing");
+    if (!fp.isFullParseSupported(file)) {
+      // PDF / картинки / SQL — beta-путь вне рамок этой фичи: открываем как раньше.
+      handleStart();
+      return;
+    }
+
+    setBusy(true);
+    try {
+      const table = await fp.parseFile(file);
+      const { buildBoardData } = await import("@/lib/insight-engine");
+      const board = buildBoardData(table);
+
+      if (!session) {
+        useWorkspaceStore.getState().hydrate(board);
+        onNavigate(null);
+      } else {
+        const id = await createProjectFromData(board, table.sourceName);
+        onNavigate(id);
+      }
+    } catch (err) {
+      setBusy(false);
+      if (err instanceof fp.FileParseError) setErrorCode(err.code);
+      else { console.error("[LandingPage] разбор файла упал:", err); setErrorCode("generic"); }
+    }
+  };
+
+  /* Сообщение об ошибке разбора — статичные ключи (типобезопасно для next-intl). */
+  const errorText = (() => {
+    switch (errorCode) {
+      case "too-big":     return t("dropzone.error.tooBig");
+      case "empty":       return t("dropzone.error.empty");
+      case "unsupported": return t("dropzone.error.unsupported");
+      case "corrupt":     return t("dropzone.error.corrupt");
+      case "no-columns":  return t("dropzone.error.noColumns");
+      case "generic":     return t("dropzone.error.generic");
+      default:            return null;
+    }
+  })();
 
   return (
     <div className="min-h-screen bg-bg animate-fade-in">
@@ -62,19 +113,35 @@ export function LandingPage({ onNavigate }: { onNavigate: (boardId: string | nul
         </div>
 
         <div
-          className={`mx-12 mb-[80px] border-[1.5px] border-dashed rounded-none py-[56px] px-12 text-center cursor-pointer transition-colors duration-200 relative max-md:mx-6 max-md:mb-16 max-sm:mx-4 max-sm:mb-12 max-sm:py-9 max-sm:px-6
-            ${dragOver ? "border-gold-500 bg-gold-500/5" : "border-border hover:border-gold-500 hover:bg-gold-500/[0.04]"}`}
-          onClick={handleStart}
-          onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+          className={`mx-12 mb-[80px] border-[1.5px] border-dashed rounded-none py-[56px] px-12 text-center transition-colors duration-200 relative max-md:mx-6 max-md:mb-16 max-sm:mx-4 max-sm:mb-12 max-sm:py-9 max-sm:px-6
+            ${busy ? "cursor-wait opacity-70" : "cursor-pointer"}
+            ${errorCode
+              ? "border-error bg-error/5"
+              : dragOver
+                ? "border-gold-500 bg-gold-500/5"
+                : "border-border hover:border-gold-500 hover:bg-gold-500/[0.04]"}`}
+          onClick={() => { if (!busy) inputRef.current?.click(); }}
+          onDragOver={(e) => { e.preventDefault(); if (!busy) setDragOver(true); }}
           onDragLeave={() => setDragOver(false)}
-          onDrop={(e) => { e.preventDefault(); setDragOver(false); handleStart(); }}
+          onDrop={(e) => { e.preventDefault(); setDragOver(false); if (!busy) handleFile(e.dataTransfer.files?.[0]); }}
         >
+          <input
+            ref={inputRef}
+            type="file"
+            accept=".csv,.tsv,.xlsx,.xls,.pdf,.png,.jpg,.jpeg,.sql,.txt,.json,.svg"
+            className="hidden"
+            onChange={(e) => { handleFile(e.target.files?.[0]); e.target.value = ""; }}
+          />
           <svg className="w-10 h-10 mx-auto mb-4 text-t3" viewBox="0 0 40 40" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="M20 26V14M20 14l-5 5M20 14l5 5" />
             <path d="M8 28c-3.31 0-6-2.69-6-6 0-3.03 2.25-5.53 5.19-5.94C8.05 13.06 11.18 11 15 11c3.5 0 6.58 1.75 8.43 4.43C25.5 15.17 27.67 15 30 15c4.42 0 8 3.58 8 8 0 2.76-2.24 5-5 5H8z" />
           </svg>
-          <p className="text-[15px] font-medium text-t1 mb-1.5">{t("dropzone.cta")}</p>
-          <p className="font-mono text-[11.5px] text-t3">{t("dropzone.formats")}</p>
+          <p className="text-[15px] font-medium text-t1 mb-1.5">
+            {busy ? t("dropzone.parsing") : t("dropzone.cta")}
+          </p>
+          {errorText
+            ? <p className="text-[12px] text-error font-medium">{errorText}</p>
+            : <p className="font-mono text-[11.5px] text-t3">{t("dropzone.formats")}</p>}
         </div>
 
         {session ? (

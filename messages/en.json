@@ -12,7 +12,16 @@
     },
     "dropzone": {
       "cta": "Drop a file or click to upload",
-      "formats": "Supports .sql · .csv · .xlsx · .txt · .png · .jpg — up to 50 MB"
+      "formats": "CSV, Excel — full parse · PDF, images, SQL — beta · up to 50 MB",
+      "parsing": "Parsing file…",
+      "error": {
+        "tooBig": "File is larger than 50 MB — please upload a smaller one",
+        "empty": "The file is empty — no data rows found",
+        "unsupported": "This format is in beta — upload a CSV or Excel (.xlsx) for full parsing",
+        "corrupt": "Couldn't read the file — it may be corrupt or password-protected",
+        "noColumns": "Couldn't detect columns — make sure the first row has headers",
+        "generic": "Couldn't parse the file — try another one"
+      }
     },
     "recent": {
       "title": "Recent Projects",
