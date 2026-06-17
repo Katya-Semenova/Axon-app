@@ -348,9 +348,11 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => {
       canvasTransform:     data.canvasTransform ?? s.canvasTransform,
       presentationThemeId: data.presentationThemeId ?? s.presentationThemeId,
       sourceFiles:         data.sourceFiles ?? [],
-      // Чат восстанавливаем из доски; сырую таблицу — нет (её не персистим → «построить» до новой загрузки недоступно).
+      // Чат восстанавливаем из доски. sourceTable НЕ трогаем: при загрузке файла его ставят
+      // перед навигацией, а BoardSync затем гидратит ту же доску — сброс здесь стёр бы таблицу
+      // (тогда «построить инсайт» не работал бы у вошедшего). На чистой загрузке проекта
+      // sourceTable и так null (начальное состояние) → «построить» недоступно, что верно.
       dataChatMessages:    data.chatMessages ?? [],
-      sourceTable:         null,
       history:    [data.snapshot],
       historyIdx: 0,
       activeSlideId: data.snapshot.slideOrder[0] ?? null,
