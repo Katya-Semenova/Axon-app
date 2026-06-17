@@ -71,6 +71,24 @@
   `next.config.ts` (сейчас есть X-Frame/nosniff/Referrer/Permissions, но не CSP на HTML).
 - **Док-рассинхрон (не баг).** `CLAUDE.md` пишет «5 login/min», код — 10/60s; выровнять текст.
 
+## Тулинг / lint (вскрылось при ревью Шага 11, 2026-06-17)
+> ESLint был сломан (битый `@typescript-eslint/typescript-estree` — отсутствовал `version-check.js`),
+> починен `npm ci`. После починки `npm run lint` показал накопившийся долг в UI-коде — сборка линт
+> игнорит (`next.config → eslint.ignoreDuringBuilds: true`). **Код бэкенда Урока 4 — чист.**
+- **Lint-уборка: 36 проблем (6 errors / 30 warnings) в UI-компонентах** — всё косметика, не баги:
+  - errors: `prefer-const` (ChartRenderer:831, MiniChart:390 — авто-`--fix`); `ban-ts-comment`
+    `@ts-ignore`→`@ts-expect-error` (PresentationStructure:140, SlideArchetypeRenderer:422);
+    пустой `interface` (BackButton:9); `<a href="/">`→`<Link>` (storybook:982).
+  - warnings: в основном `no-unused-vars` (мёртвые объявления) + пара `react-hooks/exhaustive-deps`
+    (SlideEditor — проверить, не стейл-клоужер ли).
+  - Быстрый старт: `npm run lint -- --fix` закрывает 2–3 авто-фиксимых; остальное руками, отдельной сессией.
+- **Вернуть lint в сборку после уборки.** Сейчас `ignoreDuringBuilds: true` — линт нигде не enforced,
+  поэтому долг и накопился. Снять флаг, когда почистим, чтобы не копилось снова.
+- **Устаревшие `@react-email/*`.** `npm ci` ругается `deprecated` на ~20 под-пакетов React Email.
+  Шаблоны писем работают; обновить email-стек, когда дойдут руки.
+- **`npm audit`: 5 уязвимостей (1 low, 4 moderate).** High/critical нет. Глянуть `npm audit`,
+  применить `npm audit fix` (без `--force`, чтобы не сломать мажоры).
+
 ## Корневой мусор / уборка (в конце Урока 4)
 - Проверить и, если не нужны, удалить из корня следы прошлого рефактора и артефакты проверок:
   `REFACTOR_README.md`, `REFACTOR_PROGRESS.md`, `DataTable.NEW.tsx.txt`, папку `archive/`,
