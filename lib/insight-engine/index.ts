@@ -52,7 +52,7 @@ export function buildBoardData(table: ParsedTable): BoardData {
 
   // EC-2: чисел нет → текстовое резюме + подсказка, не пустой тупик.
   if (metrics.length === 0) {
-    return assemble([buildSummaryInsight(table, profiles)], [], [], []);
+    return { ...assemble([buildSummaryInsight(table, profiles)], [], [], []), sourceFiles: [table.sourceName] };
   }
 
   const insights = planInsights(table, metrics, dims).slice(0, MAX_INSIGHTS);
@@ -76,7 +76,7 @@ export function buildBoardData(table: ParsedTable): BoardData {
     ...SLIDE_DEFAULTS,
   }));
 
-  return assemble(insights, dataSets, connections, slides);
+  return { ...assemble(insights, dataSets, connections, slides), sourceFiles: [table.sourceName] };
 }
 
 /* ── Планирование инсайтов по форме данных ─────────────────────────────── */

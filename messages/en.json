@@ -60,7 +60,14 @@
     "generating": "Generating insights…",
     "placeholderData": "Ask anything about your data…",
     "placeholderRefine": "Refine the presentation…",
-    "send": "Send"
+    "send": "Send",
+    "files": "Files",
+    "noFiles": "No files yet",
+    "addFile": "Add file",
+    "adding": "Adding…",
+    "added": "Added «{name}»",
+    "aiSoon": "AI chat is coming. For now, add files with the button above — insights appear on the canvas.",
+    "aiSoonPlaceholder": "AI chat coming soon"
   },
   "ModeTabs": {
     "ariaLabel": "Workspace mode",

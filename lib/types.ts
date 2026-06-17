@@ -355,6 +355,9 @@ export interface BoardData {
   nodePositions: NodePositionMap;
   canvasTransform: { x: number; y: number; zoom: number };
   presentationThemeId: PresentationThemeId;
+  /** Имена загруженных файлов-источников — для чипов в чат-рейле (Шаг 11).
+      Опционально: старые сохранённые доски этого поля не имеют. */
+  sourceFiles?: string[];
 }
 
 /** Краткое описание проекта для списка «Мои проекты» (Урок 4, Шаг 7). */

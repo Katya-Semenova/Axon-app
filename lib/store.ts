@@ -148,6 +148,7 @@ export function initialBoardData(): BoardData {
     nodePositions:       seedNodePositions(),
     canvasTransform:     { x: 20, y: 20, zoom: 0.75 },
     presentationThemeId: "editorial",
+    sourceFiles:         [],
   };
 }
 
@@ -171,6 +172,7 @@ export function currentBoardData(): BoardData {
     nodePositions:       s.nodePositions,
     canvasTransform:     s.canvasTransform,
     presentationThemeId: s.presentationThemeId,
+    sourceFiles:         s.sourceFiles,
   };
 }
 
@@ -187,6 +189,9 @@ interface WorkspaceStateShape extends WorkspaceSnapshot {
   activeSlideId:     string | null;
   nodePositions:     NodePositionMap;
   canvasTransform:   { x: number; y: number; zoom: number };
+
+  /** Имена загруженных файлов-источников (для чипов чат-рейла, Шаг 11). */
+  sourceFiles:       string[];
 
   /* ── Build mode ─ */
   buildAudience:      BuildAudience;
@@ -207,6 +212,9 @@ interface WorkspaceActions {
 
   /** Загрузить доску из БД (снимок + раскладка), сбросив историю. */
   hydrate: (data: BoardData) => void;
+
+  /** Добавить разобранный файл (BoardData) к ТЕКУЩЕЙ доске — не заменяя её. (Шаг 11.) */
+  mergeBoardData: (data: BoardData) => void;
 
   setMode:         (mode: Mode) => void;
   toggleMode:      () => void;
@@ -283,6 +291,7 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => {
     nodePositions:     seedNodePositions(),
     /* Zoomed out to 0.75 so all 3 seed datasets fit without vertical clipping. */
     canvasTransform:   { x: 20, y: 20, zoom: 0.75 },
+    sourceFiles:       [],
 
     buildAudience:      "CEO",
     buildTone:          "Neutral",
@@ -314,10 +323,86 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => {
       nodePositions:       data.nodePositions ?? s.nodePositions,
       canvasTransform:     data.canvasTransform ?? s.canvasTransform,
       presentationThemeId: data.presentationThemeId ?? s.presentationThemeId,
+      sourceFiles:         data.sourceFiles ?? [],
       history:    [data.snapshot],
       historyIdx: 0,
       activeSlideId: data.snapshot.slideOrder[0] ?? null,
     })),
+
+    /* ── merge uploaded file into the CURRENT board (Шаг 11) ─
+       Дописывает узлы разобранного файла к доске (не заменяет, как hydrate).
+       id со сдвигом (префикс-токен) → без коллизий с прежними; serial продолжает
+       нумерацию; новые узлы кладём ниже текущих. nodePositions/sourceFiles вне
+       undo-снимка — как и обычные позиции (set вне commit), это ок. */
+    mergeBoardData: (data) => {
+      const token = `m${Date.now().toString(36)}`;
+      const rid   = (id: string) => `${token}-${id}`;
+      const snap  = data.snapshot;
+      commit((s) => {
+        const insOffset = s.insightOrder.length;
+        const dsOffset  = s.dataSetOrder.length;
+        const slOffset  = s.slideOrder.length;
+        const maxY   = Object.values(s.nodePositions).reduce((m, p) => Math.max(m, p.y), 0);
+        const yShift = (s.insightOrder.length || s.dataSetOrder.length) ? maxY + 320 : 0;
+
+        const insightsById = { ...s.insightsById };
+        const insightOrder = [...s.insightOrder];
+        snap.insightOrder.forEach((oldId, i) => {
+          const ins = snap.insightsById[oldId];
+          if (!ins) return;
+          const id = rid(oldId);
+          insightsById[id] = { ...ins, id, serial: insOffset + i + 1 };
+          insightOrder.push(id);
+        });
+
+        const dataSetsById = { ...s.dataSetsById };
+        const dataSetOrder = [...s.dataSetOrder];
+        snap.dataSetOrder.forEach((oldId, i) => {
+          const ds = snap.dataSetsById[oldId];
+          if (!ds) return;
+          const id = rid(oldId);
+          const rows = ds.rows.map((r) => ({
+            ...r,
+            id: rid(r.id),
+            sourceInsightId: r.sourceInsightId ? rid(r.sourceInsightId) : undefined,
+          }));
+          dataSetsById[id] = { ...ds, id, serial: dsOffset + i + 1, rows };
+          dataSetOrder.push(id);
+        });
+
+        const slidesById = { ...s.slidesById };
+        const slideOrder = [...s.slideOrder];
+        snap.slideOrder.forEach((oldId, i) => {
+          const sl = snap.slidesById[oldId];
+          if (!sl) return;
+          const id = rid(oldId);
+          slidesById[id] = { ...sl, id, serial: slOffset + i + 1, dataSetIds: sl.dataSetIds.map(rid) };
+          slideOrder.push(id);
+        });
+
+        const connections = [
+          ...s.connections,
+          ...snap.connections.map((c) => ({
+            id:            rid(c.id),
+            fromInsightId: rid(c.fromInsightId),
+            toDataSetId:   rid(c.toDataSetId),
+          })),
+        ];
+
+        const nodePositions = { ...s.nodePositions };
+        for (const [oldId, pos] of Object.entries(data.nodePositions ?? {})) {
+          nodePositions[rid(oldId)] = { x: pos.x, y: pos.y + yShift };
+        }
+
+        return {
+          insightsById, insightOrder,
+          dataSetsById, dataSetOrder,
+          slidesById,   slideOrder,
+          connections,  nodePositions,
+          sourceFiles: [...s.sourceFiles, ...(data.sourceFiles ?? [])],
+        };
+      });
+    },
 
     /* ── mode & chat ─ */
     setMode:          (mode) => set({ mode }),
