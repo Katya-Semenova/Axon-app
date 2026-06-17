@@ -14,6 +14,7 @@
 | [ADR-005](ADR-005-email-provider.md) | Письма аккаунта — Resend + React Email | ✅ Принято | 2026-06-16 |
 | [ADR-006](ADR-006-file-storage.md) | Хранилище файлов — Selectel Object Storage (S3) | ✅ Принято | 2026-06-16 |
 | [ADR-007](ADR-007-sharing.md) | Публичная ссылка на презентацию (ShareLink + `/p/[token]`, read-only) | ✅ Принято | 2026-06-17 |
+| [ADR-008](ADR-008-ai-provider.md) | ИИ в продукте — провайдер-агностичный слой (`lib/ai/`), дефолт OpenRouter, GigaChat — опция | ✅ Принято | 2026-06-17 |
 
 ## Findings — находки
 _(появятся в следующих уроках)_
