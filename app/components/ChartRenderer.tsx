@@ -240,8 +240,11 @@ function DonutChart({ rows, columns, expanded, containerWidth, containerHeight }
      This replaces the flat fSize*2.8 guess that mis-fires on short/long values. */
   const LABEL_X  = markerS + 6;         // x where label text starts within the legend group
   const MIN_GAP  = 8;                   // guaranteed px between label end and value start
+  // Пончик = часть-от-целого: в легенде показываем ДОЛЮ сектора (value/total),
+  // тогда «%» правдив (раньше «%» лепился к сырому значению → 918000%).
+  const sharePct = (v: number) => Math.round((v / total) * 100);
   const maxValStr = rows.reduce((mx, row) => {
-    const s = `${row.values[0] ?? 0}%`;
+    const s = `${sharePct(row.values[0] ?? 0)}%`;
     return s.length > mx.length ? s : mx;
   }, "");
   const valTextW = maxValStr.length * fSize * 0.63;  // monospace width estimate
@@ -265,6 +268,14 @@ function DonutChart({ rows, columns, expanded, containerWidth, containerHeight }
   const numY   = CY - pairH / 2 + numSize * 0.75;
   const chanY  = numY + CHAN_GAP + CHAN_SIZE;
 
+  // Центр пончика = «целое»: компактный итог (1.3M / 4.2K) вместо числа секторов.
+  const compactNum = (v: number) => {
+    const a = Math.abs(v);
+    if (a >= 1e6) return `${(v / 1e6).toFixed(1)}M`;
+    if (a >= 1e3) return `${(v / 1e3).toFixed(1)}K`;
+    return `${Math.round(v)}`;
+  };
+
   return (
     <svg viewBox={`0 0 ${W} ${H}`} fill="none" {...svgAttrs(containerWidth, containerHeight, expanded)}>
       {slices.map((s, i) => (
@@ -272,10 +283,10 @@ function DonutChart({ rows, columns, expanded, containerWidth, containerHeight }
       ))}
       <text x={CX} y={numY} textAnchor="middle"
         fontSize={numSize} fontFamily={SERIF_FAMILY} fill={NAVY}>
-        {rows.length}
+        {compactNum(total)}
       </text>
       <text x={CX} y={chanY} textAnchor="middle" fontSize={CHAN_SIZE}
-        fontFamily={MONO_FAMILY} fill={T2} letterSpacing="0.08em">CHANNELS</text>
+        fontFamily={MONO_FAMILY} fill={T2} letterSpacing="0.08em">TOTAL</text>
       {rows.map((row, i) => {
         const y = startY + i * rowH;
         if (twoLine) {
@@ -290,7 +301,7 @@ function DonutChart({ rows, columns, expanded, containerWidth, containerHeight }
               </text>
               <text x={LABEL_X} y={rowH * 0.88} fontSize={fSize - 1}
                 fill={NAVY} fontFamily={MONO_FAMILY} fontWeight="500">
-                {row.values[0]}%
+                {sharePct(row.values[0] ?? 0)}%
               </text>
             </g>
           );
@@ -306,7 +317,7 @@ function DonutChart({ rows, columns, expanded, containerWidth, containerHeight }
             </text>
             <text x={LABEL_X + labelW + MIN_GAP} y={rowH * 0.72} textAnchor="start" fontSize={fSize}
               fill={NAVY} fontFamily={MONO_FAMILY} fontWeight="500">
-              {row.values[0]}%
+              {sharePct(row.values[0] ?? 0)}%
             </text>
           </g>
         );
