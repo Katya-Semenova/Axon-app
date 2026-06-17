@@ -131,14 +131,18 @@ function singleMetricByDim(
   const ratio = metric.nonNull / Math.max(1, table.rows.length);
 
   if (dim.type === "date") {
-    // Временной ряд: одна точка на строку (в порядке файла), кап точек.
-    const rows: DataRow[] = [];
+    // Временной ряд, отсортированный по дате (файл может быть не упорядочен — иначе
+    // Spline Area зигзагует). Сортируем ТОЛЬКО если все метки «год впереди» (ISO,
+    // в т.ч. даты из xlsx); неоднозначные форматы (день/месяц впереди) не трогаем,
+    // чтобы не перемешать уже верный порядок файла.
+    const pts: { label: string; value: number }[] = [];
     for (const r of table.rows) {
       const v = parseNumeric(r[metric.index]);
-      if (v === null) continue;
-      rows.push(row(`r${rows.length + 1}`, cellLabel(r[dim.index]), r2(v)));
-      if (rows.length >= MAX_SERIES_POINTS) break;
+      if (v !== null) pts.push({ label: cellLabel(r[dim.index]), value: r2(v) });
     }
+    const keyed = pts.map((p) => ({ p, k: dateSortKey(p.label) }));
+    if (keyed.every((x) => !Number.isNaN(x.k))) keyed.sort((a, b) => a.k - b.k);
+    const rows = keyed.slice(0, MAX_SERIES_POINTS).map((x, i) => row(`r${i + 1}`, x.p.label, x.p.value));
     return dataInsight(serial, `${metric.name} · ${dim.name}`, "Spline Area", [metric.name], rows, ratio);
   }
 
@@ -303,6 +307,15 @@ function neutralizeFormula(s: string): string {
 function cellLabel(cell: RawCell): string {
   if (cell === null) return "—";
   return neutralizeFormula(String(cell)) || "—";
+}
+
+/** Сортировочный ключ ISO-подобной даты «год впереди» (2024-12-31, 2024/12, 2024.12.31):
+    число YYYYMMDD. NaN, если формат не «год впереди» — тогда ряд остаётся в порядке
+    файла (не рискуем перемешать неоднозначные день/месяц-первые форматы). */
+function dateSortKey(label: string): number {
+  const m = /^(\d{4})[-/.](\d{1,2})(?:[-/.](\d{1,2}))?$/.exec(label.trim());
+  if (!m) return NaN;
+  return Number(m[1]) * 10000 + Number(m[2]) * 100 + Number(m[3] ?? "1");
 }
 
 function row(id: string, label: string, ...values: number[]): DataRow {
