@@ -41,7 +41,22 @@ model Board {
   ownerId   String
   owner     User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
 
+  shareLinks ShareLink[]
+
   @@index([ownerId])
+}
+
+/// Публичная ссылка на доску (Шаг 12) — /p/[token], read-only, без входа.
+/// revoked делает ссылку недействительной; срок — бессрочно до отзыва.
+model ShareLink {
+  id        String   @id @default(cuid())
+  token     String   @unique @default(cuid())
+  boardId   String
+  board     Board    @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  revoked   Boolean  @default(false)
+
+  @@index([boardId])
 }
 
 /* ── Better Auth (Урок 4, Шаг 5) — служебные таблицы входа ──────────────────

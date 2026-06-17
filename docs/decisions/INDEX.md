@@ -13,6 +13,7 @@
 | [ADR-004](ADR-004-auth-library.md) | Библиотека авторизации — Better Auth (email+пароль) | ✅ Принято | 2026-06-16 |
 | [ADR-005](ADR-005-email-provider.md) | Письма аккаунта — Resend + React Email | ✅ Принято | 2026-06-16 |
 | [ADR-006](ADR-006-file-storage.md) | Хранилище файлов — Selectel Object Storage (S3) | ✅ Принято | 2026-06-16 |
+| [ADR-007](ADR-007-sharing.md) | Публичная ссылка на презентацию (ShareLink + `/p/[token]`, read-only) | ✅ Принято | 2026-06-17 |
 
 ## Findings — находки
 _(появятся в следующих уроках)_

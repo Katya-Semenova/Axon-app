@@ -366,3 +366,12 @@ export interface ProjectSummary {
   title: string;
   updatedAt: string; // ISO — сериализуемо для передачи клиенту
 }
+
+/** Урезанная дека для публичного показа `/p/[token]` (Шаг 12) — только то, что
+    рисуется на read-only странице: слайды + дата-сеты, на которые они ссылаются,
+    + тема. Без инсайтов/связей/позиций — наружу не светим лишнего. */
+export interface PublicDeck {
+  slides: Slide[];
+  dataSetsById: Record<string, DataSet>;
+  presentationThemeId: PresentationThemeId;
+}

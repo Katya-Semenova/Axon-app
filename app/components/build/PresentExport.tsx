@@ -1,13 +1,18 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { MiniChart } from "../MiniChart";
-import { useWorkspaceStore } from "@/lib/store";
+import { useWorkspaceStore, currentBoardData } from "@/lib/store";
 import type { Slide, DataSet } from "@/lib/types";
 import { PRESENTATION_THEMES } from "@/lib/types";
 import { BORDER, GOLD, NAVY, T2, T3, SURFACE, SURFACE_RAISE, SURFACE_MUTED } from "../ui/tokens";
 import { useTranslations } from "next-intl";
+import { authClient } from "@/lib/auth-client";
+import { AuthModal } from "../AuthModal";
+import { useToast } from "../ui/Toast";
+import { createShareLink, revokeShareLink, getActiveShareToken } from "@/app/actions/share";
+import { createProjectFromData } from "@/app/actions/board";
 
 /* ══════════════════════════════════════════════════════════════════════════
    PRESENT — the export gateway.
@@ -92,41 +97,75 @@ const FORMAT_KEY: Record<OutputFormat, string> = {
 
 /* ── Component ─────────────────────────────────────────────────────────── */
 
-export function PresentExport({ modeSwitcher }: { modeSwitcher?: React.ReactNode }) {
-  const t             = useTranslations("Export");
-  const slideOrder    = useWorkspaceStore(s => s.slideOrder);
-  const slidesById    = useWorkspaceStore(s => s.slidesById);
-  const dataSetsById  = useWorkspaceStore(s => s.dataSetsById);
-  const narration     = useWorkspaceStore(s => s.buildNarrationMode);
-  const reorderSlide  = useWorkspaceStore(s => s.reorderSlide);
+export function PresentExport({ modeSwitcher, boardId, onBoardSaved }: {
+  modeSwitcher?: React.ReactNode;
+  boardId: string | null;
+  onBoardSaved: (id: string) => void;
+}) {
+  const t            = useTranslations("Export");
+  const slideOrder   = useWorkspaceStore(s => s.slideOrder);
+  const slidesById   = useWorkspaceStore(s => s.slidesById);
+  const dataSetsById = useWorkspaceStore(s => s.dataSetsById);
+  const reorderSlide = useWorkspaceStore(s => s.reorderSlide);
 
-  const [format, setFormat]         = useState<OutputFormat>("PPTX");
-  const [built, setBuilt]           = useState<null | { kind: "file"; filename: string; size: string } | { kind: "link"; url: string }>(null);
-  const [copied, setCopied]         = useState(false);
+  const { data: session } = authClient.useSession();
+  const { toast } = useToast();
+
+  const [format, setFormat]     = useState<OutputFormat>("View Link");
+  const [shareUrl, setShareUrl] = useState<string | null>(null);
+  const [sharing, setSharing]   = useState(false);
+  const [copied, setCopied]     = useState(false);
+  const [authOpen, setAuthOpen] = useState(false);
 
   const slideCount = slideOrder.length;
-  /* Rough estimate — ~1.5 MB per slide + narration overhead */
-  const sizeMB     = Math.max(1, Math.round(slideCount * 1.5 + (narration === "Voiceover script" ? 2 : 0)));
-  const narrLine   = narration === "None" ? t("narrNone") : narration === "Voiceover script" ? t("narrVoiceover") : t("narrIncluded");
+  const isLink = format === "View Link";
 
-  function handleBuild() {
-    if (slideCount === 0) return;
-    if (format === "PPTX" || format === "PDF") {
-      const ext = format.toLowerCase();
-      setBuilt({ kind: "file", filename: `axon-deck-${Date.now().toString(36)}.${ext}`, size: `${sizeMB} MB` });
-    } else {
-      setBuilt({ kind: "link", url: `https://axon.app/s/${Date.now().toString(36)}` });
+  /* Если доску уже расшаривали — подтянуть активную ссылку. */
+  useEffect(() => {
+    let cancel = false;
+    if (isLink && boardId) {
+      getActiveShareToken(boardId)
+        .then((tok) => { if (!cancel && tok) setShareUrl(`${window.location.origin}/p/${tok}`); })
+        .catch(() => {});
+    }
+    return () => { cancel = true; };
+  }, [isLink, boardId]);
+
+  function changeFormat(f: OutputFormat) {
+    setFormat(f);
+    setCopied(false);
+  }
+
+  /* Создать ссылку: при необходимости сохранить доску (гость уже вошёл) → ShareLink. */
+  async function doShare() {
+    setSharing(true);
+    try {
+      let bId = boardId;
+      if (!bId) {
+        bId = await createProjectFromData(currentBoardData());
+        if (bId) onBoardSaved(bId);
+      }
+      const token = bId ? await createShareLink(bId) : null;
+      if (!token) throw new Error("share failed");
+      setShareUrl(`${window.location.origin}/p/${token}`);
+    } catch {
+      toast(t("shareError"), { variant: "error" });
+    } finally {
+      setSharing(false);
     }
   }
 
-  function resetBuild() {
-    setBuilt(null);
+  /* Клик «Поделиться»: гость → вход (AuthModal), затем создаём ссылку. */
+  function handleShare() {
+    if (slideCount === 0) return;
+    if (!session) { setAuthOpen(true); return; }
+    void doShare();
   }
 
-  /* When the user changes any input, invalidate the result so they re-build */
-  function changeFormat(f: OutputFormat) {
-    setFormat(f);
-    if (built) setBuilt(null);
+  async function handleRevoke() {
+    if (boardId) await revokeShareLink(boardId).catch(() => {});
+    setShareUrl(null);
+    toast(t("revoked"));
   }
 
   return (
@@ -243,137 +282,122 @@ export function PresentExport({ modeSwitcher }: { modeSwitcher?: React.ReactNode
             slideOrder={slideOrder}
             slidesById={slidesById}
             dataSetsById={dataSetsById}
-            onReorder={(from, to) => { reorderSlide(from, to); if (built) setBuilt(null); }}
+            onReorder={(from, to) => reorderSlide(from, to)}
           />
 
-          {/* ── 3. Build bar OR 4. Result card ── */}
-          <AnimatePresence mode="wait">
-            {!built ? (
-              <motion.div
-                key="build-bar"
-                initial={{ opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -6 }}
-                transition={{ duration: 0.18 }}
-                style={{
-                  display: "flex", alignItems: "center", justifyContent: "space-between",
-                  gap: 16,
-                  padding: "16px 22px",
-                  border: `1px solid ${BORDER}`,
-                  background: SURFACE,
-                }}
-              >
-                <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                  <span style={{ fontFamily: mono, fontSize: 11.5, color: NAVY, fontWeight: 500 }}>
-                    {slideCount === 0 ? t("addSlidesFirst") : t("buildStats", { count: slideCount, mb: sizeMB, narr: narrLine })}
-                  </span>
-                  <span style={{ fontFamily: mono, fontSize: 9.5, color: T3, letterSpacing: "0.05em" }}>
-                    {format === "PPTX" || format === "PDF" ? t("fileOutput") : t("shareableLink")} · {format}
-                  </span>
-                </div>
-                <button
-                  onClick={handleBuild}
-                  disabled={slideCount === 0}
+          {/* ── 3. Поделиться (View Link) / результат · PPTX·PDF·Interactive — «скоро» ── */}
+          {isLink ? (
+            <AnimatePresence mode="wait">
+              {!shareUrl ? (
+                <motion.div
+                  key="share-bar"
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -6 }}
+                  transition={{ duration: 0.18 }}
                   style={{
-                    display: "flex", alignItems: "center", gap: 8,
-                    padding: "11px 28px",
-                    fontFamily: mono, fontSize: 13, fontWeight: 500, letterSpacing: "0.06em",
-                    /* Round-4 fix 7: white text + white icon on dark navy.
-                       Disabled state lifts opacity rather than swapping colours. */
-                    color: "#FFFFFF",
-                    background: slideCount === 0 ? "rgba(27,35,50,0.45)" : "#1B2332",
-                    border: "none", borderRadius: 0,
-                    cursor: slideCount === 0 ? "default" : "pointer",
-                    textTransform: "uppercase",
-                    transition: "background 150ms ease",
+                    display: "flex", alignItems: "center", justifyContent: "space-between",
+                    gap: 16, padding: "16px 22px", border: `1px solid ${BORDER}`, background: SURFACE,
                   }}
-                  onMouseEnter={e => { if (slideCount > 0) e.currentTarget.style.background = "#27334A"; }}
-                  onMouseLeave={e => { if (slideCount > 0) e.currentTarget.style.background = "#1B2332"; }}
                 >
-                  {/* ti-hammer — 17 px white, left of label */}
-                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M11.414 10l-7.383 7.418a2.091 2.091 0 0 0 0 2.967a2.11 2.11 0 0 0 2.976 0l7.407 -7.385" />
-                    <path d="M18.121 15.293l2.586 -2.586a1 1 0 0 0 0 -1.414l-7.586 -7.586a1 1 0 0 0 -1.414 0l-2.586 2.586a1 1 0 0 0 0 1.414l7.586 7.586a1 1 0 0 0 1.414 0z" />
-                  </svg>
-                  {t("build")}
-                </button>
-              </motion.div>
-            ) : (
-              <motion.div
-                key="result-card"
-                initial={{ opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -6 }}
-                transition={{ duration: 0.18 }}
-                style={{
-                  padding: "20px 22px",
-                  border: `2px solid ${NAVY}`,
-                  background: "#FBF9F3",
-                }}
-              >
-                <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16 }}>
-                  <div style={{ display: "flex", flexDirection: "column", gap: 8, minWidth: 0, flex: 1 }}>
-                    <span style={{ fontFamily: mono, fontSize: 9.5, letterSpacing: "0.11em", textTransform: "uppercase", color: NAVY, fontWeight: 500 }}>
-                      {t("readyFormat", { format })}
+                  <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                    <span style={{ fontFamily: mono, fontSize: 11.5, color: NAVY, fontWeight: 500 }}>
+                      {slideCount === 0 ? t("addSlidesFirst") : t("slidesReady", { count: slideCount })}
                     </span>
-                    {built.kind === "file" ? (
-                      <>
-                        <span style={{ fontFamily: "Inter, sans-serif", fontSize: 14, fontWeight: 500, color: NAVY, wordBreak: "break-all" }}>
-                          {built.filename}
-                        </span>
-                        <span style={{ fontFamily: mono, fontSize: 11, color: T2 }}>
-                          {built.size}
-                        </span>
-                      </>
-                    ) : (
-                      <>
-                        <span style={{ fontFamily: mono, fontSize: 12, color: NAVY, wordBreak: "break-all" }}>
-                          {built.url}
-                        </span>
-                        <span style={{ fontFamily: mono, fontSize: 10, color: T3 }}>{t("expires")}</span>
-                      </>
-                    )}
+                    <span style={{ fontFamily: mono, fontSize: 9.5, color: T3, letterSpacing: "0.05em" }}>
+                      {t("shareableLink")} · {t("noLoginToView")}
+                    </span>
                   </div>
-                  <div style={{ display: "flex", flexDirection: "column", gap: 8, alignItems: "flex-end", flexShrink: 0 }}>
-                    {built.kind === "file" ? (
-                      <ResultButton primary onClick={() => {/* mock download */}}>
-                        {t("download")}
+                  <button
+                    onClick={handleShare}
+                    disabled={slideCount === 0 || sharing}
+                    style={{
+                      display: "flex", alignItems: "center", gap: 8, padding: "11px 28px",
+                      fontFamily: mono, fontSize: 13, fontWeight: 500, letterSpacing: "0.06em",
+                      color: "#FFFFFF",
+                      background: slideCount === 0 || sharing ? "rgba(27,35,50,0.45)" : "#1B2332",
+                      border: "none", borderRadius: 0,
+                      cursor: slideCount === 0 || sharing ? "default" : "pointer",
+                      textTransform: "uppercase", transition: "background 150ms ease",
+                    }}
+                    onMouseEnter={e => { if (slideCount > 0 && !sharing) e.currentTarget.style.background = "#27334A"; }}
+                    onMouseLeave={e => { if (slideCount > 0 && !sharing) e.currentTarget.style.background = "#1B2332"; }}
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M9 15l6 -6" />
+                      <path d="M11 6l.463 -.536a5 5 0 0 1 7.071 7.072l-.534 .464" />
+                      <path d="M13 18l-.397 .534a5.068 5.068 0 0 1 -7.127 0a4.972 4.972 0 0 1 0 -7.071l.524 -.463" />
+                    </svg>
+                    {sharing ? t("sharing") : t("shareBtn")}
+                  </button>
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="share-result"
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -6 }}
+                  transition={{ duration: 0.18 }}
+                  style={{ padding: "20px 22px", border: `2px solid ${NAVY}`, background: "#FBF9F3" }}
+                >
+                  <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16 }}>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 8, minWidth: 0, flex: 1 }}>
+                      <span style={{ fontFamily: mono, fontSize: 9.5, letterSpacing: "0.11em", textTransform: "uppercase", color: NAVY, fontWeight: 500 }}>
+                        {t("readyFormat", { format })}
+                      </span>
+                      <span style={{ fontFamily: mono, fontSize: 12, color: NAVY, wordBreak: "break-all" }}>
+                        {shareUrl}
+                      </span>
+                      <span style={{ fontFamily: mono, fontSize: 10, color: T3 }}>{t("linkLifetime")}</span>
+                    </div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 8, alignItems: "flex-end", flexShrink: 0 }}>
+                      <ResultButton
+                        primary
+                        onClick={() => {
+                          navigator.clipboard.writeText(shareUrl!).catch(() => {});
+                          setCopied(true);
+                          setTimeout(() => setCopied(false), 1600);
+                        }}
+                      >
+                        {copied ? t("copied") : t("copyLink")}
                       </ResultButton>
-                    ) : (
-                      <>
-                        <ResultButton
-                          primary
-                          onClick={() => {
-                            navigator.clipboard.writeText(built.url).catch(() => {});
-                            setCopied(true);
-                            setTimeout(() => setCopied(false), 1600);
-                          }}
-                        >
-                          {copied ? t("copied") : t("copyLink")}
-                        </ResultButton>
-                        <ResultButton onClick={() => window.open(built.url, "_blank")}>
-                          {t("open")}
-                        </ResultButton>
-                      </>
-                    )}
-                    <button
-                      onClick={resetBuild}
-                      style={{
-                        fontFamily: mono, fontSize: 10, color: T3,
-                        background: "none", border: "none", padding: 0,
-                        cursor: "pointer", textDecoration: "underline",
-                      }}
-                    >
-                      {t("buildAgain")}
-                    </button>
+                      <ResultButton onClick={() => window.open(shareUrl!, "_blank")}>
+                        {t("open")}
+                      </ResultButton>
+                      <button
+                        onClick={handleRevoke}
+                        style={{
+                          fontFamily: mono, fontSize: 10, color: T3,
+                          background: "none", border: "none", padding: 0,
+                          cursor: "pointer", textDecoration: "underline",
+                        }}
+                      >
+                        {t("revoke")}
+                      </button>
+                    </div>
                   </div>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          ) : (
+            <div style={{
+              display: "flex", alignItems: "center", gap: 12,
+              padding: "16px 22px", border: `1px dashed ${BORDER}`, background: SURFACE,
+            }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                <span style={{ fontFamily: mono, fontSize: 11.5, color: NAVY, fontWeight: 500 }}>{t("comingSoonTitle", { format })}</span>
+                <span style={{ fontFamily: mono, fontSize: 9.5, color: T3, letterSpacing: "0.05em" }}>{t("comingSoonHint")}</span>
+              </div>
+            </div>
+          )}
 
         </div>
       </div>
+      <AuthModal
+        open={authOpen}
+        onClose={() => setAuthOpen(false)}
+        onAuthed={() => { setAuthOpen(false); void doShare(); }}
+      />
     </section>
   );
 }

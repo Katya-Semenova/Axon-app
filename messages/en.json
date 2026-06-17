@@ -1,4 +1,11 @@
 {
+  "Public": {
+    "unavailable": "Presentation unavailable",
+    "unavailableHint": "The link is invalid, has been revoked, or the presentation was removed.",
+    "backHome": "Go to AXON",
+    "prev": "Previous slide",
+    "next": "Next slide"
+  },
   "Landing": {
     "nav": {
       "projects": "Projects",
@@ -278,7 +285,16 @@
     "buildAgain": "build again",
     "noSlidesReorder": "No slides to reorder — switch to CANVAS and send a Data Set to the data set tray first.",
     "deckOrder": "Deck order",
-    "dragReorder": "drag to reorder"
+    "dragReorder": "drag to reorder",
+    "shareBtn": "Share",
+    "sharing": "Creating link…",
+    "noLoginToView": "Opens without sign-in",
+    "linkLifetime": "Active until you revoke it",
+    "revoke": "Revoke link",
+    "revoked": "Link revoked",
+    "shareError": "Couldn't create the link — please try again",
+    "comingSoonTitle": "{format} — coming soon",
+    "comingSoonHint": "This format is in progress. The view link is available now."
   },
   "Table": {
     "dragReorder": "Drag to reorder",

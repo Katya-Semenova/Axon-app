@@ -49,7 +49,7 @@ const snapToPointer: Modifier = ({ activatorEvent, draggingNodeRect, transform }
    Data set tray (PresentationStructure)
    shows in CANVAS + SLIDES, hidden in PRESENT.
 ══════════════════════════════════════════════════════ */
-function Page2({ onBack }: { onBack: () => void }) {
+function Page2({ onBack, boardId, onBoardSaved }: { onBack: () => void; boardId: string | null; onBoardSaved: (id: string) => void }) {
   const mode               = useWorkspaceStore(s => s.mode);
   const addSlideWithDs     = useWorkspaceStore(s => s.addSlideWithDataSet);
   const bindDataSetToSlide = useWorkspaceStore(s => s.bindDataSetToSlide);
@@ -135,7 +135,7 @@ function Page2({ onBack }: { onBack: () => void }) {
     ? <Canvas modeSwitcher={modeTabs} />
     : mode === "presentation"
     ? <SlideEditor modeSwitcher={modeTabs} />
-    : <PresentExport modeSwitcher={modeTabs} />;
+    : <PresentExport modeSwitcher={modeTabs} boardId={boardId} onBoardSaved={onBoardSaved} />;
 
   /* Data set tray — CANVAS + SLIDES only. Hidden in PRESENT (export gateway). */
   const showDataSetTray = mode === "data" || mode === "presentation";
@@ -247,7 +247,7 @@ export default function Home() {
         ? <LandingPage onNavigate={openWorkspace} />
         : (
           <>
-            <Page2 onBack={() => setView("landing")} />
+            <Page2 onBack={() => setView("landing")} boardId={boardId} onBoardSaved={setBoardId} />
             {/* Гость в воркспейсе — кнопка «Сохранить» (вход + перенос холста, Шаг 7b). */}
             <GuestSaveButton boardId={boardId} onSaved={setBoardId} />
           </>
