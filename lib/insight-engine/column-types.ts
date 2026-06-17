@@ -35,8 +35,14 @@ export function parseNumeric(cell: RawCell): number | null {
 
   const hasComma = s.includes(",");
   const hasDot = s.includes(".");
-  if (hasComma && hasDot) s = s.replace(/,/g, ""); // запятая = разделитель тысяч
-  else if (hasComma) s = s.replace(",", "."); // запятая = десятичная
+  if (hasComma && hasDot) {
+    // Десятичный разделитель — тот, что стоит ПОСЛЕДНИМ; другой = разделитель тысяч.
+    // US "1,234.5" → точка десятичная; EU "1.234,5" → запятая десятичная.
+    if (s.lastIndexOf(",") > s.lastIndexOf(".")) s = s.replace(/\./g, "").replace(",", ".");
+    else s = s.replace(/,/g, "");
+  } else if (hasComma) {
+    s = s.replace(",", "."); // одиночная запятая = десятичная
+  }
 
   if (!/^-?\d*\.?\d+$/.test(s)) return null;
   const n = Number(s);
