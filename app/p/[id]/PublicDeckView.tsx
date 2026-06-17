@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
-import { SlideArchetypeRenderer } from "@/app/components/presentation/SlideArchetypeRenderer";
+import { SlideArchetypeRenderer, deriveSlideSummary } from "@/app/components/presentation/SlideArchetypeRenderer";
 import { PRESENTATION_THEMES } from "@/lib/types";
 import type { PublicDeck, ColorAccent } from "@/lib/types";
 
@@ -52,6 +52,8 @@ export function PublicDeckView({ deck }: { deck: PublicDeck | null }) {
   const slide = deck.slides[i];
   const ds = slide.dataSetIds[0] ? deck.dataSetsById[slide.dataSetIds[0]] : null;
   const theme = PRESENTATION_THEMES.find((th) => th.id === deck.presentationThemeId) ?? PRESENTATION_THEMES[0];
+  /* Заголовок-summary как в редакторе: явный summary слайда или вывод из данных. */
+  const summary = slide.summary?.trim() || (ds ? deriveSlideSummary(ds.rows, ds.columns) : "");
 
   return (
     <main className="h-screen flex flex-col bg-bg" style={theme.vars as React.CSSProperties}>
@@ -66,7 +68,7 @@ export function PublicDeckView({ deck }: { deck: PublicDeck | null }) {
       {/* Слайд — заполняет доступную высоту; SlideArchetypeRenderer меряет родителя */}
       <div className="flex-1 min-h-0 flex items-center justify-center px-6">
         <div
-          className="w-full overflow-hidden"
+          className="w-full overflow-hidden flex flex-col"
           style={{
             maxWidth: 960, height: "100%", maxHeight: 620,
             background: "var(--slide-bg)",
@@ -74,17 +76,40 @@ export function PublicDeckView({ deck }: { deck: PublicDeck | null }) {
             borderRadius: "var(--slide-radius)",
           }}
         >
-          <SlideArchetypeRenderer
-            rows={ds?.rows ?? []}
-            columns={ds?.columns ?? []}
-            chartType={ds?.chartType ?? "Lollipop"}
-            archetype={slide.archetype ?? "Chart"}
-            accentColor={ACCENT[slide.colorAccent] ?? ACCENT.Navy}
-            title={ds?.title ?? ""}
-            narrative={slide.narrative}
-            visualStyle={slide.visualStyle}
-            renderEngine={slide.renderEngine}
-          />
+          {/* Заголовок слайда — название дата-сета + краткое summary (как в редакторе) */}
+          {(ds?.title || summary) && (
+            <div style={{ padding: "22px 32px 10px", flexShrink: 0 }}>
+              {ds?.title && (
+                <h2 style={{
+                  margin: 0, fontFamily: "var(--slide-font-display)", color: "var(--slide-title)",
+                  fontSize: 24, lineHeight: 1.15, fontWeight: 500,
+                }}>
+                  {ds.title}
+                </h2>
+              )}
+              {summary && (
+                <p style={{
+                  margin: "6px 0 0", fontFamily: "var(--slide-font-body)", color: "var(--slide-text)",
+                  fontSize: 13, lineHeight: 1.45,
+                }}>
+                  {summary}
+                </p>
+              )}
+            </div>
+          )}
+          <div style={{ flex: 1, minHeight: 0, padding: "0 24px 16px" }}>
+            <SlideArchetypeRenderer
+              rows={ds?.rows ?? []}
+              columns={ds?.columns ?? []}
+              chartType={ds?.chartType ?? "Lollipop"}
+              archetype={slide.archetype ?? "Chart"}
+              accentColor={ACCENT[slide.colorAccent] ?? ACCENT.Navy}
+              title={ds?.title ?? ""}
+              narrative={slide.narrative}
+              visualStyle={slide.visualStyle}
+              renderEngine={slide.renderEngine}
+            />
+          </div>
         </div>
       </div>
 
