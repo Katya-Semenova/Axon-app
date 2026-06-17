@@ -27,11 +27,11 @@
 | Когда | Файл |
 |---|---|
 | Перед коммитом | `docs/rules/commits.md` *(появится на следующих уроках)* |
-| Деплой / инфра | `docs/memory/infrastructure.md` *(появится на следующих уроках)* |
+| Деплой / инфра | `docs/memory/infrastructure.md` |
 
 ## Активная работа
-См. `docs/memory/state.md` *(появится на следующих уроках)*.
-Текущий рабочий журнал и статус задач — пока в `CLAUDE.md`.
+См. `docs/memory/state.md` (текущий этап) и `docs/decisions/sessions/` (журнал сессий).
+Детальный статус задач Урока 4 — пока в `CLAUDE.md`.
 
 ## История решений
-См. `docs/decisions/INDEX.md` (оглавление ADR; разделы findings/sessions — позже).
+См. `docs/decisions/INDEX.md` (оглавление ADR + журнал сессий; findings — позже).
