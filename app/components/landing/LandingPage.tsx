@@ -54,8 +54,9 @@ export function LandingPage({ onNavigate }: { onNavigate: (boardId: string | nul
     setBusy(true);
     try {
       const table = await fp.parseFile(file);
-      const { buildBoardData } = await import("@/lib/insight-engine");
-      const board = buildBoardData(table);
+      // Вошедший → реальный ИИ (с fallback на правила); гость → правила (данные не уходят).
+      const { extractBoardData } = await import("@/lib/insight-engine/extract");
+      const { board } = await extractBoardData(table, { useAI: !!session });
 
       if (!session) {
         useWorkspaceStore.getState().hydrate(board);

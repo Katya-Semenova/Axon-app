@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { useWorkspaceStore } from "@/lib/store";
+import { authClient } from "@/lib/auth-client";
 import { useTranslations } from "next-intl";
 import { BORDER, NAVY, T2, T3, RADIUS_BUBBLE } from "../ui/tokens";
 import { Textarea } from "../ui/Textarea";
@@ -32,6 +33,7 @@ export function ChatRail({ onBack }: { onBack: () => void }) {
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [adding, setAdding] = useState(false);
+  const { data: session } = authClient.useSession();
 
   /* Сообщение по коду ошибки разбора — переиспользуем словарь dropzone (Шаг 10). */
   function parseErrorText(code: ParseErrorCode): string {
@@ -57,8 +59,10 @@ export function ChatRail({ onBack }: { onBack: () => void }) {
     setAdding(true);
     try {
       const table = await fp.parseFile(file);
-      const { buildBoardData } = await import("@/lib/insight-engine");
-      mergeBoardData(buildBoardData(table));
+      // Вошедший → реальный ИИ (с fallback на правила); гость → правила (данные не уходят).
+      const { extractBoardData } = await import("@/lib/insight-engine/extract");
+      const { board } = await extractBoardData(table, { useAI: !!session });
+      mergeBoardData(board);
       toast(t("added", { name: table.sourceName }), { variant: "success" });
     } catch (err) {
       const msg = err instanceof fp.FileParseError ? parseErrorText(err.code) : tErr("generic");
