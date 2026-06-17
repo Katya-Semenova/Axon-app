@@ -54,6 +54,8 @@ export function LandingPage({ onNavigate }: { onNavigate: (boardId: string | nul
     setBusy(true);
     try {
       const table = await fp.parseFile(file);
+      // Держим таблицу в памяти — чтобы AI-чат мог строить новые инсайты на реальных числах.
+      useWorkspaceStore.getState().setSourceTable(table);
       // Вошедший → реальный ИИ (с fallback на правила); гость → правила (данные не уходят).
       const { extractBoardData } = await import("@/lib/insight-engine/extract");
       const { board } = await extractBoardData(table, { useAI: !!session });

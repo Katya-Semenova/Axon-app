@@ -74,7 +74,12 @@
     "adding": "Adding…",
     "added": "Added «{name}»",
     "aiSoon": "AI chat is coming. For now, add files with the button above — insights appear on the canvas.",
-    "aiSoonPlaceholder": "AI chat coming soon"
+    "aiSoonPlaceholder": "AI chat coming soon",
+    "emptyData": "Ask anything about your data — or ask to build a new chart.",
+    "loginHint": "Log in to ask AI about your data.",
+    "error": "Couldn't get a response. Please try again.",
+    "applyBuild": "Apply",
+    "built": "Built"
   },
   "ModeTabs": {
     "ariaLabel": "Workspace mode",

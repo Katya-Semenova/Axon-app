@@ -1,14 +1,17 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { useWorkspaceStore } from "@/lib/store";
+import { useWorkspaceStore, currentBoardData } from "@/lib/store";
 import { authClient } from "@/lib/auth-client";
 import { useTranslations } from "next-intl";
 import { BORDER, NAVY, T2, T3, RADIUS_BUBBLE } from "../ui/tokens";
 import { Textarea } from "../ui/Textarea";
 import { Chip } from "../ui/Chip";
 import { useToast } from "../ui/Toast";
-import type { ParseErrorCode } from "@/lib/file-parsing";
+import { buildChatBoardSummary, type ChatReply } from "@/lib/ai/chat";
+import { buildExtractionInput } from "@/lib/insight-engine/ai-plan";
+import type { ChatAction, ChatMessage } from "@/lib/types";
+import type { ParseErrorCode, ParsedTable } from "@/lib/file-parsing";
 
 /* ChatTextarea убран: поле ввода data-режима обезврежено до подключения ИИ (Шаг 11). */
 
@@ -35,6 +38,15 @@ export function ChatRail({ onBack }: { onBack: () => void }) {
   const [adding, setAdding] = useState(false);
   const { data: session } = authClient.useSession();
 
+  /* ── Живой AI-чат по данным (Урок 5, Шаг 1) ─ */
+  const dataChatMessages      = useWorkspaceStore(s => s.dataChatMessages);
+  const addDataChatMessage    = useWorkspaceStore(s => s.addDataChatMessage);
+  const updateDataChatMessage = useWorkspaceStore(s => s.updateDataChatMessage);
+  const applyAddInsight       = useWorkspaceStore(s => s.applyAddInsight);
+  const setSourceTable        = useWorkspaceStore(s => s.setSourceTable);
+  const [draftData, setDraftData] = useState("");
+  const [sending, setSending] = useState(false);
+
   /* Сообщение по коду ошибки разбора — переиспользуем словарь dropzone (Шаг 10). */
   function parseErrorText(code: ParseErrorCode): string {
     switch (code) {
@@ -59,6 +71,7 @@ export function ChatRail({ onBack }: { onBack: () => void }) {
     setAdding(true);
     try {
       const table = await fp.parseFile(file);
+      setSourceTable(table); // держим для AI-чата (построение новых инсайтов)
       // Вошедший → реальный ИИ (с fallback на правила); гость → правила (данные не уходят).
       const { extractBoardData } = await import("@/lib/insight-engine/extract");
       const { board } = await extractBoardData(table, { useAI: !!session });
@@ -69,6 +82,67 @@ export function ChatRail({ onBack }: { onBack: () => void }) {
       toast(msg, { variant: "error" });
     } finally {
       setAdding(false);
+    }
+  }
+
+  /* Действие валидно, если таблица удержана и все колонки рецепта реально есть
+     (chartType не проверяем — executePlan подберёт по форме при невалидном). */
+  function validateAction(action: ChatAction | null, table: ParsedTable | null): ChatAction | null {
+    if (!action || action.type !== "add-insight" || !table) return null;
+    const names = new Set(buildExtractionInput(table).columns.map(c => c.name.toLowerCase()));
+    const refs = [...(action.plan.dimension ? [action.plan.dimension] : []), ...action.plan.metrics];
+    return refs.every(r => names.has(r.toLowerCase())) ? action : null;
+  }
+
+  /* Отправка вопроса в чат: вопрос+история+сводка доски+схема колонок → /api/ai/chat. */
+  async function handleSend() {
+    const q = draftData.trim();
+    if (!q || sending || !session) return;
+    setDraftData("");
+    const userMsgId = `u-${Date.now()}`;
+    const axonMsgId = `a-${Date.now()}`;
+    const history = dataChatMessages
+      .filter(m => !m.pending && !m.error)
+      .map(m => ({ role: m.role, content: m.content }));
+    addDataChatMessage({ id: userMsgId, role: "user", content: q });
+    addDataChatMessage({ id: axonMsgId, role: "axon", content: "", pending: true });
+    setSending(true);
+    try {
+      const { snapshot, sourceFiles: files } = currentBoardData();
+      const table = useWorkspaceStore.getState().sourceTable;
+      const columns = table
+        ? buildExtractionInput(table).columns.map(c => ({ name: c.name, type: c.type }))
+        : [];
+      const res = await fetch("/api/ai/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          question: q,
+          history,
+          boardSummary: buildChatBoardSummary(snapshot, files ?? []),
+          columns,
+        }),
+      });
+      if (!res.ok) throw new Error(`chat ${res.status}`);
+      const { reply } = (await res.json()) as { reply: ChatReply };
+      const action = validateAction(reply.action, table);
+      updateDataChatMessage(axonMsgId, { content: reply.answer, pending: false, action: action ?? undefined });
+    } catch (e) {
+      console.warn("[chat] не удалось получить ответ:", e);
+      updateDataChatMessage(axonMsgId, { content: t("error"), pending: false, error: true });
+    } finally {
+      setSending(false);
+    }
+  }
+
+  /* «Применить»: строит предложенный инсайт на реальных числах и кладёт на холст. */
+  function handleApply(msg: ChatMessage) {
+    if (!msg.action || msg.applied) return;
+    if (applyAddInsight(msg.action.plan)) {
+      updateDataChatMessage(msg.id, { applied: true });
+      toast(t("built"), { variant: "success" });
+    } else {
+      toast(t("error"), { variant: "error" });
     }
   }
 
@@ -203,11 +277,51 @@ export function ChatRail({ onBack }: { onBack: () => void }) {
               </div>
             ))
           )
+        ) : !session ? (
+          /* ── Data mode, гость: ИИ только вошедшим ── */
+          <div className="text-[12px] text-t3 leading-[1.6] italic">{t("loginHint")}</div>
+        ) : dataChatMessages.length === 0 ? (
+          <div className="text-[12px] text-t3 leading-[1.6] italic">{t("emptyData")}</div>
         ) : (
-          /* ── Default (data/presentation): честная заглушка до живого ИИ (Шаг 11) ── */
-          <div className="text-[12px] text-t3 leading-[1.6] italic">
-            {t("aiSoon")}
-          </div>
+          /* ── Data mode: живой AI-чат по данным (Урок 5, Шаг 1) ── */
+          dataChatMessages.map(msg => (
+            <div key={msg.id}>
+              {msg.role === "axon" ? (
+                <div className={`text-[12px] leading-[1.6] ${msg.error ? "text-error" : ""}`} style={msg.error ? undefined : { color: T2 }}>
+                  <strong className="text-[#0A0A0A] font-medium">Axon</strong>
+                  {msg.pending ? (
+                    <span className="inline-flex gap-[3px] items-center ml-2 translate-y-[1px]">
+                      {[0, 1, 2].map(i => (
+                        <span key={i} className="w-[4px] h-[4px] rounded-full bg-t3 animate-pulse-dot inline-block"
+                          style={{ animationDelay: `${i * 0.18}s` }} />
+                      ))}
+                    </span>
+                  ) : (
+                    <> — {msg.content}</>
+                  )}
+                  {msg.action && !msg.applied && (
+                    <button
+                      onClick={() => handleApply(msg)}
+                      className="mt-2 flex items-center gap-1.5 font-mono text-[10.5px] uppercase tracking-[0.08em] text-gold-600 border border-gold-500/50 rounded-sm px-2.5 py-1 hover:bg-gold-500/10 transition-colors"
+                    >
+                      <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
+                        <path d="M6 2v8M2 6h8" />
+                      </svg>
+                      {t("applyBuild")}
+                    </button>
+                  )}
+                  {msg.applied && (
+                    <div className="mt-1.5 font-mono text-[10px] uppercase tracking-[0.08em] text-t3">✓ {t("built")}</div>
+                  )}
+                </div>
+              ) : (
+                <div className="self-end px-[14px] py-[9px] text-[12px] leading-[1.5] max-w-[88%] ml-auto"
+                  style={{ background: NAVY, color: "#F5F2EA", borderRadius: RADIUS_BUBBLE }}>
+                  {msg.content}
+                </div>
+              )}
+            </div>
+          ))
         )}
       </div>
 
@@ -246,9 +360,36 @@ export function ChatRail({ onBack }: { onBack: () => void }) {
               </svg>
             </button>
           </>
+        ) : session ? (
+          <>
+            <Textarea
+              value={draftData}
+              onChange={e => setDraftData(e.target.value)}
+              onKeyDown={e => {
+                if (e.key === "Enter" && !e.shiftKey && draftData.trim() && !sending) {
+                  e.preventDefault();
+                  handleSend();
+                }
+              }}
+              rows={2}
+              placeholder={t("placeholderData")}
+              className="flex-1 min-h-[54px] max-h-[120px]"
+            />
+            <button
+              onClick={handleSend}
+              disabled={sending || !draftData.trim()}
+              className="w-[34px] h-[34px] rounded-pill flex items-center justify-center shrink-0 hover:opacity-85 transition-opacity duration-200 disabled:opacity-40 disabled:cursor-not-allowed"
+              style={{ background: NAVY, color: "#F5F2EA" }}
+              aria-label={t("send")}
+            >
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M7 1v12M1 7l6-6 6 6" />
+              </svg>
+            </button>
+          </>
         ) : (
           <div className="flex-1 min-h-[54px] flex items-center text-[12px] text-t3 italic px-1 select-none">
-            {t("aiSoonPlaceholder")}
+            {t("loginHint")}
           </div>
         )}
       </div>
