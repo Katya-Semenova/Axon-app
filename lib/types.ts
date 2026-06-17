@@ -348,6 +348,45 @@ export interface WorkspaceSnapshot {
   connections: Connection[];
 }
 
+/* ── AI insight plan + chat (Урок 5, Шаг 1) ──────────────────────────────────
+   AIInsightPlan — «рецепт» инсайта от ИИ (какие колонки, тип графика, текст);
+   числа строк считает код из реальных данных. Используется и при ИИ-извлечении
+   (lib/insight-engine/ai-plan), и в чате как предложение «построить инсайт». */
+export interface AIInsightPlan {
+  title: string;
+  /** Инсайт словами (plain English). */
+  narrative: string;
+  /** Тип графика; валидируется против ACTIVE_CHART_TYPES (иначе подбор по форме). */
+  chartType: string;
+  /** Имя колонки-измерения (ось меток) или null. */
+  dimension: string | null;
+  /** Имена числовых колонок-метрик. */
+  metrics: string[];
+}
+
+export type ChatRole = "user" | "axon";
+
+/** Предложение чата применить изменение (v1 — только построить новый инсайт). */
+export interface ChatAction {
+  type: "add-insight";
+  plan: AIInsightPlan;
+}
+
+/** Сообщение живого AI-чата по данным (хранится в BoardData, ADR-003). */
+export interface ChatMessage {
+  id: string;
+  role: ChatRole;
+  content: string;
+  /** Ждём ответ ИИ (точки-тайпинг). */
+  pending?: boolean;
+  /** Реплика-ошибка (иной стиль + кнопка повтора). */
+  error?: boolean;
+  /** Предложение построить инсайт → кнопка «Применить». */
+  action?: ChatAction;
+  /** Действие уже применено (кнопка → «Построено», повтор заблокирован). */
+  applied?: boolean;
+}
+
 /* ── Board persistence (Урок 4) ─────────────────────────────────────────────
    Что кладём в Board.data (одно JSON-поле в БД): снимок холста + раскладка. */
 export interface BoardData {
@@ -358,6 +397,8 @@ export interface BoardData {
   /** Имена загруженных файлов-источников — для чипов в чат-рейле (Шаг 11).
       Опционально: старые сохранённые доски этого поля не имеют. */
   sourceFiles?: string[];
+  /** Лог живого AI-чата по данным (Урок 5, Шаг 1). Опционально: старые доски без него. */
+  chatMessages?: ChatMessage[];
 }
 
 /** Краткое описание проекта для списка «Мои проекты» (Урок 4, Шаг 7). */

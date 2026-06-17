@@ -10,8 +10,14 @@ import type {
   ChartType, DataRow, SlideArchetype,
   BuildAudience, BuildTone, BuildMessage,
   DataSetSettings, NarrationMode, PresentationThemeId,
+  ChatMessage, AIInsightPlan,
 } from "./types";
 import { DEFAULT_DATASET_SETTINGS } from "./types";
+import type { ParsedTable } from "./file-parsing";
+import { executePlan } from "./insight-engine/ai-plan";
+
+/** Сколько последних сообщений чата кладём в сохраняемую доску (BoardData). */
+const MAX_CHAT_PERSIST = 50;
 
 /* ── Canvas layout constants ───────────────────────────────────────────── */
 const CARD_W      = 200;
@@ -173,6 +179,7 @@ export function currentBoardData(): BoardData {
     canvasTransform:     s.canvasTransform,
     presentationThemeId: s.presentationThemeId,
     sourceFiles:         s.sourceFiles,
+    chatMessages:        s.dataChatMessages.slice(-MAX_CHAT_PERSIST),
   };
 }
 
@@ -192,6 +199,12 @@ interface WorkspaceStateShape extends WorkspaceSnapshot {
 
   /** Имена загруженных файлов-источников (для чипов чат-рейла, Шаг 11). */
   sourceFiles:       string[];
+
+  /* ── AI-чат по данным (Урок 5, Шаг 1) ─ */
+  /** Последняя разобранная таблица — в памяти, НЕ персист (для «построить инсайт» из чата). */
+  sourceTable:       ParsedTable | null;
+  /** Лог живого чата по данным (персистится в BoardData). */
+  dataChatMessages:  ChatMessage[];
 
   /* ── Build mode ─ */
   buildAudience:      BuildAudience;
@@ -255,6 +268,14 @@ interface WorkspaceActions {
   updateBuildMessage:   (id: string, update: Partial<BuildMessage>) => void;
   clearBuildMessages:   () => void;
 
+  /* ── AI-чат по данным (Урок 5, Шаг 1) ─ */
+  setSourceTable:        (table: ParsedTable | null) => void;
+  addDataChatMessage:    (msg: ChatMessage) => void;
+  updateDataChatMessage: (id: string, update: Partial<ChatMessage>) => void;
+  clearDataChatMessages: () => void;
+  /** Применить предложение чата «построить инсайт» — строит из sourceTable на реальных числах. */
+  applyAddInsight:       (plan: AIInsightPlan) => boolean;
+
   /* ── Presentation theme ─ */
   setPresentationTheme: (id: PresentationThemeId) => void;
 }
@@ -293,6 +314,9 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => {
     canvasTransform:   { x: 20, y: 20, zoom: 0.75 },
     sourceFiles:       [],
 
+    sourceTable:      null,
+    dataChatMessages: [],
+
     buildAudience:      "CEO",
     buildTone:          "Neutral",
     buildNarration:     false,
@@ -324,6 +348,9 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => {
       canvasTransform:     data.canvasTransform ?? s.canvasTransform,
       presentationThemeId: data.presentationThemeId ?? s.presentationThemeId,
       sourceFiles:         data.sourceFiles ?? [],
+      // Чат восстанавливаем из доски; сырую таблицу — нет (её не персистим → «построить» до новой загрузки недоступно).
+      dataChatMessages:    data.chatMessages ?? [],
+      sourceTable:         null,
       history:    [data.snapshot],
       historyIdx: 0,
       activeSlideId: data.snapshot.slideOrder[0] ?? null,
@@ -664,6 +691,28 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => {
       buildMessages: s.buildMessages.map(m => m.id === id ? { ...m, ...update } : m),
     })),
     clearBuildMessages: () => set({ buildMessages: [] }),
+
+    /* ── AI-чат по данным (Урок 5, Шаг 1; вне undo-истории) ─ */
+    setSourceTable: (sourceTable) => set({ sourceTable }),
+    addDataChatMessage: (msg) => set((s) => ({ dataChatMessages: [...s.dataChatMessages, msg] })),
+    updateDataChatMessage: (id, update) => set((s) => ({
+      dataChatMessages: s.dataChatMessages.map(m => m.id === id ? { ...m, ...update } : m),
+    })),
+    clearDataChatMessages: () => set({ dataChatMessages: [] }),
+
+    applyAddInsight: (plan) => {
+      const table = get().sourceTable;
+      if (!table) return false;
+      try {
+        // Строим один инсайт на РЕАЛЬНЫХ числах через тот же executePlan и мержим на холст.
+        const board = executePlan(table, { insights: [plan] });
+        get().mergeBoardData({ ...board, sourceFiles: [] });
+        return true;
+      } catch (e) {
+        console.warn("[applyAddInsight] не удалось построить инсайт:", e);
+        return false;
+      }
+    },
   };
 });
 

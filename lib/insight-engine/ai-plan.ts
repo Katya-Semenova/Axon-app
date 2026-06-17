@@ -15,10 +15,12 @@
  */
 import type {
   BoardData, Insight, DataSet, Slide, Connection, DataRow,
-  ChartType, WorkspaceSnapshot, SlideArchetype,
+  ChartType, WorkspaceSnapshot, SlideArchetype, AIInsightPlan,
 } from "@/lib/types";
 import { ACTIVE_CHART_TYPES } from "@/lib/types";
 import type { LLMMessage } from "@/lib/ai/types";
+
+export type { AIInsightPlan } from "@/lib/types";
 import type { ParsedTable, RawCell } from "@/lib/file-parsing";
 import { profileTable, parseNumeric, type ColumnProfile, type ColumnType } from "./column-types";
 import { pickChartType, isWideChart } from "./chart-rules";
@@ -66,18 +68,8 @@ export interface AIExtractionInput {
   sampleRows: RawCell[][];
 }
 
-/** Один запланированный ИИ инсайт: ИИ выбирает колонки/график/текст, цифры — код. */
-export interface AIInsightPlan {
-  title: string;
-  /** Инсайт словами (plain English) — протекает в summary слайда. */
-  narrative: string;
-  /** Тип графика; валидируется против ACTIVE_CHART_TYPES (иначе подбираем по форме). */
-  chartType: string;
-  /** Имя колонки-измерения (ось меток) или null (таблица из одних чисел). */
-  dimension: string | null;
-  /** Имена числовых колонок-метрик. */
-  metrics: string[];
-}
+// AIInsightPlan («рецепт» инсайта от ИИ) живёт в @/lib/types (общий с чатом),
+// реэкспортирован выше для совместимости импортов.
 
 export interface AIPlan {
   insights: AIInsightPlan[];

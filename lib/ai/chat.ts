@@ -12,10 +12,11 @@
  *   buildChatMessages(req)                        → сообщения для LLMClient [сервер, в route]
  *   parseChatReply(text)                          → { answer, action }      [сервер, в route]
  */
-import type { WorkspaceSnapshot } from "@/lib/types";
+import type { WorkspaceSnapshot, ChatAction } from "@/lib/types";
 import { ACTIVE_CHART_TYPES } from "@/lib/types";
 import type { LLMMessage } from "./types";
-import type { AIInsightPlan } from "@/lib/insight-engine/ai-plan";
+
+export type { ChatAction } from "@/lib/types";
 
 const MAX_SUMMARY_DATASETS = 8;
 const SUMMARY_SAMPLE_ROWS = 3;
@@ -40,12 +41,6 @@ export interface ChatRequest {
   boardSummary: string;
   /** Схема колонок удержанной таблицы; [] — строить нечего (только Q&A). */
   columns: ChatColumnInfo[];
-}
-
-/** Действие, которое ИИ может предложить применить (v1 — только построение нового инсайта). */
-export interface ChatAction {
-  type: "add-insight";
-  plan: AIInsightPlan;
 }
 
 export interface ChatReply {
