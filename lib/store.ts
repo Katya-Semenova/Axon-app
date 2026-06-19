@@ -428,12 +428,16 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => {
           nodePositions[rid(oldId)] = { x: pos.x, y: pos.y + yShift };
         }
 
+        // B1 (общий путь): авто-пан к ПЕРВОМУ новому дата-сету — и для загрузки файла,
+        // и для «построить из чата». Иначе новые инсайты спавнятся ниже вьюпорта (maxY+320).
+        const firstNewDsId = dataSetOrder[dsOffset];
         return {
           insightsById, insightOrder,
           dataSetsById, dataSetOrder,
           slidesById,   slideOrder,
           connections,  nodePositions,
           sourceFiles: [...s.sourceFiles, ...(data.sourceFiles ?? [])],
+          ...(firstNewDsId ? { focusNodeId: firstNewDsId } : {}),
         };
       });
     },
@@ -715,11 +719,7 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => {
         // Строим один инсайт на РЕАЛЬНЫХ числах через тот же executePlan и мержим на холст.
         const board = executePlan(table, { insights: [plan] });
         get().mergeBoardData({ ...board, sourceFiles: [] });
-        // B1: авто-пан к только что добавленному дата-сету (дописан в конец order),
-        // иначе он спавнится ниже вьюпорта (maxY+320) и его не видно.
-        const order = get().dataSetOrder;
-        const newId = order[order.length - 1];
-        if (newId) set({ focusNodeId: newId });
+        // Авто-пан к новому инсайту делает mergeBoardData (focusNodeId на первый новый дата-сет).
         return true;
       } catch (e) {
         console.warn("[applyAddInsight] не удалось построить инсайт:", e);
