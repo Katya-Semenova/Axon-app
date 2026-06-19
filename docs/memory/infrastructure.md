@@ -56,6 +56,20 @@
 - CSV/Excel разбираются **в браузере** (`lib/file-parsing`), затем «движок инсайтов»
   (`lib/insight-engine`) собирает из таблицы холст (`BoardData`). На сервер для разбора не грузятся.
 
+## ИИ (Урок 5) — извлечение инсайтов + чат по данным
+- **Провайдер-агностичный слой `lib/ai/`** (ADR-008): дефолт **OpenRouter** (Claude для MVP-демо),
+  **GigaChat** — опция «после подтверждения руководством». Гибрид: ИИ выбирает колонки/график/нарратив,
+  числа считает код. Роуты `app/api/ai/extract` и `app/api/ai/chat` — только для вошедших (гостю 401),
+  rate-limit. Разбор: `lib/insight-engine/ai-plan.ts` + `extract.ts`, чат: `lib/ai/chat.ts`.
+- **ENV:** `OPENROUTER_API_KEY`, `AI_PROVIDER` (openrouter|gigachat), `AI_MODEL`
+  (напр. `anthropic/claude-sonnet-4.6`). Опц. с дефолтами в коде: `AI_RATE_MAX`, `AI_RATE_WINDOW`,
+  `AI_TIMEOUT_MS`, `APP_URL`, `GIGACHAT_API_KEY`.
+- ⚠️ **ДЕПЛОЙ ИИ-env — ДВЕ точки, обе обязательны** (грабли 2026-06-19): переменную надо
+  (1) вписать в серверный `.env.production` И (2) перечислить в `docker-compose.yml → web.environment`.
+  Compose прокидывает в контейнер ТОЛЬКО перечисленные переменные — забыли в compose → контейнер
+  не видит ключ → ИИ молча не работает, хотя ключ «есть» в `.env.production`.
+- **Геоблок OpenRouter с РФ-сервера?** Нет: с Selectel достижим (проверено 2026-06-19, HTTP 200 ~0.2с).
+
 ## Прочее
 - **i18n:** next-intl, RU/EN через cookie.
 - **Секреты:** все в `.env*` (в `.gitignore`), в git НЕ попадают.

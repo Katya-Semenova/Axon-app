@@ -12,6 +12,10 @@ services:
       S3_SECRET_ACCESS_KEY: ${S3_SECRET_ACCESS_KEY}
       S3_BUCKET: ${S3_BUCKET}
       S3_PUBLIC_URL: ${S3_PUBLIC_URL}
+      # ── ИИ (Урок 5) — провайдер-агностичный слой, OpenRouter для MVP (ADR-008) ──
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY}  # ключ LLM-провайдера (из .env.production)
+      AI_PROVIDER: ${AI_PROVIDER}                # openrouter | gigachat
+      AI_MODEL: ${AI_MODEL}                      # модель, напр. anthropic/claude-sonnet-4.6
     ports:
       - "127.0.0.1:3000:3000"   # только localhost — наружу отдаёт nginx
     restart: unless-stopped      # сам поднимется после падения/перезагрузки сервера
