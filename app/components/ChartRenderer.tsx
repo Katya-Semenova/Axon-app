@@ -295,7 +295,7 @@ function DonutChart({ rows, columns, expanded, containerWidth, containerHeight }
             ? row.label.slice(0, maxCharsFull - 1) + "…" : row.label;
           return (
             <g key={i} transform={`translate(${legendX}, ${y})`}>
-              <rect x="0" y={rowH * 0.08} width={markerS} height={markerS * 0.60} rx="1" fill={SERIES[i % SERIES.length]} />
+              <rect x="0" y={rowH * 0.58 - markerS * 0.30} width={markerS} height={markerS * 0.60} rx="1" fill={SERIES[i % SERIES.length]} />
               <text x={LABEL_X} y={rowH * 0.46} fontSize={fSize - 1} fill={T2} fontFamily={SANS_FAMILY}>
                 {lbl}
               </text>
@@ -306,16 +306,17 @@ function DonutChart({ rows, columns, expanded, containerWidth, containerHeight }
             </g>
           );
         }
-        /* 9b: tight pair — value sits MIN_GAP after the label, not right-aligned to edge */
+        /* Чистые колонки: метка слева, доля — по ПРАВОМУ краю легенды (фикс-колонка,
+           не «прыгает» за меткой); маркер и текст центрированы по середине строки. */
         const label  = row.label.length > maxChars ? row.label.slice(0, maxChars - 1) + "…" : row.label;
-        const labelW = label.length * fSize * 0.60;
+        const textY  = rowH * 0.5 + fSize * 0.34;
         return (
           <g key={i} transform={`translate(${legendX}, ${y})`}>
-            <rect x="0" y={rowH * 0.1} width={markerS} height={markerS * 0.65} rx="1" fill={SERIES[i % SERIES.length]} />
-            <text x={LABEL_X} y={rowH * 0.72} fontSize={fSize} fill={T2} fontFamily={SANS_FAMILY}>
+            <rect x="0" y={rowH * 0.5 - markerS * 0.325} width={markerS} height={markerS * 0.65} rx="1" fill={SERIES[i % SERIES.length]} />
+            <text x={LABEL_X} y={textY} fontSize={fSize} fill={T2} fontFamily={SANS_FAMILY}>
               {label}
             </text>
-            <text x={LABEL_X + labelW + MIN_GAP} y={rowH * 0.72} textAnchor="start" fontSize={fSize}
+            <text x={legendAvailW} y={textY} textAnchor="end" fontSize={fSize}
               fill={NAVY} fontFamily={MONO_FAMILY} fontWeight="500">
               {sharePct(row.values[0] ?? 0)}%
             </text>
