@@ -20,7 +20,7 @@ const MAX_AVATAR = 2 * 1024 * 1024;
  * Выход и «Опасная зона» (удаление аккаунта с подтверждением паролем).
  * Двуязычный (RU/EN). Сообщения — инлайн под каждым блоком.
  */
-export function SettingsForm({ initialName, email, initialImage }: { initialName: string; email: string; initialImage: string | null }) {
+export function SettingsForm({ initialName, email, initialImage, isAdmin = false }: { initialName: string; email: string; initialImage: string | null; isAdmin?: boolean }) {
   const t = useTranslations("Settings");
   const router = useRouter();
 
@@ -129,6 +129,15 @@ export function SettingsForm({ initialName, email, initialImage }: { initialName
             {t("back")}
           </Link>
         </div>
+
+        {isAdmin && (
+          <Card variant="interactive">
+            <Link href="/admin/users" className="flex items-center justify-between px-5 py-3">
+              <span className="font-sans text-[14px] font-semibold text-t1">Админка</span>
+              <span className="font-mono text-[11.5px] text-t2">Пользователи ›</span>
+            </Link>
+          </Card>
+        )}
 
         {/* Аватар */}
         <Card>
