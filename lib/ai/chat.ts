@@ -18,7 +18,9 @@ import type { LLMMessage } from "./types";
 
 export type { ChatAction } from "@/lib/types";
 
-const MAX_SUMMARY_DATASETS = 8;
+/** Дата-сетов в сводку — берём СВЕЖИЕ (конец списка). 16 покрывает обычную доску;
+    если больше — переживут новейшие, в т.ч. построенный чатом (баг Урок 5, B2). */
+const MAX_SUMMARY_DATASETS = 16;
 /** Строк дата-сета в сводку. Дата-сеты уже агрегированы (≈ строки графика), поэтому
     шлём их целиком до этого потолка — иначе рейтинги/суммы ИИ считал по обрезку
     (баг приёмки Урок 5: «лидер по штукам» определялся по первым 3 строкам). */
@@ -57,13 +59,18 @@ export function buildChatBoardSummary(snapshot: WorkspaceSnapshot, sourceFiles: 
   const lines: string[] = [];
   lines.push(sourceFiles.length ? `Файлы: ${sourceFiles.join(", ")}.` : "Файлы не загружены.");
 
-  const ids = snapshot.dataSetOrder.slice(0, MAX_SUMMARY_DATASETS);
+  // Берём с КОНЦА (свежие): построенный чатом инсайт дописывается в конец
+  // dataSetOrder — раньше slice(0,8) его обрезал, и чат повторял «нет данных»
+  // даже после Apply (баг приёмки Урок 5, B2).
+  const dsTotal = snapshot.dataSetOrder.length;
+  const ids = snapshot.dataSetOrder.slice(-MAX_SUMMARY_DATASETS);
   if (ids.length === 0) {
     lines.push("На холсте пока нет дата-сетов.");
     return lines.join("\n");
   }
 
-  lines.push(`Дата-сеты на холсте (${snapshot.dataSetOrder.length}):`);
+  const shownNote = dsTotal > ids.length ? ` (показаны последние ${ids.length})` : "";
+  lines.push(`Дата-сеты на холсте (${dsTotal})${shownNote}:`);
   for (const id of ids) {
     const ds = snapshot.dataSetsById[id];
     if (!ds) continue;
