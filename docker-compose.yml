@@ -16,6 +16,8 @@ services:
       OPENROUTER_API_KEY: ${OPENROUTER_API_KEY}  # ключ LLM-провайдера (из .env.production)
       AI_PROVIDER: ${AI_PROVIDER}                # openrouter | gigachat
       AI_MODEL: ${AI_MODEL}                      # модель, напр. anthropic/claude-sonnet-4.6
+      # ── Админка (Урок 5, Шаг 2) — owner-панель по email ──
+      ADMIN_EMAIL: ${ADMIN_EMAIL}                # email единственного админа (read-only панель)
     ports:
       - "127.0.0.1:3000:3000"   # только localhost — наружу отдаёт nginx
     restart: unless-stopped      # сам поднимется после падения/перезагрузки сервера
