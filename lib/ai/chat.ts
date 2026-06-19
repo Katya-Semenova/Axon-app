@@ -19,7 +19,10 @@ import type { LLMMessage } from "./types";
 export type { ChatAction } from "@/lib/types";
 
 const MAX_SUMMARY_DATASETS = 8;
-const SUMMARY_SAMPLE_ROWS = 3;
+/** Строк дата-сета в сводку. Дата-сеты уже агрегированы (≈ строки графика), поэтому
+    шлём их целиком до этого потолка — иначе рейтинги/суммы ИИ считал по обрезку
+    (баг приёмки Урок 5: «лидер по штукам» определялся по первым 3 строкам). */
+const SUMMARY_MAX_ROWS = 50;
 const MAX_HISTORY = 12;
 
 /** Реплика истории диалога (для многоходового контекста). */
@@ -64,11 +67,15 @@ export function buildChatBoardSummary(snapshot: WorkspaceSnapshot, sourceFiles: 
   for (const id of ids) {
     const ds = snapshot.dataSetsById[id];
     if (!ds) continue;
-    const sample = ds.rows
-      .slice(0, SUMMARY_SAMPLE_ROWS)
+    const shown = ds.rows.slice(0, SUMMARY_MAX_ROWS);
+    const rowsText = shown
       .map((r) => `${r.label}: ${r.values.join("/")}`)
       .join("; ");
-    lines.push(`- «${ds.title}» (${ds.chartType}; колонки: ${ds.columns.join(", ")}) — ${sample}`);
+    const more =
+      ds.rows.length > SUMMARY_MAX_ROWS
+        ? ` (показаны первые ${SUMMARY_MAX_ROWS} из ${ds.rows.length} строк)`
+        : "";
+    lines.push(`- «${ds.title}» (${ds.chartType}; колонки: ${ds.columns.join(", ")}) — ${rowsText}${more}`);
   }
   return lines.join("\n");
 }
