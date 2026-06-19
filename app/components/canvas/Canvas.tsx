@@ -36,6 +36,7 @@ export function Canvas({ modeSwitcher }: { modeSwitcher?: React.ReactNode }) {
   const setNodePos         = useWorkspaceStore(s => s.setNodePosition);
   const canvasTransform    = useWorkspaceStore(s => s.canvasTransform);
   const setCanvasTransform = useWorkspaceStore(s => s.setCanvasTransform);
+  const focusNodeId        = useWorkspaceStore(s => s.focusNodeId);
 
   const setExpInsight   = useWorkspaceStore(s => s.setExpandedInsight);
   const setExpDataSet   = useWorkspaceStore(s => s.setExpandedDataSet);
@@ -64,6 +65,23 @@ export function Canvas({ modeSwitcher }: { modeSwitcher?: React.ReactNode }) {
   const [, bumpMeasure] = useState(0);
   const cardKey = insightOrder.join() + "|" + dataSetOrder.join();
   useLayoutEffect(() => { bumpMeasure((n) => n + 1); }, [cardKey]);
+
+  /* B1: авто-пан к узлу, который попросили показать (после «построить» из чата).
+     Центрируем карточку во вьюпорте при текущем зуме; затем сбрасываем фокус. */
+  useEffect(() => {
+    if (!focusNodeId) return;
+    const st  = useWorkspaceStore.getState();
+    const pos = st.nodePositions[focusNodeId];
+    const viewport = canvasViewportRef.current;
+    if (pos && viewport) {
+      const vRect = viewport.getBoundingClientRect();
+      const { zoom } = st.canvasTransform;
+      const cx = pos.x + DS_W / 2;
+      const cy = pos.y + CARD_H_EST / 2;
+      st.setCanvasTransform({ zoom, x: vRect.width / 2 - cx * zoom, y: vRect.height / 2 - cy * zoom });
+    }
+    st.setFocusNode(null);
+  }, [focusNodeId]);
 
   type ActiveConn = { fromId: string; startX: number; startY: number; mouseX: number; mouseY: number };
   const [activeConn, setActiveConn] = useState<ActiveConn | null>(null);

@@ -193,6 +193,8 @@ interface WorkspaceStateShape extends WorkspaceSnapshot {
   chatCollapsed:     boolean;
   expandedInsightId: string | null;
   expandedDataSetId: string | null;
+  /** Узел, к которому холст «подъезжает» (авто-пан после построения из чата). Транзитное: не в снимке/истории/персисте. */
+  focusNodeId:       string | null;
   activeSlideId:     string | null;
   nodePositions:     NodePositionMap;
   canvasTransform:   { x: number; y: number; zoom: number };
@@ -258,6 +260,8 @@ interface WorkspaceActions {
 
   setNodePosition:    (id: string, x: number, y: number) => void;
   setCanvasTransform: (t: { x: number; y: number; zoom: number }) => void;
+  /** Запросить авто-пан холста к узлу (Canvas центрирует и сбрасывает). */
+  setFocusNode:       (id: string | null) => void;
 
   /* ── Build mode ─ */
   setBuildAudience:      (a: BuildAudience) => void;
@@ -308,6 +312,7 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => {
     chatCollapsed:     false,
     expandedInsightId: null,
     expandedDataSetId: null,
+    focusNodeId:       null,
     activeSlideId:     INITIAL_SLIDES[0]?.id ?? null,
     nodePositions:     seedNodePositions(),
     /* Zoomed out to 0.75 so all 3 seed datasets fit without vertical clipping. */
@@ -681,6 +686,7 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => {
 
     /* ── canvas ─ */
     setCanvasTransform: (canvasTransform) => set({ canvasTransform }),
+    setFocusNode: (focusNodeId) => set({ focusNodeId }),
 
     /* ── build mode ─ */
     setPresentationTheme: (presentationThemeId) => set({ presentationThemeId }),
@@ -709,6 +715,11 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => {
         // Строим один инсайт на РЕАЛЬНЫХ числах через тот же executePlan и мержим на холст.
         const board = executePlan(table, { insights: [plan] });
         get().mergeBoardData({ ...board, sourceFiles: [] });
+        // B1: авто-пан к только что добавленному дата-сету (дописан в конец order),
+        // иначе он спавнится ниже вьюпорта (maxY+320) и его не видно.
+        const order = get().dataSetOrder;
+        const newId = order[order.length - 1];
+        if (newId) set({ focusNodeId: newId });
         return true;
       } catch (e) {
         console.warn("[applyAddInsight] не удалось построить инсайт:", e);
