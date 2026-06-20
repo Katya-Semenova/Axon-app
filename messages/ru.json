@@ -227,7 +227,10 @@
     "vNumberComparison": "Сравнение цифр",
     "vQuote": "Цитата / текст",
     "themeDark": "Тёмная",
-    "themeLight": "Светлая"
+    "themeLight": "Светлая",
+    "speakerNotesLabel": "Заметки докладчика",
+    "notesShown": "Показаны",
+    "notesHidden": "Скрыты"
   },
   "Build": {
     "breadcrumbPresentation": "Презентация",

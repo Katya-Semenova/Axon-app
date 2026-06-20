@@ -227,7 +227,10 @@
     "vNumberComparison": "Number comparison",
     "vQuote": "Quote / text",
     "themeDark": "Dark",
-    "themeLight": "Light"
+    "themeLight": "Light",
+    "speakerNotesLabel": "Speaker notes",
+    "notesShown": "Shown",
+    "notesHidden": "Hidden"
   },
   "Build": {
     "breadcrumbPresentation": "Presentation",

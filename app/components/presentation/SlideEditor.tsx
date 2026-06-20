@@ -6,7 +6,7 @@ import { MiniChart } from "../MiniChart";
 import { SlideViewDropdown } from "../ui/SlideViewDropdown";
 import { SlideArchetypeRenderer, deriveSlideSummary } from "./SlideArchetypeRenderer";
 import type { Slide, VisualStyle, ColorAccent, BuildAudience, BuildTone, NarrationMode, SlideArchetype } from "@/lib/types";
-import { NARRATION_MODES, PRESENTATION_THEMES, WEB_THEME_IDS } from "@/lib/types";
+import { PRESENTATION_THEMES, WEB_THEME_IDS } from "@/lib/types";
 import type { PresentationThemeId } from "@/lib/types";
 import { BORDER, NAVY, GOLD, T2, T3, SURFACE, SURFACE_RAISE, SURFACE_MUTED } from "../ui/tokens";
 import { openOnboarding } from "../ui/OnboardingModal";
@@ -73,12 +73,6 @@ const NARRATIVES: Record<BuildAudience, Record<BuildTone, string>> = {
   },
 };
 
-/* Abbreviated trigger labels for Narration dropdown (full text stays in menu). */
-const NARRATION_TRIGGER: Record<NarrationMode, string> = {
-  "Speaker notes included": "Speaker notes",
-  "None":                   "None",
-};
-
 /* ── Smart pagination ────────────────────────────────────────────────────── */
 function buildPages(current: number, total: number): (number | "...")[] {
   if (total <= 7) return Array.from({ length: total }, (_, i) => i);
@@ -95,87 +89,7 @@ function buildPages(current: number, total: number): (number | "...")[] {
   return result;
 }
 
-/* ── PanelSelect ─────────────────────────────────────────────────────────── */
-function PanelSelect({ label, value, options, onChange, getLabel, triggerFormat }: {
-  label: string;
-  value: string;
-  options: string[];
-  onChange: (v: string) => void;
-  /** Maps raw option value → display label in the menu (and trigger unless triggerFormat overrides). */
-  getLabel?: (v: string) => string;
-  /** Overrides label shown in the trigger button only — menu still shows getLabel(v). */
-  triggerFormat?: (v: string) => string;
-}) {
-  const [open, setOpen] = useState(false);
-  const triggerRef      = useRef<HTMLButtonElement>(null);
-  const [rect, setRect] = useState<DOMRect | null>(null);
-
-  function handleToggle() {
-    if (triggerRef.current) setRect(triggerRef.current.getBoundingClientRect());
-    setOpen(v => !v);
-  }
-
-  return (
-    <div style={{ position: "relative", zIndex: open ? 101 : "auto" }}>
-      <div style={{ fontFamily: mono, fontSize: 7.5, letterSpacing: "0.08em", textTransform: "uppercase", color: T3, marginBottom: 3, whiteSpace: "nowrap" }}>
-        {label}
-      </div>
-      {open && (
-        <div aria-hidden="true" style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, zIndex: 99 }} onClick={() => setOpen(false)} />
-      )}
-      <button
-        ref={triggerRef}
-        type="button"
-        onClick={handleToggle}
-        style={{
-          width: "100%", display: "flex", alignItems: "center", gap: 4,
-          background: SURFACE_RAISE, border: `1px solid ${open ? NAVY : BORDER}`,
-          borderRadius: 4, padding: "3px 6px 3px 8px",
-          fontFamily: mono, fontSize: 10, lineHeight: 1.5, color: T2,
-          cursor: "pointer", outline: "none", userSelect: "none", transition: "border-color 150ms",
-        }}
-      >
-        <span style={{ flex: 1, textAlign: "left", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-          {triggerFormat ? triggerFormat(value) : getLabel ? getLabel(value) : value}
-        </span>
-        <svg width="7" height="7" viewBox="0 0 7 7" fill="none" stroke={T3} strokeWidth="1.3" strokeLinecap="round"
-          style={{ flexShrink: 0, transform: open ? "rotate(180deg)" : undefined, transition: "transform 150ms" }}>
-          <path d="M1 2.5l2.5 2.5L6 2.5" />
-        </svg>
-      </button>
-      {open && rect && (
-        <ul role="listbox" style={{
-          position: "fixed",
-          bottom: window.innerHeight - rect.top + 4,
-          left: rect.left,
-          minWidth: Math.max(rect.width, 108),
-          zIndex: 102, margin: 0, padding: "4px 0", listStyle: "none",
-          background: SURFACE_RAISE, border: `1px solid ${BORDER}`,
-          borderRadius: 4, boxShadow: "0 2px 10px rgba(27,40,64,0.07)",
-        }}>
-          {options.map(opt => (
-            <li key={opt} role="option" aria-selected={opt === value} style={{ margin: 0, padding: 0 }}>
-              <button
-                type="button"
-                onClick={() => { onChange(opt); setOpen(false); }}
-                style={{
-                  display: "block", width: "100%", textAlign: "left",
-                  padding: "5px 10px", fontFamily: mono, fontSize: 10, lineHeight: 1.5,
-                  color: opt === value ? NAVY : T2, fontWeight: opt === value ? 500 : 400,
-                  background: opt === value ? SURFACE_MUTED : "transparent",
-                  border: "none", cursor: "pointer", whiteSpace: "nowrap",
-                  outline: "none", userSelect: "none",
-                }}
-                onMouseEnter={e => { if (opt !== value) e.currentTarget.style.background = SURFACE_MUTED; }}
-                onMouseLeave={e => { if (opt !== value) e.currentTarget.style.background = "transparent"; }}
-              >{getLabel ? getLabel(opt) : opt}</button>
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
-  );
-}
+/* (PanelSelect removed in Шаг 4d — its only consumer DeliverySettingsStrip is gone.) */
 
 /* ── ToggleSwitch ──────────────────────────────────────────────────────── */
 function ToggleSwitch({ label, checked, onChange }: { label: string; checked: boolean; onChange: (v: boolean) => void }) {
@@ -568,9 +482,8 @@ export function SlideEditor({ modeSwitcher }: { modeSwitcher?: React.ReactNode }
                   onChange={(t) => updateSlide(activeSlide.id, { narrative: t })}
                 />
               )}
-
-              {/* ── Block 5: Delivery settings — deck-wide, round-4 fix 5 ── */}
-              <DeliverySettingsStrip />
+              {/* Block 5 (Delivery settings) removed — speaker-notes toggle moved
+                 to the right rail «ВСЯ ПРЕЗЕНТАЦИЯ» (Slides rework Шаг 4d). */}
             </div>
           ) : (
             <div className="flex-1 flex items-center justify-center">
@@ -674,49 +587,8 @@ function SummaryBlock({
   );
 }
 
-/* ── Block 5: Speaker-notes toggle — deck-wide ──────────────────────────
-   Single control: show speaker notes or hide them. (Audience / Tone / Slide
-   format removed in Slides rework Шаг 3 — they were misplaced/non-functional
-   here; Audience/Tone still live in ПОКАЗ/BuildMode.)                    */
-function DeliverySettingsStrip() {
-  const t           = useTranslations("SlideEditor");
-  const narrMode    = useWorkspaceStore(s => s.buildNarrationMode);
-  const setNarrMode = useWorkspaceStore(s => s.setBuildNarrationMode);
-
-  return (
-    <div style={{
-      flexShrink: 0,
-      margin: "0 28px 16px",
-      border: `1px solid ${BORDER}`,
-      background: SURFACE,
-      padding: "14px 18px 16px",
-    }}>
-      <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 10, gap: 12, flexWrap: "wrap" }}>
-        <span style={{
-          fontFamily: mono, fontSize: 9, letterSpacing: "0.12em", textTransform: "uppercase",
-          color: T3,
-        }}>
-          {t("deliverySettings")}
-        </span>
-        <span style={{
-          fontFamily: mono, fontSize: 9, color: T3, opacity: 0.7,
-        }}>
-          {t("appliesToDeck")}
-        </span>
-      </div>
-
-      <div style={{ maxWidth: 240 }}>
-        <PanelSelect
-          label={t("labelNarration")}
-          value={narrMode}
-          options={NARRATION_MODES}
-          triggerFormat={(v) => NARRATION_TRIGGER[v as NarrationMode] ?? v}
-          onChange={(v) => setNarrMode(v as NarrationMode)}
-        />
-      </div>
-    </div>
-  );
-}
+/* Block 5 (DeliverySettingsStrip) removed in Шаг 4d — the speaker-notes toggle
+   now lives in the right rail «ВСЯ ПРЕЗЕНТАЦИЯ» (see WebModeToggle/rail). */
 
 /* ── Block 4: Speaker notes ──────────────────────────────────────────────
    narrMode gates whether the block renders at all:
@@ -837,6 +709,8 @@ export function VisualizationStyleRail() {
   const activeSlideId   = useWorkspaceStore(s => s.activeSlideId);
   const updateSlide     = useWorkspaceStore(s => s.updateSlide);
   const updateDsChartType = useWorkspaceStore(s => s.updateDataSetChartType);
+  const narrMode     = useWorkspaceStore(s => s.buildNarrationMode);
+  const setNarrMode  = useWorkspaceStore(s => s.setBuildNarrationMode);
 
   const activeSlide = (activeSlideId ? slidesById[activeSlideId] : null)
     ?? (slideOrder[0] ? slidesById[slideOrder[0]] : null);
@@ -934,6 +808,15 @@ export function VisualizationStyleRail() {
           </div>
         );
       })}
+
+      {/* ── Speaker-notes toggle — deck-wide (moved from slide card, Шаг 4d) ── */}
+      <div style={{ borderTop: `1px solid ${BORDER}`, margin: "2px 0" }} />
+      <RailFieldLabel>{t("speakerNotesLabel")}</RailFieldLabel>
+      <ToggleSwitch
+        label={narrMode !== "None" ? t("notesShown") : t("notesHidden")}
+        checked={narrMode !== "None"}
+        onChange={(v) => setNarrMode(v ? "Speaker notes included" : "None")}
+      />
 
       <div style={{
         marginTop: "auto", paddingTop: 8,
