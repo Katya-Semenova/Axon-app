@@ -298,8 +298,6 @@ export function BuildMode() {
           const reason: Record<SlideArchetype, string> = {
             "Big Number":  "has a single metric",
             "Comparison":  "has exactly two comparable values",
-            "Sentiment":   "has a binary positive/negative split",
-            "Word List":   "has a long ranked list",
             "Chart":       "has multi-series data",
             "Quote":       "has no data",
           };
@@ -395,9 +393,7 @@ export function BuildMode() {
     const ARCH_MAP: Record<string, SlideArchetype> = {
       "big number": "Big Number", "bignumber": "Big Number",
       "comparison": "Comparison", "compare": "Comparison",
-      "sentiment": "Sentiment", "ratio": "Sentiment",
       "map": "Chart", "geographic": "Chart",
-      "word list": "Word List", "wordlist": "Word List", "list": "Word List",
       "treemap": "Chart", "tree map": "Chart",
       "quote": "Quote", "insight": "Quote",
       "chart": "Chart",

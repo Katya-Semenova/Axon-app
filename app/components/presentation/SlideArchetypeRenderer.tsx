@@ -163,53 +163,6 @@ function ArchComparison({ rows, W, H }: ArchProps) {
 }
 
 /* ══════════════════════════════════════════════════════════════════
-   4. Sentiment / Ratio — two filled horizontal regions
-══════════════════════════════════════════════════════════════════ */
-function ArchSentiment({ rows, accentColor, W, H }: ArchProps) {
-  const topRow    = rows[0];
-  const botRow    = rows[1];
-  const topVal    = topRow?.values[0] ?? 79;
-  const botVal    = botRow?.values[0] ?? 21;
-  const topLabel  = topRow?.label ?? "Positive";
-  const botLabel  = botRow?.label ?? "Negative";
-  const split     = H * 0.65;
-  const topNumSz  = Math.min(split * 0.6, 150);
-  const botNumSz  = Math.min((H - split) * 0.55, 82);
-  const pad       = 24;
-
-  return (
-    <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} style={{ display: "block" }}>
-      {/* top filled region */}
-      <rect width={W} height={split} fill={accentColor} />
-      <text x={pad} y={pad + 14}
-        fontSize={10} fontFamily={mono} letterSpacing="0.1em"
-        fill={CREAM} fillOpacity={0.45}>
-        {topLabel.toUpperCase()}
-      </text>
-      <text x={W - pad} y={split - pad}
-        textAnchor="end" dominantBaseline="auto"
-        fontSize={topNumSz} fontFamily="Inter, sans-serif" fontWeight="700"
-        fill={CREAM} style={{ fontVariantNumeric: "tabular-nums" }}>
-        {topVal}%
-      </text>
-
-      {/* bottom region */}
-      <rect y={split} width={W} height={H - split} fill="rgba(27,40,64,0.04)" />
-      <text x={pad} y={split + pad}
-        fontSize={10} fontFamily={mono} letterSpacing="0.1em" fill={T3}>
-        {botLabel.toUpperCase()}
-      </text>
-      <text x={W - pad} y={H - pad}
-        textAnchor="end" dominantBaseline="auto"
-        fontSize={botNumSz} fontFamily="Inter, sans-serif" fontWeight="700"
-        fill={T2} style={{ fontVariantNumeric: "tabular-nums" }}>
-        {botVal}%
-      </text>
-    </svg>
-  );
-}
-
-/* ══════════════════════════════════════════════════════════════════
    5. Map — dot-grid proportional to value per region
 ══════════════════════════════════════════════════════════════════ */
 function ArchMap({ rows, accentColor, W, H }: ArchProps) {
@@ -264,52 +217,6 @@ function ArchMap({ rows, accentColor, W, H }: ArchProps) {
             <text x={lx + dotR * 2 + 4} y={ly + dotR * 2}
               fontSize={9} fontFamily={mono} fill={T2}>
               {row.label.slice(0, maxChars)} {pct}%
-            </text>
-          </g>
-        );
-      })}
-    </svg>
-  );
-}
-
-/* ══════════════════════════════════════════════════════════════════
-   6. Word List — ordered by value, size encodes magnitude
-══════════════════════════════════════════════════════════════════ */
-function ArchWordList({ rows, W, H }: ArchProps) {
-  if (!rows.length) return <svg width={W} height={H} style={{ display: "block" }} />;
-
-  const sorted  = [...rows].sort((a, b) => b.values[0] - a.values[0]);
-  const max     = sorted[0]?.values[0] ?? 1;
-  const padV    = 20;
-  const valColW = 68;
-  const labelX  = valColW + 16;
-  const itemH   = Math.min((H - padV * 2) / Math.max(sorted.length, 1), 62);
-  const maxFont = Math.min(itemH * 0.72, 48);
-  const minFont = 10;
-
-  return (
-    <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} style={{ display: "block" }}>
-      {sorted.map((row, i) => {
-        const ratio    = max > 0 ? row.values[0] / max : 0;
-        const fontSize = minFont + (maxFont - minFont) * ratio;
-        const cy       = padV + i * itemH + itemH * 0.72;
-        return (
-          <g key={row.id}>
-            {/* value — small, right-aligned in value column */}
-            <text x={valColW} y={cy}
-              textAnchor="end"
-              fontSize={Math.max(fontSize * 0.44, 9)}
-              fontFamily={mono} fill={T3}
-              style={{ fontVariantNumeric: "tabular-nums" }}>
-              {fmt(row.values[0])}
-            </text>
-            {/* label */}
-            <text x={labelX} y={cy}
-              fontSize={fontSize}
-              fontFamily="Inter, sans-serif"
-              fontWeight={i === 0 ? "700" : "500"}
-              fill={i === 0 ? "#0A0A0A" : T2}>
-              {row.label}
             </text>
           </g>
         );
@@ -413,8 +320,6 @@ const RENDERERS: Record<SlideArchetype, React.ComponentType<ArchProps>> = {
   "Chart":      ArchChart,
   "Big Number": ArchBigNumber,
   "Comparison": ArchComparison,
-  "Sentiment":  ArchSentiment,
-  "Word List":  ArchWordList,
   "Quote":      ArchQuote,
 };
 
@@ -511,13 +416,7 @@ export function inferArchetype(rows: DataRow[], columns: string[]): SlideArchety
   if (!rows.length) return "Quote";
   if (rows.length === 1) return "Big Number";
 
-  if (rows.length === 2) {
-    const labels = rows.map(r => r.label.toLowerCase());
-    const isSentiment =
-      (labels.some(l => /pos|yes|win|on.?track|good|pass/.test(l)) &&
-       labels.some(l => /neg|no|loss|off.?track|bad|fail/.test(l)));
-    return isSentiment ? "Sentiment" : "Comparison";
-  }
+  if (rows.length === 2) return "Comparison";
 
   /* Geographic terms → Chart (Map is now a ChartType, rendered via ChartFill) */
   const geoTerms = /north|south|east|west|\bus\b|\buk\b|\beu\b|asia|europe|america|africa|region|country|market/;
@@ -531,9 +430,6 @@ export function inferArchetype(rows: DataRow[], columns: string[]): SlideArchety
     const values = rows.map(r => r.values[0]).sort((a, b) => b - a);
     if (values[0] > values[1] * 1.8) return "Chart";
   }
-
-  /* Long ranked list → Word List */
-  if (rows.length > 6) return "Word List";
 
   return "Chart";
 }

@@ -177,23 +177,22 @@ export type SlideArchetype =
   | "Chart"
   | "Big Number"
   | "Comparison"
-  | "Sentiment"
-  | "Word List"
   | "Quote";
 
 export const SLIDE_ARCHETYPES: SlideArchetype[] = [
-  "Chart", "Big Number", "Comparison", "Sentiment", "Word List", "Quote",
+  "Chart", "Big Number", "Comparison", "Quote",
 ];
 
 /** Archetypes that don't render a chart — controls dropdown/viz-style visibility. */
 export const NON_CHART_ARCHETYPES = new Set<SlideArchetype>([
-  "Big Number", "Comparison", "Sentiment", "Word List", "Quote",
+  "Big Number", "Comparison", "Quote",
 ]);
 
 /** Slide formats available in Delivery Settings — all non-Chart archetypes.
-    "Map" is no longer here — it moved to ChartType (it's a data viz, not a format). */
+    "Map" is no longer here — it moved to ChartType (it's a data viz, not a format).
+    Sentiment / Word List removed in Slides rework Шаг 4a. */
 export const SLIDE_FORMAT_OPTIONS: SlideArchetype[] = [
-  "Big Number", "Comparison", "Sentiment", "Word List", "Quote",
+  "Big Number", "Comparison", "Quote",
 ];
 
 export interface Slide {
