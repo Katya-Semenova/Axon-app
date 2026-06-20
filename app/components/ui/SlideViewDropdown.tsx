@@ -110,10 +110,13 @@ export function SlideViewDropdown({
         <>
           <div style={{ position: "fixed", inset: 0, zIndex: 9998 }} onClick={() => setOpen(false)} />
           <ul role="listbox" style={{
+            /* Right-anchored to the trigger so it never runs off the viewport
+               edge (the rail hugs the right side); grows leftward. */
             position: "fixed",
             top: rect.bottom + 4,
-            left: rect.left,
-            minWidth: Math.max(rect.width, 180),
+            right: Math.max(8, window.innerWidth - rect.right),
+            minWidth: Math.max(rect.width, 208),
+            maxWidth: "calc(100vw - 16px)",
             zIndex: 9999, margin: 0, padding: "4px 0", listStyle: "none",
             background: SURFACE_RAISE, border: `1px solid ${BORDER}`,
             borderRadius: 2, boxShadow: "0 4px 12px rgba(27,40,64,0.10)",

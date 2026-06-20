@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { authClient } from "@/lib/auth-client";
-import { currentBoardData } from "@/lib/store";
+import { currentBoardData, useWorkspaceStore } from "@/lib/store";
 import { createProjectFromData } from "@/app/actions/board";
 import { useToast } from "@/app/components/ui/Toast";
 import { Button } from "@/app/components/ui/Button";
@@ -22,11 +22,16 @@ export function GuestSaveButton({
   const { data: session } = authClient.useSession();
   const { toast } = useToast();
   const t = useTranslations("SaveFlow");
+  const mode = useWorkspaceStore(s => s.mode);
   const [modalOpen, setModalOpen] = useState(false);
   const [saving, setSaving] = useState(false);
 
   /* Холст уже привязан к доске — сохранять отдельно не нужно (работает автосейв). */
   if (boardId !== null) return null;
+
+  /* В режиме СЛАЙДЫ правый рельс занимает правый край (174px) — сдвигаем кнопку
+     левее, чтобы она не накрывала и не блокировала контролы рельса (Шаг 4g). */
+  const railClearance = mode === "presentation" ? "right-[188px]" : "right-5";
 
   async function doSave() {
     setSaving(true);
@@ -53,7 +58,7 @@ export function GuestSaveButton({
 
   return (
     <>
-      <div className="hidden lg:block fixed top-[74px] right-5 z-40">
+      <div className={`hidden lg:block fixed top-[74px] ${railClearance} z-40`}>
         <Button size="sm" onClick={handleClick} loading={saving} leftIcon={
           <svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="M11 5v6a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1h4l3 3z" />
