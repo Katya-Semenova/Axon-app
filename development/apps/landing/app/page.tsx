@@ -290,7 +290,7 @@ export default function Home() {
         <div className="max-w-[1152px] mx-auto h-16 flex items-center justify-between">
           <span className="font-mono text-[13px] font-medium tracking-[0.14em] text-primary">AXON</span>
           <div className="flex items-center gap-6">
-            <a href="https://axon-app-chi.vercel.app/" target="_blank" className="text-sm font-body text-soft hover:text-primary transition-colors">Try Axon</a>
+            <a href="https://axon-app.ru/" target="_blank" className="text-sm font-body text-soft hover:text-primary transition-colors">Try Axon</a>
             <a href="#" className="text-sm font-body text-primary border border-primary/30 px-4 py-1.5 rounded hover:bg-primary hover:text-bg transition-all">Sign in</a>
           </div>
         </div>
@@ -347,7 +347,7 @@ export default function Home() {
               Drop your data. Get your story.<br />Axon&apos;s AI finds the signal — you own the narrative.
             </p>
             <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap', marginBottom: 10 }}>
-              <a href="https://axon-app-chi.vercel.app/" target="_blank" rel="noopener" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: '#1A2742', color: '#F4F0E8', fontFamily: "'Inter',sans-serif", fontSize: 13, fontWeight: 500, padding: '12px 24px', borderRadius: 4, textDecoration: 'none' }}>Try Axon free →</a>
+              <a href="https://axon-app.ru/" target="_blank" rel="noopener" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: '#1A2742', color: '#F4F0E8', fontFamily: "'Inter',sans-serif", fontSize: 13, fontWeight: 500, padding: '12px 24px', borderRadius: 4, textDecoration: 'none' }}>Try Axon free →</a>
               <a href="#problem" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, border: '1px solid rgba(26,39,66,.2)', color: '#1A2742', fontFamily: "'Inter',sans-serif", fontSize: 13, fontWeight: 500, padding: '12px 24px', borderRadius: 4, textDecoration: 'none' }}>See how it works ↓</a>
             </div>
             <p style={{ fontFamily: "'Inter',sans-serif", fontSize: 10, color: 'rgba(139,149,168,.6)' }}>No credit card. First deck on us.</p>
@@ -832,7 +832,7 @@ export default function Home() {
 
           {/* Open prototype button — bottom-left */}
           <a
-            href="https://axon-app-chi.vercel.app/"
+            href="https://axon-app.ru/"
             target="_blank"
             rel="noopener"
             style={{ position: 'absolute', left: 0, bottom: 158, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: '#C8A86B', color: '#1A2742', borderRadius: 4, padding: '13px 84px', fontFamily: "'Inter',sans-serif", fontSize: 14, lineHeight: '20px', fontWeight: 600, textDecoration: 'none', whiteSpace: 'nowrap', boxSizing: 'border-box' }}
@@ -894,7 +894,7 @@ export default function Home() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               <h3 style={{ fontFamily: "'Instrument Serif',serif", fontSize: 42, fontWeight: 400, lineHeight: '46px', color: '#F4F0E8', margin: 0 }}>Live presentations</h3>
               <p style={{ fontFamily: "'Inter',sans-serif", fontSize: 14, lineHeight: 1.6, color: 'rgba(244,240,232,0.6)', margin: 0 }}>Present straight from Axon. No downloads, no version confusion. Your deck, live and in sync.</p>
-              <a href="https://axon-app-chi.vercel.app/" target="_blank" rel="noopener" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: '#C8A86B', color: '#1A2742', fontFamily: "'Inter',sans-serif", fontSize: 13, fontWeight: 600, padding: '12px 24px', borderRadius: 4, textDecoration: 'none', whiteSpace: 'nowrap', alignSelf: 'flex-start', boxShadow: '0 2px 12px rgba(200,168,107,0.4)' }}>
+              <a href="https://axon-app.ru/" target="_blank" rel="noopener" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: '#C8A86B', color: '#1A2742', fontFamily: "'Inter',sans-serif", fontSize: 13, fontWeight: 600, padding: '12px 24px', borderRadius: 4, textDecoration: 'none', whiteSpace: 'nowrap', alignSelf: 'flex-start', boxShadow: '0 2px 12px rgba(200,168,107,0.4)' }}>
                 Try Axon free →
               </a>
             </div>
@@ -925,7 +925,7 @@ export default function Home() {
           </h2>
           <p className="font-body text-soft mb-10 leading-relaxed">Join thousands of analysts who&apos;ve stopped translating and started presenting.</p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center mb-5">
-            <a href="https://axon-app-chi.vercel.app/" target="_blank" className="inline-flex items-center justify-center gap-2 bg-primary text-bg font-body font-medium text-sm px-8 py-4 rounded-[4px] hover:bg-primary/90 transition-all">Try Axon free →</a>
+            <a href="https://axon-app.ru/" target="_blank" className="inline-flex items-center justify-center gap-2 bg-primary text-bg font-body font-medium text-sm px-8 py-4 rounded-[4px] hover:bg-primary/90 transition-all">Try Axon free →</a>
             <a href="#" className="inline-flex items-center justify-center gap-2 border border-primary/25 text-primary font-body font-medium text-sm px-8 py-4 rounded-[4px] hover:border-accent hover:text-accent transition-all">Book a demo</a>
           </div>
           <p className="text-xs font-body text-soft/60">No credit card. First deck on us.</p>
