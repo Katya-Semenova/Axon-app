@@ -25,6 +25,29 @@ Donut-легенда, B1/B2 авто-пан) + фикс деплоя ИИ-env (`
 `AI_MODEL=anthropic/claude-sonnet-4.6`. **Остаётся опц.:** uptime-мониторинг (внешний), Telegram-алерты.
 **Дальше:** Урок 6; отложенные фичи (Блок 2) и FSD (после Урока 7) — в `docs/backlog.md`.
 
+## Урок 6 (публичная упаковка) — В РАБОТЕ с 2026-06-20
+
+**⚠️ ЛЕНДИНГ УЖЕ СУЩЕСТВУЕТ — отдельным проектом в соседней папке (не внутри `axon-app/`):**
+- Путь: `../axon-landing/` (рядом с `axon-app/`, внутри `AXON code/`). Отдельный Next.js 16
+  проект со СВОИМ `.git`. Запуск: `cd ../axon-landing && npm run dev`.
+- Стек: Next 16, framer-motion + gsap + `@studio-freight/lenis` (smooth-scroll) + lottie-react.
+  Шрифты: Instrument Serif (дисплей) / Inter (текст) / JetBrains Mono. Палитра = бренд AXON
+  (navy `#1A2742`, gold `#C8A86B`, cream `#F4F0E8`, slate `#8B95A8`) — но захардкожена inline,
+  НЕ через токены DESIGN.md.
+- Секции (все живут в `../axon-landing/app/page.tsx`, ~950 строк):
+  NAV · HERO (★ chaos-анимация: токены+скрин-SVG слетаются из центра, drift/breathe; пословное
+  появление заголовка) · WHY AXON / «Easy-peasy» (★ bento 4 карты въезжают + count-up 6 hrs→12 min
+  со страйк-аутом + цикл подсветки шагов) · THE SHIFT (★ sticky scroll-драйв 5 актов в окне браузера,
+  500vh трек) · THREE MODES (Canvas/Slides/Present) · PROTOTYPE TEASER (navy, `PrototypeShowcase`
+  live-компонент в `app/_axon/`) · FEATURES (bento) · CTA · FOOTER.
+- ★ = ценные анимации/секции, которые пользователь хочет ПЕРЕИСПОЛЬЗОВАТЬ.
+- Ассеты/скрины: `../axon-landing-assets/screenshots/` + прототип `../AXON code/index.html`.
+
+**План Урока 6 (Шаг 0 монорепо-сплит) ПЕРЕСМОТРЕН под этот факт:** `apps/landing` будет НЕ пустым
+каркасом из урока, а ПЕРЕНОСОМ существующего `axon-landing` + доработкой под Урок 6 (SEO/legal/
+analytics/PWA, токены `@axon/ui`, CTA на реальные `/app` и `/login` вместо vercel-ссылки). Детали —
+в плане сессии (ещё не утверждён пользователем на 2026-06-20). Физический `git mv` НЕ начат.
+
 **Урок 4 (бэкенд) — завершён.** Сделано: база данных + Prisma, вход в аккаунт (Better Auth:
 регистрация/логин/защита/удаление), письма (Resend), хранилище файлов (Selectel S3), разбор
 CSV/Excel → инсайты, добавление файла на холст, публичные ссылки `/p/[token]`.
