@@ -263,7 +263,7 @@ function SlideThumbnail({ slide, isActive, onClick, onDelete }: {
      2. Slide card — bordered container: header (2-line title + chart dropdown)
                      + resizable body (chart panel / splitter / data+settings)
      3. Bottom strip — thumbnail rail (excl. active) + Viz Style + Build CTA   */
-export function SlideEditor({ modeSwitcher }: { modeSwitcher?: React.ReactNode }) {
+export function SlideEditor({ modeSwitcher, saveButton }: { modeSwitcher?: React.ReactNode; saveButton?: React.ReactNode }) {
   /* setMode and clearBuildMessages were only used by the removed
      "Build Presentation" CTA — no longer subscribed here. */
   const t                 = useTranslations("SlideEditor");
@@ -372,7 +372,8 @@ export function SlideEditor({ modeSwitcher }: { modeSwitcher?: React.ReactNode }
           )}
         </div>
         <div className="flex justify-center">{modeSwitcher}</div>
-        <div className="flex items-center justify-end">
+        <div className="flex items-center justify-end gap-2">
+          {saveButton}
           <button
             onClick={openOnboarding}
             title={t("howItWorks")}

@@ -22,7 +22,7 @@ const DS_COL_X       = INS_COL_X + 2 * INS_COL_STRIDE + 48;  /* = 500 */
 const DS_W           = 340;
 void COL_GAP;
 
-export function Canvas({ modeSwitcher }: { modeSwitcher?: React.ReactNode }) {
+export function Canvas({ modeSwitcher, saveButton }: { modeSwitcher?: React.ReactNode; saveButton?: React.ReactNode }) {
   const insightOrder  = useWorkspaceStore(s => s.insightOrder);
   const insightsById  = useWorkspaceStore(s => s.insightsById);
   const dataSetOrder  = useWorkspaceStore(s => s.dataSetOrder);
@@ -252,6 +252,7 @@ export function Canvas({ modeSwitcher }: { modeSwitcher?: React.ReactNode }) {
         </div>
         <div className="flex justify-center">{modeSwitcher}</div>
         <div className="flex items-center justify-end gap-2">
+          {saveButton}
           <button onClick={undo} disabled={!canUndo} title={t("toolbar.undo")}
             className="w-[28px] h-[28px] rounded-sm border border-border flex items-center justify-center text-t2 disabled:opacity-30 hover:border-[#B89548] hover:text-[#B89548] transition-colors">
             <svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">

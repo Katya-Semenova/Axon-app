@@ -97,10 +97,11 @@ const FORMAT_KEY: Record<OutputFormat, string> = {
 
 /* ── Component ─────────────────────────────────────────────────────────── */
 
-export function PresentExport({ modeSwitcher, boardId, onBoardSaved }: {
+export function PresentExport({ modeSwitcher, boardId, onBoardSaved, saveButton }: {
   modeSwitcher?: React.ReactNode;
   boardId: string | null;
   onBoardSaved: (id: string) => void;
+  saveButton?: React.ReactNode;
 }) {
   const t            = useTranslations("Export");
   const slideOrder   = useWorkspaceStore(s => s.slideOrder);
@@ -186,7 +187,7 @@ export function PresentExport({ modeSwitcher, boardId, onBoardSaved }: {
           </span>
         </div>
         <div className="flex justify-center">{modeSwitcher}</div>
-        <div />
+        <div className="flex items-center justify-end">{saveButton}</div>
       </div>
 
       {/* ── Body ── */}

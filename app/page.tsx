@@ -130,12 +130,17 @@ function Page2({ onBack, boardId, onBoardSaved }: { onBack: () => void; boardId:
 
   const modeTabs = !drillInOpen ? <ModeTabs variant="bar" /> : undefined;
 
+  /* Гостевая кнопка «Сохранить» — живёт в правом слоте тулбара каждого режима
+     (раньше была плавающим fixed-оверлеем и накрывала правый рельс Слайдов).
+     Сама прячется, когда холст уже привязан к доске (boardId !== null). */
+  const saveButton = <GuestSaveButton boardId={boardId} onSaved={onBoardSaved} />;
+
   /* Surface mounted per mode */
   const Surface = mode === "data"
-    ? <Canvas modeSwitcher={modeTabs} />
+    ? <Canvas modeSwitcher={modeTabs} saveButton={saveButton} />
     : mode === "presentation"
-    ? <SlideEditor modeSwitcher={modeTabs} />
-    : <PresentExport modeSwitcher={modeTabs} boardId={boardId} onBoardSaved={onBoardSaved} />;
+    ? <SlideEditor modeSwitcher={modeTabs} saveButton={saveButton} />
+    : <PresentExport modeSwitcher={modeTabs} boardId={boardId} onBoardSaved={onBoardSaved} saveButton={saveButton} />;
 
   /* Data set tray — CANVAS + SLIDES only. Hidden in PRESENT (export gateway). */
   const showDataSetTray = mode === "data" || mode === "presentation";
@@ -246,11 +251,7 @@ export default function Home() {
       {view === "landing"
         ? <LandingPage onNavigate={openWorkspace} />
         : (
-          <>
-            <Page2 onBack={() => setView("landing")} boardId={boardId} onBoardSaved={setBoardId} />
-            {/* Гость в воркспейсе — кнопка «Сохранить» (вход + перенос холста, Шаг 7b). */}
-            <GuestSaveButton boardId={boardId} onSaved={setBoardId} />
-          </>
+          <Page2 onBack={() => setView("landing")} boardId={boardId} onBoardSaved={setBoardId} />
         )}
     </ToastProvider>
   );
