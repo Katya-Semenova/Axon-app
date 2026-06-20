@@ -192,38 +192,8 @@ function SlideSlot({ slide, isActive, onClick, onDelete, isDraggingSlide }: {
   );
 }
 
-/* ── "+ NEW DATA SET" slot ────────────────────────────────────────────────
-   Same visual language as NewSlideSlot. Creates a dataset and auto-pairs
-   it with a new slide — the slide appears in the tray immediately.         */
-function NewDataSetSlot({ onClick }: { onClick: () => void }) {
-  const [hovered, setHovered] = useState(false);
-  const accent = hovered ? GOLD : T3;
-  const t = useTranslations("SlideTray");
-
-  return (
-    <div
-      onClick={onClick}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      style={{
-        aspectRatio: "116 / 76",
-        border: `1.5px dashed ${accent}`,
-        background: hovered ? "rgba(184,149,72,0.06)" : "transparent",
-        borderRadius: 0,
-        display: "flex", alignItems: "center", justifyContent: "center",
-        transition: "border-color 150ms ease, background 150ms ease",
-        cursor: "pointer",
-      }}
-    >
-      <div className="flex flex-col items-center gap-1" style={{ color: accent, transition: "color 150ms" }}>
-        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
-          <path d="M6 2v8M2 6h8" />
-        </svg>
-        <span style={{ fontFamily: mono, fontSize: 8, letterSpacing: "0.08em" }}>{t("newDataSet")}</span>
-      </div>
-    </div>
-  );
-}
+/* (NewDataSetSlot removed in Шаг 5b — «+ Новый дата-сет» плодил пустой
+   узел-тупик; данные теперь заводятся файлом на Холсте. См. screens/slides.md.) */
 
 /* ── AddSlideSlot (Slides rework Шаг 5a) ──────────────────────────────────
    «+ Слайд» tile at the end of the slides tray. Click opens an upward popover
@@ -341,7 +311,6 @@ export function PresentationStructure({ insertAt, isDraggingSlide }: {
   const activeSlideId = useWorkspaceStore(s => s.activeSlideId);
   const setActive     = useWorkspaceStore(s => s.setActiveSlide);
   const removeSlide   = useWorkspaceStore(s => s.removeSlide);
-  const addDataSet    = useWorkspaceStore(s => s.addDataSet);
   const dataSetOrder  = useWorkspaceStore(s => s.dataSetOrder);
   const addSlideWithDataSet = useWorkspaceStore(s => s.addSlideWithDataSet);
 
@@ -434,17 +403,12 @@ export function PresentationStructure({ insertAt, isDraggingSlide }: {
               return items;
             })()}
 
-            {/* + Слайд — Slides mode: picker of free Canvas data sets (Шаг 5a) */}
+            {/* + Слайд — Slides mode: picker of free Canvas data sets (Шаг 5a).
+               Canvas mode has no add-tile anymore — data is added via a file
+               on Canvas, never an empty placeholder node (Шаг 5b). */}
             {isSlideMode && (
               <div style={{ width: 116, flexShrink: 0 }}>
                 <AddSlideSlot dataSets={freeDataSets} onPick={addSlideWithDataSet} />
-              </div>
-            )}
-
-            {/* + New data set — Canvas mode only; not shown in Slides mode */}
-            {!isSlideMode && (
-              <div style={{ width: 116, flexShrink: 0 }}>
-                <NewDataSetSlot onClick={addDataSet} />
               </div>
             )}
           </div>
