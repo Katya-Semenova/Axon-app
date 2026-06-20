@@ -646,7 +646,7 @@ function SummaryBlock({
     <div style={{
       flexShrink: 0,
       margin: "14px 28px 4px",
-      background: "#FAF8F2",
+      background: "var(--slide-muted)",
       borderLeft: "4px solid var(--slide-accent)",
       padding: "18px 22px",
     }}>

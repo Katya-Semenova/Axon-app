@@ -297,7 +297,7 @@ export const PRESENTATION_THEMES: PresentationTheme[] = [
   },
   {
     id: "web",
-    label: "Web",
+    label: "Web-dashboard",
     blurb: "Dark · sans · modern",
     vars: {
       "--slide-font-display": "var(--font-inter), system-ui, sans-serif",
