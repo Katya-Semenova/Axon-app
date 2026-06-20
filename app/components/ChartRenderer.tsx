@@ -39,7 +39,7 @@ const INK       = `var(--slide-title,  ${NAVY})`;   // headline numbers / inline
 const INK_MUTED = `var(--slide-text,   ${T2})`;     // labels / axis names
 const INK_FAINT = `var(--slide-text,   ${T3})`;     // tick labels
 const ACCENT    = `var(--slide-accent, ${GOLD})`;   // gold highlight
-const AXIS      = `var(--slide-border, ${BORDER})`; // gridlines / rings / spokes / connectors
+const AXIS      = `var(--slide-axis, var(--slide-border, ${BORDER}))`; // gridlines / rings / spokes / connectors — dedicated token, more visible than the structural border on dark themes
 
 const SERIF_FAMILY = "'Instrument Serif', 'GT Sectra', 'Fraunces', Georgia, serif";
 const MONO_FAMILY  = "'JetBrains Mono', monospace";

@@ -304,6 +304,9 @@ export const PRESENTATION_THEMES: PresentationTheme[] = [
       "--slide-series-6":     "#8FA6C8",
       "--slide-series-7":     "#B0D67E",
       "--slide-tm-ink":       "#10151C",
+      /* Gridlines/axes/spokes — brighter than the structural border so they
+         read on the near-black bg (border #232C3A would vanish). */
+      "--slide-axis":         "#5A6A85",
     },
   },
   {
@@ -336,6 +339,8 @@ export const PRESENTATION_THEMES: PresentationTheme[] = [
       "--slide-series-6":     "#44506A",
       "--slide-series-7":     "#6E4A1E",
       "--slide-tm-ink":       "#F7F9FB",
+      /* Gridlines/axes/spokes — clear grey on the light bg. */
+      "--slide-axis":         "#BCC6D4",
     },
   },
 ];
