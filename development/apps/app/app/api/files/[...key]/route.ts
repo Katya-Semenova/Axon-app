@@ -11,6 +11,15 @@ import { getObject } from "@/lib/storage";
  */
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ key: string[] }> }) {
   const { key } = await params;
+
+  // Защита от path traversal: каждый сегмент — только безопасные символы,
+  // без "."/".." и пустых частей. S3-ключ литеральный (../ не уводит в др. папку),
+  // но проверка дешёвая и закрывает класс атак на будущие провайдеры/префиксы.
+  const SEG_OK = /^[A-Za-z0-9._-]+$/;
+  if (key.some((seg) => seg === "." || seg === ".." || !SEG_OK.test(seg))) {
+    return NextResponse.json({ error: "not-found" }, { status: 404 });
+  }
+
   const path = key.join("/");
 
   if (!path.startsWith("avatars/")) {
