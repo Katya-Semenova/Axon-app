@@ -13,11 +13,6 @@ import { useTranslations } from "next-intl";
 
 const mono = "'JetBrains Mono', monospace";
 
-const STYLE_FONT: Record<string, string> = {
-  Modern:    "Inter, sans-serif",
-  Magazine:  "'Instrument Serif', Georgia, serif",
-  Wireframe: "'JetBrains Mono', monospace",
-};
 const ACCENT: Record<string, string> = {
   Navy: "#1B2840", Gold: "#B89548", Slate: "#4A5878", Graphite: "#2A3654",
 };
@@ -455,8 +450,8 @@ export function BuildMode() {
   const activeSlide = (activeSlideId ? slidesById[activeSlideId] : localSlides[0]) ?? localSlides[0] ?? null;
   const activeDs    = activeSlide?.dataSetIds[0] ? dataSetsById[activeSlide.dataSetIds[0]] : null;
   const serial      = activeSlide ? String(activeSlide.serial).padStart(2, "0") : "01";
-  const headFont    = activeSlide ? (STYLE_FONT[activeSlide.visualStyle] ?? "Inter, sans-serif") : "Inter, sans-serif";
-  const slideBg     = activeSlide?.visualStyle === "Wireframe" ? "#F5F2EA" : "#FDFCF9";
+  const headFont    = "Inter, sans-serif";
+  const slideBg     = "#FDFCF9";
   const speakerNote = activeSlide && activeDs
     ? getSpeakerNote(activeDs.title, activeSlide.serial, buildTone, activeSlide.narrative)
     : "";
@@ -576,7 +571,7 @@ export function BuildMode() {
                       </div>
                       {activeSlide.narrative && (
                         <div style={{ marginTop: 4 }}>
-                          <span style={{ fontFamily: headFont, fontSize: 12.5, color: T2, fontStyle: activeSlide.visualStyle === "Magazine" ? "italic" : "normal" }}>
+                          <span style={{ fontFamily: headFont, fontSize: 12.5, color: T2, fontStyle: "normal" }}>
                             {activeSlide.narrative}
                           </span>
                         </div>
@@ -591,7 +586,6 @@ export function BuildMode() {
                         accentColor={ACCENT[activeSlide.colorAccent] ?? NAVY}
                         title={activeDs.title}
                         narrative={activeSlide.narrative}
-                        visualStyle={activeSlide.visualStyle}
                       />
                     </div>
                     {activeDs.rows.length > 0 && (
@@ -740,12 +734,12 @@ export function BuildMode() {
                     style={{
                       flexShrink: 0, width: 86, height: 70, cursor: "pointer",
                       border: `${isActive ? "1.5px" : "1px"} solid ${isActive ? NAVY : BORDER}`,
-                      background: slide.visualStyle === "Wireframe" ? "#F5F2EA" : "#FBF9F3",
+                      background: "#FBF9F3",
                       overflow: "hidden", transition: "border-color 150ms",
                     }}
                   >
                     <svg viewBox="0 0 86 70" fill="none" style={{ width: "100%", height: "100%", display: "block" }}>
-                      <rect width="86" height="70" fill={slide.visualStyle === "Wireframe" ? "#F5F2EA" : "#FBF9F3"} />
+                      <rect width="86" height="70" fill="#FBF9F3" />
                       <text x="4" y="9" fontSize="4" fontWeight="500" fill={T3} fontFamily={mono} letterSpacing="0.06em">
                         {String(idx + 1).padStart(2, "0")} /
                       </text>

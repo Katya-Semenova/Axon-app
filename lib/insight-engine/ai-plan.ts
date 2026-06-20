@@ -43,7 +43,6 @@ const SLIDE_DEFAULTS = {
   colorBy:     "Segment",
   filter:      "All data",
   colorAccent: "Navy" as const,
-  visualStyle: "Modern" as const,
 };
 
 /* Типы графиков, осмысленно использующие НЕСКОЛЬКО метрик. Остальные берут первую. */

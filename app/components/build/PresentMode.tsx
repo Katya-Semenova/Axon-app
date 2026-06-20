@@ -8,11 +8,6 @@ import type { Slide } from "@/lib/types";
 import { T3 } from "../ui/tokens";
 import { useTranslations } from "next-intl";
 
-const STYLE_FONT: Record<string, string> = {
-  Modern:    "Inter, sans-serif",
-  Magazine:  "'Instrument Serif', Georgia, serif",
-  Wireframe: "'JetBrains Mono', monospace",
-};
 
 const mono = "'JetBrains Mono', monospace";
 
@@ -56,7 +51,7 @@ export function PresentMode({
   const slide    = slides[currentIdx];
   const ds       = slide?.dataSetIds[0] ? dataSetsById[slide.dataSetIds[0]] : null;
   const serial   = slide ? String(slide.serial).padStart(2, "0") : "01";
-  const headFont = slide ? (STYLE_FONT[slide.visualStyle] ?? "Inter, sans-serif") : "Inter, sans-serif";
+  const headFont = "Inter, sans-serif";
   const progress = slides.length > 1 ? currentIdx / (slides.length - 1) : 1;
 
   if (!slide) return null;
@@ -158,7 +153,7 @@ export function PresentMode({
             style={{
               width: "100%", maxWidth: 960,
               height: "100%",
-              background: slide.visualStyle === "Wireframe" ? "#F5F2EA" : "#FDFCF9",
+              background: "#FDFCF9",
               border: "1px solid rgba(255,255,255,0.06)",
               display: "flex", flexDirection: "column",
               overflow: "hidden",
@@ -180,7 +175,7 @@ export function PresentMode({
                 <div style={{ marginTop: 5 }}>
                   <span style={{
                     fontFamily: headFont, fontSize: 13.5, color: "#5C6478",
-                    fontStyle: slide.visualStyle === "Magazine" ? "italic" : "normal",
+                    fontStyle: "normal",
                   }}>
                     {slide.narrative || ""}
                   </span>

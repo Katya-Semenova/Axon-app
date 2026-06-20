@@ -106,7 +106,6 @@ export function PublicDeckView({ deck }: { deck: PublicDeck | null }) {
               accentColor={ACCENT[slide.colorAccent] ?? ACCENT.Navy}
               title={ds?.title ?? ""}
               narrative={slide.narrative}
-              visualStyle={slide.visualStyle}
             />
           </div>
         </div>

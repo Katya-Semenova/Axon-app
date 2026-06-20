@@ -3,7 +3,7 @@
 import { useRef, useEffect, useState } from "react";
 import { ChartFill } from "../ChartFill";
 import type { DataRow, ChartType } from "@/lib/mockData";
-import type { SlideArchetype, VisualStyle } from "@/lib/types";
+import type { SlideArchetype } from "@/lib/types";
 import { NAVY, GOLD, T2, T3, BORDER } from "../ui/tokens";
 
 const mono = "'JetBrains Mono', monospace";
@@ -59,7 +59,6 @@ interface ArchProps {
   accentColor: string;
   title: string;
   narrative?: string;
-  visualStyle: VisualStyle;
   W: number;
   H: number;
 }
@@ -337,7 +336,6 @@ interface SlideArchetypeRendererProps {
   accentColor: string;
   title: string;
   narrative?: string;
-  visualStyle: VisualStyle;
 }
 
 export function SlideArchetypeRenderer(props: SlideArchetypeRendererProps) {

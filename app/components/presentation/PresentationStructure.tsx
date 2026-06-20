@@ -5,23 +5,17 @@ import { createPortal } from "react-dom";
 import { SortableContext, useSortable, horizontalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { useWorkspaceStore } from "@/lib/store";
-import type { Slide, VisualStyle } from "@/lib/types";
+import type { Slide } from "@/lib/types";
 import { MiniChart } from "../MiniChart";
 import { useTranslations } from "next-intl";
 import { BORDER, NAVY, GOLD, T3, SURFACE_RAISE } from "../ui/tokens";
 
 const mono = "'JetBrains Mono', monospace";
 
-const STYLE_BG: Record<VisualStyle, string> = {
-  Modern:    "#FBF9F3",
-  Magazine:  "#FBF9F3",
-  Wireframe: "#F5F2EA",
-};
-const STYLE_HEADLINE_FONT: Record<VisualStyle, string> = {
-  Modern:    "Inter, sans-serif",
-  Magazine:  "'Instrument Serif', Georgia, serif",
-  Wireframe: "'JetBrains Mono', monospace",
-};
+/* Slide thumbnails use a single neutral surface/font now — per-slide
+   visualStyle removed in Шаг 6b (oformление is deck-wide via the theme). */
+const THUMB_BG   = "#FBF9F3";
+const THUMB_FONT = "Inter, sans-serif";
 
 /* ── InsertionLine ────────────────────────────────────────────────────────
    2 px navy vertical bar rendered between thumbnails during slide reorder.  */
@@ -60,16 +54,8 @@ function SlideSlot({ slide, isActive, onClick, onDelete, isDraggingSlide }: {
 
   const serial   = String(slide.serial).padStart(2, "0");
   const headline = ds ? (ds.title.length > 28 ? ds.title.slice(0, 28) + "…" : ds.title) : t("emptySlide");
-  const bg       = STYLE_BG[slide.visualStyle];
-  const headFont = STYLE_HEADLINE_FONT[slide.visualStyle];
-
-  const wireDots = slide.visualStyle === "Wireframe"
-    ? Array.from({ length: 5 }, (_, row) =>
-        Array.from({ length: 13 }, (_, col) => (
-          <circle key={`${row}-${col}`} cx={6 + col * 8} cy={32 + row * 7} r="0.6" fill={T3} fillOpacity="0.45" />
-        ))
-      ).flat()
-    : null;
+  const bg       = THUMB_BG;
+  const headFont = THUMB_FONT;
 
   /* Gold drop highlight only for dataset drags — not during slide reorder */
   const showDropHighlight = isOver && !isDraggingSlide;
@@ -105,16 +91,15 @@ function SlideSlot({ slide, isActive, onClick, onDelete, isDraggingSlide }: {
       >
         <svg viewBox="0 0 116 76" fill="none" style={{ width: "100%", height: "100%", display: "block" }}>
           <rect width="116" height="76" fill={bg} />
-          {wireDots}
           <text x="6" y="11" fontSize="5" fontWeight="500" fill={T3} fontFamily={mono} letterSpacing="0.08em">{serial} /</text>
 
           {/* Dataset title — always shown whenever a dataset is linked */}
           {ds && (
             <text
               x="6"
-              y={slide.visualStyle === "Magazine" ? 23 : 21}
-              fontSize={slide.visualStyle === "Magazine" ? 7.5 : 6.5}
-              fontWeight={slide.visualStyle === "Magazine" ? "600" : "500"}
+              y={21}
+              fontSize={6.5}
+              fontWeight="500"
               fill="#0A0A0A"
               fontFamily={headFont}
             >

@@ -170,7 +170,6 @@ export const NARRATION_MODES: NarrationMode[] = [
 
 /* ── 1st level — Slide ─────────────────────────────────────────────────── */
 
-export type VisualStyle = "Wireframe" | "Magazine" | "Modern";
 export type ColorAccent = "Navy" | "Gold" | "Slate" | "Graphite";
 
 export type SlideArchetype =
@@ -212,9 +211,6 @@ export interface Slide {
   colorBy: string;
   filter: string;
   colorAccent: ColorAccent;
-
-  /* ── visualization style panel ────────────────────────────────────── */
-  visualStyle: VisualStyle;
 
   /** AI-generated 1–2 sentence headline summary rendered as the prominent
       gold-bordered block under the slide title. When undefined, the slide

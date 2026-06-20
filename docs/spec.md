@@ -169,7 +169,7 @@
   - **Приоритет строк-графиков:** Доли целого·Treemap · Доли целого·Donut · Сравнение·Lollipop · Связь·Scatter · Профиль·Radar · Плотность·Heatmap · География·Map · Количество·Dot Matrix · Динамика·Spline Area · Состав·Stacked Bar. **Spline Area и Stacked Bar — самый низ** (скучные стандартные; Spline выше Stacked Bar). Donut + Lollipop держим высоко — витрина приложения.
   - **«Динамику» покрасивее** решает не новый тип, а **приоритет ИИ-подбора**: для временны́х данных ИИ предпочитает яркие типы, Spline/Stacked Bar — только как запасные (см. `backlog`/память attractive-chart-default). Отдельный мелкий шаг.
   - **Убраны** архетипы `Sentiment` / `Word List` (самые непонятные на тестах).
-- **Рерайт Slides (Шаг 6, позже):** поля оформления `visualStyle / showGrid / showLabels / stackedBars / renderEngine` **схлопываются в одну тему презентации** (`presentationThemeId`). ⚠️ меняет модель → затрагивает сохранённые доски (board JSON) и публичную деку `/p/[token]` → аккуратность/совместимость. См. `backlog.md` (Ярус 2) и `screens/slides.md`.
+- **Рерайт Slides (Шаг 6, ✅ сделано):** пер-слайдовые поля оформления `visualStyle / showGrid / showLabels / stackedBars / renderEngine` **удалены** — оформление теперь только через **тему презентации** (`presentationThemeId`, deck-wide). Старые сохранённые доски и `/p/[token]` совместимы: лишние ключи в JSON игнорируются на чтение (ADR-003), `presentationThemeId` у старых отсутствует → фоллбэк `"editorial"`.
 
 ### Presentation / Deck
 - projectId, **`presentationThemeId`** (`editorial` | `soft` | `web` — где **web = «Web-dashboard»** с вариантом свет/тьма; добавляются Bold / Minimal / Magazine), slideOrder[], narrationMode

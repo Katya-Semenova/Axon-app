@@ -434,7 +434,6 @@ const SLIDE_DEFAULTS = {
   colorBy: "Segment",
   filter: "All data",
   colorAccent: "Navy" as const,
-  visualStyle: "Modern" as const,
 };
 
 /* ── Slides — two slides, one per AI-seeded dataset ─────────────────────── */

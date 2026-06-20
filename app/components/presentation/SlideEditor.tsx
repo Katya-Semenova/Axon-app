@@ -2,10 +2,9 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import { useWorkspaceStore } from "@/lib/store";
-import { MiniChart } from "../MiniChart";
 import { SlideViewDropdown } from "../ui/SlideViewDropdown";
 import { SlideArchetypeRenderer, deriveSlideSummary } from "./SlideArchetypeRenderer";
-import type { Slide, VisualStyle, ColorAccent, BuildAudience, BuildTone, NarrationMode, SlideArchetype } from "@/lib/types";
+import type { Slide, ColorAccent, BuildAudience, BuildTone, NarrationMode, SlideArchetype } from "@/lib/types";
 import { PRESENTATION_THEMES, WEB_THEME_IDS } from "@/lib/types";
 import type { PresentationThemeId } from "@/lib/types";
 import { BORDER, NAVY, GOLD, T2, T3, SURFACE, SURFACE_RAISE, SURFACE_MUTED } from "../ui/tokens";
@@ -28,16 +27,6 @@ const ACCENT_COLOR: Record<ColorAccent, string> = {
   Gold:     "#B89548",
   Slate:    "#4A5878",
   Graphite: "#2A3654",
-};
-const STYLE_BG: Record<VisualStyle, string> = {
-  Modern:    "#FBF9F3",
-  Magazine:  "#FBF9F3",
-  Wireframe: "#F5F2EA",
-};
-const STYLE_HEADLINE_FONT: Record<VisualStyle, string> = {
-  Modern:    "Inter, sans-serif",
-  Magazine:  "'Instrument Serif', Georgia, serif",
-  Wireframe: "'JetBrains Mono', monospace",
 };
 const SLIDES_PER_PAGE = 4;
 const mono = "'JetBrains Mono', monospace";
@@ -106,156 +95,9 @@ function ToggleSwitch({ label, checked, onChange }: { label: string; checked: bo
   );
 }
 
-/* ── StyleTile ─────────────────────────────────────────────────────────── */
-function StyleTile({ style, active, onClick }: { style: VisualStyle; active: boolean; onClick: () => void }) {
-  return (
-    <button onClick={onClick}
-      className="flex-1 rounded-sm border overflow-hidden transition-all duration-150"
-      style={{ height: 64, borderColor: active ? NAVY : BORDER, background: active ? "rgba(27,40,64,0.05)" : "transparent" }}>
-      <svg viewBox="0 0 56 56" fill="none" style={{ width: "100%", height: "100%" }}>
-        {style === "Modern" && (
-          <>
-            <rect x="5"  y="16" width="8" height="10" rx="1.5" fill={NAVY} fillOpacity={active ? 0.85 : 0.25} />
-            <rect x="15" y="10" width="8" height="16" rx="1.5" fill={NAVY} fillOpacity={active ? 0.55 : 0.15} />
-            <rect x="25" y="6"  width="8" height="20" rx="1.5" fill={NAVY} fillOpacity={active ? 0.75 : 0.2} />
-            <rect x="35" y="12" width="8" height="14" rx="1.5" fill={NAVY} fillOpacity={active ? 0.45 : 0.12} />
-          </>
-        )}
-        {style === "Magazine" && (
-          <>
-            <rect x="5"  y="5"  width="32" height="4" rx="1"   fill={active ? NAVY : T3} fillOpacity={active ? 0.85 : 0.35} />
-            <rect x="5"  y="12" width="20" height="2.5" rx="1" fill={active ? NAVY : T3} fillOpacity={active ? 0.3  : 0.18} />
-            <path d="M5 19 Q18 15 30 21 Q42 27 51 18 V27 H5Z" fill={active ? NAVY : T3} fillOpacity={active ? 0.2 : 0.1} />
-            <circle cx="46" cy="10" r="5" fill={active ? GOLD : T3} fillOpacity={active ? 0.7 : 0.2} />
-          </>
-        )}
-        {style === "Wireframe" && (
-          <>
-            {[10, 20, 30, 40].flatMap(x =>
-              [8, 16, 24].map(y => (
-                <circle key={`${x}-${y}`} cx={x} cy={y} r="0.9" fill={T3} fillOpacity={active ? 0.65 : 0.35} />
-              ))
-            )}
-            <rect x="5"  y="14" width="8" height="12" rx="1" fill="none" stroke={active ? NAVY : T3} strokeWidth="0.85" strokeOpacity={active ? 0.8 : 0.45} />
-            <rect x="15" y="9"  width="8" height="17" rx="1" fill="none" stroke={active ? NAVY : T3} strokeWidth="0.85" strokeOpacity={active ? 0.8 : 0.45} />
-            <rect x="25" y="17" width="8" height="9"  rx="1" fill="none" stroke={active ? NAVY : T3} strokeWidth="0.85" strokeOpacity={active ? 0.8 : 0.45} />
-          </>
-        )}
-        <text x="28" y="40" textAnchor="middle" fontSize="6.5" fontWeight="500" fontFamily={mono} fill={active ? NAVY : T3} fillOpacity={active ? 1 : 0.65}>{style}</text>
-      </svg>
-    </button>
-  );
-}
+/* (StyleTile + SlideThumbnail removed in Шаг 6b — dead code referencing the
+   per-slide visualStyle field; styling is deck-wide via the theme now.) */
 
-/* ── SlideThumbnail ────────────────────────────────────────────────────── */
-function SlideThumbnail({ slide, isActive, onClick, onDelete }: {
-  slide: Slide;
-  isActive: boolean;
-  onClick: () => void;
-  onDelete: () => void;
-}) {
-  const [hovered, setHovered]     = useState(false);
-  const [chartSize, setChartSize] = useState({ w: 104, h: 54 });
-  const chartDivRef               = useRef<HTMLDivElement>(null);
-  const dataSetsById              = useWorkspaceStore(s => s.dataSetsById);
-  const t                         = useTranslations("SlideEditor");
-  const ds                        = slide.dataSetIds[0] ? dataSetsById[slide.dataSetIds[0]] : null;
-
-  const serial      = String(slide.serial).padStart(2, "0");
-  const headline    = (ds?.title ?? t("untitled")).slice(0, 28) + ((ds?.title ?? "").length > 28 ? "…" : "");
-  const accentColor = ACCENT_COLOR[slide.colorAccent];
-  const bg          = STYLE_BG[slide.visualStyle];
-  const headFont    = STYLE_HEADLINE_FONT[slide.visualStyle];
-
-  useEffect(() => {
-    const el = chartDivRef.current;
-    if (!el) return;
-    const ro = new ResizeObserver(entries => {
-      const rect = entries[0]?.contentRect;
-      if (rect) setChartSize({ w: Math.max(1, Math.round(rect.width)), h: Math.max(1, Math.round(rect.height)) });
-    });
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, []);
-
-  return (
-    <div
-      style={{ position: "relative", width: "100%", maxWidth: 168, display: "flex", flexDirection: "column" }}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-    >
-      <div
-        onClick={onClick}
-        className="cursor-pointer"
-        style={{
-          flex: 1, minHeight: 0,
-          display: "flex", flexDirection: "column",
-          border: `${isActive ? "1.5px" : "1px"} solid ${isActive ? NAVY : hovered ? GOLD : BORDER}`,
-          background: bg, overflow: "hidden",
-          transition: "border-color 150ms ease",
-        }}
-      >
-        {/* Title */}
-        <div style={{ flexShrink: 0, padding: "3px 5px 2px" }}>
-          <div style={{ fontFamily: mono, fontSize: 4.5, color: T3, letterSpacing: "0.08em", lineHeight: 1.2, marginBottom: 1 }}>
-            {serial} /
-          </div>
-          <div style={{
-            fontFamily: headFont,
-            fontSize: slide.visualStyle === "Magazine" ? 6.5 : 5.5,
-            fontWeight: slide.visualStyle === "Magazine" ? 600 : 500,
-            color: "#0A0A0A", lineHeight: 1.2,
-            overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
-          }}>
-            {headline}
-          </div>
-        </div>
-
-        {/* Chart — fills remaining space; ResizeObserver drives exact MiniChart dimensions */}
-        <div
-          ref={chartDivRef}
-          style={{
-            flex: 1, minHeight: 0, overflow: "hidden",
-            ...(slide.visualStyle === "Wireframe" ? {
-              backgroundImage: "radial-gradient(circle, rgba(138,139,135,0.45) 1px, transparent 1px)",
-              backgroundSize: "8px 7px",
-            } : {}),
-          }}
-        >
-          {ds && chartSize.w > 0 && chartSize.h > 0 && (
-            <svg
-              viewBox={`0 0 ${chartSize.w} ${chartSize.h}`}
-              width={chartSize.w}
-              height={chartSize.h}
-              style={{ display: "block" }}
-            >
-              <MiniChart rows={ds.rows} chartType={ds.chartType} color={accentColor} W={chartSize.w} H={chartSize.h} />
-            </svg>
-          )}
-        </div>
-      </div>
-
-      <button
-        onClick={(e) => { e.stopPropagation(); onDelete(); }}
-        title={t("removeSlide")}
-        style={{
-          position: "absolute", top: 3, right: 3, width: 15, height: 15,
-          display: "flex", alignItems: "center", justifyContent: "center",
-          background: SURFACE_RAISE, border: `1px solid ${BORDER}`, borderRadius: 0,
-          cursor: "pointer", color: T3, padding: 0,
-          opacity: hovered ? 1 : 0, transition: "opacity 150ms ease, color 150ms ease",
-          zIndex: 2,
-        }}
-        onMouseEnter={e => { e.currentTarget.style.color = "#0A0A0A"; e.currentTarget.style.borderColor = NAVY; }}
-        onMouseLeave={e => { e.currentTarget.style.color = T3; e.currentTarget.style.borderColor = BORDER; }}
-      >
-        <svg width="6" height="6" viewBox="0 0 8 8" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
-          <path d="M1 1l6 6M7 1L1 7" />
-        </svg>
-      </button>
-    </div>
-  );
-}
 
 /* ── SlideEditor — Presentation Mode full-screen ─────────────────────────
    Layout (top → bottom):
@@ -469,7 +311,6 @@ export function SlideEditor({ modeSwitcher, saveButton }: { modeSwitcher?: React
                     accentColor={ACCENT_COLOR[activeSlide.colorAccent]}
                     title={activeDs.title}
                     narrative={activeSlide.narrative}
-                    visualStyle={activeSlide.visualStyle}
                   />
                 </div>
               </div>
