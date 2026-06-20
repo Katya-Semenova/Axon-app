@@ -8,6 +8,7 @@ import { BORDER, NAVY, T2, T3, RADIUS_BUBBLE } from "../ui/tokens";
 import { Textarea } from "../ui/Textarea";
 import { Chip } from "../ui/Chip";
 import { useToast } from "../ui/Toast";
+import { AuthModal } from "@/app/components/AuthModal";
 import { buildChatBoardSummary, type ChatReply } from "@/lib/ai/chat";
 import { buildExtractionInput } from "@/lib/insight-engine/ai-plan";
 import type { ChatAction, ChatMessage } from "@/lib/types";
@@ -46,6 +47,9 @@ export function ChatRail({ onBack }: { onBack: () => void }) {
   const setSourceTable        = useWorkspaceStore(s => s.setSourceTable);
   const [draftData, setDraftData] = useState("");
   const [sending, setSending] = useState(false);
+  /* Гость кликает по полю чата → то же инлайн-окно входа, что и «Сохранить» (EC-4).
+     Холст не теряется: после входа сессия обновляется и чат разблокируется. */
+  const [authOpen, setAuthOpen] = useState(false);
 
   /* Сообщение по коду ошибки разбора — переиспользуем словарь dropzone (Шаг 10). */
   function parseErrorText(code: ParseErrorCode): string {
@@ -388,11 +392,17 @@ export function ChatRail({ onBack }: { onBack: () => void }) {
             </button>
           </>
         ) : (
-          <div className="flex-1 min-h-[54px] flex items-center text-[12px] text-t3 italic px-1 select-none">
+          <button
+            type="button"
+            onClick={() => setAuthOpen(true)}
+            className="flex-1 min-h-[54px] flex items-center text-left text-[12px] text-t3 italic px-1 hover:text-gold-600 transition-colors"
+          >
             {t("loginHint")}
-          </div>
+          </button>
         )}
       </div>
+
+      <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} onAuthed={() => setAuthOpen(false)} />
     </aside>
   );
 }
