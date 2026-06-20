@@ -301,6 +301,16 @@ export const PRESENTATION_THEMES: PresentationTheme[] = [
       "--slide-radius":       "8px",
       "--slide-block-pad":    "22px 34px",
       "--slide-title-align":  "left",
+      /* Bright categorical palette readable on the near-black bg — Editorial's
+         dark navies would vanish here (Slides rework: web-dashboard palette). */
+      "--slide-series-1":     "#D4A94E",
+      "--slide-series-2":     "#6F9CE0",
+      "--slide-series-3":     "#4FB6A0",
+      "--slide-series-4":     "#C98AD6",
+      "--slide-series-5":     "#E2B85E",
+      "--slide-series-6":     "#8FA6C8",
+      "--slide-series-7":     "#B0D67E",
+      "--slide-tm-ink":       "#10151C",
     },
   },
   {
@@ -323,6 +333,16 @@ export const PRESENTATION_THEMES: PresentationTheme[] = [
       "--slide-radius":       "8px",
       "--slide-block-pad":    "22px 34px",
       "--slide-title-align":  "left",
+      /* Saturated-but-dark categorical palette — all dark enough for the light
+         --slide-tm-ink to stay readable on filled tiles. */
+      "--slide-series-1":     "#1B2840",
+      "--slide-series-2":     "#2F5C96",
+      "--slide-series-3":     "#8A6420",
+      "--slide-series-4":     "#5E3D86",
+      "--slide-series-5":     "#1F6E5B",
+      "--slide-series-6":     "#44506A",
+      "--slide-series-7":     "#6E4A1E",
+      "--slide-tm-ink":       "#F7F9FB",
     },
   },
 ];

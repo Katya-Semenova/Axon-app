@@ -18,7 +18,17 @@ const BORDER   = "#D9D3C2";
 const T2       = "#5C6478";
 const T3       = "#8A8B87";
 
-const SERIES = [NAVY, NAVY_500, GOLD, NAVY_300, GOLD_300, NAVY_100];
+/* Categorical series palette. Themeable via --slide-series-* (applied at the
+   slide/deck root in SLIDES mode); the hardcoded Editorial colours are the
+   fallback, so on canvas / drill-in (no theme vars) the look is unchanged. */
+const SERIES = [
+  `var(--slide-series-1, ${NAVY})`,
+  `var(--slide-series-2, ${NAVY_500})`,
+  `var(--slide-series-3, ${GOLD})`,
+  `var(--slide-series-4, ${NAVY_300})`,
+  `var(--slide-series-5, ${GOLD_300})`,
+  `var(--slide-series-6, ${NAVY_100})`,
+];
 
 const SERIF_FAMILY = "'Instrument Serif', 'GT Sectra', 'Fraunces', Georgia, serif";
 const MONO_FAMILY  = "'JetBrains Mono', monospace";
@@ -539,7 +549,18 @@ function TreemapChart({ rows, expanded, containerWidth, containerHeight }: Chart
   const W = containerWidth  ?? 342;
   const H = containerHeight ?? 162;
 
-  const fills      = [NAVY, NAVY_700, GOLD, NAVY_500, GOLD_300, NAVY_300, NAVY_100];
+  /* Themeable via --slide-series-* / --slide-tm-ink; Editorial colours are the
+     fallback (unchanged on canvas / non-themed contexts). On dark themes the
+     fill becomes bright and the single --slide-tm-ink keeps labels readable. */
+  const fills = [
+    `var(--slide-series-1, ${NAVY})`,
+    `var(--slide-series-2, ${NAVY_700})`,
+    `var(--slide-series-3, ${GOLD})`,
+    `var(--slide-series-4, ${NAVY_500})`,
+    `var(--slide-series-5, ${GOLD_300})`,
+    `var(--slide-series-6, ${NAVY_300})`,
+    `var(--slide-series-7, ${NAVY_100})`,
+  ];
   const textOnDark = ["#F5F2EA", "#F5F2EA", NAVY, "#F5F2EA", NAVY, NAVY, NAVY];
 
   function fmtVal(v: number) {
@@ -576,7 +597,7 @@ function TreemapChart({ rows, expanded, containerWidth, containerHeight }: Chart
         const lw  = leaf.x1 - leaf.x0;
         const lh  = leaf.y1 - leaf.y0;
         const fill = fills[i % fills.length];
-        const ink  = textOnDark[i % textOnDark.length];
+        const ink  = `var(--slide-tm-ink, ${textOnDark[i % textOnDark.length]})`;
         const lbl  = leaf.data.label ?? "";
         const val  = leaf.data.value ?? 0;
 

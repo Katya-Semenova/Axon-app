@@ -14,7 +14,16 @@ const NAVY_300 = "#8892AA";
 const NAVY_100 = "#B8C2D0";
 const GOLD     = "#B89548";
 const GOLD_300 = "#C9A961";
-const SERIES   = [NAVY, NAVY_500, GOLD, NAVY_300, GOLD_300, NAVY_100];
+/* Themeable via --slide-series-* (resolves when the thumbnail is under a slide
+   theme root); Editorial colours are the fallback elsewhere. Mirrors ChartRenderer. */
+const SERIES   = [
+  `var(--slide-series-1, ${NAVY})`,
+  `var(--slide-series-2, ${NAVY_500})`,
+  `var(--slide-series-3, ${GOLD})`,
+  `var(--slide-series-4, ${NAVY_300})`,
+  `var(--slide-series-5, ${GOLD_300})`,
+  `var(--slide-series-6, ${NAVY_100})`,
+];
 
 interface MiniChartProps {
   rows: DataRow[];
