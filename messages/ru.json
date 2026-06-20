@@ -225,7 +225,9 @@
     "vComposition": "Состав",
     "vBigNumber": "Одна цифра",
     "vNumberComparison": "Сравнение цифр",
-    "vQuote": "Цитата / текст"
+    "vQuote": "Цитата / текст",
+    "themeDark": "Тёмная",
+    "themeLight": "Светлая"
   },
   "Build": {
     "breadcrumbPresentation": "Презентация",

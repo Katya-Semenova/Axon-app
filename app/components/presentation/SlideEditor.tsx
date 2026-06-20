@@ -6,7 +6,8 @@ import { MiniChart } from "../MiniChart";
 import { SlideViewDropdown } from "../ui/SlideViewDropdown";
 import { SlideArchetypeRenderer, deriveSlideSummary } from "./SlideArchetypeRenderer";
 import type { Slide, VisualStyle, ColorAccent, BuildAudience, BuildTone, NarrationMode, SlideArchetype } from "@/lib/types";
-import { NARRATION_MODES, PRESENTATION_THEMES } from "@/lib/types";
+import { NARRATION_MODES, PRESENTATION_THEMES, WEB_THEME_IDS } from "@/lib/types";
+import type { PresentationThemeId } from "@/lib/types";
 import { BORDER, NAVY, GOLD, T2, T3, SURFACE, SURFACE_RAISE, SURFACE_MUTED } from "../ui/tokens";
 import { openOnboarding } from "../ui/OnboardingModal";
 import { useTranslations } from "next-intl";
@@ -873,54 +874,64 @@ export function VisualizationStyleRail() {
       <RailSectionHeader>{t("sectionDeck")}</RailSectionHeader>
       <RailFieldLabel>{t("presentationTheme")}</RailFieldLabel>
 
-      {PRESENTATION_THEMES.map((th) => {
-        const active = th.id === themeId;
+      {PRESENTATION_THEMES.filter(th => !th.hidden).map((th) => {
+        const isWebTile = th.id === "web";
+        /* The Web-dashboard tile owns both its dark + light ids. */
+        const active = th.id === themeId || (isWebTile && WEB_THEME_IDS.includes(themeId));
+        const activeTheme = PRESENTATION_THEMES.find(x => x.id === themeId);
+        /* When the web tile is active, preview + blurb reflect the live sub-mode. */
+        const previewVars = (isWebTile && active && activeTheme ? activeTheme.vars : th.vars) as React.CSSProperties;
+        const blurb = isWebTile && active && activeTheme ? activeTheme.blurb : th.blurb;
         return (
-          <button
-            key={th.id}
-            onClick={() => setTheme(th.id)}
-            style={{
-              width: "100%",
-              display: "flex", flexDirection: "column", gap: 6,
-              padding: 10,
-              background: active ? SURFACE_RAISE : "transparent",
-              border: `${active ? "1.5px" : "1px"} solid ${active ? NAVY : BORDER}`,
-              borderRadius: 4,
-              cursor: active ? "default" : "pointer",
-              color: T2,
-              textAlign: "left",
-              transition: "border-color 150ms, background 150ms",
-            }}
-            onMouseEnter={(e) => { if (!active) e.currentTarget.style.borderColor = NAVY; }}
-            onMouseLeave={(e) => { if (!active) e.currentTarget.style.borderColor = BORDER; }}
-          >
-            {/* Mini preview — rendered in the theme's OWN tokens so the font,
-                accent and corner radius read at a glance. */}
-            <div style={{
-              ...(th.vars as React.CSSProperties),
-              background: "var(--slide-bg)",
-              border: "1px solid var(--slide-border)",
-              borderRadius: "var(--slide-radius)",
-              padding: "7px 9px",
-              display: "flex", alignItems: "center", gap: 6,
-            }}>
-              <span style={{ fontFamily: "var(--slide-font-display)", color: "var(--slide-title)", fontSize: 15, lineHeight: 1 }}>Aa</span>
-              <span style={{ flex: 1 }} />
-              <span style={{ width: 16, height: 6, borderRadius: 3, background: "var(--slide-accent)" }} />
-            </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
-              <span style={{
-                fontFamily: mono, fontSize: 10.5, color: NAVY, fontWeight: active ? 500 : 400,
+          <div key={th.id} style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+            <button
+              onClick={() => { if (!active) setTheme(th.id); }}
+              style={{
+                width: "100%",
+                display: "flex", flexDirection: "column", gap: 6,
+                padding: 10,
+                background: active ? SURFACE_RAISE : "transparent",
+                border: `${active ? "1.5px" : "1px"} solid ${active ? NAVY : BORDER}`,
+                borderRadius: 4,
+                cursor: active ? "default" : "pointer",
+                color: T2,
+                textAlign: "left",
+                transition: "border-color 150ms, background 150ms",
+              }}
+              onMouseEnter={(e) => { if (!active) e.currentTarget.style.borderColor = NAVY; }}
+              onMouseLeave={(e) => { if (!active) e.currentTarget.style.borderColor = BORDER; }}
+            >
+              {/* Mini preview — rendered in the theme's OWN tokens so the font,
+                  accent and corner radius read at a glance. */}
+              <div style={{
+                ...previewVars,
+                background: "var(--slide-bg)",
+                border: "1px solid var(--slide-border)",
+                borderRadius: "var(--slide-radius)",
+                padding: "7px 9px",
+                display: "flex", alignItems: "center", gap: 6,
               }}>
-                {th.label}
-              </span>
-              <span style={{
-                fontFamily: mono, fontSize: 8.5, letterSpacing: "0.04em", color: T3, lineHeight: 1.4,
-              }}>
-                {th.blurb}
-              </span>
-            </div>
-          </button>
+                <span style={{ fontFamily: "var(--slide-font-display)", color: "var(--slide-title)", fontSize: 15, lineHeight: 1 }}>Aa</span>
+                <span style={{ flex: 1 }} />
+                <span style={{ width: 16, height: 6, borderRadius: 3, background: "var(--slide-accent)" }} />
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
+                <span style={{
+                  fontFamily: mono, fontSize: 10.5, color: NAVY, fontWeight: active ? 500 : 400,
+                }}>
+                  {th.label}
+                </span>
+                <span style={{
+                  fontFamily: mono, fontSize: 8.5, letterSpacing: "0.04em", color: T3, lineHeight: 1.4,
+                }}>
+                  {blurb}
+                </span>
+              </div>
+            </button>
+
+            {/* ☀/🌙 light-dark toggle — only inside the active Web-dashboard tile (Шаг 4c) */}
+            {isWebTile && active && <WebModeToggle themeId={themeId} setTheme={setTheme} />}
+          </div>
         );
       })}
 
@@ -953,6 +964,64 @@ function RailFieldLabel({ children }: { children: React.ReactNode }) {
       color: T3,
     }}>
       {children}
+    </div>
+  );
+}
+
+/* ── Web-dashboard ☀/🌙 light–dark toggle (Шаг 4c) ───────────────────────────
+   Two-segment control that flips presentationThemeId between the dark "web"
+   and light "web-light" variants of the same Web-dashboard preset. */
+function WebModeToggle({ themeId, setTheme }: {
+  themeId: PresentationThemeId;
+  setTheme: (id: PresentationThemeId) => void;
+}) {
+  const t      = useTranslations("SlideEditor");
+  const isDark = themeId !== "web-light";
+
+  const segments: { id: PresentationThemeId; label: string; icon: React.ReactNode; on: boolean }[] = [
+    {
+      id: "web-light", label: t("themeLight"), on: !isDark,
+      icon: (
+        <svg width="9" height="9" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round">
+          <circle cx="8" cy="8" r="3.2" />
+          <path d="M8 1v1.6M8 13.4V15M1 8h1.6M13.4 8H15M3 3l1.1 1.1M11.9 11.9L13 13M13 3l-1.1 1.1M4.1 11.9L3 13" />
+        </svg>
+      ),
+    },
+    {
+      id: "web", label: t("themeDark"), on: isDark,
+      icon: (
+        <svg width="9" height="9" viewBox="0 0 16 16" fill="currentColor">
+          <path d="M6 1.5A6.5 6.5 0 1 0 14.5 10 5 5 0 0 1 6 1.5z" />
+        </svg>
+      ),
+    },
+  ];
+
+  return (
+    <div style={{
+      display: "flex", border: `1px solid ${BORDER}`, borderRadius: 4, overflow: "hidden",
+    }}>
+      {segments.map((seg, i) => (
+        <button
+          key={seg.id}
+          onClick={() => { if (!seg.on) setTheme(seg.id); }}
+          title={seg.label}
+          style={{
+            flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 4,
+            padding: "5px 4px",
+            background: seg.on ? NAVY : "transparent",
+            color: seg.on ? "#F5F2EA" : T3,
+            border: "none", borderLeft: i === 1 ? `1px solid ${BORDER}` : "none",
+            cursor: seg.on ? "default" : "pointer",
+            fontFamily: mono, fontSize: 8.5, letterSpacing: "0.04em",
+            transition: "background 150ms, color 150ms",
+          }}
+        >
+          {seg.icon}
+          {seg.label}
+        </button>
+      ))}
     </div>
   );
 }

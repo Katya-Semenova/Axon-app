@@ -225,7 +225,9 @@
     "vComposition": "Composition",
     "vBigNumber": "Big number",
     "vNumberComparison": "Number comparison",
-    "vQuote": "Quote / text"
+    "vQuote": "Quote / text",
+    "themeDark": "Dark",
+    "themeLight": "Light"
   },
   "Build": {
     "breadcrumbPresentation": "Presentation",

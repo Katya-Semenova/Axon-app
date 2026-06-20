@@ -231,7 +231,7 @@ export interface Slide {
    presentation root. Consumed in SLIDES mode; the picker lives in the right
    rail (section «Тема»). */
 
-export type PresentationThemeId = "editorial" | "soft" | "web";
+export type PresentationThemeId = "editorial" | "soft" | "web" | "web-light";
 
 export interface PresentationTheme {
   id: PresentationThemeId;
@@ -239,6 +239,10 @@ export interface PresentationTheme {
   blurb: string;
   /** Values for the --slide-* custom properties applied at the deck root. */
   vars: Record<string, string>;
+  /** Resolvable by id but NOT shown as its own gallery tile (e.g. the light
+      variant of Web-dashboard — surfaced via a ☀/🌙 toggle inside the dark
+      tile instead). */
+  hidden?: boolean;
 }
 
 export const PRESENTATION_THEMES: PresentationTheme[] = [
@@ -299,7 +303,33 @@ export const PRESENTATION_THEMES: PresentationTheme[] = [
       "--slide-title-align":  "left",
     },
   },
+  {
+    /* Light variant of Web-dashboard — hidden tile, reached via the ☀/🌙
+       toggle inside the dark Web-dashboard tile (Slides rework Шаг 4c). */
+    id: "web-light",
+    label: "Web-dashboard",
+    blurb: "Light · sans · modern",
+    hidden: true,
+    vars: {
+      "--slide-font-display": "var(--font-inter), system-ui, sans-serif",
+      "--slide-font-body":    "var(--font-inter), system-ui, sans-serif",
+      "--slide-font-mono":    "'JetBrains Mono', monospace",
+      "--slide-title":        "#10151C",
+      "--slide-text":         "#4A586B",
+      "--slide-accent":       "#B8862E",
+      "--slide-bg":           "#F7F9FB",
+      "--slide-border":       "#DCE3EC",
+      "--slide-muted":        "#EAEFF5",
+      "--slide-radius":       "8px",
+      "--slide-block-pad":    "22px 34px",
+      "--slide-title-align":  "left",
+    },
+  },
 ];
+
+/** Web-dashboard theme family — both ids resolve to the same gallery tile;
+    the ☀/🌙 toggle flips between them. */
+export const WEB_THEME_IDS: PresentationThemeId[] = ["web", "web-light"];
 
 /* ── Connections — Insight → DataSet ───────────────────────────────────── */
 
