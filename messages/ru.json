@@ -195,7 +195,10 @@
     "toPopulate": "чтобы заполнить",
     "noChartData": "нет данных для графика",
     "removeSlide": "Удалить слайд",
-    "newDataSet": "+ НОВЫЙ ДАТА-СЕТ"
+    "newDataSet": "+ НОВЫЙ ДАТА-СЕТ",
+    "addSlide": "+ СЛАЙД",
+    "pickDataSet": "Выбери дата-сет",
+    "noFreeDataSets": "Все дата-сеты уже на слайдах — загрузи файл на Холсте"
   },
   "SlideEditor": {
     "untitled": "Без названия",

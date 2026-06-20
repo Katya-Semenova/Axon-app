@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useEffect, useState, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import { SortableContext, useSortable, horizontalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { useWorkspaceStore } from "@/lib/store";
@@ -224,6 +225,100 @@ function NewDataSetSlot({ onClick }: { onClick: () => void }) {
   );
 }
 
+/* ── AddSlideSlot (Slides rework Шаг 5a) ──────────────────────────────────
+   «+ Слайд» tile at the end of the slides tray. Click opens an upward popover
+   listing Canvas data sets NOT yet on any slide; pick → new slide. New data
+   is added via a file on Canvas, never an empty placeholder node.          */
+function AddSlideSlot({ dataSets, onPick }: {
+  dataSets: { id: string; title: string }[];
+  onPick: (id: string) => void;
+}) {
+  const t = useTranslations("SlideTray");
+  const [hovered, setHovered] = useState(false);
+  const [open, setOpen]       = useState(false);
+  const [rect, setRect]       = useState<DOMRect | null>(null);
+  const tileRef               = useRef<HTMLDivElement>(null);
+  const accent = (hovered || open) ? GOLD : T3;
+
+  function toggle() {
+    if (!open && tileRef.current) setRect(tileRef.current.getBoundingClientRect());
+    setOpen(v => !v);
+  }
+
+  return (
+    <>
+      <div
+        ref={tileRef}
+        onClick={toggle}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+        style={{
+          aspectRatio: "116 / 76",
+          border: `1.5px dashed ${accent}`,
+          background: (hovered || open) ? "rgba(184,149,72,0.06)" : "transparent",
+          borderRadius: 0,
+          display: "flex", alignItems: "center", justifyContent: "center",
+          transition: "border-color 150ms ease, background 150ms ease",
+          cursor: "pointer",
+        }}
+      >
+        <div className="flex flex-col items-center gap-1" style={{ color: accent, transition: "color 150ms" }}>
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+            <path d="M6 2v8M2 6h8" />
+          </svg>
+          <span style={{ fontFamily: mono, fontSize: 8, letterSpacing: "0.08em" }}>{t("addSlide")}</span>
+        </div>
+      </div>
+
+      {open && rect && createPortal(
+        <>
+          <div style={{ position: "fixed", inset: 0, zIndex: 9998 }} onClick={() => setOpen(false)} />
+          <div style={{
+            /* Opens upward — the tray sits at the bottom of the screen. */
+            position: "fixed",
+            left: rect.left,
+            bottom: window.innerHeight - rect.top + 6,
+            minWidth: 200, maxWidth: "calc(100vw - 16px)",
+            zIndex: 9999, padding: "4px 0",
+            background: SURFACE_RAISE, border: `1px solid ${BORDER}`,
+            borderRadius: 2, boxShadow: "0 4px 12px rgba(27,40,64,0.12)",
+            maxHeight: "50vh", overflowY: "auto",
+          }}>
+            <div style={{
+              fontFamily: mono, fontSize: 8, letterSpacing: "0.1em", textTransform: "uppercase",
+              color: T3, padding: "5px 12px 6px",
+            }}>
+              {t("pickDataSet")}
+            </div>
+            {dataSets.length === 0 ? (
+              <div style={{ fontFamily: mono, fontSize: 10, lineHeight: 1.5, color: T3, padding: "2px 12px 8px", maxWidth: 220 }}>
+                {t("noFreeDataSets")}
+              </div>
+            ) : dataSets.map(ds => (
+              <button
+                key={ds.id}
+                type="button"
+                onClick={() => { onPick(ds.id); setOpen(false); }}
+                style={{
+                  display: "block", width: "100%", textAlign: "left",
+                  padding: "6px 12px", fontFamily: mono, fontSize: 11, lineHeight: 1.4,
+                  color: NAVY, background: "transparent", border: "none",
+                  cursor: "pointer", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
+                }}
+                onMouseEnter={e => { e.currentTarget.style.background = "rgba(27,40,64,0.05)"; }}
+                onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}
+              >
+                {ds.title}
+              </button>
+            ))}
+          </div>
+        </>,
+        document.body,
+      )}
+    </>
+  );
+}
+
 /* ── PresentationStructure ────────────────────────────────────────────────
    Bottom strip — horizontal-scrolling tray of slide thumbnails.
    All slides are always reachable; no pagination.                        */
@@ -247,6 +342,15 @@ export function PresentationStructure({ insertAt, isDraggingSlide }: {
   const setActive     = useWorkspaceStore(s => s.setActiveSlide);
   const removeSlide   = useWorkspaceStore(s => s.removeSlide);
   const addDataSet    = useWorkspaceStore(s => s.addDataSet);
+  const dataSetOrder  = useWorkspaceStore(s => s.dataSetOrder);
+  const addSlideWithDataSet = useWorkspaceStore(s => s.addSlideWithDataSet);
+
+  /* Data sets on Canvas not yet placed on any slide — source for «+ Слайд». */
+  const usedDataSetIds = new Set(allSlides.flatMap(s => s.dataSetIds));
+  const freeDataSets   = dataSetOrder
+    .map(id => dataSetsById[id])
+    .filter((ds): ds is NonNullable<typeof ds> => !!ds && !usedDataSetIds.has(ds.id))
+    .map(ds => ({ id: ds.id, title: ds.title }));
 
   const scrollRef  = useRef<HTMLDivElement>(null);
   const prevLenRef = useRef(slides.length);
@@ -329,6 +433,13 @@ export function PresentationStructure({ insertAt, isDraggingSlide }: {
 
               return items;
             })()}
+
+            {/* + Слайд — Slides mode: picker of free Canvas data sets (Шаг 5a) */}
+            {isSlideMode && (
+              <div style={{ width: 116, flexShrink: 0 }}>
+                <AddSlideSlot dataSets={freeDataSets} onPick={addSlideWithDataSet} />
+              </div>
+            )}
 
             {/* + New data set — Canvas mode only; not shown in Slides mode */}
             {!isSlideMode && (

@@ -195,7 +195,10 @@
     "toPopulate": "to populate",
     "noChartData": "no chart data",
     "removeSlide": "Remove slide",
-    "newDataSet": "+ NEW DATA SET"
+    "newDataSet": "+ NEW DATA SET",
+    "addSlide": "+ SLIDE",
+    "pickDataSet": "Pick a data set",
+    "noFreeDataSets": "All data sets are already on slides — add a file on Canvas"
   },
   "SlideEditor": {
     "untitled": "Untitled",
