@@ -75,12 +75,15 @@
 - **Дизайн-нюанс — шрифты:** сериф-заголовки идут стеком per-glyph: **латиница → Instrument Serif**, **кириллица → Old Standard TT** (у Instrument нет кириллицы). Подробнее — [DESIGN.md](DESIGN.md). RU-текст длиннее EN → вёрстка «Editorial Density» должна выдерживать длинные строки.
 
 ## Стек (из кода)
-- Frontend: Next.js (App Router, директория `app/` в корне — НЕ `src/`)
+- **Структура: монорепо** (npm workspaces, с Урока 6 — [ADR-009](decisions/ADR-009-monorepo-split.md)).
+  Весь код в `development/`: `apps/app` (сервис, Next 15) + `apps/landing` (лендинг, Next 16) +
+  `packages/ui` (`@axon/ui` — токены бренда, единый источник). Пути ниже даны **относительно
+  `development/apps/app/`** (бывший корень; App Router, директория `app/` — НЕ `src/`).
 - Язык: TypeScript
-- Стили: Tailwind CSS
+- Стили: Tailwind CSS v4 (токены бренда — `packages/ui/src/styles/theme.css`)
 - Состояние: Zustand (`lib/store.ts`)
 - Графики: d3-hierarchy (treemap squarify) + собственные рендереры (`app/components/ChartRenderer.tsx`, `MiniChart.tsx`)
-- Данные: мок-данные (`lib/mockData.ts`) — реального бэкенда пока нет
+- Бэкенд: PostgreSQL + Prisma, Better Auth, Resend, Selectel S3, ИИ-слой `lib/ai/` (Уроки 4–5)
 - Модель данных: `lib/types.ts`
 
 ### Модель данных (иерархия сущностей)

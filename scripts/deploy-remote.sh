@@ -5,6 +5,14 @@
 #
 # Запуск:  ./scripts/deploy-remote.sh
 set -euo pipefail
+
+# ⛔ СТОП-КРАН (Урок 6, Шаг 0 — монорепо-переезд, 2026-06-20).
+# Код переехал в development/apps/app — пути этого скрипта (rsync) и серверного
+# deploy.sh ещё не обновлены. Публикация временно ОТКЛЮЧЕНА: чиним и проверяем
+# вживую в Шаге 1. Подробности — docs/memory/infrastructure.md → «Деплой (монорепо)».
+echo "⛔ Деплой отключён: монорепо-переезд (Шаг 0). Рецепт чинится в Шаге 1 — см. docs/memory/infrastructure.md" >&2
+exit 1
+
 cd "$(dirname "$0")/.."
 
 set -a; source .env.deploy; set +a

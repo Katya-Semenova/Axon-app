@@ -3,12 +3,36 @@
 > Памятка: как устроен бэкенд проекта. Обновлено 2026-06-17 (конец Урока 4).
 > Решения по каждому пункту — в `docs/decisions/` (ADR-002…007).
 
+## Монорепо (Урок 6, Шаг 0 — с 2026-06-20). ADR-009.
+Весь код переехал из корня в **`development/`** (npm workspace). Корень репозитория
+теперь чистый: `docs/` + `development/` + правила (`CLAUDE.md`/`AGENTS.md`/`.claude/`).
+- **`development/apps/app/`** — сервис (Next 15.5). Бывший корневой код (app, lib, prisma,
+  public, emails, i18n, messages + конфиги, `.env`).
+- **`development/apps/landing/`** — лендинг (Next 16; framer-motion/gsap/lenis/lottie).
+  Перенесён из соседнего проекта `../axon-landing` (его git-история осталась там).
+- **`development/packages/ui/`** — `@axon/ui`: токены бренда (цвета+радиусы) в
+  `src/styles/theme.css`. **Единый источник** (DESIGN.md); импортят обе apps.
+- **Workspace:** `development/package.json` (`workspaces: ["apps/*","packages/*"]`),
+  единый `development/package-lock.json`. Установка: `cd development && npm install`.
+- **Сборки (раздельные):** `npm run build -w apps/app` и `npm run build -w axon-landing`.
+- **Dev:** `cd development && npm run dev -w apps/app -- -p 3001` (и `-w axon-landing -- -p 3002`).
+
 ## Хостинг и деплой
 - **Сервер:** VPS Selectel, домен **axon-app.ru** (HTTPS через Certbot). ADR-002.
 - **Упаковка:** Docker + `docker-compose` (приложение + PostgreSQL), nginx — обратный прокси.
-- **Next.js** 15.5.18, сборка `output: "standalone"` (для Docker).
-- **Деплой:** `./scripts/deploy-remote.sh` (rsync на сервер, **исключает `.env*`**) → на сервере
-  `deploy.sh` поднимает `docker compose up` и применяет миграции `npx prisma migrate deploy`.
+- **Next.js** сборка `output: "standalone"` (для Docker).
+- **Деплой (до переезда):** `./scripts/deploy-remote.sh` (rsync на сервер, **исключает `.env*`**) →
+  на сервере `deploy.sh` поднимает `docker compose up` и применяет миграции `prisma migrate deploy`.
+- ⛔ **ДЕПЛОЙ ВРЕМЕННО ОТКЛЮЧЁН (стоп-кран с 2026-06-20).** После монорепо-переезда рецепт
+  (`Dockerfile`/`docker-compose.yml`/`deploy.sh`/`scripts/deploy-remote.sh`) ещё на **старых
+  путях** — код теперь в `development/apps/app`. В начало `deploy.sh` и `deploy-remote.sh`
+  добавлен `exit 1` с сообщением, чтобы случайная публикация не сломала прод молча.
+  **Чиним и проверяем вживую в Шаге 1** (там же публикуем лендинг отдельным деплой-юнитом).
+  Что нужно при починке: build из workspace (сервис тянет `@axon/ui`), монорепо-нюанс
+  `output: standalone` (нужен `outputFileTracingRoot`), новые пути в Docker/compose/скриптах.
+- **`.env` после переезда:** dev — `development/apps/app/.env` (не в git). Прод —
+  `.env.production` на сервере в `/var/www/axon-app` (источник правды для секретов; при починке
+  деплоя путь/расположение пересмотреть). `.env.deploy` (доступ по SSH) — в корне репо, не в git.
 
 ## База данных
 - **PostgreSQL** + **Prisma** (ORM). Решение — ADR-003 (доски хранятся как JSON-документ).
