@@ -58,6 +58,16 @@ nav {
   border-color: rgba(26, 39, 66, 0.1);
 }
 
+/* Prototype-teaser CTA — gold outline ghost (как outline-кнопка в ките);
+   на наведении заливается золотом. */
+.proto-cta {
+  transition: background 0.25s ease, color 0.25s ease;
+}
+.proto-cta:hover {
+  background: #C8A86B;
+  color: #1A2742;
+}
+
 .feature-card {
   border: 1px solid rgba(26, 39, 66, 0.1);
   background: rgba(255, 255, 255, 0.5);

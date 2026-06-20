@@ -118,7 +118,7 @@ function RawLayer({ phase }: { phase: number }) {
 function DatasetReplica({ width = 138 }: { width?: number }) {
   const rows = SHOWCASE_DATASET.rows.slice(0, 4);
   return (
-    <div style={{ width, background: SURFACE_RAISE, border: `1px solid ${BORDER}`, fontFamily: "Inter, sans-serif", boxShadow: "0 4px 14px rgba(27,40,64,0.12)" }}>
+    <div style={{ width, background: SURFACE_RAISE, border: `1px solid ${BORDER}`, borderRadius: 10, overflow: "hidden", fontFamily: "Inter, sans-serif", boxShadow: "0 10px 26px rgba(27,40,64,0.10)" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 5, padding: "5px 7px", borderBottom: `1px solid ${BORDER}`, background: SURFACE }}>
         <span style={{ fontFamily: MONO, fontSize: 7, letterSpacing: "0.1em", color: T3, textTransform: "uppercase" }}>Data set</span>
         <span style={{ fontSize: 8.5, fontWeight: 500, color: NAVY, overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis" }}>{SHOWCASE_DATASET.title}</span>
@@ -291,8 +291,8 @@ function SlideLayer({ phase }: { phase: number }) {
           animate={active ? { scale: 1, y: 0, filter: "blur(0px)" } : { scale: 0.92, y: 8, filter: "blur(10px)" }}
           transition={{ duration: 0.45, ease: EASE_OUT }}
           style={{
-            width: SLIDE_W, height: SLIDE_H, background: SURFACE_RAISE, border: `1px solid ${BORDER}`,
-            boxShadow: "0 12px 38px rgba(27,40,64,0.16)", padding: "12px 16px", overflow: "hidden",
+            width: SLIDE_W, height: SLIDE_H, background: SURFACE_RAISE, border: `1px solid ${BORDER}`, borderRadius: 12,
+            boxShadow: "0 16px 40px rgba(27,40,64,0.13)", padding: "12px 16px", overflow: "hidden",
             display: "flex", flexDirection: "column", fontFamily: "Inter, sans-serif",
           }}
         >
@@ -346,7 +346,7 @@ export function PrototypeShowcase({ inView }: { inView: boolean }) {
   }, [inView, phase]);
 
   return (
-    <div style={{ position: "absolute", inset: 0, background: CANVAS_BG, overflow: "hidden" }}>
+    <div style={{ position: "absolute", inset: 0, background: CANVAS_BG, overflow: "hidden", transform: "scale(1.1)", transformOrigin: "center" }}>
       <RawLayer phase={phase} />
       <FlowLayer phase={phase} />
       <SlideLayer phase={phase} />

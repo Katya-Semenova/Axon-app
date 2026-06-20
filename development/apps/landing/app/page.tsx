@@ -795,37 +795,37 @@ export default function Home() {
         <div style={{ maxWidth: 1152, margin: '0 auto', position: 'relative', height: 768 }}>
 
           {/* "Ready to" */}
-          <div style={{ position: 'absolute', left: 194, top: 102.55, transform: 'translateY(-50%)', fontFamily: "'Inter',sans-serif", fontWeight: 700, fontSize: 80, lineHeight: '89.579px', color: '#C8A86B', letterSpacing: '-1.493px', whiteSpace: 'nowrap' }}>
+          <div style={{ position: 'absolute', left: 194, top: 102.55, transform: 'translateY(-50%)', fontFamily: "'Inter',sans-serif", fontWeight: 500, fontSize: 80, lineHeight: '89.579px', color: '#C8A86B', letterSpacing: '-0.01em', whiteSpace: 'nowrap' }}>
             Ready to
           </div>
 
           {/* "connect?" */}
-          <div style={{ position: 'absolute', left: 402, top: 183.5, transform: 'translateY(-50%)', fontFamily: "'Inter',sans-serif", fontWeight: 700, fontSize: 112, lineHeight: '134.368px', color: '#C8A86B', letterSpacing: '-3.359px', whiteSpace: 'nowrap' }}>
+          <div style={{ position: 'absolute', left: 402, top: 183.5, transform: 'translateY(-50%)', fontFamily: "'Inter',sans-serif", fontWeight: 500, fontSize: 112, lineHeight: '134.368px', color: '#C8A86B', letterSpacing: '-0.01em', whiteSpace: 'nowrap' }}>
             connect?
           </div>
 
           {/* "Watch" */}
-          <div style={{ position: 'absolute', left: 113, top: 276, transform: 'translateY(-50%)', fontFamily: "'Inter',sans-serif", fontWeight: 700, fontSize: 80, lineHeight: '89.579px', color: '#C8A86B', letterSpacing: '-1.493px', whiteSpace: 'nowrap' }}>
+          <div style={{ position: 'absolute', left: 113, top: 276, transform: 'translateY(-50%)', fontFamily: "'Inter',sans-serif", fontWeight: 500, fontSize: 80, lineHeight: '89.579px', color: '#C8A86B', letterSpacing: '-0.01em', whiteSpace: 'nowrap' }}>
             Watch
           </div>
 
           {/* "Get" */}
-          <div style={{ position: 'absolute', left: 171, top: 372.5, transform: 'translateY(-50%)', fontFamily: "'Inter',sans-serif", fontWeight: 700, fontSize: 112, lineHeight: '134.368px', color: '#C8A86B', letterSpacing: '-3.359px', whiteSpace: 'nowrap' }}>
+          <div style={{ position: 'absolute', left: 171, top: 372.5, transform: 'translateY(-50%)', fontFamily: "'Inter',sans-serif", fontWeight: 500, fontSize: 112, lineHeight: '134.368px', color: '#C8A86B', letterSpacing: '-0.01em', whiteSpace: 'nowrap' }}>
             Get
           </div>
 
           {/* "in under" */}
-          <div style={{ position: 'absolute', left: 841, top: 462, transform: 'translateY(-50%)', fontFamily: "'Inter',sans-serif", fontWeight: 700, fontSize: 80, lineHeight: '89.579px', color: '#C8A86B', letterSpacing: '-1.493px', whiteSpace: 'nowrap' }}>
+          <div style={{ position: 'absolute', left: 841, top: 462, transform: 'translateY(-50%)', fontFamily: "'Inter',sans-serif", fontWeight: 500, fontSize: 80, lineHeight: '89.579px', color: '#C8A86B', letterSpacing: '-0.01em', whiteSpace: 'nowrap' }}>
             in under
           </div>
 
           {/* "12" */}
-          <div style={{ position: 'absolute', left: 800, top: 568.5, transform: 'translateY(-50%)', fontFamily: "'Inter',sans-serif", fontWeight: 700, fontSize: 112, lineHeight: '134.368px', color: '#C8A86B', letterSpacing: '-3.359px', whiteSpace: 'nowrap' }}>
+          <div style={{ position: 'absolute', left: 800, top: 568.5, transform: 'translateY(-50%)', fontFamily: "'Inter',sans-serif", fontWeight: 500, fontSize: 112, lineHeight: '134.368px', color: '#C8A86B', letterSpacing: '-0.01em', whiteSpace: 'nowrap' }}>
             12
           </div>
 
           {/* "minutes" */}
-          <div style={{ position: 'absolute', left: 597, top: 663.5, transform: 'translateY(-50%)', fontFamily: "'Inter',sans-serif", fontWeight: 700, fontSize: 112, lineHeight: '134.368px', color: '#C8A86B', letterSpacing: '-3.359px', whiteSpace: 'nowrap' }}>
+          <div style={{ position: 'absolute', left: 597, top: 663.5, transform: 'translateY(-50%)', fontFamily: "'Inter',sans-serif", fontWeight: 500, fontSize: 112, lineHeight: '134.368px', color: '#C8A86B', letterSpacing: '-0.01em', whiteSpace: 'nowrap' }}>
             minutes
           </div>
 
@@ -834,13 +834,14 @@ export default function Home() {
             href="https://axon-app.ru/"
             target="_blank"
             rel="noopener"
-            style={{ position: 'absolute', left: 0, bottom: 158, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: '#C8A86B', color: '#1A2742', borderRadius: 4, padding: '13px 84px', fontFamily: "'Inter',sans-serif", fontSize: 14, lineHeight: '20px', fontWeight: 600, textDecoration: 'none', whiteSpace: 'nowrap', boxSizing: 'border-box' }}
+            className="proto-cta"
+            style={{ position: 'absolute', left: 170, bottom: 158, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', color: '#C8A86B', border: '1px solid #C8A86B', borderRadius: 4, padding: '13px 40px', fontFamily: "'Inter',sans-serif", fontSize: 14, lineHeight: '20px', fontWeight: 600, textDecoration: 'none', whiteSpace: 'nowrap', boxSizing: 'border-box' }}
           >
             Open prototype
           </a>
 
           {/* Live Prototype preview — Axon flow showcase (Raw data → Insights → Datasets → Slides) */}
-          <div style={{ position: 'absolute', left: '50%', top: 'calc(50% + 44px)', transform: 'translate(-50%, -50%)', width: 400, height: 364, overflow: 'hidden', borderRadius: 4 }}>
+          <div style={{ position: 'absolute', left: '50%', top: 'calc(50% + 44px)', transform: 'translate(-50%, -50%)', width: 400, height: 364, overflow: 'hidden', borderRadius: 10, border: '5px solid #C8A86B', boxShadow: '0 24px 64px rgba(0,0,0,0.30)' }}>
             <PrototypeShowcase inView={protoInView} />
           </div>
 
@@ -866,7 +867,7 @@ export default function Home() {
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16 }}>
               <span style={{ display: 'inline-flex', alignItems: 'baseline', color: '#1A2742', lineHeight: 1, position: 'relative', top: -12 }}>
                 <span style={{ fontFamily: "'JetBrains Mono',monospace", fontWeight: 300, fontSize: 132 }}>X</span>
-                <span style={{ fontFamily: "'Instrument Serif',serif", fontWeight: 400, fontSize: 150 }}>3</span>
+                <span style={{ fontFamily: "'Inter',sans-serif", fontWeight: 500, fontSize: 150 }}>3</span>
               </span>
               {/* icon — height matched to the digit "3" */}
               <div style={{ width: 68, height: 68, borderRadius: 4, background: 'rgba(26,39,66,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
@@ -877,7 +878,7 @@ export default function Home() {
                 </svg>
               </div>
             </div>
-            <span style={{ fontFamily: "'Instrument Serif',serif", fontWeight: 400, fontSize: 42, lineHeight: '46px', color: '#1A2742' }}>Faster to present</span>
+            <span style={{ fontFamily: "'Inter',sans-serif", fontWeight: 500, fontSize: 42, lineHeight: '46px', color: '#1A2742' }}>Faster to present</span>
           </div>
 
           {/* ── Live presentations — navy hero, right col rows 2–3 ── */}
