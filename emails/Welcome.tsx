@@ -32,7 +32,7 @@ export function Welcome({ name = "", locale = "en" }: { name?: string; locale?: 
       <Heading style={headingStyle}>{t.heading(displayName)}</Heading>
       <Text style={{ fontSize: 14, lineHeight: "22px", color: COLORS.NAVY, margin: "0 0 16px" }}>{t.intro}</Text>
       <Text style={{ fontSize: 14, lineHeight: "22px", color: COLORS.NAVY, margin: "0 0 24px" }}>{t.body}</Text>
-      <Button href="https://axon-app.ru" style={{ backgroundColor: COLORS.NAVY, color: COLORS.PAPER, fontSize: 14, fontWeight: 600, padding: "12px 24px", borderRadius: 4, textDecoration: "none", display: "inline-block" }}>
+      <Button href="https://axon-app.ru" style={{ backgroundColor: COLORS.NAVY, color: COLORS.PAPER, fontSize: 14, fontWeight: 500, padding: "12px 24px", borderRadius: 4, textDecoration: "none", display: "inline-block" }}>
         {t.button}
       </Button>
     </Layout>

@@ -34,7 +34,7 @@ export function PasswordReset({ url, locale = "en" }: { url: string; locale?: Em
     <Layout preview={t.preview} locale={locale}>
       <Heading style={headingStyle}>{t.heading}</Heading>
       <Text style={{ fontSize: 14, lineHeight: "22px", color: COLORS.NAVY, margin: "0 0 24px" }}>{t.intro}</Text>
-      <Button href={url} style={{ backgroundColor: COLORS.NAVY, color: COLORS.PAPER, fontSize: 14, fontWeight: 600, padding: "12px 24px", borderRadius: 4, textDecoration: "none", display: "inline-block" }}>
+      <Button href={url} style={{ backgroundColor: COLORS.NAVY, color: COLORS.PAPER, fontSize: 14, fontWeight: 500, padding: "12px 24px", borderRadius: 4, textDecoration: "none", display: "inline-block" }}>
         {t.button}
       </Button>
       <Text style={{ fontSize: 12.5, lineHeight: "18px", color: COLORS.MUTED, margin: "24px 0 4px" }}>{t.expires}</Text>
