@@ -107,7 +107,6 @@ export function PublicDeckView({ deck }: { deck: PublicDeck | null }) {
               title={ds?.title ?? ""}
               narrative={slide.narrative}
               visualStyle={slide.visualStyle}
-              renderEngine={slide.renderEngine}
             />
           </div>
         </div>

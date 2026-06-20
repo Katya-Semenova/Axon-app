@@ -3,7 +3,7 @@
 import { useRef, useEffect, useState } from "react";
 import { ChartFill } from "../ChartFill";
 import type { DataRow, ChartType } from "@/lib/mockData";
-import type { SlideArchetype, VisualStyle, RenderEngine } from "@/lib/types";
+import type { SlideArchetype, VisualStyle } from "@/lib/types";
 import { NAVY, GOLD, T2, T3, BORDER } from "../ui/tokens";
 
 const mono = "'JetBrains Mono', monospace";
@@ -60,53 +60,17 @@ interface ArchProps {
   title: string;
   narrative?: string;
   visualStyle: VisualStyle;
-  renderEngine?: RenderEngine;
   W: number;
   H: number;
 }
 
 /* ══════════════════════════════════════════════════════════════════
-   1. Chart — delegates to ChartFill; engine treatment is a wrapper
-      layer so all 8 chart types react without touching ChartFill.
-
-   SciChart  → no decoration (default)
-   Highcharts → top-edge gradient overlay + small engine badge
-   D3         → dashed container border + small engine badge
+   1. Chart — delegates to ChartFill (all chart types).
 ══════════════════════════════════════════════════════════════════ */
-function ArchChart({ rows, columns, chartType, renderEngine = "SciChart", W, H }: ArchProps) {
-  const badgeStyle: React.CSSProperties = {
-    position: "absolute", top: 6, right: 8,
-    fontFamily: mono, fontSize: 8, letterSpacing: "0.06em",
-    color: "#8892AA", opacity: 0.65, pointerEvents: "none",
-    userSelect: "none",
-  };
-
+function ArchChart({ rows, columns, chartType, W, H }: ArchProps) {
   return (
     <div style={{ position: "relative", width: W, height: H }}>
       <ChartFill rows={rows} columns={columns} chartType={chartType} expanded />
-
-      {renderEngine === "Highcharts" && (
-        <>
-          {/* Gradient veil — navy→transparent from top */}
-          <div style={{
-            position: "absolute", top: 0, left: 0, right: 0,
-            height: "28%", pointerEvents: "none",
-            background: "linear-gradient(to bottom, rgba(27,40,64,0.07), transparent)",
-          }} />
-          <span style={badgeStyle}>HC</span>
-        </>
-      )}
-
-      {renderEngine === "D3" && (
-        <>
-          {/* Dashed border around the chart area */}
-          <div style={{
-            position: "absolute", inset: 0, pointerEvents: "none",
-            border: "1.5px dashed rgba(27,40,64,0.22)",
-          }} />
-          <span style={badgeStyle}>D3</span>
-        </>
-      )}
     </div>
   );
 }
@@ -469,7 +433,6 @@ interface SlideArchetypeRendererProps {
   title: string;
   narrative?: string;
   visualStyle: VisualStyle;
-  renderEngine?: RenderEngine;
 }
 
 export function SlideArchetypeRenderer(props: SlideArchetypeRendererProps) {

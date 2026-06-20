@@ -221,30 +221,17 @@ export interface Slide {
   showGrid: boolean;
   stackedBars: boolean;
 
-  /* ── SLIDES mode additions ──────────────────────────────────────────
-     Render engine driving the slide's chart — picker lives in the right
-     rail of SLIDES mode. UI selection persists per slide.            */
-  renderEngine?: RenderEngine;
-
   /** AI-generated 1–2 sentence headline summary rendered as the prominent
       gold-bordered block under the slide title. When undefined, the slide
       derives one from the bound dataset on the fly. */
   summary?: string;
 }
 
-export type RenderEngine = "SciChart" | "Highcharts" | "D3";
-
-export const RENDER_ENGINES: { id: RenderEngine; label: string; subtitle: string }[] = [
-  { id: "SciChart",   label: "SciChart",   subtitle: "Modern"  },
-  { id: "Highcharts", label: "Highcharts", subtitle: "Classic" },
-  { id: "D3",         label: "D3.js",      subtitle: "Custom"  },
-];
-
 /* ── Presentation theme — deck-wide visual preset ───────────────────────────
-   Distinct from RenderEngine (per-slide, chart-only): a theme restyles the
-   WHOLE deck — typography, colour, radius, density — by overriding the
-   --slide-* custom properties applied at the presentation root. Consumed in
-   SLIDES mode; the picker lives as a second sub-block in the right rail. */
+   A theme restyles the WHOLE presentation — typography, colour, radius,
+   density — by overriding the --slide-* custom properties applied at the
+   presentation root. Consumed in SLIDES mode; the picker lives in the right
+   rail (section «Тема»). */
 
 export type PresentationThemeId = "editorial" | "soft" | "web";
 

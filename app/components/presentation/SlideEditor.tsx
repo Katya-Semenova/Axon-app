@@ -5,8 +5,8 @@ import { useWorkspaceStore } from "@/lib/store";
 import { MiniChart } from "../MiniChart";
 import { ComboLayoutDropdown } from "../ui/ComboLayoutDropdown";
 import { SlideArchetypeRenderer, deriveSlideSummary } from "./SlideArchetypeRenderer";
-import type { Slide, VisualStyle, ColorAccent, RenderEngine, BuildAudience, BuildTone, NarrationMode, SlideArchetype } from "@/lib/types";
-import { RENDER_ENGINES, NARRATION_MODES, SLIDE_FORMAT_OPTIONS, PRESENTATION_THEMES } from "@/lib/types";
+import type { Slide, VisualStyle, ColorAccent, BuildAudience, BuildTone, NarrationMode, SlideArchetype } from "@/lib/types";
+import { NARRATION_MODES, SLIDE_FORMAT_OPTIONS, PRESENTATION_THEMES } from "@/lib/types";
 import { BORDER, NAVY, GOLD, T2, T3, SURFACE, SURFACE_RAISE, SURFACE_MUTED } from "../ui/tokens";
 import { openOnboarding } from "../ui/OnboardingModal";
 import { useTranslations } from "next-intl";
@@ -38,12 +38,6 @@ const STYLE_HEADLINE_FONT: Record<VisualStyle, string> = {
   Magazine:  "'Instrument Serif', Georgia, serif",
   Wireframe: "'JetBrains Mono', monospace",
 };
-const LIBRARY_NAME: Record<VisualStyle, string> = {
-  Modern:    "SciChart",
-  Magazine:  "Highcharts",
-  Wireframe: "D3.js",
-};
-
 const SLIDES_PER_PAGE = 4;
 const mono = "'JetBrains Mono', monospace";
 
@@ -233,8 +227,7 @@ function StyleTile({ style, active, onClick }: { style: VisualStyle; active: boo
             <rect x="25" y="17" width="8" height="9"  rx="1" fill="none" stroke={active ? NAVY : T3} strokeWidth="0.85" strokeOpacity={active ? 0.8 : 0.45} />
           </>
         )}
-        <text x="28" y="36" textAnchor="middle" fontSize="4.5" fontFamily={mono} fill={active ? NAVY : T3} fillOpacity={active ? 0.5 : 0.35}>{style}</text>
-        <text x="28" y="49" textAnchor="middle" fontSize="6.5" fontWeight="500" fontFamily={mono} fill={active ? NAVY : T3} fillOpacity={active ? 1 : 0.65}>{LIBRARY_NAME[style]}</text>
+        <text x="28" y="40" textAnchor="middle" fontSize="6.5" fontWeight="500" fontFamily={mono} fill={active ? NAVY : T3} fillOpacity={active ? 1 : 0.65}>{style}</text>
       </svg>
     </button>
   );
@@ -571,7 +564,6 @@ export function SlideEditor({ modeSwitcher }: { modeSwitcher?: React.ReactNode }
                     title={activeDs.title}
                     narrative={activeSlide.narrative}
                     visualStyle={activeSlide.visualStyle}
-                    renderEngine={activeSlide.renderEngine ?? "SciChart"}
                   />
                 </div>
               </div>
@@ -893,26 +885,11 @@ function NarrativeBlock({
   );
 }
 
-/* ── Right rail: Visualization Style picker — 3 engine cards ── */
+/* ── Right rail: presentation theme picker (deck-wide) ── */
 export function VisualizationStyleRail() {
-  /* Self-sufficient: the rail is rendered as a full-height right column by
-     page.tsx (SLIDES mode), so it reads the active slide from the store rather
-     than via props. */
-  const slideOrder    = useWorkspaceStore(s => s.slideOrder);
-  const slidesById    = useWorkspaceStore(s => s.slidesById);
-  const activeSlideId = useWorkspaceStore(s => s.activeSlideId);
-  const updateSlide   = useWorkspaceStore(s => s.updateSlide);
-  const t             = useTranslations("SlideEditor");
-  const activeSlide   = (activeSlideId ? slidesById[activeSlideId] : null)
-                      ?? (slideOrder[0] ? slidesById[slideOrder[0]] : null);
-
-  /* SciChart is the default if no choice has been made yet. */
-  const current: RenderEngine = activeSlide?.renderEngine ?? "SciChart";
-  const onChange = (engine: RenderEngine) => {
-    if (activeSlide) updateSlide(activeSlide.id, { renderEngine: engine });
-  };
-
-  /* Presentation theme is deck-wide (not per-slide) — read straight from store. */
+  /* Self-sufficient: rendered as a full-height right column by page.tsx
+     (SLIDES mode); reads the deck-wide theme straight from the store. */
+  const t        = useTranslations("SlideEditor");
   const themeId  = useWorkspaceStore(s => s.presentationThemeId);
   const setTheme = useWorkspaceStore(s => s.setPresentationTheme);
 
@@ -928,64 +905,7 @@ export function VisualizationStyleRail() {
       }}
       className="thin-scroll"
     >
-      <div style={{
-        fontFamily: mono, fontSize: 9, letterSpacing: "0.12em", textTransform: "uppercase",
-        color: T3,
-      }}>
-        {t("diagramsStyle")}
-      </div>
-
-      {RENDER_ENGINES.map(({ id, label, subtitle }) => {
-        const active = id === current;
-        return (
-          <button
-            key={id}
-            onClick={() => onChange(id)}
-            style={{
-              width: "100%",
-              display: "flex", flexDirection: "column", gap: 6,
-              padding: 10,
-              background: active ? SURFACE_RAISE : "transparent",
-              border: `${active ? "1.5px" : "1px"} solid ${active ? NAVY : BORDER}`,
-              borderRadius: 4,
-              cursor: active ? "default" : "pointer",
-              color: T2,
-              textAlign: "left",
-              transition: "border-color 150ms, background 150ms",
-            }}
-            onMouseEnter={(e) => { if (!active) e.currentTarget.style.borderColor = NAVY; }}
-            onMouseLeave={(e) => { if (!active) e.currentTarget.style.borderColor = BORDER; }}
-          >
-            {/* 5-bar mini preview — varies treatment per engine */}
-            <EnginePreview engine={id} active={active} />
-            <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
-              <span style={{
-                fontFamily: mono, fontSize: 10.5, color: NAVY, fontWeight: active ? 500 : 400,
-              }}>
-                {label}
-              </span>
-              <span style={{
-                fontFamily: mono, fontSize: 8.5, letterSpacing: "0.08em", textTransform: "uppercase",
-                color: T3,
-              }}>
-                {subtitle}
-              </span>
-            </div>
-          </button>
-        );
-      })}
-
-      <div style={{
-        paddingTop: 4,
-        fontFamily: mono, fontSize: 8.5, color: T3, lineHeight: 1.5,
-      }}>
-        {t("engineHint")}
-      </div>
-
-      {/* ── Divider between the two sub-blocks ── */}
-      <div style={{ height: 1, background: BORDER, margin: "14px 0" }} />
-
-      {/* ── Sub-block 2: presentation theme (deck-wide) ── */}
+      {/* ── Presentation theme (deck-wide) ── */}
       <div style={{
         fontFamily: mono, fontSize: 9, letterSpacing: "0.12em", textTransform: "uppercase",
         color: T3,
@@ -1054,42 +974,4 @@ export function VisualizationStyleRail() {
   );
 }
 
-function EnginePreview({ engine, active }: { engine: RenderEngine; active: boolean }) {
-  /* Each engine renders the same 5-bar set with a distinct treatment:
-       SciChart   — clean rectangles, sharp tops
-       Highcharts — gradient fills, slightly inset
-       D3.js      — outline strokes only, dotted top guides   */
-  const heights = [22, 30, 18, 26, 14];
-  const navy    = NAVY;
-  const muted   = "#8892AA";
-
-  return (
-    <svg width="100%" height="38" viewBox="0 0 120 38" preserveAspectRatio="none" style={{ display: "block" }}>
-      <defs>
-        <linearGradient id={`hc-grad-${engine}`} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%"   stopColor={navy} stopOpacity={active ? 0.95 : 0.5} />
-          <stop offset="100%" stopColor={navy} stopOpacity={active ? 0.55 : 0.25} />
-        </linearGradient>
-      </defs>
-      {heights.map((h, i) => {
-        const x = 6 + i * 22;
-        const y = 36 - h;
-        if (engine === "SciChart") {
-          return <rect key={i} x={x} y={y} width="16" height={h} fill={active ? navy : muted} />;
-        }
-        if (engine === "Highcharts") {
-          return <rect key={i} x={x} y={y} width="16" height={h} fill={`url(#hc-grad-${engine})`} />;
-        }
-        // D3.js — outline + dotted top guide
-        return (
-          <g key={i}>
-            <rect x={x + 0.5} y={y + 0.5} width="15" height={h - 1}
-              fill="none" stroke={active ? navy : muted} strokeWidth="1.2" />
-            <line x1={x} y1={y - 1.5} x2={x + 16} y2={y - 1.5}
-              stroke={active ? navy : muted} strokeWidth="1" strokeDasharray="2 1.5" opacity="0.6" />
-          </g>
-        );
-      })}
-    </svg>
-  );
-}
+/* (EnginePreview removed — render engines dropped in Slides rework Шаг 2) */
