@@ -55,12 +55,21 @@ export function GuestSaveButton({
      в тулбар каждого режима, чтобы не накрывать правый рельс). Desktop-only. */
   return (
     <>
-      <Button size="sm" onClick={handleClick} loading={saving} className="hidden lg:inline-flex" leftIcon={
-        <svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M11 5v6a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1h4l3 3z" />
-          <path d="M5 2v3h3" />
-        </svg>
-      }>
+      {/* Geometry matched 1:1 to the toolbar «How it works» button (h-28, mono
+         10.5, square); stays filled (primary) as the main action. */}
+      <Button
+        size="sm"
+        onClick={handleClick}
+        loading={saving}
+        className="hidden lg:inline-flex h-[28px] px-3 gap-1.5"
+        style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 10.5, letterSpacing: "0.04em", borderRadius: 0 }}
+        leftIcon={
+          <svg width="11" height="11" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M11 5v6a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1h4l3 3z" />
+            <path d="M5 2v3h3" />
+          </svg>
+        }
+      >
         {t("button")}
       </Button>
       <AuthModal open={modalOpen} onClose={() => setModalOpen(false)} onAuthed={doSave} />
