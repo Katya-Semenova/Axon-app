@@ -230,7 +230,9 @@
     "themeLight": "Light",
     "speakerNotesLabel": "Speaker notes",
     "notesShown": "Shown",
-    "notesHidden": "Hidden"
+    "notesHidden": "Hidden",
+    "themeByExample": "+ from reference",
+    "comingSoon": "soon"
   },
   "Build": {
     "breadcrumbPresentation": "Presentation",

@@ -230,7 +230,9 @@
     "themeLight": "Светлая",
     "speakerNotesLabel": "Заметки докладчика",
     "notesShown": "Показаны",
-    "notesHidden": "Скрыты"
+    "notesHidden": "Скрыты",
+    "themeByExample": "+ по образцу",
+    "comingSoon": "скоро"
   },
   "Build": {
     "breadcrumbPresentation": "Презентация",

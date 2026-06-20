@@ -809,6 +809,27 @@ export function VisualizationStyleRail() {
         );
       })}
 
+      {/* ── «+ по образцу» — AI-vision theme, отдельной сессией после Урока 6 (Шаг 4e) ── */}
+      <button
+        type="button"
+        disabled
+        title={t("comingSoon")}
+        style={{
+          width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 5,
+          padding: "8px 6px",
+          background: "transparent",
+          border: `1px dashed ${BORDER}`, borderRadius: 4,
+          fontFamily: mono, fontSize: 9.5, letterSpacing: "0.03em",
+          color: T3, cursor: "not-allowed", opacity: 0.75,
+        }}
+      >
+        {t("themeByExample")}
+        <span style={{ color: GOLD, fontSize: 9 }}>★</span>
+        <span style={{ fontSize: 7.5, letterSpacing: "0.06em", textTransform: "uppercase", opacity: 0.8 }}>
+          {t("comingSoon")}
+        </span>
+      </button>
+
       {/* ── Speaker-notes toggle — deck-wide (moved from slide card, Шаг 4d) ── */}
       <div style={{ borderTop: `1px solid ${BORDER}`, margin: "2px 0" }} />
       <RailFieldLabel>{t("speakerNotesLabel")}</RailFieldLabel>
