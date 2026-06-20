@@ -30,6 +30,17 @@ const SERIES = [
   `var(--slide-series-6, ${NAVY_100})`,
 ];
 
+/* Themeable ink / structure tokens. Fallbacks equal the Editorial constants
+   1:1 (Editorial's --slide-title/-text/-accent/-border ARE NAVY/T2/GOLD/BORDER),
+   so canvas / drill-in / light themes are pixel-identical; on dark slide themes
+   they resolve to the theme's readable colours so numbers, lines and axes that
+   used hardcoded NAVY/T2/BORDER no longer vanish against the dark bg. */
+const INK       = `var(--slide-title,  ${NAVY})`;   // headline numbers / inline figures
+const INK_MUTED = `var(--slide-text,   ${T2})`;     // labels / axis names
+const INK_FAINT = `var(--slide-text,   ${T3})`;     // tick labels
+const ACCENT    = `var(--slide-accent, ${GOLD})`;   // gold highlight
+const AXIS      = `var(--slide-border, ${BORDER})`; // gridlines / rings / spokes / connectors
+
 const SERIF_FAMILY = "'Instrument Serif', 'GT Sectra', 'Fraunces', Georgia, serif";
 const MONO_FAMILY  = "'JetBrains Mono', monospace";
 const SANS_FAMILY  = "Inter, sans-serif";
@@ -70,7 +81,7 @@ function GridLines({ pl, pr, pt, plotH }: { pl: number; pr: number; pt: number; 
         <line key={i}
           x1={pl} y1={r(pt + plotH * (1 - f))}
           x2={pr} y2={r(pt + plotH * (1 - f))}
-          stroke={NAVY} strokeWidth="0.5" strokeOpacity="0.05" />
+          stroke={AXIS} strokeWidth="0.5" strokeOpacity="0.05" />
       ))}
     </>
   );
@@ -104,23 +115,23 @@ function LollipopChart({ rows, expanded, containerWidth, containerHeight }: Char
       {data.map((v, i) => (
         <line key={i}
           x1={r(xv(i))} y1={r(yv(v) + dotR)} x2={r(xv(i))} y2={r(baseline)}
-          stroke={NAVY_300} strokeWidth="1.5" />
+          stroke={SERIES[3]} strokeWidth="1.5" />
       ))}
       {data.map((v, i) => (
         <circle key={i} cx={r(xv(i))} cy={r(yv(v))}
           r={i === lastIdx ? currentDotR : dotR}
-          fill={i === lastIdx ? GOLD : NAVY_500} />
+          fill={i === lastIdx ? ACCENT : SERIES[1]} />
       ))}
       {data.length > 0 && (
         <text x={r(xv(lastIdx))} y={r(yv(data[lastIdx]) - currentDotR - 6)}
           textAnchor="middle" fontSize={heroSize}
-          fontFamily={SERIF_FAMILY} fill={GOLD}>
+          fontFamily={SERIF_FAMILY} fill={ACCENT}>
           {data[lastIdx]}
         </text>
       )}
       {labels.map((l, i) => i % step === 0 && (
         <text key={i} x={r(xv(i))} y={H - 6} textAnchor="middle" fontSize="10"
-          fill={T3} fontFamily={MONO_FAMILY} fontWeight="500">{l}</text>
+          fill={INK_FAINT} fontFamily={MONO_FAMILY} fontWeight="500">{l}</text>
       ))}
     </svg>
   );
@@ -153,15 +164,15 @@ function SplineAreaChart({ rows, expanded, containerWidth, containerHeight }: Ch
         </linearGradient>
       </defs>
       <GridLines pl={pl} pr={W - pr} pt={pt} plotH={plotH} />
-      {areaD && <path d={areaD} fill={NAVY_100} fillOpacity="0.4" />}
-      {pd    && <path d={pd} stroke={NAVY} strokeWidth="2" strokeLinecap="round" />}
+      {areaD && <path d={areaD} fill={SERIES[5]} fillOpacity="0.4" />}
+      {pd    && <path d={pd} stroke={SERIES[0]} strokeWidth="2" strokeLinecap="round" />}
       {last && (
         <>
-          <circle cx={r(last.x)} cy={r(last.y)} r={expanded ? 5 : 4} fill={GOLD} />
+          <circle cx={r(last.x)} cy={r(last.y)} r={expanded ? 5 : 4} fill={ACCENT} />
           {data.length > 0 && (
             <text x={r(last.x)} y={r(last.y - (expanded ? 12 : 9))}
               textAnchor="middle" fontSize={expanded ? 18 : 13}
-              fontFamily={SERIF_FAMILY} fill={GOLD}>
+              fontFamily={SERIF_FAMILY} fill={ACCENT}>
               {data[data.length - 1]}
             </text>
           )}
@@ -169,7 +180,7 @@ function SplineAreaChart({ rows, expanded, containerWidth, containerHeight }: Ch
       )}
       {labels.map((l, i) => i % step === 0 && (
         <text key={i} x={r(pts[i]?.x ?? 0)} y={H - 4} textAnchor="middle" fontSize="10"
-          fill={T3} fontFamily={MONO_FAMILY} fontWeight="500">{l}</text>
+          fill={INK_FAINT} fontFamily={MONO_FAMILY} fontWeight="500">{l}</text>
       ))}
     </svg>
   );
@@ -189,13 +200,13 @@ function DonutChart({ rows, columns, expanded, containerWidth, containerHeight }
   if (!donutCompatible) {
     return (
       <svg viewBox={`0 0 ${W} ${H}`} fill="none" className="w-full h-auto" style={{ display: "block" }}>
-        <rect width={W} height={H} fill={BORDER} fillOpacity="0.18" />
+        <rect width={W} height={H} fill={AXIS} fillOpacity="0.18" />
         <text x={W / 2} y={H / 2 - 7} textAnchor="middle"
-          fontSize="10" fill={T3} fontFamily={MONO_FAMILY} letterSpacing="0.03em">
+          fontSize="10" fill={INK_FAINT} fontFamily={MONO_FAMILY} letterSpacing="0.03em">
           Chart type unsupported
         </text>
         <text x={W / 2} y={H / 2 + 8} textAnchor="middle"
-          fontSize="9" fill={T3} fontFamily={MONO_FAMILY} fillOpacity="0.65">
+          fontSize="9" fill={INK_FAINT} fontFamily={MONO_FAMILY} fillOpacity="0.65">
           for this data shape
         </text>
       </svg>
@@ -292,11 +303,11 @@ function DonutChart({ rows, columns, expanded, containerWidth, containerHeight }
         <path key={i} d={arc(s)} fill={s.color} />
       ))}
       <text x={CX} y={numY} textAnchor="middle"
-        fontSize={numSize} fontFamily={SERIF_FAMILY} fill={NAVY}>
+        fontSize={numSize} fontFamily={SERIF_FAMILY} fill={INK}>
         {compactNum(total)}
       </text>
       <text x={CX} y={chanY} textAnchor="middle" fontSize={CHAN_SIZE}
-        fontFamily={MONO_FAMILY} fill={T2} letterSpacing="0.08em">TOTAL</text>
+        fontFamily={MONO_FAMILY} fill={INK_MUTED} letterSpacing="0.08em">TOTAL</text>
       {rows.map((row, i) => {
         const y = startY + i * rowH;
         if (twoLine) {
@@ -306,11 +317,11 @@ function DonutChart({ rows, columns, expanded, containerWidth, containerHeight }
           return (
             <g key={i} transform={`translate(${legendX}, ${y})`}>
               <rect x="0" y={rowH * 0.58 - markerS * 0.30} width={markerS} height={markerS * 0.60} rx="1" fill={SERIES[i % SERIES.length]} />
-              <text x={LABEL_X} y={rowH * 0.46} fontSize={fSize - 1} fill={T2} fontFamily={SANS_FAMILY}>
+              <text x={LABEL_X} y={rowH * 0.46} fontSize={fSize - 1} fill={INK_MUTED} fontFamily={SANS_FAMILY}>
                 {lbl}
               </text>
               <text x={LABEL_X} y={rowH * 0.88} fontSize={fSize - 1}
-                fill={NAVY} fontFamily={MONO_FAMILY} fontWeight="500">
+                fill={INK} fontFamily={MONO_FAMILY} fontWeight="500">
                 {sharePct(row.values[0] ?? 0)}%
               </text>
             </g>
@@ -323,11 +334,11 @@ function DonutChart({ rows, columns, expanded, containerWidth, containerHeight }
         return (
           <g key={i} transform={`translate(${legendX}, ${y})`}>
             <rect x="0" y={rowH * 0.5 - markerS * 0.325} width={markerS} height={markerS * 0.65} rx="1" fill={SERIES[i % SERIES.length]} />
-            <text x={LABEL_X} y={textY} fontSize={fSize} fill={T2} fontFamily={SANS_FAMILY}>
+            <text x={LABEL_X} y={textY} fontSize={fSize} fill={INK_MUTED} fontFamily={SANS_FAMILY}>
               {label}
             </text>
             <text x={legendAvailW} y={textY} textAnchor="end" fontSize={fSize}
-              fill={NAVY} fontFamily={MONO_FAMILY} fontWeight="500">
+              fill={INK} fontFamily={MONO_FAMILY} fontWeight="500">
               {sharePct(row.values[0] ?? 0)}%
             </text>
           </g>
@@ -363,10 +374,10 @@ function CleanColumnsChart({ rows, expanded, containerWidth, containerHeight }: 
         return (
           <g key={i}>
             <rect x={r(x - barW / 2)} y={r(y)} width={r(barW)} height={r(bh)}
-              fill={isMax ? GOLD : NAVY_500} />
+              fill={isMax ? ACCENT : SERIES[1]} />
             {i % bStep === 0 && (
               <text x={r(x)} y={H - 4} textAnchor="middle" fontSize="10"
-                fill={T3} fontFamily={MONO_FAMILY} fontWeight="500">{labels[i]}</text>
+                fill={INK_FAINT} fontFamily={MONO_FAMILY} fontWeight="500">{labels[i]}</text>
             )}
           </g>
         );
@@ -389,7 +400,7 @@ function StackedBarChart({ rows, columns, expanded, containerWidth, containerHei
       {columns.map((col, i) => (
         <g key={i} transform={`translate(${pl + i * 72}, 12)`}>
           <rect x="0" y="-7" width="10" height="6" rx="1" fill={SERIES[i % SERIES.length]} />
-          <text x="14" y="0" fontSize="11" fill={T2} fontFamily={SANS_FAMILY}>{col}</text>
+          <text x="14" y="0" fontSize="11" fill={INK_MUTED} fontFamily={SANS_FAMILY}>{col}</text>
         </g>
       ))}
       {rows.map((row, i) => {
@@ -399,7 +410,7 @@ function StackedBarChart({ rows, columns, expanded, containerWidth, containerHei
         return (
           <g key={i}>
             <text x={r(pl - 5)} y={r(y + rowH / 2 + 4)} textAnchor="end" fontSize="9.5"
-              fill={T2} fontFamily={SANS_FAMILY}>{row.label}</text>
+              fill={INK_MUTED} fontFamily={SANS_FAMILY}>{row.label}</text>
             {row.values.map((v, j) => {
               const bw = r((v / maxTotal) * plotW);
               const rect = (
@@ -410,7 +421,7 @@ function StackedBarChart({ rows, columns, expanded, containerWidth, containerHei
               return rect;
             })}
             <text x={r(xOff + 4)} y={r(y + rowH / 2 + 4)} fontSize="11"
-              fill={NAVY} fontFamily={MONO_FAMILY} fontWeight="500">{total}</text>
+              fill={INK} fontFamily={MONO_FAMILY} fontWeight="500">{total}</text>
           </g>
         );
       })}
@@ -461,7 +472,7 @@ function WaterfallChart({ rows, expanded, containerWidth, containerHeight }: Cha
           <line key={i}
             x1={r(xv(i - 1) + barW)} y1={connY}
             x2={r(xv(i))} y2={connY}
-            stroke={NAVY} strokeWidth="0.6" strokeDasharray="3 2" strokeOpacity="0.25" />
+            stroke={INK_MUTED} strokeWidth="0.6" strokeDasharray="3 2" strokeOpacity="0.25" />
         );
       })}
       {bars.map((b, i) => {
@@ -469,7 +480,7 @@ function WaterfallChart({ rows, expanded, containerWidth, containerHeight }: Cha
         const y1 = yv(b.end), y2 = yv(b.start);
         const bh = Math.max(2, Math.abs(y2 - y1));
         const isPos = b.delta >= 0;
-        const color = b.isTot ? NAVY : isPos ? NAVY_500 : GOLD;
+        const color = b.isTot ? SERIES[0] : isPos ? SERIES[1] : ACCENT;
         return (
           <g key={i}>
             <rect x={r(x)} y={r(Math.min(y1, y2))} width={r(barW)} height={r(bh)}
@@ -482,7 +493,7 @@ function WaterfallChart({ rows, expanded, containerWidth, containerHeight }: Cha
             )}
             {i % bStep === 0 && (
               <text x={r(x + barW / 2)} y={H - 6} textAnchor="middle" fontSize="9"
-                fill={T3} fontFamily={MONO_FAMILY} fontWeight="500">
+                fill={INK_FAINT} fontFamily={MONO_FAMILY} fontWeight="500">
                 {rows[i].label.slice(0, 6)}
               </text>
             )}
@@ -512,23 +523,23 @@ function ScatterPlotChart({ rows, columns, expanded, containerWidth, containerHe
     <svg viewBox={`0 0 ${W} ${H}`} fill="none" {...svgAttrs(containerWidth, containerHeight, expanded)}>
       <GridLines pl={pl} pr={W - pr} pt={pt} plotH={plotH} />
       <line x1={pl} y1={pt} x2={pl} y2={pt + plotH}
-        stroke={NAVY} strokeWidth="0.75" strokeOpacity="0.12" />
+        stroke={AXIS} strokeWidth="0.75" strokeOpacity="0.12" />
       <line x1={pl} y1={pt + plotH} x2={W - pr} y2={pt + plotH}
-        stroke={NAVY} strokeWidth="0.75" strokeOpacity="0.12" />
+        stroke={AXIS} strokeWidth="0.75" strokeOpacity="0.12" />
       <text x={W / 2} y={H - 4} textAnchor="middle" fontSize="8.5"
-        fill={T3} fontFamily="'JetBrains Mono',monospace">{columns[0] ?? "X"}</text>
+        fill={INK_FAINT} fontFamily="'JetBrains Mono',monospace">{columns[0] ?? "X"}</text>
       <text x="10" y={H / 2} textAnchor="middle" fontSize="8.5"
-        fill={T3} fontFamily="'JetBrains Mono',monospace"
+        fill={INK_FAINT} fontFamily="'JetBrains Mono',monospace"
         transform={`rotate(-90, 10, ${H / 2})`}>{columns[1] ?? "Y"}</text>
       {rows.map((row, i) => {
         const cx = xv(row.values[0] ?? 0);
         const cy = yv(row.values[1] ?? 0);
-        const fill = i === 0 ? GOLD : (i % 2 === 0 ? NAVY : NAVY_500);
+        const fill = i === 0 ? ACCENT : (i % 2 === 0 ? SERIES[0] : SERIES[1]);
         return (
           <g key={i}>
             <circle cx={cx} cy={cy} r={i === 0 ? 7 : 5.5} fill={fill} />
             {expanded && (
-              <text x={cx + 10} y={cy + 4} fontSize="9.5" fill={T2} fontFamily={SANS_FAMILY}>
+              <text x={cx + 10} y={cy + 4} fontSize="9.5" fill={INK_MUTED} fontFamily={SANS_FAMILY}>
                 {row.label}
               </text>
             )}
@@ -571,7 +582,7 @@ function TreemapChart({ rows, expanded, containerWidth, containerHeight }: Chart
   if (rows.length === 0) {
     return (
       <svg viewBox={`0 0 ${W} ${H}`} fill="none" {...svgAttrs(containerWidth, containerHeight, expanded)}>
-        <text x={W / 2} y={H / 2} textAnchor="middle" fontSize="11" fill={T3} fontFamily={MONO_FAMILY}>
+        <text x={W / 2} y={H / 2} textAnchor="middle" fontSize="11" fill={INK_FAINT} fontFamily={MONO_FAMILY}>
           No data
         </text>
       </svg>
@@ -710,11 +721,11 @@ function HeatmapChart({ rows, columns, expanded, containerWidth, containerHeight
       {/* ── Legend ── */}
       <rect x={lgX} y={lgY} width={lgW} height={lgH} fill="url(#hm-grad)" />
       <text x={lgX} y={lgY + lgH + 7}
-        fontSize="6" fontFamily={MONO_FAMILY} fill={T3} textAnchor="start">
+        fontSize="6" fontFamily={MONO_FAMILY} fill={INK_FAINT} textAnchor="start">
         {fmtV(minVal)}
       </text>
       <text x={lgX + lgW} y={lgY + lgH + 7}
-        fontSize="6" fontFamily={MONO_FAMILY} fill={T3} textAnchor="end">
+        fontSize="6" fontFamily={MONO_FAMILY} fill={INK_FAINT} textAnchor="end">
         {fmtV(maxVal)}
       </text>
 
@@ -724,7 +735,7 @@ function HeatmapChart({ rows, columns, expanded, containerWidth, containerHeight
           x={pl - 5} y={r(pt + ri * cellH + cellH / 2 + 3.5)}
           textAnchor="end"
           fontSize={Math.min(9.5, cellH * 0.42)}
-          fontFamily={SANS_FAMILY} fill={T2}>
+          fontFamily={SANS_FAMILY} fill={INK_MUTED}>
           {row.label}
         </text>
       ))}
@@ -735,7 +746,7 @@ function HeatmapChart({ rows, columns, expanded, containerWidth, containerHeight
           x={r(pl + ci * cellW + cellW / 2)} y={H - 4}
           textAnchor="middle"
           fontSize={Math.min(8.5, cellW * 0.28)}
-          fontFamily={SANS_FAMILY} fill={T2}>
+          fontFamily={SANS_FAMILY} fill={INK_MUTED}>
           {col}
         </text>
       ))}
@@ -781,7 +792,7 @@ function RadarChart({ rows, expanded, containerWidth, containerHeight }: ChartPr
     return (
       <svg viewBox={`0 0 ${W} ${H}`} fill="none" {...svgAttrs(containerWidth, containerHeight, expanded)}>
         <text x={W / 2} y={H / 2} textAnchor="middle" fontSize="11"
-          fill={T3} fontFamily={MONO_FAMILY}>
+          fill={INK_FAINT} fontFamily={MONO_FAMILY}>
           Radar needs ≥ 3 categories
         </text>
       </svg>
@@ -813,24 +824,24 @@ function RadarChart({ rows, expanded, containerWidth, containerHeight }: ChartPr
             const p = pointAt(i, t);
             return `${r(p.x)},${r(p.y)}`;
           }).join(" ")}
-          fill="none" stroke={BORDER} strokeWidth="1" opacity={0.5} />
+          fill="none" stroke={AXIS} strokeWidth="1" opacity={0.5} />
       ))}
       {/* Axis spokes */}
       {Array.from({ length: n }, (_, i) => {
         const p = pointAt(i, 1);
         return (
           <line key={i} x1={cx} y1={cy} x2={r(p.x)} y2={r(p.y)}
-            stroke={BORDER} strokeWidth="1" opacity={0.45} />
+            stroke={AXIS} strokeWidth="1" opacity={0.45} />
         );
       })}
       {/* Filled data polygon */}
-      <polygon points={polygon} fill={NAVY} fillOpacity="0.22"
-        stroke={NAVY} strokeWidth="1.5" strokeLinejoin="round" />
+      <polygon points={polygon} fill={SERIES[0]} fillOpacity="0.22"
+        stroke={SERIES[0]} strokeWidth="1.5" strokeLinejoin="round" />
       {/* Vertex dots — first one accented gold */}
       {values.map((v, i) => {
         const p = pointAt(i, v / mx);
         return <circle key={i} cx={r(p.x)} cy={r(p.y)} r={i === 0 ? 4 : 3}
-          fill={i === 0 ? GOLD : NAVY} />;
+          fill={i === 0 ? ACCENT : SERIES[0]} />;
       })}
       {/* Outer axis labels */}
       {rows.map((row, i) => {
@@ -840,7 +851,7 @@ function RadarChart({ rows, expanded, containerWidth, containerHeight }: ChartPr
         const anchor = Math.abs(Math.cos(a)) < 0.35 ? "middle" : Math.cos(a) > 0 ? "start" : "end";
         return (
           <text key={i} x={r(lx)} y={r(ly + 3)} textAnchor={anchor}
-            fontSize="10" fill={T2} fontFamily={SANS_FAMILY}>
+            fontSize="10" fill={INK_MUTED} fontFamily={SANS_FAMILY}>
             {row.label}
           </text>
         );
@@ -898,7 +909,7 @@ function DotMatrixChart({ rows, expanded, containerWidth, containerHeight }: Cha
         const fill = dotFill[i];
         return (
           <circle key={i} cx={r(cx)} cy={r(cy)} r={r(dotR)}
-            fill={fill ?? BORDER}
+            fill={fill ?? AXIS}
             fillOpacity={fill ? 1 : 0.4} />
         );
       })}
@@ -909,8 +920,8 @@ function DotMatrixChart({ rows, expanded, containerWidth, containerHeight }: Cha
         return (
           <g key={ri} transform={`translate(${r(startX + gridW + 16)}, ${r(ly)})`}>
             <circle cx="3" cy="0" r="3.5" fill={SERIES[ri % SERIES.length]} />
-            <text x="11" y="3" fontSize="10" fill={T2} fontFamily={SANS_FAMILY}>{row.label}</text>
-            <text x="11" y="14" fontSize="9" fill={T3} fontFamily={MONO_FAMILY}>{counts[ri]}%</text>
+            <text x="11" y="3" fontSize="10" fill={INK_MUTED} fontFamily={SANS_FAMILY}>{row.label}</text>
+            <text x="11" y="14" fontSize="9" fill={INK_FAINT} fontFamily={MONO_FAMILY}>{counts[ri]}%</text>
           </g>
         );
       })}
@@ -971,7 +982,7 @@ function MapChart({ rows, expanded, containerWidth, containerHeight }: ChartProp
           <g key={ri}>
             <circle cx={r(lx + dotR)} cy={r(ly + dotR)} r={dotR} fill={SERIES[ri % SERIES.length]} />
             <text x={r(lx + dotR * 2 + 4)} y={r(ly + dotR * 2)}
-              fontSize="9" fontFamily={MONO_FAMILY} fill={T2}>
+              fontSize="9" fontFamily={MONO_FAMILY} fill={INK_MUTED}>
               {row.label.slice(0, maxChars)} {pct}%
             </text>
           </g>
