@@ -291,7 +291,6 @@ export default function Home() {
           <span className="font-mono text-[13px] font-medium tracking-[0.14em] text-primary">AXON</span>
           <div className="flex items-center gap-6">
             <a href="https://axon-app.ru/" target="_blank" className="text-sm font-body text-soft hover:text-primary transition-colors">Try Axon</a>
-            <a href="#" className="text-sm font-body text-primary border border-primary/30 px-4 py-1.5 rounded hover:bg-primary hover:text-bg transition-all">Sign in</a>
           </div>
         </div>
       </nav>
