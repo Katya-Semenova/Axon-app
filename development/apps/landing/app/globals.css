@@ -1,0 +1,186 @@
+@import "tailwindcss";
+/* Общий бренд из @axon/ui (единый источник, DESIGN.md) — токены доступны.
+   ВРЕМЕННО: палитра лендинга ниже своя (оттенки чуть отличаются от сервиса);
+   сверить и свести к одному источнику при редизайне лендинга. */
+@import "@axon/ui/styles/theme.css";
+
+@theme {
+  /* Named palette */
+  --color-cream: #F4F0E8;
+  --color-navy: #1A2742;
+  --color-gold: #C8A86B;
+  --color-slate: #8B95A8;
+  --color-highlight: #E8EAED;
+
+  /* Aliases matching the HTML source */
+  --color-bg: #F4F0E8;
+  --color-primary: #1A2742;
+  --color-accent: #C8A86B;
+  --color-soft: #8B95A8;
+}
+
+@theme inline {
+  --font-instrument: var(--font-instrument-serif);
+  --font-inter: var(--font-inter-sans);
+  --font-mono: var(--font-jetbrains-mono);
+
+  /* Aliases matching the HTML source */
+  --font-display: var(--font-instrument-serif);
+  --font-body: var(--font-inter-sans);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: #F4F0E8;
+  font-family: var(--font-inter-sans), sans-serif;
+  color: #1A2742;
+  margin: 0;
+}
+
+/* Instrument Serif ships at weight 400 only — prevent browser synthetic bold */
+.font-display {
+  font-weight: 400 !important;
+}
+
+nav {
+  backdrop-filter: blur(12px);
+  background: rgba(244, 240, 232, 0.88);
+}
+
+.divider {
+  border-color: rgba(26, 39, 66, 0.1);
+}
+
+.feature-card {
+  border: 1px solid rgba(26, 39, 66, 0.1);
+  background: rgba(255, 255, 255, 0.5);
+  transition: border-color 0.3s, background 0.3s;
+}
+
+.feature-card:hover {
+  border-color: #C8A86B;
+  background: rgba(255, 255, 255, 0.8);
+}
+
+.mock-screen {
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.mock-screen.active {
+  opacity: 1 !important;
+  pointer-events: auto;
+}
+
+.thinking-dot {
+  animation: dotBounce 1s ease-in-out infinite;
+}
+
+@keyframes dotBounce {
+  0%, 100% { transform: translateY(0); opacity: 0.4; }
+  50% { transform: translateY(-4px); opacity: 1; }
+}
+
+.connector-draw {
+  stroke-dasharray: 80;
+  stroke-dashoffset: 80;
+  transition: stroke-dashoffset 0.6s ease;
+}
+
+.mock-screen.active .connector-draw {
+  stroke-dashoffset: 0;
+}
+
+.insight-chip {
+  opacity: 0;
+  transform: scale(0.9);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.mock-screen.active .insight-chip { opacity: 1; transform: scale(1); }
+.mock-screen.active .insight-chip:nth-child(1) { transition-delay: 0.05s; }
+.mock-screen.active .insight-chip:nth-child(2) { transition-delay: 0.12s; }
+.mock-screen.active .insight-chip:nth-child(3) { transition-delay: 0.19s; }
+.mock-screen.active .insight-chip:nth-child(4) { transition-delay: 0.26s; }
+.mock-screen.active .insight-chip:nth-child(5) { transition-delay: 0.33s; }
+.mock-screen.active .insight-chip:nth-child(6) { transition-delay: 0.40s; }
+
+.dataset-node {
+  opacity: 0;
+  transform: translateX(6px);
+  transition: opacity 0.35s ease, transform 0.35s ease;
+}
+
+.mock-screen.active .dataset-node { opacity: 1; transform: translateX(0); }
+.mock-screen.active .dataset-node:nth-child(1) { transition-delay: 0.45s; }
+.mock-screen.active .dataset-node:nth-child(2) { transition-delay: 0.55s; }
+.mock-screen.active .dataset-node:nth-child(3) { transition-delay: 0.65s; }
+
+/* Modes */
+.mode-col:hover > div:first-child {
+  transform: translateY(-3px);
+  transition: transform 0.3s ease;
+}
+
+/* Card lift on hover — same gentle behavior as The Workflow cards */
+.lift-card {
+  transition: transform 0.3s ease;
+}
+.lift-card:hover {
+  transform: translateY(-3px);
+}
+
+/* Canvas breathe */
+.canvas-preview .node-chip { animation: nodePulse 3s ease-in-out infinite; }
+.canvas-preview .node-chip:nth-child(2) { animation-delay: 0.8s; }
+.canvas-preview .node-chip:nth-child(3) { animation-delay: 1.6s; }
+
+@keyframes nodePulse {
+  0%, 100% { opacity: 0.6; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.04); }
+}
+
+.connector-path { animation: dashMove 3s linear infinite; }
+.connector-path2 { animation: dashMove 4s linear infinite reverse; }
+
+@keyframes dashMove { to { stroke-dashoffset: -20; } }
+
+/* Slides */
+.slides-preview .slide-bar { animation: barGlow 2.4s ease-in-out infinite alternate; }
+.cursor-blink { animation: blink 1s step-end infinite; }
+
+@keyframes barGlow {
+  from { filter: brightness(0.8); }
+  to { filter: brightness(1.2); }
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+/* Present */
+.present-preview .present-slide { animation: slideRise 3s ease-in-out infinite; }
+.present-preview .present-slide:nth-child(2) { animation-delay: 0.2s; }
+.present-preview .present-slide:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes slideRise {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
+.export-tag { animation: exportPop 2.4s ease-in-out infinite alternate; }
+.export-tag:nth-child(2) { animation-delay: 0.5s; }
+.export-tag:nth-child(3) { animation-delay: 1s; }
+
+@keyframes exportPop {
+  from { opacity: 0.6; }
+  to { opacity: 1; }
+}
