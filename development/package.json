@@ -1,0 +1,8 @@
+{
+  "name": "axon-workspace",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ]
+}
