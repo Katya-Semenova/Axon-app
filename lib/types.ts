@@ -246,7 +246,7 @@ export const RENDER_ENGINES: { id: RenderEngine; label: string; subtitle: string
    --slide-* custom properties applied at the presentation root. Consumed in
    SLIDES mode; the picker lives as a second sub-block in the right rail. */
 
-export type PresentationThemeId = "editorial" | "soft";
+export type PresentationThemeId = "editorial" | "soft" | "web";
 
 export interface PresentationTheme {
   id: PresentationThemeId;
@@ -293,6 +293,25 @@ export const PRESENTATION_THEMES: PresentationTheme[] = [
       "--slide-radius":       "16px",
       "--slide-block-pad":    "26px 36px",
       "--slide-title-align":  "center",
+    },
+  },
+  {
+    id: "web",
+    label: "Web",
+    blurb: "Dark · sans · modern",
+    vars: {
+      "--slide-font-display": "var(--font-inter), system-ui, sans-serif",
+      "--slide-font-body":    "var(--font-inter), system-ui, sans-serif",
+      "--slide-font-mono":    "'JetBrains Mono', monospace",
+      "--slide-title":        "#F2F5FA",
+      "--slide-text":         "#A6B2C4",
+      "--slide-accent":       "#D4A94E",
+      "--slide-bg":           "#0E1117",
+      "--slide-border":       "#232C3A",
+      "--slide-muted":        "#1A212C",
+      "--slide-radius":       "8px",
+      "--slide-block-pad":    "22px 34px",
+      "--slide-title-align":  "left",
     },
   },
 ];
