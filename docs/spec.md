@@ -15,8 +15,8 @@
   - Загрузка файла на главной приложения (dropzone или клик) → создаётся проект; **ИИ** извлекает Insight-карточки и собирает из них готовые DataSet-узлы (первый срез).
   - **Добавить ещё файл** можно прямо на холсте — кнопка «+ Добавить файл» в чат-рейле: его инсайты/дата-сеты/слайды **дописываются** к текущей доске (не заменяя её), узлы кладутся ниже текущих. Гость — в памяти, вошедший — автосейв. Та же инфраструктура позже переиспользуется живым ИИ-чатом (Шаг 11).
   - **Data mode (холст)** — node-граф: Insight-карточки (данные / текст / SQL / код) → связи (Connection) → DataSet-карточки (агрегирующий график), построенные ИИ. Пользователь может **отсоединять/переподключать** инсайты к другим дата-сетам и **редактировать** дата-сеты. Сбоку AI-чат-рейл (живой чат — позже на GigaChat; пока в нём список загруженных файлов и кнопка «+ Добавить файл», заглушка-ввод обезврежена — Шаг 11); drill-in вью для Insight и DataSet.
-  - **Presentation mode** — слайды из дата-сетов: архетипы (Chart, Big Number, Comparison, Sentiment, Word List, Quote), лоток слайдов с сортировкой, темы (Editorial / Soft), движки рендера (SciChart / Highcharts / D3).
-  - **Build mode** — чат-сборка деки под аудиторию (CEO / Board / Team / Investor / Custom) и тон (Formal / Neutral / Casual); экспорт и режим показа (Present).
+  - **Presentation mode (СЛАЙДЫ)** — слайды из дата-сетов. Центр — слайд (только inline-текст); правый рельс из двух секций по скоупу: «ЭТОТ СЛАЙД» (Вид › График — два уровня) и «ВСЯ ПРЕЗЕНТАЦИЯ» (Тема + Заметки); снизу — лента слайдов с сортировкой + «+ Слайд». Стиль = одна ось **Тема** (пресеты, deck-wide; Web-dashboard свет/тьма). Вид (archetype) ставит ИИ, пользователь правит как override. *(Рерайт Slides — см. `screens/slides.md`; ранее были «движки рендера SciChart/Highcharts/D3» — сняты.)*
+  - **Build mode (ПОКАЗ)** — чистый вывод презентации: формат (ссылка / PDF / PPTX / Interactive·dashboard) + перестановка + показ (Present). *(Прежняя чат-сборка под аудиторию/тон — Audience/Tone сняты в рерайте Slides.)*
   - Дашборд «Recent Projects» — список недавних проектов со статусами (ready / draft / generating).
   - Storybook — витрина дизайн-системы (токены и компоненты).
 - **Поддерживаемые типы графиков (10 активных):** Treemap, Heatmap, Map, Lollipop, Donut, Stacked Bar, Dot Matrix, Scatter, Radar, Spline Area.
@@ -165,9 +165,12 @@
 
 ### Slide  *(1-й уровень)*
 - id, projectId, serial, dataSetIds[], archetype (Chart/Big Number/Comparison/Sentiment/Word List/Quote), narrative, order
+- **archetype** ставит **ИИ** при создании слайда (ИИ-первый проход); пользователь меняет в правом рельсе как **тихий override**. Выбор «Вид (archetype) › График (chartType)» — два уровня, 2-й виден только при Вид=«График».
+- **Рерайт Slides (Шаг 6, позже):** поля оформления `visualStyle / showGrid / showLabels / stackedBars / renderEngine` **схлопываются в одну тему презентации** (`presentationThemeId`). ⚠️ меняет модель → затрагивает сохранённые доски (board JSON) и публичную деку `/p/[token]` → аккуратность/совместимость. См. `backlog.md` (Ярус 2) и `screens/slides.md`.
 
 ### Presentation / Deck
-- projectId, themeId (`editorial` | `soft`), slideOrder[], buildAudience, buildTone, narrationMode
+- projectId, **`presentationThemeId`** (`editorial` | `soft` | `web` — где **web = «Web-dashboard»** с вариантом свет/тьма; добавляются Bold / Minimal / Magazine), slideOrder[], narrationMode
+- **Убрано (рерайт Slides):** `buildAudience` / `buildTone` — кормили только захардкоженную запасную строку, перекрытую `summary` («не работали»); сняты. `narrationMode` сводится к тумблеру «показывать заметки докладчика». Стиль презентации — **одна ось «Тема»**, deck-wide.
 
 ### ShareLink
 - id, projectId, token, createdAt, revoked (bool) → отдаёт `/p/[id]` read-only
