@@ -10,6 +10,15 @@ const mono = "'JetBrains Mono', monospace";
 const CREAM = "#F5F2EA";
 const SURFACE_LIGHT = "#FBF9F3";
 
+/* Theme-aware ink / structure tokens — fallbacks equal the light-theme constants,
+   so canvas/light themes are unchanged; under the slide theme root they resolve
+   to readable colours on dark themes (mirrors ChartRenderer). Used by the
+   non-chart archetypes (Comparison / Quote) whose numbers/text were hardcoded. */
+const INK       = `var(--slide-title,  ${NAVY})`;                       // big numbers / quote body
+const INK_FAINT = `var(--slide-text,   ${T3})`;                         // labels / attribution
+const AXIS      = `var(--slide-axis, var(--slide-border, ${BORDER}))`;  // dividers / quote mark
+const MUTED_BG  = `var(--slide-muted,  ${SURFACE_LIGHT})`;              // delta-badge fill
+
 /* ── Palette for filled archetypes ── */
 const PALETTE = ["#1B2840", "#B89548", "#4A5878", "#2A3654", "#8892AA", "#5C6478", "#D4C9A8", "#A89060"];
 
@@ -121,26 +130,26 @@ function ArchComparison({ rows, W, H }: ArchProps) {
   return (
     <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} style={{ display: "block" }}>
       {/* vertical divider */}
-      <line x1={mid} y1={H * 0.08} x2={mid} y2={H * 0.92} stroke={BORDER} strokeWidth={1} />
+      <line x1={mid} y1={H * 0.08} x2={mid} y2={H * 0.92} stroke={AXIS} strokeWidth={1} />
 
       {/* left column */}
       <text x={mid * 0.5} y={H * 0.30} textAnchor="middle"
-        fontSize={11} fontFamily={mono} letterSpacing="0.08em" fill={T3}>
+        fontSize={11} fontFamily={mono} letterSpacing="0.08em" fill={INK_FAINT}>
         {(left?.label ?? "—").toUpperCase()}
       </text>
       <text x={mid * 0.5} y={H * 0.74} textAnchor="middle"
-        fontSize={numSz} fontFamily="Inter, sans-serif" fontWeight="700" fill="#0A0A0A"
+        fontSize={numSz} fontFamily="Inter, sans-serif" fontWeight="700" fill={INK}
         style={{ fontVariantNumeric: "tabular-nums" }}>
         {fmt(lv)}
       </text>
 
       {/* right column */}
       <text x={mid + mid * 0.5} y={H * 0.30} textAnchor="middle"
-        fontSize={11} fontFamily={mono} letterSpacing="0.08em" fill={T3}>
+        fontSize={11} fontFamily={mono} letterSpacing="0.08em" fill={INK_FAINT}>
         {(right?.label ?? "—").toUpperCase()}
       </text>
       <text x={mid + mid * 0.5} y={H * 0.74} textAnchor="middle"
-        fontSize={numSz} fontFamily="Inter, sans-serif" fontWeight="700" fill="#0A0A0A"
+        fontSize={numSz} fontFamily="Inter, sans-serif" fontWeight="700" fill={INK}
         style={{ fontVariantNumeric: "tabular-nums" }}>
         {fmt(rv)}
       </text>
@@ -149,7 +158,7 @@ function ArchComparison({ rows, W, H }: ArchProps) {
       {delta !== null && (
         <g>
           <rect x={mid - 28} y={H * 0.47} width={56} height={20} rx={2}
-            fill={SURFACE_LIGHT} stroke={BORDER} strokeWidth={1} />
+            fill={MUTED_BG} stroke={AXIS} strokeWidth={1} />
           <text x={mid} y={H * 0.47 + 13.5} textAnchor="middle"
             fontSize={10} fontFamily={mono} fontWeight="500"
             fill={positive ? "#2A7A4A" : "#C04A3A"}>
@@ -283,10 +292,10 @@ function ArchQuote({ narrative, title, W, H }: ArchProps) {
       {/* Decorative opening quote mark — sits behind the text block */}
       <text x={28} y={H * 0.46}
         fontSize={100} fontFamily="Georgia, serif"
-        fill={BORDER} fontWeight="700" fillOpacity="0.55">
+        fill={AXIS} fontWeight="700" fillOpacity="0.55">
         &ldquo;
       </text>
-      {/* Quote body — Playfair Display italic, navy */}
+      {/* Quote body — Playfair Display italic, theme title ink */}
       <foreignObject x={44} y={H * 0.18} width={W - 72} height={H * 0.66}>
         <div
           // @ts-ignore — xmlns needed for SVG foreignObject in React
@@ -295,7 +304,7 @@ function ArchQuote({ narrative, title, W, H }: ArchProps) {
             fontFamily: "'Playfair Display', 'Instrument Serif', Georgia, serif",
             fontSize: quoteFontSz,
             fontStyle: "italic",
-            color: NAVY,
+            color: INK,
             lineHeight: 1.5,
             overflow: "hidden",
           }}>
@@ -304,7 +313,7 @@ function ArchQuote({ narrative, title, W, H }: ArchProps) {
       </foreignObject>
       {/* Attribution line */}
       <text x={44} y={H - 18}
-        fontSize={10} fontFamily={mono} letterSpacing="0.08em" fill={T3}>
+        fontSize={10} fontFamily={mono} letterSpacing="0.08em" fill={INK_FAINT}>
         — {title || "Axon"}
       </text>
     </svg>
