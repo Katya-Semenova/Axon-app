@@ -210,7 +210,22 @@
     "narrativeSpeaker": "Речь докладчика · ИИ · редактируется",
     "addSpeakerNotes": "Добавьте заметки докладчика…",
     "presentationTheme": "Тема презентации",
-    "themeHint": "Тема меняет оформление всей презентации — шрифты, цвет, форму."
+    "themeHint": "Тема меняет оформление всей презентации — шрифты, цвет, форму.",
+    "sectionThisSlide": "Этот слайд",
+    "sectionDeck": "Вся презентация",
+    "viewLabel": "Как показать этот слайд",
+    "vShareOfWhole": "Доли целого",
+    "vComparison": "Сравнение",
+    "vRelationship": "Связь",
+    "vProfile": "Профиль",
+    "vDensity": "Плотность",
+    "vGeography": "География",
+    "vCount": "Количество",
+    "vTrend": "Динамика",
+    "vComposition": "Состав",
+    "vBigNumber": "Одна цифра",
+    "vNumberComparison": "Сравнение цифр",
+    "vQuote": "Цитата / текст"
   },
   "Build": {
     "breadcrumbPresentation": "Презентация",

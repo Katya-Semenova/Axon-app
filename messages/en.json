@@ -210,7 +210,22 @@
     "narrativeSpeaker": "Speaker narrative · AI · editable",
     "addSpeakerNotes": "Add speaker notes…",
     "presentationTheme": "Presentation theme",
-    "themeHint": "Theme restyles the whole deck — fonts, colour, shape."
+    "themeHint": "Theme restyles the whole deck — fonts, colour, shape.",
+    "sectionThisSlide": "This slide",
+    "sectionDeck": "Whole presentation",
+    "viewLabel": "How to show this slide",
+    "vShareOfWhole": "Share of whole",
+    "vComparison": "Comparison",
+    "vRelationship": "Relationship",
+    "vProfile": "Profile",
+    "vDensity": "Density",
+    "vGeography": "Geography",
+    "vCount": "Count",
+    "vTrend": "Trend",
+    "vComposition": "Composition",
+    "vBigNumber": "Big number",
+    "vNumberComparison": "Number comparison",
+    "vQuote": "Quote / text"
   },
   "Build": {
     "breadcrumbPresentation": "Presentation",

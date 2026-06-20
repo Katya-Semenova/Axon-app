@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useWorkspaceStore } from "@/lib/store";
 import { MiniChart } from "../MiniChart";
-import { ComboLayoutDropdown } from "../ui/ComboLayoutDropdown";
+import { SlideViewDropdown } from "../ui/SlideViewDropdown";
 import { SlideArchetypeRenderer, deriveSlideSummary } from "./SlideArchetypeRenderer";
 import type { Slide, VisualStyle, ColorAccent, BuildAudience, BuildTone, NarrationMode, SlideArchetype } from "@/lib/types";
 import { NARRATION_MODES, PRESENTATION_THEMES } from "@/lib/types";
@@ -362,7 +362,6 @@ export function SlideEditor({ modeSwitcher }: { modeSwitcher?: React.ReactNode }
   const setActiveSlide    = useWorkspaceStore(s => s.setActiveSlide);
   const updateSlide       = useWorkspaceStore(s => s.updateSlide);
   const removeSlide       = useWorkspaceStore(s => s.removeSlide);
-  const updateDsChartType = useWorkspaceStore(s => s.updateDataSetChartType);
   const updateDsRows      = useWorkspaceStore(s => s.updateDataSetRows);
   const audience          = useWorkspaceStore(s => s.buildAudience);
   const tone              = useWorkspaceStore(s => s.buildTone);
@@ -507,12 +506,12 @@ export function SlideEditor({ modeSwitcher }: { modeSwitcher?: React.ReactNode }
                 overflow: "hidden",
               }}
             >
-              {/* ── Block 1: Title ── */}
+              {/* ── Block 1: Title — text only; view control moved to right rail (Шаг 4b) ── */}
               <div style={{
                 padding: "18px 32px 14px",
                 borderBottom: "1px solid var(--slide-border)",
                 flexShrink: 0,
-                display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16,
+                display: "flex", alignItems: "flex-start", gap: 16,
                 background: slideBg,
               }}>
                 <div style={{ minWidth: 0, flex: 1, display: "flex", alignItems: "baseline", gap: 10 }}>
@@ -525,14 +524,6 @@ export function SlideEditor({ modeSwitcher }: { modeSwitcher?: React.ReactNode }
                   }}>
                     {activeDs.title}
                   </span>
-                </div>
-                <div style={{ flexShrink: 0 }}>
-                  <ComboLayoutDropdown
-                    archetype={activeSlide.archetype ?? "Chart"}
-                    chartType={activeDs.chartType}
-                    onChangeArchetype={(arch) => updateSlide(activeSlide.id, { archetype: arch })}
-                    onChangeChartType={(type) => updateDsChartType(activeDs.id, type)}
-                  />
                 </div>
               </div>
 
@@ -830,13 +821,25 @@ function NarrativeBlock({
   );
 }
 
-/* ── Right rail: presentation theme picker (deck-wide) ── */
+/* ── Right rail: two scoped sections (Slides rework Шаг 4b) ───────────────────
+   «ЭТОТ СЛАЙД» (per-slide) — flat «how to show this slide» picker.
+   «ВСЯ ПРЕЗЕНТАЦИЯ» (deck-wide) — theme gallery.
+   Self-sufficient: rendered as a full-height right column by page.tsx (SLIDES
+   mode); reads slide + theme state straight from the store. */
 export function VisualizationStyleRail() {
-  /* Self-sufficient: rendered as a full-height right column by page.tsx
-     (SLIDES mode); reads the deck-wide theme straight from the store. */
-  const t        = useTranslations("SlideEditor");
-  const themeId  = useWorkspaceStore(s => s.presentationThemeId);
-  const setTheme = useWorkspaceStore(s => s.setPresentationTheme);
+  const t            = useTranslations("SlideEditor");
+  const themeId      = useWorkspaceStore(s => s.presentationThemeId);
+  const setTheme     = useWorkspaceStore(s => s.setPresentationTheme);
+  const slideOrder   = useWorkspaceStore(s => s.slideOrder);
+  const slidesById   = useWorkspaceStore(s => s.slidesById);
+  const dataSetsById = useWorkspaceStore(s => s.dataSetsById);
+  const activeSlideId   = useWorkspaceStore(s => s.activeSlideId);
+  const updateSlide     = useWorkspaceStore(s => s.updateSlide);
+  const updateDsChartType = useWorkspaceStore(s => s.updateDataSetChartType);
+
+  const activeSlide = (activeSlideId ? slidesById[activeSlideId] : null)
+    ?? (slideOrder[0] ? slidesById[slideOrder[0]] : null);
+  const activeDs = activeSlide?.dataSetIds[0] ? dataSetsById[activeSlide.dataSetIds[0]] : null;
 
   return (
     <aside
@@ -850,20 +853,32 @@ export function VisualizationStyleRail() {
       }}
       className="thin-scroll"
     >
-      {/* ── Presentation theme (deck-wide) ── */}
-      <div style={{
-        fontFamily: mono, fontSize: 9, letterSpacing: "0.12em", textTransform: "uppercase",
-        color: T3,
-      }}>
-        {t("presentationTheme")}
-      </div>
+      {/* ══ Section 1: ЭТОТ СЛАЙД (per-slide) ══ */}
+      <RailSectionHeader>{t("sectionThisSlide")}</RailSectionHeader>
+      {activeSlide && activeDs && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+          <RailFieldLabel>{t("viewLabel")}</RailFieldLabel>
+          <SlideViewDropdown
+            archetype={activeSlide.archetype ?? "Chart"}
+            chartType={activeDs.chartType}
+            onChangeArchetype={(a) => updateSlide(activeSlide.id, { archetype: a })}
+            onChangeChartType={(ty) => updateDsChartType(activeDs.id, ty)}
+          />
+        </div>
+      )}
 
-      {PRESENTATION_THEMES.map((t) => {
-        const active = t.id === themeId;
+      <div style={{ borderTop: `1px solid ${BORDER}`, margin: "2px 0" }} />
+
+      {/* ══ Section 2: ВСЯ ПРЕЗЕНТАЦИЯ (deck-wide) ══ */}
+      <RailSectionHeader>{t("sectionDeck")}</RailSectionHeader>
+      <RailFieldLabel>{t("presentationTheme")}</RailFieldLabel>
+
+      {PRESENTATION_THEMES.map((th) => {
+        const active = th.id === themeId;
         return (
           <button
-            key={t.id}
-            onClick={() => setTheme(t.id)}
+            key={th.id}
+            onClick={() => setTheme(th.id)}
             style={{
               width: "100%",
               display: "flex", flexDirection: "column", gap: 6,
@@ -882,7 +897,7 @@ export function VisualizationStyleRail() {
             {/* Mini preview — rendered in the theme's OWN tokens so the font,
                 accent and corner radius read at a glance. */}
             <div style={{
-              ...(t.vars as React.CSSProperties),
+              ...(th.vars as React.CSSProperties),
               background: "var(--slide-bg)",
               border: "1px solid var(--slide-border)",
               borderRadius: "var(--slide-radius)",
@@ -897,12 +912,12 @@ export function VisualizationStyleRail() {
               <span style={{
                 fontFamily: mono, fontSize: 10.5, color: NAVY, fontWeight: active ? 500 : 400,
               }}>
-                {t.label}
+                {th.label}
               </span>
               <span style={{
                 fontFamily: mono, fontSize: 8.5, letterSpacing: "0.04em", color: T3, lineHeight: 1.4,
               }}>
-                {t.blurb}
+                {th.blurb}
               </span>
             </div>
           </button>
@@ -916,6 +931,29 @@ export function VisualizationStyleRail() {
         {t("themeHint")}
       </div>
     </aside>
+  );
+}
+
+/* ── Rail typography helpers ─────────────────────────────────────────────────
+   Section header = scope label (darker); field label = control caption (muted). */
+function RailSectionHeader({ children }: { children: React.ReactNode }) {
+  return (
+    <div style={{
+      fontFamily: mono, fontSize: 9, letterSpacing: "0.12em", textTransform: "uppercase",
+      color: T2, fontWeight: 500,
+    }}>
+      {children}
+    </div>
+  );
+}
+function RailFieldLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <div style={{
+      fontFamily: mono, fontSize: 7.5, letterSpacing: "0.08em", textTransform: "uppercase",
+      color: T3,
+    }}>
+      {children}
+    </div>
   );
 }
 
