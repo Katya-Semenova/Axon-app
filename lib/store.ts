@@ -483,7 +483,6 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => {
           archetype: "Chart",
           status: "Paid", aggregation: "Monthly", colorBy: "Segment",
           filter: "All data", colorAccent: "Navy", visualStyle: "Modern",
-          showLabels: true, showGrid: true, stackedBars: false,
         };
         return {
           dataSetsById: { ...s.dataSetsById, [id]: ds },
@@ -625,7 +624,6 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => {
         archetype: "Chart" as SlideArchetype,
         status: "Paid", aggregation: "Monthly", colorBy: "Segment",
         filter: "All data", colorAccent: "Navy", visualStyle: "Modern",
-        showLabels: true, showGrid: true, stackedBars: false,
       };
       return {
         slidesById: { ...s.slidesById, [id]: slide },
@@ -641,7 +639,6 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => {
         archetype: "Chart" as SlideArchetype,
         status: "Paid", aggregation: "Monthly", colorBy: "Segment",
         filter: "All data", colorAccent: "Navy", visualStyle: "Modern",
-        showLabels: true, showGrid: true, stackedBars: false,
       };
       const order = [...s.slideOrder];
       if (atIndex == null || atIndex >= order.length) order.push(id);

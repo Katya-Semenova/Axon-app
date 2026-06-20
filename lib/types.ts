@@ -215,9 +215,6 @@ export interface Slide {
 
   /* ── visualization style panel ────────────────────────────────────── */
   visualStyle: VisualStyle;
-  showLabels: boolean;
-  showGrid: boolean;
-  stackedBars: boolean;
 
   /** AI-generated 1–2 sentence headline summary rendered as the prominent
       gold-bordered block under the slide title. When undefined, the slide
