@@ -6,7 +6,7 @@ import { MiniChart } from "../MiniChart";
 import { ComboLayoutDropdown } from "../ui/ComboLayoutDropdown";
 import { SlideArchetypeRenderer, deriveSlideSummary } from "./SlideArchetypeRenderer";
 import type { Slide, VisualStyle, ColorAccent, BuildAudience, BuildTone, NarrationMode, SlideArchetype } from "@/lib/types";
-import { NARRATION_MODES, SLIDE_FORMAT_OPTIONS, PRESENTATION_THEMES } from "@/lib/types";
+import { NARRATION_MODES, PRESENTATION_THEMES } from "@/lib/types";
 import { BORDER, NAVY, GOLD, T2, T3, SURFACE, SURFACE_RAISE, SURFACE_MUTED } from "../ui/tokens";
 import { openOnboarding } from "../ui/OnboardingModal";
 import { useTranslations } from "next-intl";
@@ -75,7 +75,6 @@ const NARRATIVES: Record<BuildAudience, Record<BuildTone, string>> = {
 /* Abbreviated trigger labels for Narration dropdown (full text stays in menu). */
 const NARRATION_TRIGGER: Record<NarrationMode, string> = {
   "Speaker notes included": "Speaker notes",
-  "Voiceover script":       "Voiceover",
   "None":                   "None",
 };
 
@@ -683,34 +682,14 @@ function SummaryBlock({
   );
 }
 
-/* ── Block 5: Delivery settings — deck-wide controls ────────────────────
-   Four PanelSelect controls: Audience / Tone / Narration / Slide format.
-   Audience + Tone + Narration persist on the workspace store (deck-wide).
-   Slide format changes the active slide's archetype (per-slide).        */
-const AUDIENCE_OPTIONS: BuildAudience[] = ["CEO", "Board", "Investor", "Team", "Custom"];
-const TONE_OPTIONS:     BuildTone[]     = ["Formal", "Neutral", "Casual"];
-
+/* ── Block 5: Speaker-notes toggle — deck-wide ──────────────────────────
+   Single control: show speaker notes or hide them. (Audience / Tone / Slide
+   format removed in Slides rework Шаг 3 — they were misplaced/non-functional
+   here; Audience/Tone still live in ПОКАЗ/BuildMode.)                    */
 function DeliverySettingsStrip() {
-  const t             = useTranslations("SlideEditor");
-  const audience      = useWorkspaceStore(s => s.buildAudience);
-  const tone          = useWorkspaceStore(s => s.buildTone);
-  const narrMode      = useWorkspaceStore(s => s.buildNarrationMode);
-  const setAudience   = useWorkspaceStore(s => s.setBuildAudience);
-  const setTone       = useWorkspaceStore(s => s.setBuildTone);
-  const setNarrMode   = useWorkspaceStore(s => s.setBuildNarrationMode);
-  const activeSlideId = useWorkspaceStore(s => s.activeSlideId);
-  const slidesById    = useWorkspaceStore(s => s.slidesById);
-  const updateSlide   = useWorkspaceStore(s => s.updateSlide);
-  const activeSlide   = activeSlideId ? slidesById[activeSlideId] : null;
-
-  /* Slide format — "—" means "Chart" (the default render path). */
-  const slideFormatOptions = ["None", ...SLIDE_FORMAT_OPTIONS];
-  const slideFormatValue   = !activeSlide || activeSlide.archetype === "Chart" ? "None" : activeSlide.archetype;
-
-  function handleSlideFormat(v: string) {
-    if (!activeSlide) return;
-    updateSlide(activeSlide.id, { archetype: (v === "None" ? "Chart" : v) as SlideArchetype });
-  }
+  const t           = useTranslations("SlideEditor");
+  const narrMode    = useWorkspaceStore(s => s.buildNarrationMode);
+  const setNarrMode = useWorkspaceStore(s => s.setBuildNarrationMode);
 
   return (
     <div style={{
@@ -734,21 +713,7 @@ function DeliverySettingsStrip() {
         </span>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 12 }}>
-        <PanelSelect
-          label={t("labelAudience")}
-          value={audience}
-          options={AUDIENCE_OPTIONS}
-          getLabel={(a) => a === "CEO" ? "CEO / Exec" : a}
-          onChange={(v) => setAudience(v as BuildAudience)}
-        />
-        <PanelSelect
-          label={t("labelTone")}
-          value={tone}
-          options={TONE_OPTIONS}
-          getLabel={(t) => t === "Formal" ? "Direct, factual" : t === "Neutral" ? "Narrative" : t}
-          onChange={(v) => setTone(v as BuildTone)}
-        />
+      <div style={{ maxWidth: 240 }}>
         <PanelSelect
           label={t("labelNarration")}
           value={narrMode}
@@ -756,34 +721,15 @@ function DeliverySettingsStrip() {
           triggerFormat={(v) => NARRATION_TRIGGER[v as NarrationMode] ?? v}
           onChange={(v) => setNarrMode(v as NarrationMode)}
         />
-        <PanelSelect
-          label={t("labelSlideFormat")}
-          value={slideFormatValue}
-          options={slideFormatOptions}
-          onChange={handleSlideFormat}
-        />
       </div>
     </div>
   );
 }
 
-/* ── Block 4: Speaker narrative / Voiceover script ───────────────────────
-   narrMode controls the label, format, and whether the block renders at all.
-
-   "Speaker notes included" → prose, mic icon, label "SPEAKER NARRATIVE"
-   "Voiceover script"       → same prose stored, displayed as timestamped
-                              cues ([00:00], [00:09]…), label "VOICEOVER SCRIPT"
-   "None"                   → block is not rendered (parent gates with &&)     */
-
-function voiceoverCues(text: string): Array<{ time: string; line: string }> {
-  const parts = text.split(/\.(?:\s+|$)/).filter(s => s.trim().length > 0);
-  return parts.map((s, i) => {
-    const sec = i * 9;
-    const mm  = Math.floor(sec / 60).toString().padStart(2, "0");
-    const ss  = (sec % 60).toString().padStart(2, "0");
-    return { time: `${mm}:${ss}`, line: s.trim() + "." };
-  });
-}
+/* ── Block 4: Speaker notes ──────────────────────────────────────────────
+   narrMode gates whether the block renders at all:
+   "Speaker notes included" → editable prose, label "SPEAKER NARRATIVE"
+   "None"                   → block is not rendered (parent gates with &&)  */
 
 function NarrativeBlock({
   slide, narrMode, narrativeText, onChange,
@@ -809,8 +755,7 @@ function NarrativeBlock({
     if (draft.trim() !== narrativeText) onChange(draft.trim());
   }
 
-  const isVoiceover = narrMode === "Voiceover script";
-  const label = isVoiceover ? t("narrativeVoiceover") : t("narrativeSpeaker");
+  const label = t("narrativeSpeaker");
 
   return (
     <div style={{

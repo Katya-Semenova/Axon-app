@@ -160,12 +160,11 @@ export const DEFAULT_DATASET_SETTINGS: DataSetSettings = {
   accent:      "Navy",
 };
 
-/* ── Delivery settings (round-4: lives in SLIDES, applies to whole deck) ── */
-export type NarrationMode = "Speaker notes included" | "Voiceover script" | "None";
+/* ── Speaker notes toggle (SLIDES, deck-wide): show notes or hide them ── */
+export type NarrationMode = "Speaker notes included" | "None";
 
 export const NARRATION_MODES: NarrationMode[] = [
   "Speaker notes included",
-  "Voiceover script",
   "None",
 ];
 
