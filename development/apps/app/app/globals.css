@@ -1,87 +1,10 @@
 @import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap");
 @import "tailwindcss";
+/* Цвета + радиусы бренда — из общего пакета @axon/ui (единый источник, DESIGN.md). */
+@import "@axon/ui/styles/theme.css";
 
 @theme inline {
-  /* ══════════════════════════════════════════════════════
-     Editorial Density — design tokens
-     Warm canvas + navy ramp + gold accent only.
-     No cool blues, no pure white surfaces, no indigo.
-  ══════════════════════════════════════════════════════ */
-
-  /* ── Warm surfaces (the "paper") ── */
-  --color-canvas:         #EDE9E0;  /* app bg — the paper */
-  --color-surface:        #F5F2EA;  /* card bg */
-  --color-surface-raised: #FBF9F3;  /* dropdowns, popovers, slide thumbs */
-  --color-surface-muted:  #E5E0D2;  /* nested elements, file chips, count badges */
-  --color-border-subtle:  #D9D3C2;
-
-  /* ── Slate-blue ramp — from reference palette inner rings ── */
-  --color-slate-mid:    #A9AFBD;  /* mid ring */
-  --color-slate-inner:  #D1D5DC;  /* inner ring */
-  --color-insight-card: #F3F4F6;  /* insight card surface */
-  --color-border-strong:  #B8AE96;
-
-  /* ── Navy ramp — structural / primary data ── */
-  --color-navy-900: #1B2840;
-  --color-navy-700: #2A3654;
-  --color-navy-500: #4A5878;
-  --color-navy-300: #8892AA;
-  --color-navy-100: #B8C2D0;
-
-  /* ── Gold ramp — the ONLY accent ── */
-  --color-gold-700: #A8853E;
-  --color-gold-500: #B89548;
-  --color-gold-300: #C9A961;
-  --color-gold-100: #D4C9A8;
-
-  /* ── Semantic — toasts, validation, status (см. DESIGN.md) ──
-     Приглушённые под тёплую палитру. Добавлены на этапе UI-кита. */
-  --color-success:             #4E7C59;
-  --color-success-foreground:  #F5F2EA;
-  --color-warning:             #A8853E;  /* = gold-700 */
-  --color-warning-foreground:  #F5F2EA;  /* светлый текст — единообразно с success/info/error */
-  --color-error:               #B0413E;  /* красная рамка dropzone (EC-1), ошибки форм */
-  --color-error-foreground:    #F5F2EA;
-  --color-info:                #4A5878;  /* = navy-500 */
-  --color-info-foreground:     #F5F2EA;
-
-  /* ── Text ── */
-  --color-text-primary:   #1B2840;
-  --color-text-secondary: #5C6478;
-  --color-text-tertiary:  #8A8B87;
-  --color-text-on-dark:   #F5F2EA;
-
-  /* ── Pill (user messages, primary CTAs) ── */
-  --color-pill-bg:   #1B2840;
-  --color-pill-text: #F5F2EA;
-
-  /* ──────────────────────────────────────────────
-     Legacy aliases — preserve existing utility classes
-     (bg-bg, bg-card, text-t1/t2/t3, border-border,
-      text-primary, text-second) so the cascade lands
-      everywhere without touching every consumer.
-  ────────────────────────────────────────────── */
-  --color-bg:      #EDE9E0;   /* was #F5F2EC → canvas */
-  --color-card:    #F5F2EA;   /* was #FFFFFF → surface (warm, not pure white) */
-  --color-border:  #D9D3C2;   /* was #E8E4DC → border-subtle */
-  --color-t1:      #1B2840;   /* was #0A0A0A → text-primary navy */
-  --color-t2:      #5C6478;   /* was #6B6B66 → text-secondary */
-  --color-t3:      #8A8B87;   /* was #A8A8A2 → text-tertiary */
-  --color-primary: #1B2840;   /* was #1F2A44 → navy-900 */
-  --color-second:  #B89548;   /* was #B8924A → gold-500 */
-  --color-muted:   #E5E0D2;   /* was #C8CDD8 (COOL BLUE!) → surface-muted */
-
-  /* ── Radii ──
-     none / sm / card  → structural elements (toolbars, mode tabs, cards)
-     bubble            → conversational UI only (chat message bubbles)
-     pill              → CTAs and toggle controls that are explicitly pill-shaped */
-  --radius-none:   0px;
-  --radius-sm:     4px;
-  --radius-card:   4px;
-  --radius-bubble: 20px;
-  --radius-pill:   999px;
-
   /* ── Typography ── */
   --font-sans:    var(--font-inter);
   --font-mono:    var(--font-jetbrains);
