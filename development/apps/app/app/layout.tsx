@@ -43,6 +43,10 @@ const oldStandard = Old_Standard_TT({
 export const metadata: Metadata = {
   title: "Axon — Data Insights",
   description: "AI agent that turns SQL files into human-friendly data insights.",
+  // Весь сервис — приватный (за логином) + публичные деки /p/[token] по приватной
+  // ссылке. Ничего из сервиса не должно попадать в поиск. Лендинг (apps/landing)
+  // индексируется отдельно. Дубль к robots.txt Disallow (Урок 6, Шаг 3).
+  robots: { index: false, follow: false },
 };
 
 export default async function RootLayout({
