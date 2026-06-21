@@ -69,8 +69,19 @@ Donut-легенда, B1/B2 авто-пан) + фикс деплоя ИИ-env (`
 - ✅ **Задание 0.5 — скилл `/avoid-ai-writing` (2026-06-21):** `.claude/skills/avoid-ai-writing/SKILL.md`,
   `user-invocable`. Протокол вычитки от AI-штампов **вшит в скилл** (не ссылка на `lessons/` — её не
   коммитим), пути под наш репо. Профиль `landing`. Применим к текстам лендинга в Задании 1.
-- ⬜ Дальше по Шагу 1: SEO/мета, юр-страницы, аналитика, PWA +
+- ⬜ Дальше по Шагу 1: юр-страницы, аналитика, PWA +
   **починка деплоя вживую** (снять стоп-кран, см. [ADR-009] / infrastructure.md).
+**Шаг 2 (SEO-мета) — В РАБОТЕ 2026-06-21:**
+- ✅ **Иконки бренда:** из знака-логограммы (navy на cream) — `app/icon.svg` (чёткий везде) +
+  `favicon.ico` (16/32/48) + `apple-icon.png` (180). Next App Router подхватывает из `app/`. Исходные
+  SVG бренда (знак/логотип/полный) — в `apps/landing/public/brand/`. Генерил sharp-скриптом.
+- ✅ **OG/Twitter превью 1200×630:** `app/opengraph-image.png` + `twitter-image.png` (+ `.alt.txt`) —
+  navy + cream-логотип + крючок «From data to story. Without translation.» + домен. File-convention,
+  без правки `layout.tsx`.
+- ⬜ **Текстовые мета (title 50–60 / description 140–160 / og:title / metadataBase) — ОТЛОЖЕНО:**
+  живут в `layout.tsx`, который СЕЙЧАС правит соседний чат (добавил шрифт Anton). Допишу, когда сосед
+  закоммитит `layout.tsx` (иначе коллизия в одном файле). Базовые title/desc там уже есть — превью рабочее.
+- ⬜ Проверка превью через opengraph.xyz + Telegram — после правки текстовых мета.
 **Запуск dev:** `cd development && npm run dev -w axon-landing -- -p 3002` (сервис — `-w apps/app -- -p 3001`).
 
 **Урок 4 (бэкенд) — завершён.** Сделано: база данных + Prisma, вход в аккаунт (Better Auth:
