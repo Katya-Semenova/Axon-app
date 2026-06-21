@@ -58,14 +58,75 @@ nav {
   border-color: rgba(26, 39, 66, 0.1);
 }
 
-/* Prototype-teaser CTA — gold outline ghost (как outline-кнопка в ките);
-   на наведении заливается золотом. */
+/* Prototype-teaser CTA — золотая заливка, синяя буква;
+   на наведении золото чуть темнеет. */
 .proto-cta {
-  transition: background 0.25s ease, color 0.25s ease;
+  transition: background 0.25s ease;
 }
 .proto-cta:hover {
-  background: #C8A86B;
-  color: #1A2742;
+  background: #b8975a;
+}
+
+/* ── Prototype teaser — editorial composition (Inter × Instrument Serif at one
+      size, tight flow, with small entity fragments woven into the text). ── */
+.proto-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px 18px;
+}
+.proto-word {
+  font-family: var(--font-inter-sans), sans-serif;
+  font-weight: 600;
+  color: #c8a86b;
+  font-size: clamp(46px, 6.6vw, 104px);
+  line-height: 1.05;
+  letter-spacing: -0.015em;
+}
+.proto-serif {
+  font-family: var(--font-instrument-serif), serif;
+  font-style: italic;
+  color: #f4f0e8;
+  font-size: clamp(42px, 6.1vw, 96px);
+  line-height: 1.05;
+}
+/* smaller beige serif accent — de-emphasised tail of the line */
+.proto-serif-sm {
+  font-family: var(--font-instrument-serif), serif;
+  font-style: italic;
+  color: #d8ccb2;
+  font-size: clamp(26px, 3.4vw, 54px);
+  line-height: 1.05;
+}
+.proto-12 {
+  color: #c8a86b;
+}
+/* small inline fragments — height ≈ the type; entity only, no canvas board */
+.proto-frag {
+  position: relative;
+  flex: 0 0 auto;
+  align-self: center;
+  overflow: hidden;
+}
+.proto-frag--box {
+  background: rgba(244, 240, 232, 0.05);
+  border: 1px solid rgba(200, 168, 107, 0.5);
+  border-radius: 4px;
+}
+.proto-frag--surface {
+  background: #222d44;
+  border: 1px solid rgba(244, 240, 232, 0.1);
+  border-radius: 4px;
+}
+.proto-frag-inner {
+  position: absolute;
+  transform-origin: top left;
+}
+@media (max-width: 640px) {
+  .proto-head {
+    gap: 8px 12px;
+  }
 }
 
 .feature-card {

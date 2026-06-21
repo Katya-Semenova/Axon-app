@@ -699,7 +699,7 @@ export default function Home() {
       </section>
 
       {/* ═══ THREE MODES ═══ */}
-      <section id="modes" className="py-28 px-6 border-t divider">
+      <section id="modes" className="py-[194px] px-6 border-t divider">
         <div className="max-w-[1152px] mx-auto">
           <div className="mb-16 text-center">
             <span style={{ fontFamily: "'Inter',sans-serif", fontSize: 12, fontWeight: 600, letterSpacing: '1.2px', textTransform: 'uppercase', color: '#C8A86B', display: 'block', marginBottom: 16 }}>The Workflow</span>
@@ -792,57 +792,56 @@ export default function Home() {
 
       {/* ═══ PROTOTYPE TEASER ═══ */}
       <section ref={protoSectionRef} id="prototype" style={{ background: '#1A2742', borderTop: '1px solid rgba(26,39,66,0.1)', padding: '112px 24px' }}>
-        <div style={{ maxWidth: 1152, margin: '0 auto', position: 'relative', height: 768 }}>
+        <div style={{ maxWidth: 1152, margin: '0 auto' }}>
 
-          {/* "Ready to" */}
-          <div style={{ position: 'absolute', left: 194, top: 102.55, transform: 'translateY(-50%)', fontFamily: "'Inter',sans-serif", fontWeight: 500, fontSize: 80, lineHeight: '89.579px', color: '#C8A86B', letterSpacing: '-0.01em', whiteSpace: 'nowrap' }}>
-            Ready to
-          </div>
+          {/* Editorial headline — Inter × Instrument Serif at one size, dense
+              flow, with the three flow stages woven in as small live fragments
+              (raw numbers → insight/dataset → slide), each ≈ the type height. */}
+          <div className="proto-head">
+            <span className="proto-word">From a</span>
+            <span className="proto-serif">messy</span>
+            <span className="proto-word">export</span>
 
-          {/* "connect?" */}
-          <div style={{ position: 'absolute', left: 402, top: 183.5, transform: 'translateY(-50%)', fontFamily: "'Inter',sans-serif", fontWeight: 500, fontSize: 112, lineHeight: '134.368px', color: '#C8A86B', letterSpacing: '-0.01em', whiteSpace: 'nowrap' }}>
-            connect?
-          </div>
+            <div className="proto-frag proto-frag--box" style={{ width: 136, height: 124 }}>
+              <div className="proto-frag-inner" style={{ width: 400, height: 364, left: 0, top: 0, transform: 'scale(0.34)' }}>
+                <PrototypeShowcase inView={protoInView} variant="raw" transparentBg />
+              </div>
+            </div>
 
-          {/* "Watch" */}
-          <div style={{ position: 'absolute', left: 113, top: 276, transform: 'translateY(-50%)', fontFamily: "'Inter',sans-serif", fontWeight: 500, fontSize: 80, lineHeight: '89.579px', color: '#C8A86B', letterSpacing: '-0.01em', whiteSpace: 'nowrap' }}>
-            Watch
-          </div>
+            <span className="proto-word">into</span>
+            <span className="proto-serif">connected</span>
+            <span className="proto-word">insights</span>
 
-          {/* "Get" */}
-          <div style={{ position: 'absolute', left: 171, top: 372.5, transform: 'translateY(-50%)', fontFamily: "'Inter',sans-serif", fontWeight: 500, fontSize: 112, lineHeight: '134.368px', color: '#C8A86B', letterSpacing: '-0.01em', whiteSpace: 'nowrap' }}>
-            Get
-          </div>
+            <div className="proto-frag" style={{ width: 176, height: 161 }}>
+              <div className="proto-frag-inner" style={{ width: 400, height: 364, left: 0, top: 0, transform: 'scale(0.44)' }}>
+                <PrototypeShowcase inView={protoInView} variant="insight" transparentBg />
+              </div>
+            </div>
 
-          {/* "in under" */}
-          <div style={{ position: 'absolute', left: 841, top: 462, transform: 'translateY(-50%)', fontFamily: "'Inter',sans-serif", fontWeight: 500, fontSize: 80, lineHeight: '89.579px', color: '#C8A86B', letterSpacing: '-0.01em', whiteSpace: 'nowrap' }}>
-            in under
-          </div>
+            <span className="proto-word">that become a</span>
+            <span className="proto-serif">finished</span>
+            <span className="proto-word">slide</span>
 
-          {/* "12" */}
-          <div style={{ position: 'absolute', left: 800, top: 568.5, transform: 'translateY(-50%)', fontFamily: "'Inter',sans-serif", fontWeight: 500, fontSize: 112, lineHeight: '134.368px', color: '#C8A86B', letterSpacing: '-0.01em', whiteSpace: 'nowrap' }}>
-            12
-          </div>
+            <div className="proto-frag" style={{ width: 185, height: 168 }}>
+              <div className="proto-frag-inner" style={{ width: 400, height: 364, left: 0, top: 0, transform: 'scale(0.46)' }}>
+                <PrototypeShowcase inView={protoInView} variant="slide" transparentBg />
+              </div>
+            </div>
 
-          {/* "minutes" */}
-          <div style={{ position: 'absolute', left: 597, top: 663.5, transform: 'translateY(-50%)', fontFamily: "'Inter',sans-serif", fontWeight: 500, fontSize: 112, lineHeight: '134.368px', color: '#C8A86B', letterSpacing: '-0.01em', whiteSpace: 'nowrap' }}>
-            minutes
-          </div>
-
-          {/* Open prototype button — bottom-left */}
-          <a
-            href="https://axon-app.ru/"
-            target="_blank"
-            rel="noopener"
-            className="proto-cta"
-            style={{ position: 'absolute', left: 170, bottom: 158, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', color: '#C8A86B', border: '1px solid #C8A86B', borderRadius: 4, padding: '13px 40px', fontFamily: "'Inter',sans-serif", fontSize: 14, lineHeight: '20px', fontWeight: 600, textDecoration: 'none', whiteSpace: 'nowrap', boxSizing: 'border-box' }}
-          >
-            Open prototype
-          </a>
-
-          {/* Live Prototype preview — Axon flow showcase (Raw data → Insights → Datasets → Slides) */}
-          <div style={{ position: 'absolute', left: '50%', top: 'calc(50% + 44px)', transform: 'translate(-50%, -50%)', width: 400, height: 364, overflow: 'hidden', borderRadius: 10, border: '5px solid #C8A86B', boxShadow: '0 24px 64px rgba(0,0,0,0.30)' }}>
-            <PrototypeShowcase inView={protoInView} />
+            <span className="proto-word">in under</span>
+            <span className="proto-word proto-12">12</span>
+            <span style={{ display: 'inline-flex', alignItems: 'flex-end', gap: 18, flex: '0 0 auto' }}>
+              <span className="proto-serif" style={{ lineHeight: 1 }}>minutes</span>
+              <a
+                href="https://axon-app.ru/"
+                target="_blank"
+                rel="noopener"
+                className="proto-cta"
+                style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', marginBottom: 'clamp(8px, 1.2vw, 19px)', background: '#C8A86B', color: '#1A2742', border: '1px solid #C8A86B', borderRadius: 4, padding: 'clamp(8px, 0.85vw, 13px) clamp(20px, 2.6vw, 40px)', fontFamily: 'var(--font-inter-sans), sans-serif', fontSize: 'clamp(11px, 0.95vw, 14px)', lineHeight: 1, fontWeight: 600, textDecoration: 'none', whiteSpace: 'nowrap', boxSizing: 'border-box' }}
+              >
+                Open prototype
+              </a>
+            </span>
           </div>
 
         </div>

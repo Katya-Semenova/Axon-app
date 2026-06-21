@@ -15,13 +15,27 @@ const CENTER = { x: W / 2, y: H / 2 };
    transitions were softened. Per-phase holds: raw is shortest (it resolves
    into the vortex), the "insight emerges → connects" beat is brief. ── */
 const CROSSFADE = 0.32; // short, snappy transitions between states
-const PHASE_HOLD = [0.8, 0.75, 0.85, 0.9]; // raw · insight · connect · slide — near-uniform so the loop runs at one continuous speed
-const PHASES = 4;
+const PHASE_HOLD = [1.1, 0.85, 0.55, 0.9]; // raw · insight · connect · slide — raw beats slowed a touch so the numbers/vortex read calmer
+
+/* Each tile loops only the beats of its own stage, so the three teaser tiles
+   read as "raw → insight/dataset → slide" side by side instead of one square
+   cycling through everything. `full` keeps the original all-in-one loop. */
+type ShowcaseVariant = "full" | "raw" | "insight" | "slide";
+const SEQUENCES: Record<ShowcaseVariant, number[]> = {
+  full: [0, 1, 2, 3],
+  raw: [0, 1], // numbers float, then gather into the vortex, and back
+  insight: [2], // insight + dataset stay linked on screen (nodes always drawn)
+  slide: [3], // the finished slide stays on screen
+};
 
 /* ── Easing — one Apple-ish vocabulary across the whole showcase ── */
 const EASE_OUT: [number, number, number, number] = [0.16, 1, 0.3, 1];   // expo-out — elegant settle
 const EASE_INOUT: [number, number, number, number] = [0.4, 0, 0.2, 1];  // soft crossfade
 const EASE_INTAKE: [number, number, number, number] = [0.6, 0, 0.9, 0.15]; // vortex "suck-in" — accelerates inward
+
+/* Light recolour of the raw tokens for when the field sits on the dark navy
+   section (the default COLORS are navy-on-cream and vanish on navy). */
+const COLORS_DARK = ['rgba(244,240,232,0.92)','rgba(244,240,232,0.62)','rgba(170,180,198,0.9)','rgba(170,180,198,0.6)','rgba(200,168,107,0.98)','rgba(200,168,107,0.78)'];
 
 const MONO = "'JetBrains Mono', monospace";
 const noop = () => {};
@@ -78,21 +92,22 @@ const RAW_LAYOUT = [
   { i: 17, x: 56,  y: 311, s: 17, c: 5, r: 6, d: 6.1 }, // mrr
 ];
 
-function RawLayer({ phase }: { phase: number }) {
+function RawLayer({ phase, onDark = false }: { phase: number; onDark?: boolean }) {
   const active = phase === 0;
+  const palette = onDark ? COLORS_DARK : COLORS;
   return (
     <motion.div
       initial={false}
       /* On exit the whole field spins inward + collapses to a point — the
          vortex (raw data → AI working → converges to the seed of the insights). */
       animate={active ? { opacity: 1, scale: 1, rotate: 0 } : { opacity: 0, scale: 0.05, rotate: 150 }}
-      transition={{ duration: active ? CROSSFADE : 0.45, ease: active ? EASE_OUT : EASE_INTAKE }}
+      transition={{ duration: active ? CROSSFADE : 0.6, ease: active ? EASE_OUT : EASE_INTAKE }}
       style={{ position: "absolute", inset: 0, transformOrigin: "50% 50%" }}
     >
       {RAW_LAYOUT.map((d, k) => (
         <motion.span
           key={k}
-          style={{ position: "absolute", left: d.x, top: d.y, fontFamily: MONO, fontSize: d.s, color: COLORS[d.c], whiteSpace: "nowrap", willChange: "transform, opacity" }}
+          style={{ position: "absolute", left: d.x, top: d.y, fontFamily: MONO, fontSize: d.s, color: palette[d.c], whiteSpace: "nowrap", willChange: "transform, opacity" }}
           initial={false}
           /* Dampened "breathing": gentle drift only, no scale pulsing. */
           animate={active
@@ -118,7 +133,7 @@ function RawLayer({ phase }: { phase: number }) {
 function DatasetReplica({ width = 138 }: { width?: number }) {
   const rows = SHOWCASE_DATASET.rows.slice(0, 4);
   return (
-    <div style={{ width, background: SURFACE_RAISE, border: `1px solid ${BORDER}`, borderRadius: 10, overflow: "hidden", fontFamily: "Inter, sans-serif", boxShadow: "0 10px 26px rgba(27,40,64,0.10)" }}>
+    <div style={{ width, background: SURFACE_RAISE, border: `1px solid ${BORDER}`, borderRadius: 4, overflow: "hidden", fontFamily: "Inter, sans-serif", boxShadow: "0 10px 26px rgba(27,40,64,0.10)" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 5, padding: "5px 7px", borderBottom: `1px solid ${BORDER}`, background: SURFACE }}>
         <span style={{ fontFamily: MONO, fontSize: 7, letterSpacing: "0.1em", color: T3, textTransform: "uppercase" }}>Data set</span>
         <span style={{ fontSize: 8.5, fontWeight: 500, color: NAVY, overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis" }}>{SHOWCASE_DATASET.title}</span>
@@ -149,9 +164,9 @@ function DatasetReplica({ width = 138 }: { width?: number }) {
    while connected, so they stay attached as the constellation floats. */
 const CARD_SCALE = 0.78;
 const POS = {
-  a:  { left: 62,  top: 85,  w: 150 }, // insight A (text)
-  b:  { left: 62,  top: 205, w: 150 }, // insight B (data)
-  ds: { left: 229, top: 133, w: 138 }, // dataset (between, to the right) — constellation centered in the card
+  a:  { left: 24,  top: 64,  w: 150 }, // insight A (text) — small, left column
+  b:  { left: 24,  top: 196, w: 150 }, // insight B (data) — small, left column
+  ds: { left: 166, top: 92,  w: 138 }, // dataset — large, right; positioned so it fits the frame when scaled up
 };
 /* Offset that places each node's origin at the vortex point on entry. */
 const bornAt = (p: { left: number; top: number }) => ({ x: CENTER.x - p.left, y: CENTER.y - p.top });
@@ -172,11 +187,16 @@ function FlowLayer({ phase }: { phase: number }) {
       const wrap = wrapRef.current;
       if (!wrap) return;
       const wb = wrap.getBoundingClientRect();
+      /* The whole showcase may be CSS-scaled down (small inline tiles), so
+         getBoundingClientRect returns physical px while the SVG draws in the
+         unscaled 400×364 logical space. Divide by the live scale so edges land
+         on the real ports at any tile size. */
+      const sc = wrap.offsetWidth ? wb.width / wrap.offsetWidth : 1;
       const portCenter = (host: HTMLElement | null, sel: string) => {
         const p = host?.querySelector(sel) as HTMLElement | null;
         if (!p) return null;
         const r = p.getBoundingClientRect();
-        return { x: r.left + r.width / 2 - wb.left, y: r.top + r.height / 2 - wb.top };
+        return { x: (r.left + r.width / 2 - wb.left) / sc, y: (r.top + r.height / 2 - wb.top) / sc };
       };
       const aOut = portCenter(aRef.current, '[data-port="output"]');
       const bOut = portCenter(bRef.current, '[data-port="output"]');
@@ -196,12 +216,12 @@ function FlowLayer({ phase }: { phase: number }) {
   }, [phase, connect]);
 
   /* Shared entrance: bloom from the vortex point (center) out to rest. */
-  const enter = (p: { left: number; top: number }) => {
+  const enter = (p: { left: number; top: number }, scale: number = CARD_SCALE) => {
     const o = bornAt(p);
     return {
       initial: false as const,
       animate: visible
-        ? { opacity: 1, scale: CARD_SCALE, x: 0, y: 0, filter: "blur(0px)" }
+        ? { opacity: 1, scale, x: 0, y: 0, filter: "blur(0px)" }
         : { opacity: 0, scale: 0.18, x: o.x, y: o.y, filter: "blur(10px)" },
     };
   };
@@ -220,7 +240,7 @@ function FlowLayer({ phase }: { phase: number }) {
             <motion.path
               key={i}
               d={e.d}
-              fill="none" stroke={GOLD} strokeWidth={1.6} strokeLinecap="round"
+              fill="none" stroke={GOLD} strokeWidth={3.4} strokeLinecap="round"
               style={{ filter: "drop-shadow(0 0 2px rgba(200,168,107,0.45))" }}
               initial={false}
               animate={connect ? { pathLength: 1, opacity: 0.8 } : { pathLength: 0, opacity: 0 }}
@@ -231,7 +251,7 @@ function FlowLayer({ phase }: { phase: number }) {
 
         {/* insight A — text */}
         <motion.div
-          {...enter(POS.a)}
+          {...enter(POS.a, 0.62)}
           transition={{ duration: 0.45, ease: EASE_OUT, delay: visible && phase === 1 ? 0.2 : 0 }}
           style={{ position: "absolute", left: POS.a.left, top: POS.a.top, width: POS.a.w, transformOrigin: "top left" }}
         >
@@ -244,7 +264,7 @@ function FlowLayer({ phase }: { phase: number }) {
 
         {/* insight B — data */}
         <motion.div
-          {...enter(POS.b)}
+          {...enter(POS.b, 0.62)}
           transition={{ duration: 0.45, ease: EASE_OUT, delay: visible && phase === 1 ? 0.3 : 0 }}
           style={{ position: "absolute", left: POS.b.left, top: POS.b.top, width: POS.b.w, transformOrigin: "top left" }}
         >
@@ -257,7 +277,7 @@ function FlowLayer({ phase }: { phase: number }) {
 
         {/* dataset — blooms last, holds the input port for the edges */}
         <motion.div
-          {...enter(POS.ds)}
+          {...enter(POS.ds, 1.4)}
           transition={{ duration: 0.45, ease: EASE_OUT, delay: visible && phase === 1 ? 0.4 : 0 }}
           style={{ position: "absolute", left: POS.ds.left, top: POS.ds.top, width: POS.ds.w, transformOrigin: "top left" }}
         >
@@ -291,7 +311,7 @@ function SlideLayer({ phase }: { phase: number }) {
           animate={active ? { scale: 1, y: 0, filter: "blur(0px)" } : { scale: 0.92, y: 8, filter: "blur(10px)" }}
           transition={{ duration: 0.45, ease: EASE_OUT }}
           style={{
-            width: SLIDE_W, height: SLIDE_H, background: SURFACE_RAISE, border: `1px solid ${BORDER}`, borderRadius: 12,
+            width: SLIDE_W, height: SLIDE_H, background: SURFACE_RAISE, border: `1px solid ${BORDER}`, borderRadius: 3,
             boxShadow: "0 16px 40px rgba(27,40,64,0.13)", padding: "12px 16px", overflow: "hidden",
             display: "flex", flexDirection: "column", fontFamily: "Inter, sans-serif",
           }}
@@ -334,22 +354,36 @@ function SlideLayer({ phase }: { phase: number }) {
 }
 
 /* ════════════════ Orchestrator ════════════════ */
-export function PrototypeShowcase({ inView }: { inView: boolean }) {
-  const [phase, setPhase] = useState(0);
+export function PrototypeShowcase({ inView, variant = "full", transparentBg = false }: { inView: boolean; variant?: ShowcaseVariant; transparentBg?: boolean }) {
+  const seq = SEQUENCES[variant];
+  const [idx, setIdx] = useState(0);
+  const phase = seq[idx];
+
+  /* Always replay this tile's story from its first beat when the section scrolls
+     into view — so the viewer never lands mid-cycle. */
+  useEffect(() => {
+    if (inView) setIdx(0);
+  }, [inView]);
 
   /* Chained timeline so each beat can hold for a different length. The parent
      starts/pauses this by toggling `inView` (at 30% of the section). */
   useEffect(() => {
     if (!inView) return;
-    const id = setTimeout(() => setPhase((p) => (p + 1) % PHASES), (PHASE_HOLD[phase] + CROSSFADE) * 1000);
+    const id = setTimeout(() => setIdx((i) => (i + 1) % seq.length), (PHASE_HOLD[phase] + CROSSFADE) * 1000);
     return () => clearTimeout(id);
-  }, [inView, phase]);
+  }, [inView, idx, phase, seq.length]);
+
+  const showRaw = variant === "full" || variant === "raw";
+  const showFlow = variant === "full" || variant === "insight";
+  const showSlide = variant === "full" || variant === "slide";
 
   return (
-    <div style={{ position: "absolute", inset: 0, background: CANVAS_BG, overflow: "hidden", transform: "scale(1.1)", transformOrigin: "center" }}>
-      <RawLayer phase={phase} />
-      <FlowLayer phase={phase} />
-      <SlideLayer phase={phase} />
+    <div style={transparentBg
+      ? { position: "absolute", inset: 0, background: "transparent", overflow: "hidden", transform: "scale(1.1)", transformOrigin: "center" }
+      : { position: "absolute", inset: 0, backgroundColor: CANVAS_BG, backgroundImage: "radial-gradient(circle, rgba(27,40,64,0.12) 1px, transparent 1.4px)", backgroundSize: "26px 26px", overflow: "hidden", transform: "scale(1.1)", transformOrigin: "center" }}>
+      {showRaw && <RawLayer phase={phase} onDark={transparentBg} />}
+      {showFlow && <FlowLayer phase={phase} />}
+      {showSlide && <SlideLayer phase={phase} />}
     </div>
   );
 }
