@@ -76,12 +76,25 @@ Donut-легенда, B1/B2 авто-пан) + фикс деплоя ИИ-env (`
   `favicon.ico` (16/32/48) + `apple-icon.png` (180). Next App Router подхватывает из `app/`. Исходные
   SVG бренда (знак/логотип/полный) — в `apps/landing/public/brand/`. Генерил sharp-скриптом.
 - ✅ **OG/Twitter превью 1200×630:** `app/opengraph-image.png` + `twitter-image.png` (+ `.alt.txt`) —
-  navy + cream-логотип + крючок «From data to story. Without translation.» + домен. File-convention,
-  без правки `layout.tsx`.
+  navy + логотип со **split-знаком** (золотая вертикальная X + cream диагональная) + золотая X в AXON +
+  крючок (1-е предложение cream, 2-е золотом) + домен. **Бренд-шрифты** (Instrument Serif italic +
+  JetBrains Mono), рендер через resvg по файлам шрифтов. File-convention, без правки `layout.tsx`.
+  Favicon при этом НЕ трогали (остаётся сплошной navy на cream). Источник split-знака — `public/brand/logogramma_split.svg`.
 - ⬜ **Текстовые мета (title 50–60 / description 140–160 / og:title / metadataBase) — ОТЛОЖЕНО:**
-  живут в `layout.tsx`, который СЕЙЧАС правит соседний чат (добавил шрифт Anton). Допишу, когда сосед
-  закоммитит `layout.tsx` (иначе коллизия в одном файле). Базовые title/desc там уже есть — превью рабочее.
+  живут в `layout.tsx`, который правит соседний чат (меняет шрифт Anton→`@axon/ui`). Допишу, когда сосед
+  закоммитит `layout.tsx` (иначе коллизия). Базовые title/desc там уже есть — превью рабочее.
 - ⬜ Проверка превью через opengraph.xyz + Telegram — после правки текстовых мета.
+
+**Шаг 3 (Индексация + GEO) — В РАБОТЕ 2026-06-21. Выбран ПОЛНЫЙ GEO.**
+- ✅ `apps/landing/public/robots.txt` — публичное открыто, закрыты `/app /admin /api /settings /dashboard`,
+  AI-боты не блокированы (GEO), ссылка на sitemap.
+- ✅ `apps/landing/app/sitemap.ts` — только публичные URL (сейчас `/`; юр-страницы — в Задании 3.2).
+- ✅ `apps/landing/public/llms.txt` — GEO-карта продукта для нейросетей (EN).
+- ✅ noindex на сервисе — `robots:{index:false}` в `apps/app/app/layout.tsx` (весь сервис + `/p/[token]`).
+- ⬜ **schema.org JSON-LD (Organization/SoftwareApplication/FAQPage) — ОТЛОЖЕНО** вместе с текстовыми мета:
+  ставится в `layout.tsx`/`page.tsx` лендинга (у соседа). Добавлю при слиянии.
+- ⬜ **Google Search Console** — ручной внешний шаг пользователя: зарегистрировать сайт + отправить sitemap
+  (после деплоя лендинга). Опц. Yandex Webmaster.
 **Запуск dev:** `cd development && npm run dev -w axon-landing -- -p 3002` (сервис — `-w apps/app -- -p 3001`).
 
 **Урок 4 (бэкенд) — завершён.** Сделано: база данных + Prisma, вход в аккаунт (Better Auth:
