@@ -19,6 +19,10 @@
 
 ## Хостинг и деплой
 - **Сервер:** VPS Selectel, домен **axon-app.ru** (HTTPS через Certbot). ADR-002.
+- **URL-топология (Урок 6, Задание 1.1 — ADR-010):** один домен `axon-app.ru`, один origin.
+  nginx: `/` → лендинг (`apps/landing`), `/app` + внутренние маршруты сервиса (`/login`,
+  `/signup`, `/settings`, `/admin`, `/api`) → сервис (`apps/app`). Поддомен `app.` НЕ заводим
+  (отложен до роста). PWA `start_url: "/app"`. Cookie входа и языка общие (один origin).
 - **Упаковка:** Docker + `docker-compose` (приложение + PostgreSQL), nginx — обратный прокси.
 - **Next.js** сборка `output: "standalone"` (для Docker).
 - **Деплой (до переезда):** `./scripts/deploy-remote.sh` (rsync на сервер, **исключает `.env*`**) →
