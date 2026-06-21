@@ -95,6 +95,10 @@ Donut-легенда, B1/B2 авто-пан) + фикс деплоя ИИ-env (`
   ставится в `layout.tsx`/`page.tsx` лендинга (у соседа). Добавлю при слиянии.
 - ⬜ **Google Search Console** — ручной внешний шаг пользователя: зарегистрировать сайт + отправить sitemap
   (после деплоя лендинга). Опц. Yandex Webmaster.
+- ✅ **Задание 3.2 — юр-страницы:** `/privacy` `/terms` `/cookies` (`apps/landing/app/*/page.tsx`) +
+  каркас `app/_legal/LegalShell.tsx`, на бренд-токенах. Оператор обезличенно («владелец axon-app.ru»),
+  контакт `hello@axon-app.ru`, язык русский (152-ФЗ). Добавлены в sitemap. **Отложено у соседа:** ссылки
+  футера (сейчас `href="#"`), cookie-баннер, чекбокс согласия в форме регистрации (apps/app).
 **Запуск dev:** `cd development && npm run dev -w axon-landing -- -p 3002` (сервис — `-w apps/app -- -p 3001`).
 
 **Урок 4 (бэкенд) — завершён.** Сделано: база данных + Prisma, вход в аккаунт (Better Auth:
