@@ -99,6 +99,11 @@ Donut-легенда, B1/B2 авто-пан) + фикс деплоя ИИ-env (`
   каркас `app/_legal/LegalShell.tsx`, на бренд-токенах. Оператор обезличенно («владелец axon-app.ru»),
   контакт `hello@axon-app.ru`, язык русский (152-ФЗ). Добавлены в sitemap. **Отложено у соседа:** ссылки
   футера (сейчас `href="#"`), cookie-баннер, чекбокс согласия в форме регистрации (apps/app).
+- 🟡 **Задание 3.1 — аналитика: выбрана Яндекс.Метрика.** Счётчик создан, **ID `110037189`** (в
+  `apps/landing/.env.local` → `NEXT_PUBLIC_YM_ID`, gitignored; ID не секрет — встраивается в публичный HTML).
+  ✅ обёртка `apps/landing/lib/analytics.ts` (`trackEvent` + цели cta_click/signup_start/signup_complete).
+  **Отложено у соседа:** скрипт счётчика в `layout.tsx` (грузить ТОЛЬКО после согласия cookie-баннера),
+  сам cookie-баннер, вызовы `trackEvent` в местах событий (CTA — `page.tsx`; signup — `apps/app`).
 **Запуск dev:** `cd development && npm run dev -w axon-landing -- -p 3002` (сервис — `-w apps/app -- -p 3001`).
 
 **Урок 4 (бэкенд) — завершён.** Сделано: база данных + Prisma, вход в аккаунт (Better Auth:
