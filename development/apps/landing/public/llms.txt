@@ -1,0 +1,30 @@
+# AXON
+
+> AXON turns raw data into presentation-ready stories. Upload a file — AI extracts the insights and builds the charts, you get an editorial presentation in minutes, and you stay the author.
+
+## What it is
+
+AXON is an AI workspace for turning spreadsheets into clear, presentation-ready stories — without spending half a day on formatting. You upload an export, the AI finds the insights and assembles the charts, and you get a deck you can edit and own.
+
+## Who it's for
+
+- **Data analysts** — turn an export into a presentation you're not embarrassed to show, without burning half a day on layout.
+- **Founders & managers** — make sense of the numbers and show them to investors and teams.
+- **Consultants & agencies** — prepare client reports and decks faster.
+- **Product & marketing** — present metrics and experiment results on a regular cadence.
+
+## How it works
+
+1. Upload a file (CSV or Excel).
+2. The AI extracts insights and chooses the charts. The numbers are computed by code, not guessed by the AI.
+3. You get an editorial presentation you can refine, rearrange, and present.
+
+## Why it's trustworthy
+
+- **Your numbers are real.** The AI picks and narrates; the math is done in code.
+- **Your data stays private.** Only a schema and a small sample are sent for analysis — not the whole file.
+- **You stay the author.** AXON drafts the story; you edit it to your judgment.
+
+## Links
+
+- Website: https://axon-app.ru
