@@ -1,0 +1,13 @@
+# robots.txt — axon-app.ru
+# Публичное (лендинг) открыто для индексации; внутренние разделы сервиса закрыты.
+# AI-ассистентов (ChatGPT, Claude, Perplexity, Google AI) НЕ блокируем — GEO.
+
+User-agent: *
+Allow: /
+Disallow: /app
+Disallow: /admin
+Disallow: /api
+Disallow: /settings
+Disallow: /dashboard
+
+Sitemap: https://axon-app.ru/sitemap.xml

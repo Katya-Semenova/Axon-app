@@ -78,6 +78,20 @@
 - **Реализовано:** `next-intl` v4, локаль **через cookie** (без URL-префикса), дефолт — автоопределение по `Accept-Language`. Каркас + переключатель RU/EN, весь видимый UI переведён (15 namespace-словарей).
 - **Дизайн-нюанс — шрифты:** сериф-заголовки идут стеком per-glyph: **латиница → Instrument Serif**, **кириллица → Old Standard TT** (у Instrument нет кириллицы). Подробнее — [DESIGN.md](DESIGN.md). RU-текст длиннее EN → вёрстка «Editorial Density» должна выдерживать длинные строки.
 
+## Индексация и SEO (Урок 6, Шаг 3) — решено 2026-06-21
+Поисковики видят только публичное; внутренние разделы скрыты. GEO — выбран **полный** вариант
+(находимость в AI-поиске).
+- **`robots.txt`** (`apps/landing/public/robots.txt`): открыто публичное (лендинг), закрыты
+  `/app`, `/admin`, `/api`, `/settings`, `/dashboard`. AI-ботов **не блокируем** (GEO). Ссылка на sitemap.
+- **`sitemap.ts`** (`apps/landing/app/sitemap.ts`): только публичные URL. Сейчас — `/` (лендинг);
+  юр-страницы (`/privacy`, `/terms`, `/cookies`) добавятся при их создании (Задание 3.2).
+- **noindex** на внутренних страницах сервиса (`apps/app`: `/settings`, `/admin/*`) — `robots: { index:false }`.
+- **GEO (полный):** `llms.txt` (`apps/landing/public/llms.txt` — markdown-карта продукта для LLM) +
+  **schema.org JSON-LD** (Organization / SoftwareApplication / FAQPage). _JSON-LD — ОТЛОЖЕНА: ставится
+  в `layout.tsx`/`page.tsx` лендинга, которые держит соседний чат; добавлю при их слиянии вместе с
+  текстовыми мета Шага 2._
+- **Домен:** `https://axon-app.ru`.
+
 ## Стек (из кода)
 - **Структура: монорепо** (npm workspaces, с Урока 6 — [ADR-009](decisions/ADR-009-monorepo-split.md)).
   Весь код в `development/`: `apps/app` (сервис, Next 15) + `apps/landing` (лендинг, Next 16) +
