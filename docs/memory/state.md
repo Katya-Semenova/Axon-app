@@ -104,6 +104,24 @@ Donut-легенда, B1/B2 авто-пан) + фикс деплоя ИИ-env (`
   ✅ обёртка `apps/landing/lib/analytics.ts` (`trackEvent` + цели cta_click/signup_start/signup_complete).
   **Отложено у соседа:** скрипт счётчика в `layout.tsx` (грузить ТОЛЬКО после согласия cookie-баннера),
   сам cookie-баннер, вызовы `trackEvent` в местах событий (CTA — `page.tsx`; signup — `apps/app`).
+**СЛЕДУЮЩАЯ СЕССИЯ (после обеда 2026-06-21) — начать отсюда:**
+Соседний чат ЗАКОНЧИЛ дизайн секций и КОММИТИТ `layout.tsx`/`page.tsx`/`globals.css`/`_axon/`
+(2-ю секцию пока не доделывают — намеренно). Сначала `git status`/`git log` — убедиться, что эти
+файлы чистые (закоммичены соседом), и только потом их править.
+1. **«Пакет на соседа»** (всё ждало `layout.tsx`/`page.tsx`):
+   - текстовые мета Шага 2 — `layout.tsx` лендинга: title 50–60, description 140–160, og:title, metadataBase;
+   - **schema.org JSON-LD** (Organization / SoftwareApplication + FAQPage из FAQ) — GEO;
+   - ссылки футера `page.tsx` на `/privacy` `/terms` `/cookies` (сейчас `href="#"`);
+   - **cookie-баннер** (грузит Метрику только после «Принять»);
+   - **скрипт Яндекс.Метрики** (ID `NEXT_PUBLIC_YM_ID=110037189`, через next/script, consent-gated);
+   - вызовы `trackEvent` (обёртка уже есть: `apps/landing/lib/analytics.ts`): CTA → `page.tsx`, signup → `apps/app`;
+   - чекбокс согласия со ссылками на `/terms` `/privacy` в форме регистрации (`apps/app`).
+2. **Шаг 4 — PWA** (сервис `apps/app`: manifest + service worker + иконки + theme-color; `start_url:"/app"`).
+3. **Починка деплоя** (снять стоп-кран `exit 1`) + деплой лендинга отдельным юнитом.
+4. **Шаг 5 — финальный адаптив** (в самом конце, после слияния лендинга в main).
+5. Закрытие урока — `/save-session` (slug `lesson-06-package`).
+Внешние шаги пользователя: проверить приём `hello@axon-app.ru`; Google Search Console (после деплоя); пуш.
+
 **Запуск dev:** `cd development && npm run dev -w axon-landing -- -p 3002` (сервис — `-w apps/app -- -p 3001`).
 
 **Урок 4 (бэкенд) — завершён.** Сделано: база данных + Prisma, вход в аккаунт (Better Auth:
