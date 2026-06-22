@@ -110,7 +110,8 @@ Donut-легенда, B1/B2 авто-пан) + фикс деплоя ИИ-env (`
 (2-я секция FEATURES намеренно не доделана — это не блокер для пунктов ниже.) Перед правкой всё равно
 быстро глянь `git status` — нет ли новых незакоммиченных правок.
 1. **«Пакет на соседа»** (всё ждало `layout.tsx`/`page.tsx`):
-   - текстовые мета Шага 2 — `layout.tsx` лендинга: title 50–60, description 140–160, og:title, metadataBase;
+   - текстовые мета Шага 2 — `layout.tsx` лендинга: title 50–60, description 140–160, metadataBase,
+     **og:title = «From data to story, in minutes»** (финал, согласовано 2026-06-21);
    - **schema.org JSON-LD** (Organization / SoftwareApplication + FAQPage из FAQ) — GEO;
    - ссылки футера `page.tsx` на `/privacy` `/terms` `/cookies` (сейчас `href="#"`);
    - **cookie-баннер** (грузит Метрику только после «Принять»);
