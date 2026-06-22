@@ -72,7 +72,7 @@ body {
 /* Мобилка (≤640px): пиксель-арт «Why Axon» не помещается в узкую коробку и
    обрезается (пустые колонки). Выводим карточки и блоки из абсолютных координат
    в нормальный вертикальный поток; декоративную сетку прячем. Десктоп не затронут. */
-@media (max-width: 640px) {
+@media (max-width: 767px) {
   .why-box {
     height: auto !important;
     overflow: visible !important;
@@ -115,7 +115,7 @@ body {
   }
 }
 /* Мобилка (≤640px): прочие правки лендинга по разбору на телефоне (Урок 6, Шаг 5). */
-@media (max-width: 640px) {
+@media (max-width: 767px) {
   /* Hero — заголовок и контент видимы сразу: на десктопе их проявляет GSAP-интро,
      на мобилке она ненадёжна и заголовок пропадал. Форсируем видимость. */
   #hero .hw { opacity: 1 !important; transform: none !important; }
@@ -146,7 +146,7 @@ body {
   .feat-x3 span { font-size: 84px !important; }
 }
 /* Мобилка (≤640px): THE SHIFT и PROTOTYPE TEASER (Урок 6, Шаг 5). */
-@media (max-width: 640px) {
+@media (max-width: 767px) {
   /* THE SHIFT — отключаем scroll-jack (500vh sticky на тач ненадёжен, секции
      наезжали и не фиксировались): секция становится обычной, акты-панели
      разворачиваются в вертикальный список, мокап показывает первый экран. */
@@ -164,7 +164,7 @@ body {
 
   /* PROTOTYPE TEASER — по ЛЕВОМУ краю; меньше gap текст↔картинка (×1.5);
      кнопку «Open prototype» — отдельной строкой под «minutes», на всю ширину. */
-  .proto-head { justify-content: flex-start !important; gap: 6px 10px !important; }
+  .proto-head { justify-content: flex-start !important; gap: 0 8px !important; }
   .proto-minutes {
     flex-basis: 100% !important;
     flex-direction: column !important;
@@ -189,13 +189,14 @@ body {
   align-items: start;
 }
 @media (max-width: 640px) {
+  /* FAQ — две колонки держим до 640 (десктоп и планшет/760), в столбик — только телефон. */
   .faq-grid {
     grid-template-columns: 1fr;
     gap: 24px;
   }
 }
 /* Мобилка (≤640px): единая система отступов секций + раскладка Hero (Урок 6, Шаг 5). */
-@media (max-width: 640px) {
+@media (max-width: 767px) {
   /* Одинаковые верх/низ у всех секций (между секциями больше, чем внутри секций). */
   #problem, #shift, #modes, #prototype, #features, #faq, #cta {
     padding-top: 72px !important;
@@ -212,7 +213,7 @@ body {
   #chaosLayer { display: none !important; }
 }
 /* Мобилка (≤640px): кнопки на всю ширину блока, крупнее Hero, отступ Modes. */
-@media (max-width: 640px) {
+@media (max-width: 767px) {
   /* Кнопки на всю ширину блока (как в финальной CTA-секции) — только мобилка. */
   .hero-cta-row { flex-direction: column !important; }
   .hero-cta-row a {
@@ -242,12 +243,16 @@ body {
   .modes-head { margin-bottom: 40px !important; }
 }
 /* Мобилка (≤640px): THE SHIFT текст-онли + выравнивание Prototype. */
-@media (max-width: 640px) {
+@media (max-width: 767px) {
   /* THE SHIFT — на мобилке только текстовые шаги (мокап прячем): быстрее и чисто. */
   .shift-mock-cell { display: none !important; }
   /* Prototype — кубики по центру строки (ровнее отступ от текста к картинке). */
   .proto-frag { align-self: center !important; }
 }
+/* Hero-кнопки — hover как у нижних секций: тёмная чуть гаснет, светлая (outline) золотеет. */
+.hero-cta-row a { transition: opacity .2s ease, border-color .2s ease, color .2s ease; }
+.hero-cta-row a:first-child:hover { opacity: 0.9; }
+.hero-cta-row a:last-child:hover { border-color: #C8A86B !important; color: #C8A86B !important; }
 
 nav {
   backdrop-filter: blur(12px);
@@ -323,7 +328,7 @@ nav {
   position: absolute;
   transform-origin: top left;
 }
-@media (max-width: 640px) {
+@media (max-width: 767px) {
   .proto-head {
     gap: 8px 12px;
   }

@@ -861,8 +861,8 @@ export default function Home() {
 
             <span className="proto-word">in under</span>
             <span className="proto-word proto-12">12</span>
+            <span className="proto-serif" style={{ lineHeight: 1 }}>minutes</span>
             <span className="proto-minutes" style={{ display: 'inline-flex', alignItems: 'flex-end', gap: 18, flex: '0 0 auto' }}>
-              <span className="proto-serif" style={{ lineHeight: 1 }}>minutes</span>
               <a
                 href="https://axon-app.ru/ai-studio"
                 target="_blank"
