@@ -400,8 +400,8 @@ export default function Home() {
             </p>
           </div>
 
-          {/* ── Two boxes ── */}
-          <div style={{ display: 'grid', gridTemplateColumns: '566px 566px', gap: 20, alignItems: 'start' }}>
+          {/* ── Two boxes ── (адаптив: .why-grid стекается в столбик < 1180px, см. globals.css) */}
+          <div className="why-grid">
 
             {/* LEFT BOX — staggered bento cards */}
             {/* background matches section cream so the box feels unified */}

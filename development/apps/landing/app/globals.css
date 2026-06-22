@@ -53,6 +53,23 @@ body {
   font-weight: 400 !important;
 }
 
+/* Секция «Why Axon» — две коробки 566px (Урок 6, Шаг 5, адаптив).
+   Десктоп: две колонки. Узкий экран (< 1180px): в столбик по центру; коробки
+   ужимаются по ширине (minmax 0..566), их внутренний пиксель-арт обрезается их же
+   overflow:hidden — без горизонтального скролла страницы. */
+.why-grid {
+  display: grid;
+  grid-template-columns: 566px 566px;
+  gap: 20px;
+  align-items: start;
+}
+@media (max-width: 1180px) {
+  .why-grid {
+    grid-template-columns: minmax(0, 566px);
+    justify-content: center;
+  }
+}
+
 nav {
   backdrop-filter: blur(12px);
   background: rgba(244, 240, 232, 0.88);
