@@ -23,17 +23,28 @@
   nginx: `/` → лендинг (`apps/landing`), `/app` + внутренние маршруты сервиса (`/login`,
   `/signup`, `/settings`, `/admin`, `/api`) → сервис (`apps/app`). Поддомен `app.` НЕ заводим
   (отложен до роста). PWA `start_url: "/app"`. Cookie входа и языка общие (один origin).
-- **Упаковка:** Docker + `docker-compose` (приложение + PostgreSQL), nginx — обратный прокси.
-- **Next.js** сборка `output: "standalone"` (для Docker).
-- **Деплой (до переезда):** `./scripts/deploy-remote.sh` (rsync на сервер, **исключает `.env*`**) →
-  на сервере `deploy.sh` поднимает `docker compose up` и применяет миграции `prisma migrate deploy`.
-- ⛔ **ДЕПЛОЙ ВРЕМЕННО ОТКЛЮЧЁН (стоп-кран с 2026-06-20).** После монорепо-переезда рецепт
-  (`Dockerfile`/`docker-compose.yml`/`deploy.sh`/`scripts/deploy-remote.sh`) ещё на **старых
-  путях** — код теперь в `development/apps/app`. В начало `deploy.sh` и `deploy-remote.sh`
-  добавлен `exit 1` с сообщением, чтобы случайная публикация не сломала прод молча.
-  **Чиним и проверяем вживую в Шаге 1** (там же публикуем лендинг отдельным деплой-юнитом).
-  Что нужно при починке: build из workspace (сервис тянет `@axon/ui`), монорепо-нюанс
-  `output: standalone` (нужен `outputFileTracingRoot`), новые пути в Docker/compose/скриптах.
+- **Упаковка:** Docker + `docker-compose` (3 сервиса: `landing`, `web`, `db`), nginx — обратный прокси.
+- **Next.js** сборка `output: "standalone"` + `outputFileTracingRoot` = корень workspace `development/`
+  (иначе монорепо-standalone не дотягивает общие `node_modules`/`@axon/ui`). У обоих приложений.
+
+### Деплой (монорепо, починен 2026-06-22) — РАБОЧИЙ рецепт
+- **Два образа** (раздельные юниты), контекст сборки = `development/`:
+  - `landing` (`apps/landing/Dockerfile`, Next 16) → порт `127.0.0.1:3001`, nginx отдаёт `/`.
+  - `web` (`apps/app/Dockerfile`, Next 15) → порт `127.0.0.1:3000`, nginx отдаёт `/app`,`/login`,`/api`…
+  - `db` (postgres). `web` ждёт `db` (healthcheck). Лимиты памяти 256/448/256 (бокс 1 ГБ).
+- **`server.js` в standalone** лежит по `apps/<app>/server.js` (из-за `outputFileTracingRoot`) — это путь в CMD.
+- ⚠️ **`NEXT_PUBLIC_YM_ID` нужен НА СБОРКЕ** (NEXT_PUBLIC_* впекается в бандл, не рантайм):
+  пробрасывается как `build.args` из `.env.production`. **Обязательно вписать его в `.env.production`.**
+- **Команда деплоя (с Mac):** `./scripts/deploy-remote.sh` → rsync (исключает `node_modules/.next/.env*/docs`)
+  → на сервере `deploy.sh`: `docker compose --env-file .env.production up -d --build` + миграции
+  (`prisma migrate deploy`, схема `development/apps/app/prisma`).
+- **Перед прод-деплоем — локальная проверка сборки:** `cd development && docker compose -f ../docker-compose.yml config -q`
+  и `docker compose -f ../docker-compose.yml --env-file <env> build` (контекст уже `./development`).
+- **nginx (черновик, финал — на сервере):** `location / { proxy_pass http://127.0.0.1:3001; }` (лендинг)
+  + `location ~ ^/(app|login|register|settings|admin|api|p)(/|$) { proxy_pass http://127.0.0.1:3000; }` (сервис).
+  ⚠️ **ОТКРЫТО:** оба Next-приложения отдают ассеты под `/_next/` → коллизия при делении по пути.
+  Чистое решение — `basePath:'/app'` на сервисе ИЛИ поддомен `app.` (ADR-010 отложил детали).
+  Тонкую маршрутизацию `/app` доводим на сервере; механизм деплоя (образы/compose/скрипты) — готов.
 - **`.env` после переезда:** dev — `development/apps/app/.env` (не в git). Прод —
   `.env.production` на сервере в `/var/www/axon-app` (источник правды для секретов; при починке
   деплоя путь/расположение пересмотреть). `.env.deploy` (доступ по SSH) — в корне репо, не в git.
