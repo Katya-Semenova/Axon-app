@@ -19,10 +19,12 @@
 
 ## Хостинг и деплой
 - **Сервер:** VPS Selectel, домен **axon-app.ru** (HTTPS через Certbot). ADR-002.
-- **URL-топология (Урок 6, Задание 1.1 — ADR-010):** один домен `axon-app.ru`, один origin.
-  nginx: `/` → лендинг (`apps/landing`), `/app` + внутренние маршруты сервиса (`/login`,
-  `/signup`, `/settings`, `/admin`, `/api`) → сервис (`apps/app`). Поддомен `app.` НЕ заводим
-  (отложен до роста). PWA `start_url: "/app"`. Cookie входа и языка общие (один origin).
+- **URL-топология (Урок 6, Задание 1.1 — ADR-010; реализовано 2026-06-22):** один домен
+  `axon-app.ru`, один origin. Сервис — на подстранице **`/ai-studio`** через Next.js
+  `basePath: "/ai-studio"` (`apps/app/next.config.ts`). Слово `ai-studio` (не `app`): домен уже
+  содержит «app», `/app` читался бы «app дважды». nginx делит ПРОСТО: `/` → лендинг (`apps/landing`),
+  `/ai-studio` → сервис (`apps/app`) — вся раздача сервиса (вход/api/ассеты) ушла под этот префикс.
+  Поддомен `app.` НЕ заводим (отложен до роста). Cookie входа и языка общие (один origin).
 - **Упаковка:** Docker + `docker-compose` (3 сервиса: `landing`, `web`, `db`), nginx — обратный прокси.
 - **Next.js** сборка `output: "standalone"` + `outputFileTracingRoot` = корень workspace `development/`
   (иначе монорепо-standalone не дотягивает общие `node_modules`/`@axon/ui`). У обоих приложений.
@@ -40,11 +42,15 @@
   (`prisma migrate deploy`, схема `development/apps/app/prisma`).
 - **Перед прод-деплоем — локальная проверка сборки:** `cd development && docker compose -f ../docker-compose.yml config -q`
   и `docker compose -f ../docker-compose.yml --env-file <env> build` (контекст уже `./development`).
-- **nginx (черновик, финал — на сервере):** `location / { proxy_pass http://127.0.0.1:3001; }` (лендинг)
-  + `location ~ ^/(app|login|register|settings|admin|api|p)(/|$) { proxy_pass http://127.0.0.1:3000; }` (сервис).
-  ⚠️ **ОТКРЫТО:** оба Next-приложения отдают ассеты под `/_next/` → коллизия при делении по пути.
-  Чистое решение — `basePath:'/app'` на сервисе ИЛИ поддомен `app.` (ADR-010 отложил детали).
-  Тонкую маршрутизацию `/app` доводим на сервере; механизм деплоя (образы/compose/скрипты) — готов.
+- **nginx (черновик, финал — на сервере) — ПОСЛЕ перехода на `basePath:'/ai-studio'`:**
+  делим по ОДНОМУ префиксу, коллизии `/_next/` больше нет (ассеты сервиса ушли под `/ai-studio/_next/`):
+  ```nginx
+  location / { proxy_pass http://127.0.0.1:3001; }            # лендинг (apps/landing)
+  location /ai-studio { proxy_pass http://127.0.0.1:3000; }   # сервис (apps/app) — вход/api/ассеты
+  ```
+  (внутри `location` — стандартные `proxy_set_header Host/X-Forwarded-For/X-Forwarded-Proto`).
+  ✅ **РЕШЕНО:** раньше оба Next-приложения отдавали `/_next/` → коллизия. `basePath:'/ai-studio'`
+  увёл всю раздачу сервиса под префикс, делить по пути теперь безопасно. Это был главный блокер деплоя.
 - **`.env` после переезда:** dev — `development/apps/app/.env` (не в git). Прод —
   `.env.production` на сервере в `/var/www/axon-app` (источник правды для секретов; при починке
   деплоя путь/расположение пересмотреть). `.env.deploy` (доступ по SSH) — в корне репо, не в git.

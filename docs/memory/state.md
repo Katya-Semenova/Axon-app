@@ -160,8 +160,25 @@ unavailable` (завис и мой Bash, и терминал пользоват�
    compose на 3 юнита (landing 3001 / web 3000 / db); снят `exit 1`; путь миграций Prisma обновлён;
    `NEXT_PUBLIC_YM_ID` как build-arg. Лендинг-standalone проверен живьём (HTTP 200). Рецепт +
    nginx-черновик — в `infrastructure.md`. **Проверить здесь нельзя (нет Docker/VPS).**
-   ⚠️ **Открыто (на сервере):** маршрутизация `/_next` при делении лендинг/сервис по пути —
-   нужен `basePath:'/app'` или поддомен (ADR-010 отложил); `.env.production` ← добавить `NEXT_PUBLIC_YM_ID`.
+3а. **✅ ТОПОЛОГИЯ — РЕШЕНА 2026-06-22 (был главный блокер деплоя).** Выбран вариант (а):
+   Next.js `basePath` у сервиса. Слово приставки — **`/ai-studio`** (не `/app`: домен уже содержит
+   «app»; «ai-studio» не дублирует + выводит вперёд ИИ-помощник и образ «студии/авторства»).
+   Сервис теперь на `https://axon-app.ru/ai-studio`. nginx упрощён: `/` → лендинг, `/ai-studio` →
+   сервис (коллизия `/_next/` устранена). Затронуто (всё в одном переезде): `apps/app` —
+   `next.config.ts` (+basePath), новый `lib/base-path.ts` (`BASE_PATH` — единый источник),
+   `lib/auth-client.ts` (basePath клиента входа), `.env`/`.env.example` (`BETTER_AUTH_URL` с `/ai-studio`),
+   3 «сырых» fetch, `api/avatar` (адрес файла), `PresentExport` (ссылка «поделиться»); `apps/landing` —
+   5 CTA + JSON-LD url + robots.txt. Детали — [ADR-010](../decisions/ADR-010-app-url.md). **Проверять
+   на проде** (Docker локально нет): открыть `/ai-studio`, войти/выйти, аватар, ИИ-чат, «поделиться».
+   ⚠️ **На сервере перед деплоем:** в `.env.production` — `BETTER_AUTH_URL=https://axon-app.ru/ai-studio`
+   + `NEXT_PUBLIC_YM_ID`; в nginx — два `location` (см. infrastructure.md). Старые аватары в БД (если
+   есть) хранят путь без `/ai-studio` → не покажутся, перезалить (на свежем проде — мелочь).
+3б. **⬜ SEO-усиление ИИ — ОТЛОЖЕНО на конец Урока 6 (отдельный шаг, решение 2026-06-22).** Сейчас
+   «AI/insights» есть в description, JSON-LD-описании и СИЛЬНО в `llms.txt` (GEO ок). Но НЕТ: (1) в
+   `<title>` (синяя строка Google — самое заметное; бриф §5 намеренно дал buyer-ключи без «AI»);
+   (2) в JSON-LD нет `featureList` (можно добавить «AI insight extraction», «AI chart suggestions»);
+   (3) **в OG-обложке для Telegram/соцсетей** (`apps/landing/app/opengraph-image.png` + текст) про ИИ
+   тоже ничего. Усилить эти три места — отдельным коммитом в конце урока (вкус/стратегия за юзером).
 4. **ДЕПЛОЙ — в самом конце** (публикуем готовое). Делает пользователь руками: `./scripts/deploy-remote.sh`.
    ⚠️ **На Mac пользователя НЕ установлен Docker** (`command not found: docker`) — локальная проверка
    сборки невозможна без установки Docker Desktop; сборка всё равно идёт на сервере при деплое (если
