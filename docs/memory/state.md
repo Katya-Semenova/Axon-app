@@ -106,7 +106,9 @@ Donut-легенда, B1/B2 авто-пан) + фикс деплоя ИИ-env (`
   ✅ обёртка `apps/landing/lib/analytics.ts` (`trackEvent` + цели cta_click/signup_start/signup_complete).
   ✅ **CTA-трекинг (2026-06-22):** все 5 кнопок «Try Axon» в `page.tsx` → `cta_click` (onClick) +
   ссылки переведены на `/app` (ADR-010; был петлевой `axon-app.ru/`). «Book a demo» → `mailto:hello@`.
-  **Отложено:** скрипт счётчика + cookie-баннер (грузить Метрику ТОЛЬКО после согласия); signup-цели в `apps/app`.
+  ✅ **Cookie-баннер + Метрика (2026-06-22):** `app/_components/CookieConsent.tsx` (бренд-классы) в
+  `layout.tsx` — баннer Accept/Decline (решение в localStorage); счётчик YM грузится через `next/script`
+  ТОЛЬКО после «Accept» (webvisor выкл.). **Отложено:** signup-цели + согласие в `apps/app`.
 **СЛЕДУЮЩАЯ СЕССИЯ (после обеда 2026-06-21) — начать отсюда:**
 Соседний чат ЗАКОНЧИЛ и ЗАКОММИТИЛ дизайн секций — коммит `899aa16` (`page.tsx`, `globals.css`,
 `_axon/PrototypeShowcase.tsx`). Общие файлы ЧИСТЫЕ → **«пакет на соседа» РАЗБЛОКИРОВАН, ничего не ждёт.**
