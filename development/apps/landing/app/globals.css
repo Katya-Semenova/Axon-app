@@ -177,6 +177,25 @@ body {
     font-size: 17px !important;
   }
 }
+/* FAQ — двухколоночная раскладка: заголовок слева, вопросы справа (редакторский FAQ).
+   Держим две колонки на десктопе и на ~760px; в столбик — только на телефонах (≤640px),
+   где исходный одноколоночный вид и так был нормальным. */
+.faq-grid {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 56px;
+  align-items: start;
+}
+@media (max-width: 640px) {
+  .faq-grid {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+  .faq-head h2 {
+    font-size: 40px !important;
+    line-height: 1.1 !important;
+  }
+}
 
 nav {
   backdrop-filter: blur(12px);

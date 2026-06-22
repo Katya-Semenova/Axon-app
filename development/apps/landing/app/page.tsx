@@ -946,13 +946,15 @@ export default function Home() {
 
 {/* ═══ FAQ ═══ */}
       <section id="faq" style={{ background: '#F4F0E8', borderTop: '1px solid rgba(26,39,66,0.1)', padding: '96px 24px' }}>
-        <div style={{ maxWidth: 768, margin: '0 auto' }}>
-          <span style={{ fontFamily: "'Inter',sans-serif", fontSize: 12, fontWeight: 600, letterSpacing: '1.2px', textTransform: 'uppercase', color: '#C8A86B', display: 'block', marginBottom: 16 }}>
-            FAQ
-          </span>
-          <h2 style={{ fontFamily: "'Instrument Serif',serif", fontSize: 56, fontWeight: 400, lineHeight: '60px', color: '#1A2742', margin: '0 0 40px' }}>
-            Questions, answered.
-          </h2>
+        <div className="faq-grid" style={{ maxWidth: 1080, margin: '0 auto' }}>
+          <div className="faq-head">
+            <span style={{ fontFamily: "'Inter',sans-serif", fontSize: 12, fontWeight: 600, letterSpacing: '1.2px', textTransform: 'uppercase', color: '#C8A86B', display: 'block', marginBottom: 16 }}>
+              FAQ
+            </span>
+            <h2 style={{ fontFamily: "'Instrument Serif',serif", fontSize: 56, fontWeight: 400, lineHeight: '60px', color: '#1A2742', margin: 0 }}>
+              Questions, answered.
+            </h2>
+          </div>
           <div>
             {FAQS.map(({ q, a }) => (
               <details key={q} style={{ borderTop: '1px solid rgba(26,39,66,0.12)', padding: '20px 0' }}>
