@@ -1,0 +1,15 @@
+# Что НЕ тянуть в контекст сборки Docker (контекст = эта папка development/).
+# Важно: node_modules исключён — иначе в коробку утянется локальный (не той
+# платформы) и сломает prisma-движок. Зависимости ставятся внутри образа.
+node_modules
+**/node_modules
+.next
+**/.next
+.git
+.env
+.env.*
+**/.env
+**/.env.*
+npm-debug.log*
+*.log
+.DS_Store
