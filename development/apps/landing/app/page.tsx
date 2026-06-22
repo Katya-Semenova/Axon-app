@@ -569,7 +569,7 @@ export default function Home() {
               <div className="grid md:grid-cols-2 gap-10 w-full items-center">
 
                 {/* LEFT: browser mockup */}
-                <div>
+                <div className="shift-mock-cell">
                   <div style={{ overflow: 'hidden', borderRadius: 4, border: '1px solid rgba(26,39,66,0.12)', background: 'rgba(255,255,255,0.4)', boxShadow: '0 2px 20px rgba(26,39,66,0.06)', height: 340 }}>
                     {/* Browser chrome */}
                     <div style={{ background: 'rgba(26,39,66,0.05)', borderBottom: '1px solid rgba(26,39,66,0.08)', padding: '8px 16px', display: 'flex', gap: 6, alignItems: 'center' }}>
@@ -849,7 +849,7 @@ export default function Home() {
               </div>
             </div>
 
-            <span className="proto-word">that become a</span>
+            <span className="proto-word">that become</span>
             <span className="proto-serif">finished</span>
             <span className="proto-word">slide</span>
 

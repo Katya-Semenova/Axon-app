@@ -219,19 +219,34 @@ body {
     width: 100% !important;
     box-sizing: border-box;
     justify-content: center !important;
+    padding: 16px 24px !important;   /* высота как у финальной CTA (py-4) */
+    font-size: 14px !important;      /* размер шрифта как у CTA (text-sm) */
+    font-weight: 500 !important;     /* вес как у CTA (font-medium) */
   }
   .feat-cta {
     width: 100% !important;
     align-self: stretch !important;
     box-sizing: border-box;
   }
-  /* Hero — заголовок под систему 56px (как заголовки секций) + ровный интервал. */
+  /* Hero — заголовок как эталон Why Axon: 56px, navy + золото, РОВНЫЙ интервал
+     везде (1.08). Убираем flex row-gap и margin между строками, чтобы интервал
+     внутри navy не был больше, чем navy→золото. */
+  #heroHeadline { line-height: 1.08 !important; }
   #headlineLine1, #headlineLine2 {
     font-size: 56px !important;
-    line-height: 1.05 !important;
+    line-height: 1.08 !important;
+    row-gap: 0 !important;
+    margin-bottom: 0 !important;
   }
   /* Modes — отступ заголовок → картинка под эталон Why Axon (был слишком большой). */
   .modes-head { margin-bottom: 40px !important; }
+}
+/* Мобилка (≤640px): THE SHIFT текст-онли + выравнивание Prototype. */
+@media (max-width: 640px) {
+  /* THE SHIFT — на мобилке только текстовые шаги (мокап прячем): быстрее и чисто. */
+  .shift-mock-cell { display: none !important; }
+  /* Prototype — кубики по центру строки (ровнее отступ от текста к картинке). */
+  .proto-frag { align-self: center !important; }
 }
 
 nav {
