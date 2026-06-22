@@ -557,7 +557,7 @@ export default function Home() {
               {/* Heading — pinned with the demo so it stays beside the picture */}
               <div id="shiftHeader">
                 <span style={{ fontFamily: "'Inter',sans-serif", fontSize: 12, fontWeight: 600, letterSpacing: '1.2px', textTransform: 'uppercase', color: '#C8A86B', display: 'block', marginBottom: 16 }}>The Shift</span>
-                <h2 style={{ margin: 0 }}>
+                <h2 className="big-serif-h2" style={{ margin: 0 }}>
                   <span style={{ display: 'block', fontFamily: "'Instrument Serif',serif", fontSize: 72, fontWeight: 400, lineHeight: '60px', color: '#1A2742' }}>Three files in.</span>
                   <span style={{ display: 'block', fontFamily: "'Instrument Serif',serif", fontSize: 72, fontWeight: 400, fontStyle: 'italic', lineHeight: '86px', color: '#C8A86B' }}>A board-ready deck out.</span>
                 </h2>
@@ -704,7 +704,7 @@ export default function Home() {
                 </div>
 
                 {/* RIGHT: act text panels */}
-                <div style={{ position: 'relative', height: 220 }}>
+                <div className="shift-panels" style={{ position: 'relative', height: 220 }}>
                   {[
                     { num: '01', title: 'Drop your data.', desc: 'Any CSV, SQL dump, or analytics export. Axon parses it.' },
                     { num: '02', title: 'The AI agent thinks.', desc: 'It reads tables, finds patterns, surfaces what matters.' },
@@ -858,7 +858,7 @@ export default function Home() {
 
             <span className="proto-word">in under</span>
             <span className="proto-word proto-12">12</span>
-            <span style={{ display: 'inline-flex', alignItems: 'flex-end', gap: 18, flex: '0 0 auto' }}>
+            <span className="proto-minutes" style={{ display: 'inline-flex', alignItems: 'flex-end', gap: 18, flex: '0 0 auto' }}>
               <span className="proto-serif" style={{ lineHeight: 1 }}>minutes</span>
               <a
                 href="https://axon-app.ru/ai-studio"

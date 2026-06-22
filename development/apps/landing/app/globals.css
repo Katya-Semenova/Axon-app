@@ -145,6 +145,38 @@ body {
   }
   .feat-x3 span { font-size: 84px !important; }
 }
+/* Мобилка (≤640px): THE SHIFT и PROTOTYPE TEASER (Урок 6, Шаг 5). */
+@media (max-width: 640px) {
+  /* THE SHIFT — отключаем scroll-jack (500vh sticky на тач ненадёжен, секции
+     наезжали и не фиксировались): секция становится обычной, акты-панели
+     разворачиваются в вертикальный список, мокап показывает первый экран. */
+  #shiftTrack { height: auto !important; }
+  #shiftSticky { position: static !important; height: auto !important; }
+  #shift .mock-screen { opacity: 0 !important; }
+  #shift .mock-screen[data-screen="0"] { opacity: 1 !important; }
+  .shift-panels { height: auto !important; }
+  .act-panel {
+    position: static !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    margin-bottom: 22px;
+  }
+
+  /* PROTOTYPE TEASER — центрируем композицию; кнопку «Open prototype» уводим
+     на отдельную строку под «minutes» и делаем крупной. */
+  .proto-head { justify-content: center !important; }
+  .proto-minutes {
+    flex-basis: 100% !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 16px !important;
+  }
+  .proto-cta {
+    margin-bottom: 0 !important;
+    padding: 16px 36px !important;
+    font-size: 17px !important;
+  }
+}
 
 nav {
   backdrop-filter: blur(12px);
