@@ -954,8 +954,9 @@ export default function Home() {
             <span style={{ fontFamily: "'Inter',sans-serif", fontSize: 12, fontWeight: 600, letterSpacing: '1.2px', textTransform: 'uppercase', color: '#C8A86B', display: 'block', marginBottom: 16 }}>
               FAQ
             </span>
-            <h2 style={{ fontFamily: "'Instrument Serif',serif", fontSize: 56, fontWeight: 400, lineHeight: '60px', color: '#1A2742', margin: 0 }}>
-              Questions, answered.
+            <h2 className="big-serif-h2" style={{ margin: 0 }}>
+              <span style={{ display: 'block', fontFamily: "'Instrument Serif',serif", fontSize: 72, fontWeight: 400, lineHeight: '60px', color: '#1A2742' }}>Questions,</span>
+              <span style={{ display: 'block', fontFamily: "'Instrument Serif',serif", fontSize: 72, fontWeight: 400, fontStyle: 'italic', lineHeight: '86px', color: '#C8A86B' }}>answered.</span>
             </h2>
           </div>
           <div>

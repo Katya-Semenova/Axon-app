@@ -193,10 +193,6 @@ body {
     grid-template-columns: 1fr;
     gap: 24px;
   }
-  .faq-head h2 {
-    font-size: 40px !important;
-    line-height: 1.1 !important;
-  }
 }
 /* Мобилка (≤640px): единая система отступов секций + раскладка Hero (Урок 6, Шаг 5). */
 @media (max-width: 640px) {
@@ -229,9 +225,9 @@ body {
     align-self: stretch !important;
     box-sizing: border-box;
   }
-  /* Hero — заголовок крупнее (был мелковат) + ровный интервал. */
+  /* Hero — заголовок под систему 56px (как заголовки секций) + ровный интервал. */
   #headlineLine1, #headlineLine2 {
-    font-size: 52px !important;
+    font-size: 56px !important;
     line-height: 1.05 !important;
   }
   /* Modes — отступ заголовок → картинка под эталон Why Axon (был слишком большой). */
