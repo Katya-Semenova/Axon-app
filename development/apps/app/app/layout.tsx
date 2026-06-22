@@ -3,6 +3,7 @@ import { Inter, JetBrains_Mono, Instrument_Serif, Old_Standard_TT } from "next/f
 import "./globals.css";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale } from "next-intl/server";
+import { Analytics } from "./_components/Analytics";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -62,6 +63,7 @@ export default async function RootLayout({
     >
       <body>
         <NextIntlClientProvider>{children}</NextIntlClientProvider>
+        <Analytics />
       </body>
     </html>
   );
