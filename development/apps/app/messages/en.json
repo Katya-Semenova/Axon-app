@@ -15,7 +15,8 @@
     "hero": {
       "titleLine1": "Your data,",
       "titleLine2": "in plain English.",
-      "subtitle": "Drop any data file and get a canvas of editorial insight cards — ready to curate and present."
+      "subtitle": "Drop any data file and get a canvas of editorial insight cards — ready to curate and present.",
+      "mobileNotice": "On a phone, have a look around. Axon's real work — AI chat, insights, datasets, slides and presentation prep — comes to life on desktop."
     },
     "dropzone": {
       "cta": "Drop a file or click to upload",

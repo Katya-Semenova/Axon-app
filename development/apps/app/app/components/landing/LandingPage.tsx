@@ -114,6 +114,11 @@ export function LandingPage({ onNavigate }: { onNavigate: (boardId: string | nul
           <p className="text-[16px] text-t2 leading-relaxed max-w-[380px] mx-auto">
             {t("hero.subtitle")}
           </p>
+          {/* Раннее мягкое предупреждение: на узком экране (< lg) воркспейс недоступен —
+              даём знать сразу, а не в глубине (DesktopOnlyNotice показывается уже в проекте). */}
+          <p className="lg:hidden mt-4 text-[12.5px] text-t3 leading-relaxed max-w-[420px] mx-auto">
+            {t("hero.mobileNotice")}
+          </p>
         </div>
 
         <div
