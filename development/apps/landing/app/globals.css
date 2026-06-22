@@ -114,6 +114,37 @@ body {
     padding: 16px !important;
   }
 }
+/* Мобилка (≤640px): прочие правки лендинга по разбору на телефоне (Урок 6, Шаг 5). */
+@media (max-width: 640px) {
+  /* Hero — заголовок и контент видимы сразу: на десктопе их проявляет GSAP-интро,
+     на мобилке она ненадёжна и заголовок пропадал. Форсируем видимость. */
+  #hero .hw { opacity: 1 !important; transform: none !important; }
+  #heroCards, #heroBottom { opacity: 1 !important; transform: none !important; }
+
+  /* Большие сериф-заголовки секций (Why Axon, Features): 72px не влезает — длинные
+     слова вылазят за экран. Ужимаем и выравниваем интерлиньяж двух строк. */
+  .big-serif-h2 span {
+    font-size: clamp(34px, 11vw, 52px) !important;
+    line-height: 1.1 !important;
+  }
+
+  /* Why Axon — вернуть голубую подложку под карточками (ощущение десктопной сетки). */
+  .why-box-left {
+    background: rgba(180, 198, 220, 0.18) !important;
+  }
+
+  /* Счётчик 6 hrs → 12 min — уменьшить цифры, чтобы единицы (hrs/min) не наезжали. */
+  .why-bignum { font-size: 52px !important; }
+
+  /* Features — одна колонка, карточки во всю ширину, гигантская «X3» уменьшена. */
+  #features > div { grid-template-columns: 1fr !important; }
+  #features .lift-card {
+    grid-column: 1 / -1 !important;
+    grid-row: auto !important;
+    min-height: 0 !important;
+  }
+  .feat-x3 span { font-size: 84px !important; }
+}
 
 nav {
   backdrop-filter: blur(12px);

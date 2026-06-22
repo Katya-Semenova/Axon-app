@@ -391,7 +391,7 @@ export default function Home() {
             <span style={{ fontFamily: "'Inter',sans-serif", fontSize: 12, fontWeight: 600, letterSpacing: '1.2px', textTransform: 'uppercase', color: '#C8A86B', display: 'block', marginBottom: 16 }}>
               Why Axon
             </span>
-            <h2 style={{ margin: 0 }}>
+            <h2 className="big-serif-h2" style={{ margin: 0 }}>
               <span style={{ display: 'block', fontFamily: "'Instrument Serif',serif", fontSize: 72, fontWeight: 400, lineHeight: '60px', color: '#1A2742' }}>Your data already</span>
               <span style={{ display: 'block', fontFamily: "'Instrument Serif',serif", fontSize: 72, fontWeight: 400, fontStyle: 'italic', lineHeight: '86px', color: '#C8A86B' }}>knows the story.</span>
             </h2>
@@ -405,7 +405,7 @@ export default function Home() {
 
             {/* LEFT BOX — staggered bento cards */}
             {/* background matches section cream so the box feels unified */}
-            <div className="why-box" style={{ borderRadius: 4, overflow: 'hidden', background: '#F4F0E8', height: 775, position: 'relative', flexShrink: 0 }}>
+            <div className="why-box why-box-left" style={{ borderRadius: 4, overflow: 'hidden', background: '#F4F0E8', height: 775, position: 'relative', flexShrink: 0 }}>
 
               {/* ── Decorative background: 4-col × 5-row masked grid (z-index 0) ──
                   Col 1 (x=-164) and col 4 (x=514) extend outside the 566px box and
@@ -503,7 +503,7 @@ export default function Home() {
                   <div className="why-stats" style={{ background: '#1A2742', borderRadius: 4, height: 80, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 32, border: '1px solid rgba(244,240,232,0.08)' }}>
                     {/* 6 hrs — crossed out */}
                     <div style={{ display: 'flex', alignItems: 'baseline', gap: 2 }}>
-                      <span style={{ position: 'relative', display: 'inline-block', textAlign: 'center', fontFamily: "'Instrument Serif',serif", fontSize: 72, lineHeight: '60px', color: '#8B95A8' }}>
+                      <span className="why-bignum" style={{ position: 'relative', display: 'inline-block', textAlign: 'center', fontFamily: "'Instrument Serif',serif", fontSize: 72, lineHeight: '60px', color: '#8B95A8' }}>
                         {/* invisible "6" reserves a fixed width so per-digit width changes never reflow the row */}
                         <span aria-hidden="true" style={{ visibility: 'hidden' }}>6</span>
                         <span style={{ position: 'absolute', left: 0, right: 0, top: 0 }}>{counts.a}</span>
@@ -523,7 +523,7 @@ export default function Home() {
                     <div style={{ display: 'flex', alignItems: 'baseline', gap: 2 }}>
                       {/* invisible "12" reserves a fixed width so counting never reflows the row;
                           the live number sits absolutely on top and pulses smoothly */}
-                      <span style={{ position: 'relative', display: 'inline-block', textAlign: 'center', fontFamily: "'Instrument Serif',serif", fontSize: 72, lineHeight: '72px', color: '#F4F0E8' }}>
+                      <span className="why-bignum" style={{ position: 'relative', display: 'inline-block', textAlign: 'center', fontFamily: "'Instrument Serif',serif", fontSize: 72, lineHeight: '72px', color: '#F4F0E8' }}>
                         <span aria-hidden="true" style={{ visibility: 'hidden' }}>12</span>
                         <motion.span
                           animate={showFinal && !reduced ? { scale: 1.05 } : { scale: 1 }}
@@ -883,7 +883,7 @@ export default function Home() {
           {/* ── Heading: full width ── */}
           <div style={{ gridColumn: '1 / -1', paddingTop: 5.5, paddingBottom: 40 }}>
             <span style={{ fontFamily: "'Inter',sans-serif", fontSize: 12, fontWeight: 600, letterSpacing: '1.2px', textTransform: 'uppercase', color: '#C8A86B', display: 'block', marginBottom: 16 }}>Built for analysts</span>
-            <h2 style={{ margin: 0 }}>
+            <h2 className="big-serif-h2" style={{ margin: 0 }}>
               <span style={{ display: 'block', fontFamily: "'Instrument Serif',serif", fontSize: 72, fontWeight: 400, lineHeight: '60px', color: '#1A2742' }}>Everything the neural</span>
               <span style={{ display: 'block', fontFamily: "'Instrument Serif',serif", fontSize: 72, fontWeight: 400, fontStyle: 'italic', lineHeight: '86px', color: '#C8A86B' }}>connection needs.</span>
             </h2>
@@ -893,7 +893,7 @@ export default function Home() {
           <div className="lift-card" style={{ gridColumn: 1, gridRow: 2, background: '#C8A86B', borderRadius: 4, padding: '28px 26px 18px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 6, minHeight: 250, boxSizing: 'border-box', boxShadow: '0 2px 16px rgba(26,39,66,0.08)' }}>
             {/* metric + icon on one row; icon is top-aligned to the digit (not centered) */}
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16 }}>
-              <span style={{ display: 'inline-flex', alignItems: 'baseline', color: '#1A2742', lineHeight: 1, position: 'relative', top: -12 }}>
+              <span className="feat-x3" style={{ display: 'inline-flex', alignItems: 'baseline', color: '#1A2742', lineHeight: 1, position: 'relative', top: -12 }}>
                 <span style={{ fontFamily: "'JetBrains Mono',monospace", fontWeight: 300, fontSize: 132 }}>X</span>
                 <span style={{ fontFamily: "'Inter',sans-serif", fontWeight: 500, fontSize: 150 }}>3</span>
               </span>
