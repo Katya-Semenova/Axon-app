@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { MyProjects } from "./MyProjects";
 import { LanguageSwitcher } from "../ui/LanguageSwitcher";
@@ -97,7 +98,7 @@ export function LandingPage({ onNavigate }: { onNavigate: (boardId: string | nul
                 muted labels (not links) so the nav reads as intentional rather
                 than broken. Swap back to <a href> once the pages exist. */}
             <li><span aria-disabled="true" className="text-[13.5px] text-t3 cursor-default select-none">{t("nav.projects")}</span></li>
-            <li><a href="/storybook" className="text-[13.5px] text-t2 hover:text-t1 transition-colors duration-200">{t("nav.storybook")}</a></li>
+            <li><Link href="/storybook" className="text-[13.5px] text-t2 hover:text-t1 transition-colors duration-200">{t("nav.storybook")}</Link></li>
             <li><span aria-disabled="true" className="text-[13.5px] text-t3 cursor-default select-none">{t("nav.docs")}</span></li>
           </ul>
           <LanguageSwitcher />
@@ -154,9 +155,9 @@ export function LandingPage({ onNavigate }: { onNavigate: (boardId: string | nul
           /* Гость — без фейковых проектов; тихое приглашение войти (Шаг 7b). */
           <div className="px-12 pb-[96px] max-md:px-6 max-md:pb-[72px] max-sm:px-4 max-sm:pb-[60px]">
             <p className="text-center font-mono text-[11.5px] text-t3">
-              <a href="/login" className="text-t2 hover:text-t1 underline underline-offset-4 transition-colors duration-200">
+              <Link href="/login" className="text-t2 hover:text-t1 underline underline-offset-4 transition-colors duration-200">
                 {t("guestHint")}
-              </a>
+              </Link>
             </p>
           </div>
         )}
