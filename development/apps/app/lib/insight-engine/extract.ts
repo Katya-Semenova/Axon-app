@@ -2,6 +2,7 @@ import type { ParsedTable } from "@/lib/file-parsing";
 import type { BoardData } from "@/lib/types";
 import { buildBoardData } from "./index";
 import { buildExtractionInput, executePlan, type AIPlan } from "./ai-plan";
+import { BASE_PATH } from "@/lib/base-path";
 
 /**
  * Построить доску из таблицы (Урок 5, Шаг 1) — единая точка «ИИ или правила».
@@ -21,7 +22,7 @@ export async function extractBoardData(
 ): Promise<{ board: BoardData; engine: "ai" | "rules" }> {
   if (opts.useAI) {
     try {
-      const res = await fetch("/api/ai/extract", {
+      const res = await fetch(`${BASE_PATH}/api/ai/extract`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(buildExtractionInput(table)),

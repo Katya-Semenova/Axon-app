@@ -1,10 +1,16 @@
 import type { NextConfig } from "next";
 import createNextIntlPlugin from "next-intl/plugin";
 import path from "path";
+import { BASE_PATH } from "./lib/base-path";
 
 const withNextIntl = createNextIntlPlugin("./i18n/request.ts");
 
 const nextConfig: NextConfig = {
+  // Топология (Урок 6, ADR-010): сервис живёт на подстранице /ai-studio того же домена,
+  // что и лендинг. basePath заставляет Next дописывать этот префикс ко ВСЕМ внутренним
+  // ссылкам/редиректам/ассетам (/ai-studio/_next/…) — так nginx делит сайты по пути без
+  // коллизии /_next/. Единый источник значения — lib/base-path.ts (см. там же ручные места).
+  basePath: BASE_PATH,
   // Автономная сборка (server.js) для упаковки в Docker (Урок 3 — переезд на VPS).
   // На Vercel безопасно: платформа использует собственную сборку.
   output: "standalone",

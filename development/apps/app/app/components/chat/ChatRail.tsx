@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { useWorkspaceStore, currentBoardData } from "@/lib/store";
 import { authClient } from "@/lib/auth-client";
+import { BASE_PATH } from "@/lib/base-path";
 import { useTranslations } from "next-intl";
 import { BORDER, NAVY, T2, T3, RADIUS_BUBBLE } from "../ui/tokens";
 import { Textarea } from "../ui/Textarea";
@@ -117,7 +118,7 @@ export function ChatRail({ onBack }: { onBack: () => void }) {
       const columns = table
         ? buildExtractionInput(table).columns.map(c => ({ name: c.name, type: c.type }))
         : [];
-      const res = await fetch("/api/ai/chat", {
+      const res = await fetch(`${BASE_PATH}/api/ai/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

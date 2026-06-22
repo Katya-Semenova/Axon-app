@@ -4,10 +4,8 @@
 
 User-agent: *
 Allow: /
-Disallow: /app
-Disallow: /admin
-Disallow: /api
-Disallow: /settings
-Disallow: /dashboard
+# Весь сервис живёт под /ai-studio (топология, ADR-010) — один запрет закрывает
+# и вход, и /ai-studio/admin, /ai-studio/api, /ai-studio/settings и т.д.
+Disallow: /ai-studio
 
 Sitemap: https://axon-app.ru/sitemap.xml

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
 import { putObject } from "@/lib/storage";
+import { BASE_PATH } from "@/lib/base-path";
 
 /**
  * Загрузка аватара (Урок 4, Шаг 8).
@@ -38,8 +39,9 @@ export async function POST(req: NextRequest) {
   try {
     const key = `avatars/${session.user.id}-${Date.now()}.${kind.ext}`;
     await putObject(key, buf, kind.type);
-    // Показываем через наш домен, а не публичный URL провайдера.
-    return NextResponse.json({ url: `/api/files/${key}` });
+    // Показываем через наш домен, а не публичный URL провайдера. Префикс /ai-studio (basePath,
+    // ADR-010): эта ссылка идёт в <img> мимо роутера Next, поэтому дописываем его вручную.
+    return NextResponse.json({ url: `${BASE_PATH}/api/files/${key}` });
   } catch (err) {
     console.error("[avatar] upload failed:", err);
     return NextResponse.json({ error: "upload-failed" }, { status: 500 });

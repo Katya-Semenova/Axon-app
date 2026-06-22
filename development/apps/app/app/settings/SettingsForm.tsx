@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { authClient } from "@/lib/auth-client";
+import { BASE_PATH } from "@/lib/base-path";
 import { Card, CardHeader, CardContent, CardFooter } from "@/app/components/ui/Card";
 import { FormField } from "@/app/components/ui/FormField";
 import { Input } from "@/app/components/ui/Input";
@@ -42,7 +43,7 @@ export function SettingsForm({ initialName, email, initialImage, isAdmin = false
     try {
       const fd = new FormData();
       fd.append("file", file);
-      const res = await fetch("/api/avatar", { method: "POST", body: fd });
+      const res = await fetch(`${BASE_PATH}/api/avatar`, { method: "POST", body: fd });
       if (!res.ok) throw new Error("upload failed");
       const { url } = await res.json();
       await authClient.updateUser({ image: url });

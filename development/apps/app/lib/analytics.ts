@@ -6,7 +6,7 @@
 export const YM_COUNTER_ID = process.env.NEXT_PUBLIC_YM_ID;
 
 // Согласие хранится тем же ключом, что и баннер лендинга — в проде один origin
-// (axon-app.ru + axon-app.ru/app), localStorage общий.
+// (axon-app.ru + axon-app.ru/ai-studio), localStorage общий.
 export const CONSENT_KEY = 'axon_cookie_consent';
 
 export const GOALS = {

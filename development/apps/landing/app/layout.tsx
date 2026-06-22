@@ -60,7 +60,7 @@ const jsonLd = [
     name: "Axon",
     applicationCategory: "BusinessApplication",
     operatingSystem: "Web",
-    url: "https://axon-app.ru/app",
+    url: "https://axon-app.ru/ai-studio",
     description:
       "AI workspace that turns raw spreadsheets into clear charts, insights and presentation-ready slides in minutes.",
     offers: {

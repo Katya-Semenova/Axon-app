@@ -9,6 +9,7 @@ import { PRESENTATION_THEMES } from "@/lib/types";
 import { BORDER, GOLD, NAVY, T2, T3, SURFACE, SURFACE_RAISE, SURFACE_MUTED } from "../ui/tokens";
 import { useTranslations } from "next-intl";
 import { authClient } from "@/lib/auth-client";
+import { BASE_PATH } from "@/lib/base-path";
 import { AuthModal } from "../AuthModal";
 import { useToast } from "../ui/Toast";
 import { createShareLink, revokeShareLink, getActiveShareToken } from "@/app/actions/share";
@@ -126,7 +127,7 @@ export function PresentExport({ modeSwitcher, boardId, onBoardSaved, saveButton 
     let cancel = false;
     if (isLink && boardId) {
       getActiveShareToken(boardId)
-        .then((tok) => { if (!cancel && tok) setShareUrl(`${window.location.origin}/p/${tok}`); })
+        .then((tok) => { if (!cancel && tok) setShareUrl(`${window.location.origin}${BASE_PATH}/p/${tok}`); })
         .catch(() => {});
     }
     return () => { cancel = true; };
@@ -148,7 +149,7 @@ export function PresentExport({ modeSwitcher, boardId, onBoardSaved, saveButton 
       }
       const token = bId ? await createShareLink(bId) : null;
       if (!token) throw new Error("share failed");
-      setShareUrl(`${window.location.origin}/p/${token}`);
+      setShareUrl(`${window.location.origin}${BASE_PATH}/p/${token}`);
     } catch {
       toast(t("shareError"), { variant: "error" });
     } finally {
