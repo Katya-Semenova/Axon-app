@@ -80,9 +80,10 @@ Donut-легенда, B1/B2 авто-пан) + фикс деплоя ИИ-env (`
   крючок (1-е предложение cream, 2-е золотом) + домен. **Бренд-шрифты** (Instrument Serif italic +
   JetBrains Mono), рендер через resvg по файлам шрифтов. File-convention, без правки `layout.tsx`.
   Favicon при этом НЕ трогали (остаётся сплошной navy на cream). Источник split-знака — `public/brand/logogramma_split.svg`.
-- ⬜ **Текстовые мета (title 50–60 / description 140–160 / og:title / metadataBase) — ОТЛОЖЕНО:**
-  живут в `layout.tsx`, который правит соседний чат (меняет шрифт Anton→`@axon/ui`). Допишу, когда сосед
-  закоммитит `layout.tsx` (иначе коллизия). Базовые title/desc там уже есть — превью рабочее.
+- ✅ **Текстовые мета (2026-06-22):** в `apps/landing/app/layout.tsx` — `metadataBase`
+  (`https://axon-app.ru`), title 52 симв. («Axon — Turn raw data into presentation-ready stories»),
+  description 154 симв., `openGraph.title`/`twitter.title` = «From data to story, in minutes»
+  (соц-крючок ≠ SEO-title). og:image остаётся из file-convention `opengraph-image.png`.
 - ⬜ Проверка превью через opengraph.xyz + Telegram — после правки текстовых мета.
 
 **Шаг 3 (Индексация + GEO) — В РАБОТЕ 2026-06-21. Выбран ПОЛНЫЙ GEO.**

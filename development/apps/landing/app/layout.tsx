@@ -23,8 +23,23 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Axon — Turn data into stories",
-  description: "AI workspace that turns raw data into presentation-ready stories.",
+  metadataBase: new URL("https://axon-app.ru"),
+  title: "Axon — Turn raw data into presentation-ready stories",
+  description:
+    "Axon turns raw spreadsheets into clear charts, insights and presentation-ready slides in minutes — an AI workspace where you tell the story, not the tool.",
+  openGraph: {
+    // Социальный «крючок» — короче и эмоциональнее, чем SEO-title в шапке.
+    title: "From data to story, in minutes",
+    siteName: "Axon",
+    url: "https://axon-app.ru",
+    type: "website",
+    locale: "en_US",
+    // og:image берётся из app/opengraph-image.png (file-convention) — здесь не дублируем.
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "From data to story, in minutes",
+  },
 };
 
 export default function RootLayout({
