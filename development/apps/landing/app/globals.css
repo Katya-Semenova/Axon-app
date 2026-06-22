@@ -162,19 +162,21 @@ body {
     margin-bottom: 22px;
   }
 
-  /* PROTOTYPE TEASER — центрируем композицию; кнопку «Open prototype» уводим
-     на отдельную строку под «minutes» и делаем крупной. */
-  .proto-head { justify-content: center !important; }
+  /* PROTOTYPE TEASER — по ЛЕВОМУ краю; меньше gap текст↔картинка (×1.5);
+     кнопку «Open prototype» — отдельной строкой под «minutes», на всю ширину. */
+  .proto-head { justify-content: flex-start !important; gap: 6px 10px !important; }
   .proto-minutes {
     flex-basis: 100% !important;
     flex-direction: column !important;
-    align-items: center !important;
+    align-items: stretch !important;
     gap: 16px !important;
   }
   .proto-cta {
     margin-bottom: 0 !important;
-    padding: 16px 36px !important;
+    padding: 16px 24px !important;
     font-size: 17px !important;
+    width: 100% !important;
+    box-sizing: border-box;
   }
 }
 /* FAQ — двухколоночная раскладка: заголовок слева, вопросы справа (редакторский FAQ).
@@ -212,6 +214,28 @@ body {
   }
   #heroContent { position: static !important; }
   #chaosLayer { display: none !important; }
+}
+/* Мобилка (≤640px): кнопки на всю ширину блока, крупнее Hero, отступ Modes. */
+@media (max-width: 640px) {
+  /* Кнопки на всю ширину блока (как в финальной CTA-секции) — только мобилка. */
+  .hero-cta-row { flex-direction: column !important; }
+  .hero-cta-row a {
+    width: 100% !important;
+    box-sizing: border-box;
+    justify-content: center !important;
+  }
+  .feat-cta {
+    width: 100% !important;
+    align-self: stretch !important;
+    box-sizing: border-box;
+  }
+  /* Hero — заголовок крупнее (был мелковат) + ровный интервал. */
+  #headlineLine1, #headlineLine2 {
+    font-size: 52px !important;
+    line-height: 1.05 !important;
+  }
+  /* Modes — отступ заголовок → картинка под эталон Why Axon (был слишком большой). */
+  .modes-head { margin-bottom: 40px !important; }
 }
 
 nav {

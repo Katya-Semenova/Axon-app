@@ -374,7 +374,7 @@ export default function Home() {
             <p style={{ fontFamily: "'Inter',sans-serif", fontSize: 14, color: '#8B95A8', lineHeight: 1.7, margin: '0 0 22px' }}>
               Drop your data. Get your story.<br />Axon&apos;s AI finds the signal — you own the narrative.
             </p>
-            <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap', marginBottom: 10 }}>
+            <div className="hero-cta-row" style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap', marginBottom: 10 }}>
               <a href="https://axon-app.ru/ai-studio" target="_blank" rel="noopener" onClick={() => trackEvent(GOALS.ctaClick)} style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: '#1A2742', color: '#F4F0E8', fontFamily: "'Inter',sans-serif", fontSize: 13, fontWeight: 500, padding: '12px 24px', borderRadius: 4, textDecoration: 'none' }}>Try Axon free →</a>
               <a href="#problem" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, border: '1px solid rgba(26,39,66,.2)', color: '#1A2742', fontFamily: "'Inter',sans-serif", fontSize: 13, fontWeight: 500, padding: '12px 24px', borderRadius: 4, textDecoration: 'none' }}>See how it works ↓</a>
             </div>
@@ -732,7 +732,7 @@ export default function Home() {
       {/* ═══ THREE MODES ═══ */}
       <section id="modes" className="py-[194px] px-6 border-t divider">
         <div className="max-w-[1152px] mx-auto">
-          <div className="mb-16 text-center">
+          <div className="mb-16 text-center modes-head">
             <span style={{ fontFamily: "'Inter',sans-serif", fontSize: 12, fontWeight: 600, letterSpacing: '1.2px', textTransform: 'uppercase', color: '#C8A86B', display: 'block', marginBottom: 16 }}>The Workflow</span>
             <h2 className="big-serif-h2" style={{ margin: 0 }}>
               <span style={{ display: 'block', fontFamily: "'Instrument Serif',serif", fontSize: 72, fontWeight: 400, lineHeight: '60px', color: '#1A2742' }}>Three chapters.</span>
@@ -898,7 +898,7 @@ export default function Home() {
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16 }}>
               <span className="feat-x3" style={{ display: 'inline-flex', alignItems: 'baseline', color: '#1A2742', lineHeight: 1, position: 'relative', top: -12 }}>
                 <span style={{ fontFamily: "'JetBrains Mono',monospace", fontWeight: 300, fontSize: 132 }}>X</span>
-                <span style={{ fontFamily: "'Inter',sans-serif", fontWeight: 500, fontSize: 150 }}>3</span>
+                <span style={{ fontFamily: "'Instrument Serif',serif", fontStyle: 'italic', fontWeight: 400, fontSize: 150 }}>3</span>
               </span>
               {/* icon — height matched to the digit "3" */}
               <div style={{ width: 68, height: 68, borderRadius: 4, background: 'rgba(26,39,66,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
@@ -909,7 +909,7 @@ export default function Home() {
                 </svg>
               </div>
             </div>
-            <span style={{ fontFamily: "'Inter',sans-serif", fontWeight: 500, fontSize: 42, lineHeight: '46px', color: '#1A2742' }}>Faster to present</span>
+            <span style={{ fontFamily: "'Instrument Serif',serif", fontWeight: 400, fontSize: 42, lineHeight: '46px', color: '#1A2742' }}>Faster to present</span>
           </div>
 
           {/* ── Live presentations — navy hero, right col rows 2–3 ── */}
@@ -925,7 +925,7 @@ export default function Home() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               <h3 style={{ fontFamily: "'Instrument Serif',serif", fontSize: 42, fontWeight: 400, lineHeight: '46px', color: '#F4F0E8', margin: 0 }}>Live presentations</h3>
               <p style={{ fontFamily: "'Inter',sans-serif", fontSize: 14, lineHeight: 1.6, color: 'rgba(244,240,232,0.6)', margin: 0 }}>Present straight from Axon. No downloads, no version confusion. Your deck, live and in sync.</p>
-              <a href="https://axon-app.ru/ai-studio" target="_blank" rel="noopener" onClick={() => trackEvent(GOALS.ctaClick)} style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: '#C8A86B', color: '#1A2742', fontFamily: "'Inter',sans-serif", fontSize: 13, fontWeight: 600, padding: '12px 24px', borderRadius: 4, textDecoration: 'none', whiteSpace: 'nowrap', alignSelf: 'flex-start', boxShadow: '0 2px 12px rgba(200,168,107,0.4)' }}>
+              <a className="feat-cta" href="https://axon-app.ru/ai-studio" target="_blank" rel="noopener" onClick={() => trackEvent(GOALS.ctaClick)} style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: '#C8A86B', color: '#1A2742', fontFamily: "'Inter',sans-serif", fontSize: 13, fontWeight: 600, padding: '12px 24px', borderRadius: 4, textDecoration: 'none', whiteSpace: 'nowrap', alignSelf: 'flex-start', boxShadow: '0 2px 12px rgba(200,168,107,0.4)' }}>
                 Try Axon free →
               </a>
             </div>
