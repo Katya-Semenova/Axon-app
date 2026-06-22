@@ -937,8 +937,13 @@ export default function Home() {
           <span className="font-mono text-[13px] font-medium tracking-[0.14em] text-primary">AXON</span>
           <p className="text-xs font-body text-soft/40 text-center hidden sm:block">The Neural Network for Your Data Narrative.</p>
           <div className="flex gap-6">
-            {['Privacy','Terms','Blog','Contact'].map(l => (
-              <a key={l} href="#" className="text-xs font-body text-soft hover:text-primary transition-colors">{l}</a>
+            {[
+              { label: 'Privacy', href: '/privacy' },
+              { label: 'Terms', href: '/terms' },
+              { label: 'Cookies', href: '/cookies' },
+              { label: 'Contact', href: 'mailto:hello@axon-app.ru' },
+            ].map(({ label, href }) => (
+              <a key={label} href={href} className="text-xs font-body text-soft hover:text-primary transition-colors">{label}</a>
             ))}
           </div>
         </div>
