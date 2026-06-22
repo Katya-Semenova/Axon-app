@@ -104,8 +104,9 @@ Donut-легенда, B1/B2 авто-пан) + фикс деплоя ИИ-env (`
 - 🟡 **Задание 3.1 — аналитика: выбрана Яндекс.Метрика.** Счётчик создан, **ID `110037189`** (в
   `apps/landing/.env.local` → `NEXT_PUBLIC_YM_ID`, gitignored; ID не секрет — встраивается в публичный HTML).
   ✅ обёртка `apps/landing/lib/analytics.ts` (`trackEvent` + цели cta_click/signup_start/signup_complete).
-  **Отложено у соседа:** скрипт счётчика в `layout.tsx` (грузить ТОЛЬКО после согласия cookie-баннера),
-  сам cookie-баннер, вызовы `trackEvent` в местах событий (CTA — `page.tsx`; signup — `apps/app`).
+  ✅ **CTA-трекинг (2026-06-22):** все 5 кнопок «Try Axon» в `page.tsx` → `cta_click` (onClick) +
+  ссылки переведены на `/app` (ADR-010; был петлевой `axon-app.ru/`). «Book a demo» → `mailto:hello@`.
+  **Отложено:** скрипт счётчика + cookie-баннер (грузить Метрику ТОЛЬКО после согласия); signup-цели в `apps/app`.
 **СЛЕДУЮЩАЯ СЕССИЯ (после обеда 2026-06-21) — начать отсюда:**
 Соседний чат ЗАКОНЧИЛ и ЗАКОММИТИЛ дизайн секций — коммит `899aa16` (`page.tsx`, `globals.css`,
 `_axon/PrototypeShowcase.tsx`). Общие файлы ЧИСТЫЕ → **«пакет на соседа» РАЗБЛОКИРОВАН, ничего не ждёт.**
