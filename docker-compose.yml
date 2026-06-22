@@ -1,28 +1,57 @@
 services:
+  # ── ЛЕНДИНГ (apps/landing, Next 16) — nginx отдаёт сюда корень «/» ──────────
+  landing:
+    build:
+      context: ./development          # корень workspace (монорепо)
+      dockerfile: apps/landing/Dockerfile
+      args:
+        # NEXT_PUBLIC_* впекается на сборке — пробрасываем из .env.production.
+        NEXT_PUBLIC_YM_ID: ${NEXT_PUBLIC_YM_ID}
+    ports:
+      - "127.0.0.1:3001:3000"   # только localhost — наружу отдаёт nginx (/)
+    restart: unless-stopped
+    mem_limit: 256m              # лендинг статичный и лёгкий
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3000/ >/dev/null 2>&1 || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+
+  # ── СЕРВИС (apps/app, Next 15) — nginx отдаёт сюда /app, /login, /api … ─────
   web:
-    build: .
+    build:
+      context: ./development          # корень workspace (монорепо)
+      dockerfile: apps/app/Dockerfile
+      args:
+        NEXT_PUBLIC_YM_ID: ${NEXT_PUBLIC_YM_ID}
     environment:
       DATABASE_URL: ${DATABASE_URL}             # адрес базы (из .env.production)
-      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET} # секрет сессий входа (Шаг 5)
-      BETTER_AUTH_URL: ${BETTER_AUTH_URL}       # публичный адрес сайта (Шаг 5)
-      RESEND_API_KEY: ${RESEND_API_KEY}         # ключ отправки писем Resend (Шаг 6)
-      S3_ENDPOINT: ${S3_ENDPOINT}               # файловое хранилище S3 (Шаг 8)
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET} # секрет сессий входа
+      BETTER_AUTH_URL: ${BETTER_AUTH_URL}       # публичный адрес сайта
+      RESEND_API_KEY: ${RESEND_API_KEY}         # ключ отправки писем Resend
+      S3_ENDPOINT: ${S3_ENDPOINT}               # файловое хранилище S3
       S3_REGION: ${S3_REGION}
       S3_ACCESS_KEY_ID: ${S3_ACCESS_KEY_ID}
       S3_SECRET_ACCESS_KEY: ${S3_SECRET_ACCESS_KEY}
       S3_BUCKET: ${S3_BUCKET}
       S3_PUBLIC_URL: ${S3_PUBLIC_URL}
       # ── ИИ (Урок 5) — провайдер-агностичный слой, OpenRouter для MVP (ADR-008) ──
-      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY}  # ключ LLM-провайдера (из .env.production)
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY}
       AI_PROVIDER: ${AI_PROVIDER}                # openrouter | gigachat
-      AI_MODEL: ${AI_MODEL}                      # модель, напр. anthropic/claude-sonnet-4.6
+      AI_MODEL: ${AI_MODEL}                      # напр. anthropic/claude-sonnet-4.6
       # ── Админка (Урок 5, Шаг 2) — owner-панель по email ──
-      ADMIN_EMAIL: ${ADMIN_EMAIL}                # email единственного админа (read-only панель)
+      ADMIN_EMAIL: ${ADMIN_EMAIL}
+      # Аналитика: реально нужен на сборке (выше build.args); тут продублирован для ясности.
+      NEXT_PUBLIC_YM_ID: ${NEXT_PUBLIC_YM_ID}
     ports:
       - "127.0.0.1:3000:3000"   # только localhost — наружу отдаёт nginx
-    restart: unless-stopped      # сам поднимется после падения/перезагрузки сервера
-    mem_limit: 512m              # потолок памяти: контейнер не съест весь бокс (1 ГБ)
-    healthcheck:                 # Docker сам видит, «жив» ли контейнер
+    depends_on:
+      db:
+        condition: service_healthy   # сервис стартует после готовности базы
+    restart: unless-stopped
+    mem_limit: 448m              # потолок памяти под бокс 1 ГБ
+    healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3000/ >/dev/null 2>&1 || exit 1"]
       interval: 30s
       timeout: 5s
@@ -31,19 +60,17 @@ services:
 
   # ── База данных (Урок 4) — PostgreSQL рядом с сайтом ──────────────────────
   db:
-    image: postgres:16-alpine    # сама база (лёгкая версия)
-    restart: unless-stopped      # сама поднимется после перезагрузки сервера
-    mem_limit: 256m              # потолок памяти (бокс всего 1 ГБ)
-    environment:                 # логин/пароль/имя базы — из .env.production
+    image: postgres:16-alpine
+    restart: unless-stopped
+    mem_limit: 256m
+    environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
     volumes:
       - pgdata:/var/lib/postgresql/data   # данные переживают перезапуск контейнера
     ports:
-      # ТОЛЬКО localhost сервера (для SSH-туннеля и Prisma Studio).
-      # bind на 127.0.0.1 => из интернета НЕ доступно (loopback + UFW).
-      - "127.0.0.1:5432:5432"
+      - "127.0.0.1:5432:5432"   # только localhost (SSH-туннель / Prisma Studio)
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U axon -d axon"]
       interval: 10s
@@ -52,4 +79,4 @@ services:
       start_period: 20s
 
 volumes:
-  pgdata:                        # именованный том = «полки» базы на диске сервера
+  pgdata:
