@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { authClient } from "@/lib/auth-client";
+import { BASE_PATH } from "@/lib/base-path";
 import { Card, CardHeader, CardContent, CardFooter } from "@/app/components/ui/Card";
 import { FormField } from "@/app/components/ui/FormField";
 import { Input } from "@/app/components/ui/Input";
@@ -18,9 +19,10 @@ export default function ForgotPasswordPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
-    /* Ссылка из письма ведёт на /reset-password?token=… (токен добавит Better Auth). */
+    /* Ссылка из письма ведёт на /reset-password?token=… (токен добавит Better Auth).
+       redirectTo — С приставкой /ai-studio: иначе финальный редирект уйдёт на лендинг → 404. */
     await authClient
-      .requestPasswordReset({ email, redirectTo: "/reset-password" })
+      .requestPasswordReset({ email, redirectTo: `${BASE_PATH}/reset-password` })
       .catch((err) => console.error("[forgot-password]", err));
     setLoading(false);
     /* Нейтральное сообщение в любом случае — не раскрываем, есть ли такой аккаунт. */

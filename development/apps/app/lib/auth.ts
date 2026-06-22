@@ -23,9 +23,27 @@ import { resolveLocaleFromHeaders, defaultLocale, type Locale } from "@/i18n/req
 import {
   sendPasswordResetEmail, sendPasswordChangedEmail, sendWelcomeEmail,
 } from "@/lib/email";
+import { BASE_PATH } from "@/lib/base-path";
 
 function localeFrom(headers?: Headers | null): Locale {
   return headers ? resolveLocaleFromHeaders(headers) : defaultLocale;
+}
+
+/* Дописывает приставку /ai-studio к абсолютной ссылке из письма сброса пароля.
+   baseURL у Better Auth — голый домен (см. base-path.ts: Next срезает basePath из входящего
+   адреса), поэтому сгенерированная ссылка идёт без /ai-studio и ведёт на лендинг → 404.
+   Возвращаем ссылку с префиксом: …/ai-studio/api/auth/reset-password?… */
+function withBasePath(absoluteUrl: string): string {
+  if (!BASE_PATH) return absoluteUrl;
+  try {
+    const u = new URL(absoluteUrl);
+    if (u.pathname !== BASE_PATH && !u.pathname.startsWith(`${BASE_PATH}/`)) {
+      u.pathname = `${BASE_PATH}${u.pathname}`;
+    }
+    return u.toString();
+  } catch {
+    return absoluteUrl;
+  }
 }
 
 export const auth = betterAuth({
@@ -55,7 +73,7 @@ export const auth = betterAuth({
     requireEmailVerification: false,
     sendResetPassword: async ({ user, url }, request) => {
       try {
-        await sendPasswordResetEmail(user.email, url, localeFrom(request?.headers));
+        await sendPasswordResetEmail(user.email, withBasePath(url), localeFrom(request?.headers));
       } catch (err) {
         console.error("[auth] sendResetPassword:", err);
       }
