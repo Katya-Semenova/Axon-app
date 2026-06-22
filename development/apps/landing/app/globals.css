@@ -124,8 +124,8 @@ body {
   /* Большие сериф-заголовки секций (Why Axon, Features): 72px не влезает — длинные
      слова вылазят за экран. Ужимаем и выравниваем интерлиньяж двух строк. */
   .big-serif-h2 span {
-    font-size: clamp(34px, 11vw, 52px) !important;
-    line-height: 1.1 !important;
+    font-size: 56px !important;     /* крупнее заголовков карточек (42px) — иерархия */
+    line-height: 1.08 !important;   /* ровный интервал у обеих строк (синей и золотой) */
   }
 
   /* Why Axon — вернуть голубую подложку под карточками (ощущение десктопной сетки). */
@@ -195,6 +195,23 @@ body {
     font-size: 40px !important;
     line-height: 1.1 !important;
   }
+}
+/* Мобилка (≤640px): единая система отступов секций + раскладка Hero (Урок 6, Шаг 5). */
+@media (max-width: 640px) {
+  /* Одинаковые верх/низ у всех секций (между секциями больше, чем внутри секций). */
+  #problem, #shift, #modes, #prototype, #features, #faq, #cta {
+    padding-top: 72px !important;
+    padding-bottom: 72px !important;
+  }
+  /* Hero — заголовок уезжал вверх под меню (контент выше 100vh). Делаем обычный
+     поток с верхним отступом под шапку; тяжёлую хаос-анимацию на телефоне прячем. */
+  #hero {
+    height: auto !important;
+    overflow: visible !important;
+    padding: 96px 24px 64px !important;
+  }
+  #heroContent { position: static !important; }
+  #chaosLayer { display: none !important; }
 }
 
 nav {

@@ -281,7 +281,10 @@ export default function Home() {
 
   // ── "Easy-peasy": after the cards settle, count 0→6 / 0→12 ──
   useEffect(() => {
-    if (reduced) { setCounts({ a: 6, b: 12 }); return; }
+    // На мобилке (≤640px) показываем сразу финальные 6/12 без анимации: на узком экране
+    // счётчик внизу длинной секции и при скролле вверх «обнулялся» в 0. Статика — надёжнее.
+    const isMobile = typeof window !== 'undefined' && window.innerWidth <= 640;
+    if (reduced || isMobile) { setCounts({ a: 6, b: 12 }); return; }
     if (!problemEntered) { setCounts({ a: 0, b: 0 }); return; } // reset so it re-counts on re-entry
     let raf = 0;
     const start = setTimeout(() => {
@@ -731,7 +734,7 @@ export default function Home() {
         <div className="max-w-[1152px] mx-auto">
           <div className="mb-16 text-center">
             <span style={{ fontFamily: "'Inter',sans-serif", fontSize: 12, fontWeight: 600, letterSpacing: '1.2px', textTransform: 'uppercase', color: '#C8A86B', display: 'block', marginBottom: 16 }}>The Workflow</span>
-            <h2 style={{ margin: 0 }}>
+            <h2 className="big-serif-h2" style={{ margin: 0 }}>
               <span style={{ display: 'block', fontFamily: "'Instrument Serif',serif", fontSize: 72, fontWeight: 400, lineHeight: '60px', color: '#1A2742' }}>Three chapters.</span>
               <span style={{ display: 'block', fontFamily: "'Instrument Serif',serif", fontSize: 72, fontWeight: 400, fontStyle: 'italic', lineHeight: '86px', color: '#C8A86B' }}>One workspace.</span>
             </h2>
@@ -989,7 +992,7 @@ export default function Home() {
 {/* ═══ CTA ═══ */}
       <section id="cta" className="py-28 px-6 border-t divider">
         <div className="max-w-2xl mx-auto text-center">
-          <h2 style={{ margin: '0 0 20px' }}>
+          <h2 className="big-serif-h2" style={{ margin: '0 0 20px' }}>
             <span style={{ display: 'block', fontFamily: "'Instrument Serif',serif", fontSize: 72, fontWeight: 400, lineHeight: '60px', color: '#1A2742' }}>Your data has a story.</span>
             <span style={{ display: 'block', fontFamily: "'Instrument Serif',serif", fontSize: 72, fontWeight: 400, fontStyle: 'italic', lineHeight: '86px', color: '#C8A86B' }}>Time to tell it.</span>
           </h2>
