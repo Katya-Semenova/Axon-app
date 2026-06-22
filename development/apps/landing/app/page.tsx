@@ -405,13 +405,13 @@ export default function Home() {
 
             {/* LEFT BOX — staggered bento cards */}
             {/* background matches section cream so the box feels unified */}
-            <div style={{ borderRadius: 4, overflow: 'hidden', background: '#F4F0E8', height: 775, position: 'relative', flexShrink: 0 }}>
+            <div className="why-box" style={{ borderRadius: 4, overflow: 'hidden', background: '#F4F0E8', height: 775, position: 'relative', flexShrink: 0 }}>
 
               {/* ── Decorative background: 4-col × 5-row masked grid (z-index 0) ──
                   Col 1 (x=-164) and col 4 (x=514) extend outside the 566px box and
                   are clipped by overflow:hidden, creating the "infinite grid" edge peek.
                   ~52px of each outer column is visible at the left/right edges. */}
-              <div style={{ position: 'absolute', inset: 0, zIndex: 0 }}>
+              <div className="why-deco" style={{ position: 'absolute', inset: 0, zIndex: 0 }}>
                 {[-166, 58, 282, 506, 730].flatMap(top =>
                   [-164, 62, 288, 514].map(left => (
                     <div
@@ -430,7 +430,7 @@ export default function Home() {
               {/* ── Cards (z-index 1) ── */}
 
               {/* Control — navy, top-left */}
-              <motion.div initial={false} animate={showFinal ? { x: 0, y: 0, opacity: 1 } : { x: CARD_OFFSETS[0].x, y: CARD_OFFSETS[0].y, opacity: 0 }} transition={reduced ? { duration: 0 } : { duration: CARD_SLIDE, delay: 0 * CARD_STAGGER, ease: CARD_EASE }} style={{ position: 'absolute', zIndex: 1, left: 62, top: 58, width: 216, height: 216 }}>
+              <motion.div initial={false} animate={showFinal ? { x: 0, y: 0, opacity: 1 } : { x: CARD_OFFSETS[0].x, y: CARD_OFFSETS[0].y, opacity: 0 }} transition={reduced ? { duration: 0 } : { duration: CARD_SLIDE, delay: 0 * CARD_STAGGER, ease: CARD_EASE }} className="why-card" style={{ position: 'absolute', zIndex: 1, left: 62, top: 58, width: 216, height: 216 }}>
                 <motion.div initial={false} animate={{ x: 0, y: 0 }} whileHover={reduced ? undefined : { y: -3 }} transition={{ duration: 0.3, ease: 'easeOut' }} style={{ width: '100%', height: '100%', borderRadius: 4, background: 'rgba(26,39,66,0.85)', border: '1px solid rgba(26,39,66,0.1)', padding: 17, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', boxSizing: 'border-box' }}>
                   <span style={{ fontFamily: "'Inter',sans-serif", fontSize: 12, fontWeight: 600, letterSpacing: '1.2px', textTransform: 'uppercase', color: 'rgba(244,240,232,0.88)' }}>Control</span>
                   <div>
@@ -441,7 +441,7 @@ export default function Home() {
               </motion.div>
 
               {/* Craft — gold, middle-left */}
-              <motion.div initial={false} animate={showFinal ? { x: 0, y: 0, opacity: 1 } : { x: CARD_OFFSETS[1].x, y: CARD_OFFSETS[1].y, opacity: 0 }} transition={reduced ? { duration: 0 } : { duration: CARD_SLIDE, delay: 1 * CARD_STAGGER, ease: CARD_EASE }} style={{ position: 'absolute', zIndex: 1, left: 62, top: 282, width: 216, height: 216 }}>
+              <motion.div initial={false} animate={showFinal ? { x: 0, y: 0, opacity: 1 } : { x: CARD_OFFSETS[1].x, y: CARD_OFFSETS[1].y, opacity: 0 }} transition={reduced ? { duration: 0 } : { duration: CARD_SLIDE, delay: 1 * CARD_STAGGER, ease: CARD_EASE }} className="why-card" style={{ position: 'absolute', zIndex: 1, left: 62, top: 282, width: 216, height: 216 }}>
                 <motion.div initial={false} animate={{ x: 0, y: 0 }} whileHover={reduced ? undefined : { y: -3 }} transition={{ duration: 0.3, ease: 'easeOut' }} style={{ width: '100%', height: '100%', borderRadius: 4, background: 'rgba(200,168,107,0.8)', border: '1px solid rgba(26,39,66,0.1)', padding: 17, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', boxSizing: 'border-box' }}>
                   <span style={{ fontFamily: "'Inter',sans-serif", fontSize: 12, fontWeight: 600, letterSpacing: '1.2px', textTransform: 'uppercase', color: '#1A2742' }}>Craft</span>
                   <div>
@@ -452,7 +452,7 @@ export default function Home() {
               </motion.div>
 
               {/* Clarity — navy, middle-right */}
-              <motion.div initial={false} animate={showFinal ? { x: 0, y: 0, opacity: 1 } : { x: CARD_OFFSETS[2].x, y: CARD_OFFSETS[2].y, opacity: 0 }} transition={reduced ? { duration: 0 } : { duration: CARD_SLIDE, delay: 2 * CARD_STAGGER, ease: CARD_EASE }} style={{ position: 'absolute', zIndex: 1, left: 288, top: 282, width: 216, height: 216 }}>
+              <motion.div initial={false} animate={showFinal ? { x: 0, y: 0, opacity: 1 } : { x: CARD_OFFSETS[2].x, y: CARD_OFFSETS[2].y, opacity: 0 }} transition={reduced ? { duration: 0 } : { duration: CARD_SLIDE, delay: 2 * CARD_STAGGER, ease: CARD_EASE }} className="why-card" style={{ position: 'absolute', zIndex: 1, left: 288, top: 282, width: 216, height: 216 }}>
                 <motion.div initial={false} animate={{ x: 0, y: 0 }} whileHover={reduced ? undefined : { y: -3 }} transition={{ duration: 0.3, ease: 'easeOut' }} style={{ width: '100%', height: '100%', borderRadius: 4, background: 'rgba(26,39,66,0.85)', border: '1px solid rgba(26,39,66,0.1)', padding: 17, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', boxSizing: 'border-box' }}>
                   <span style={{ fontFamily: "'Inter',sans-serif", fontSize: 12, fontWeight: 600, letterSpacing: '1.2px', textTransform: 'uppercase', color: 'rgba(244,240,232,0.88)' }}>Clarity</span>
                   <div>
@@ -463,7 +463,7 @@ export default function Home() {
               </motion.div>
 
               {/* Confidence — gold, bottom-right */}
-              <motion.div initial={false} animate={showFinal ? { x: 0, y: 0, opacity: 1 } : { x: CARD_OFFSETS[3].x, y: CARD_OFFSETS[3].y, opacity: 0 }} transition={reduced ? { duration: 0 } : { duration: CARD_SLIDE, delay: 3 * CARD_STAGGER, ease: CARD_EASE }} style={{ position: 'absolute', zIndex: 1, left: 288, top: 506, width: 216, height: 216 }}>
+              <motion.div initial={false} animate={showFinal ? { x: 0, y: 0, opacity: 1 } : { x: CARD_OFFSETS[3].x, y: CARD_OFFSETS[3].y, opacity: 0 }} transition={reduced ? { duration: 0 } : { duration: CARD_SLIDE, delay: 3 * CARD_STAGGER, ease: CARD_EASE }} className="why-card" style={{ position: 'absolute', zIndex: 1, left: 288, top: 506, width: 216, height: 216 }}>
                 <motion.div initial={false} animate={{ x: 0, y: 0 }} whileHover={reduced ? undefined : { y: -3 }} transition={{ duration: 0.3, ease: 'easeOut' }} style={{ width: '100%', height: '100%', borderRadius: 4, background: 'rgba(200,168,107,0.8)', border: '1px solid rgba(26,39,66,0.1)', padding: 17, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', boxSizing: 'border-box' }}>
                   <span style={{ fontFamily: "'Inter',sans-serif", fontSize: 12, fontWeight: 600, letterSpacing: '1.2px', textTransform: 'uppercase', color: '#1A2742' }}>Confidence</span>
                   <div>
@@ -475,10 +475,10 @@ export default function Home() {
             </div>
 
             {/* RIGHT BOX — numbered steps + stats */}
-            <div style={{ borderRadius: 4, overflow: 'hidden', background: 'rgba(200,168,107,0.15)', height: 775, position: 'relative', flexShrink: 0 }}>
+            <div className="why-box" style={{ borderRadius: 4, overflow: 'hidden', background: 'rgba(200,168,107,0.15)', height: 775, position: 'relative', flexShrink: 0 }}>
               {/* Easy-peasy heading */}
-              <div style={{ position: 'absolute', left: 85, top: 216, transform: 'translateY(-50%)', fontFamily: "'Instrument Serif',serif", fontSize: 42, lineHeight: '46px', color: '#1A2742', whiteSpace: 'nowrap' }}>Easy-peasy</div>
-              <div style={{ position: 'absolute', left: 85, right: 60, top: 257 }}>
+              <div className="why-ep-head" style={{ position: 'absolute', left: 85, top: 216, transform: 'translateY(-50%)', fontFamily: "'Instrument Serif',serif", fontSize: 42, lineHeight: '46px', color: '#1A2742', whiteSpace: 'nowrap' }}>Easy-peasy</div>
+              <div className="why-ep-body" style={{ position: 'absolute', left: 85, right: 60, top: 257 }}>
 
                 {/* Numbered steps */}
                 {[
@@ -500,7 +500,7 @@ export default function Home() {
 
                 {/* Stats block */}
                 <div style={{ marginTop: 24, position: 'relative' }}>
-                  <div style={{ background: '#1A2742', borderRadius: 4, height: 80, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 32, border: '1px solid rgba(244,240,232,0.08)' }}>
+                  <div className="why-stats" style={{ background: '#1A2742', borderRadius: 4, height: 80, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 32, border: '1px solid rgba(244,240,232,0.08)' }}>
                     {/* 6 hrs — crossed out */}
                     <div style={{ display: 'flex', alignItems: 'baseline', gap: 2 }}>
                       <span style={{ position: 'relative', display: 'inline-block', textAlign: 'center', fontFamily: "'Instrument Serif',serif", fontSize: 72, lineHeight: '60px', color: '#8B95A8' }}>

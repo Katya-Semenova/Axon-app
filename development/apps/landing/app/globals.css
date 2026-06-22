@@ -69,6 +69,51 @@ body {
     justify-content: center;
   }
 }
+/* Мобилка (≤640px): пиксель-арт «Why Axon» не помещается в узкую коробку и
+   обрезается (пустые колонки). Выводим карточки и блоки из абсолютных координат
+   в нормальный вертикальный поток; декоративную сетку прячем. Десктоп не затронут. */
+@media (max-width: 640px) {
+  .why-box {
+    height: auto !important;
+    overflow: visible !important;
+    padding: 20px !important;
+  }
+  .why-deco { display: none !important; }
+  .why-card {
+    position: static !important;
+    left: auto !important;
+    top: auto !important;
+    width: 100% !important;
+    height: auto !important;
+    transform: none !important;
+    opacity: 1 !important;
+    margin-bottom: 12px;
+  }
+  .why-card > div {
+    height: auto !important;
+    min-height: 132px;
+  }
+  .why-ep-head {
+    position: static !important;
+    left: auto !important;
+    top: auto !important;
+    transform: none !important;
+    white-space: normal !important;
+    margin-bottom: 16px;
+  }
+  .why-ep-body {
+    position: static !important;
+    left: auto !important;
+    right: auto !important;
+    top: auto !important;
+  }
+  .why-stats {
+    height: auto !important;
+    flex-wrap: wrap;
+    gap: 12px 20px !important;
+    padding: 16px !important;
+  }
+}
 
 nav {
   backdrop-filter: blur(12px);
