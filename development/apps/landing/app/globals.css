@@ -42,6 +42,10 @@ body {
   font-family: var(--font-inter-sans), sans-serif;
   color: #1A2742;
   margin: 0;
+  /* Защита от горизонтального скролла на узких экранах (Урок 6, Шаг 5).
+     clip, а НЕ hidden: hidden сделал бы body скролл-контейнером и сломал бы
+     position:sticky секции THE SHIFT. clip обрезает вылет, не трогая sticky. */
+  overflow-x: clip;
 }
 
 /* Instrument Serif ships at weight 400 only — prevent browser synthetic bold */
