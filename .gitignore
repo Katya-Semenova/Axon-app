@@ -52,6 +52,13 @@ lessons/
 .playwright-mcp/
 # скриншоты-артефакты проверок в браузере
 *-prod.png
+# скриншоты-черновики дизайн-итераций лендинга (корень репо) — не часть продукта
+/proto-*.png
+/fp*.png
+/modes-*.png
+/_t.png
+# черновые превью бренд-ассетов — не часть сборки
+development/apps/landing/public/brand/_previews/
 
 # тестовые данные (CSV/xlsx) — локально, не в репо
 test-data/
