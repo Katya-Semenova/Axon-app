@@ -6,6 +6,9 @@
  */
 
 export const NAVY          = "#1B2840";
+/* navy-700 — заливки действий/данных: чат-бабблы, серии графиков (решение 2026-06-22, DESIGN.md).
+   Текст/цифры остаются на NAVY (navy-900). */
+export const NAVY_700      = "#2A3654";
 export const NAVY_300      = "#8892AA";
 export const GOLD          = "#B89548";
 export const BORDER        = "#D9D3C2";

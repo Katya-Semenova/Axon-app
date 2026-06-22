@@ -115,7 +115,7 @@ components:
     backgroundColor: "{colors.surface-muted}"
     rounded: "{rounded.sm}"
   chat-bubble:
-    backgroundColor: "{colors.navy-900}"
+    backgroundColor: "{colors.navy-700}"
     textColor: "{colors.text-on-dark}"
     rounded: "{rounded.sm}"
   mode-tabs:
@@ -131,7 +131,10 @@ components:
 ## Colors
 
 - **Поверхности (бумага):** background/canvas (#EDE9E0) → card/surface (#F5F2EA) → popover/surface-raised (#FBF9F3); вложенное и чипы — muted (#E5E0D2). Границы: border (#D9D3C2) и border-strong (#B8AE96).
-- **Navy-рампа** (900→100) — структура, текст, первичные данные, фон pill/CTA, чат-бабблы.
+- **Navy-рампа** (900→100) — структура и данные. **Разделение оттенков (решение 2026-06-22):**
+  **navy-900 (#1B2840)** — текст/заголовки/цифры (самый тёмный, для читаемости);
+  **navy-700 (#2A3654)** — заливки действий и данных: CTA/кнопки, чат-бабблы (живее текста, не
+  «мажут» на тёплой бумаге). Серии графиков — отдельная переработка палитры (см. backlog).
 - **Gold-рампа** (700→100) — **единственный акцент**: фокус-ринг, hover-границы dropzone, мелкие выделения. Не заливать золотом большие поверхности.
 - **Slate-рампа** — только для холодных source-нод (Insight-карточки).
 - **Текст:** primary #1B2840 · secondary #5C6478 · tertiary #8A8B87 · on-dark #F5F2EA.

@@ -5,7 +5,7 @@ import { useWorkspaceStore, currentBoardData } from "@/lib/store";
 import { authClient } from "@/lib/auth-client";
 import { BASE_PATH } from "@/lib/base-path";
 import { useTranslations } from "next-intl";
-import { BORDER, NAVY, T2, T3, RADIUS_BUBBLE } from "../ui/tokens";
+import { BORDER, NAVY, NAVY_700, T2, T3, RADIUS_BUBBLE } from "../ui/tokens";
 import { Textarea } from "../ui/Textarea";
 import { Chip } from "../ui/Chip";
 import { useToast } from "../ui/Toast";
@@ -274,7 +274,7 @@ export function ChatRail({ onBack }: { onBack: () => void }) {
                 ) : (
                   <div
                     className="self-end px-[14px] py-[9px] text-[12px] leading-[1.5] max-w-[88%] ml-auto"
-                    style={{ background: NAVY, color: "#F5F2EA", borderRadius: RADIUS_BUBBLE }}
+                    style={{ background: NAVY_700, color: "#F5F2EA", borderRadius: RADIUS_BUBBLE }}
                   >
                     {msg.content}
                   </div>
@@ -321,7 +321,7 @@ export function ChatRail({ onBack }: { onBack: () => void }) {
                 </div>
               ) : (
                 <div className="self-end px-[14px] py-[9px] text-[12px] leading-[1.5] max-w-[88%] ml-auto"
-                  style={{ background: NAVY, color: "#F5F2EA", borderRadius: RADIUS_BUBBLE }}>
+                  style={{ background: NAVY_700, color: "#F5F2EA", borderRadius: RADIUS_BUBBLE }}>
                   {msg.content}
                 </div>
               )}
@@ -357,7 +357,7 @@ export function ChatRail({ onBack }: { onBack: () => void }) {
                 addBuildMessage({ id: `user-${Date.now()}`, role: "user", content: text });
               }}
               className="w-[34px] h-[34px] rounded-pill flex items-center justify-center shrink-0 hover:opacity-85 transition-opacity duration-200"
-              style={{ background: NAVY, color: "#F5F2EA" }}
+              style={{ background: NAVY_700, color: "#F5F2EA" }}
               aria-label={t("send")}
             >
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -384,7 +384,7 @@ export function ChatRail({ onBack }: { onBack: () => void }) {
               onClick={handleSend}
               disabled={sending || !draftData.trim()}
               className="w-[34px] h-[34px] rounded-pill flex items-center justify-center shrink-0 hover:opacity-85 transition-opacity duration-200 disabled:opacity-40 disabled:cursor-not-allowed"
-              style={{ background: NAVY, color: "#F5F2EA" }}
+              style={{ background: NAVY_700, color: "#F5F2EA" }}
               aria-label={t("send")}
             >
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

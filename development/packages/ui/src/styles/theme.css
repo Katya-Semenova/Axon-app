@@ -51,7 +51,8 @@
   --color-text-on-dark:   #F5F2EA;
 
   /* ── Pill (user messages, primary CTAs) ── */
-  --color-pill-bg:   #1B2840;
+  /* navy-700 (#2A3654), не navy-900 — заливка CTA/кнопок живее текста (решение 2026-06-22, DESIGN.md). */
+  --color-pill-bg:   #2A3654;
   --color-pill-text: #F5F2EA;
 
   /* ──────────────────────────────────────────────
