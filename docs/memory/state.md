@@ -114,17 +114,19 @@ Donut-легенда, B1/B2 авто-пан) + фикс деплоя ИИ-env (`
 `_axon/PrototypeShowcase.tsx`). Общие файлы ЧИСТЫЕ → **«пакет на соседа» РАЗБЛОКИРОВАН, ничего не ждёт.**
 (2-я секция FEATURES намеренно не доделана — это не блокер для пунктов ниже.) Перед правкой всё равно
 быстро глянь `git status` — нет ли новых незакоммиченных правок.
-1. **«Пакет на соседа»** (всё ждало `layout.tsx`/`page.tsx`):
-   - текстовые мета Шага 2 — `layout.tsx` лендинга: title 50–60, description 140–160, metadataBase,
-     **og:title = «From data to story, in minutes»** (финал, согласовано 2026-06-21);
-   - **schema.org JSON-LD** (Organization / SoftwareApplication + FAQPage из FAQ) — GEO;
-   - ссылки футера `page.tsx` на `/privacy` `/terms` `/cookies` (сейчас `href="#"`);
-   - **cookie-баннер** (грузит Метрику только после «Принять»);
-   - **скрипт Яндекс.Метрики** (ID `NEXT_PUBLIC_YM_ID=110037189`, через next/script, consent-gated);
-   - вызовы `trackEvent` (обёртка уже есть: `apps/landing/lib/analytics.ts`): CTA → `page.tsx`, signup → `apps/app`;
-   - чекбокс согласия со ссылками на `/terms` `/privacy` в форме регистрации (`apps/app`);
-   - **микрокопия «Made for focused desktop work»** под Hero-CTA (и опц. у финального CTA) — мягко
-     предупредить, что сервис десктоп-онли (на мобиле `DesktopOnlyNotice` перекрывает воркспейс, как Figma).
+1. **✅ «Пакет» — ЗАВЕРШЁН 2026-06-22** (коммиты `e489ef9`…`ac5ff64`):
+   - ✅ текстовые мета + og:title «From data to story, in minutes» (`layout.tsx`);
+   - ✅ JSON-LD Organization/SoftwareApplication (`layout.tsx`) + FAQPage с видимой секцией `#faq` (`page.tsx`);
+   - ✅ ссылки футера → `/privacy` `/terms` `/cookies` + Contact `mailto:`;
+   - ✅ cookie-баннер `CookieConsent.tsx` + consent-gated Я.Метрика (лендинг и сервис, общий localStorage);
+   - ✅ `trackEvent`: 5×`cta_click` + CTA→`/app`; `signup_start/complete` в `apps/app/register`;
+   - ✅ чекбокс согласия (`/terms` `/privacy`) в форме регистрации, блокирует кнопку;
+   - ✅ микрокопия «Made for focused desktop work» под Hero-CTA.
+   - ⚠️ **ENV:** `NEXT_PUBLIC_YM_ID=110037189` добавлен в `apps/app/.env` (dev) и `.env.example`;
+     **на проде вписать в `apps/app/.env.production`** — иначе signup-цель молчит.
+   - 📌 **Флаг (не сделано намеренно):** `apps/app/components/AuthModal.tsx` — модалка-регистрация
+     (вкладка register) БЕЗ чекбокса согласия и signup-трекинга. Решить: добавить туда то же
+     (нужны i18n-ключи) или оставить только основную форму `register/page.tsx`. Спросить пользователя.
 1а. **Вычитка текста — `/avoid-ai-writing`:** когда все тексты лендинга финальны (мета + микрокопия +
    правки соседа) — прогнать скилл `/avoid-ai-writing` (профиль `landing`) по текстам лендинга, показать
    diff. Делать ДО деплоя, чтобы публиковать уже вычищенный от AI-штампов текст.
