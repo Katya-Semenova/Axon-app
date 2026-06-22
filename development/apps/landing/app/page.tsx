@@ -376,6 +376,8 @@ export default function Home() {
               <a href="#problem" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, border: '1px solid rgba(26,39,66,.2)', color: '#1A2742', fontFamily: "'Inter',sans-serif", fontSize: 13, fontWeight: 500, padding: '12px 24px', borderRadius: 4, textDecoration: 'none' }}>See how it works ↓</a>
             </div>
             <p style={{ fontFamily: "'Inter',sans-serif", fontSize: 10, color: 'rgba(139,149,168,.6)' }}>No credit card. First deck on us.</p>
+            {/* Мягкое предупреждение: сервис десктоп-онли (на мобиле воркспейс перекрыт DesktopOnlyNotice). */}
+            <p style={{ fontFamily: "'Inter',sans-serif", fontSize: 10, color: 'rgba(139,149,168,.6)', marginTop: 6, letterSpacing: '.02em' }}>Made for focused desktop work.</p>
           </div>
         </div>
       </section>
