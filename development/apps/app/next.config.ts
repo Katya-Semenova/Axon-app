@@ -1,5 +1,6 @@
 import type { NextConfig } from "next";
 import createNextIntlPlugin from "next-intl/plugin";
+import path from "path";
 
 const withNextIntl = createNextIntlPlugin("./i18n/request.ts");
 
@@ -7,6 +8,10 @@ const nextConfig: NextConfig = {
   // Автономная сборка (server.js) для упаковки в Docker (Урок 3 — переезд на VPS).
   // На Vercel безопасно: платформа использует собственную сборку.
   output: "standalone",
+  // Монорепо (Урок 6): общие node_modules и @axon/ui лежат уровнем выше — в development/.
+  // Без этого standalone не дотягивает их в коробку и сервис падает «модуль не найден».
+  // Корень трассировки = корень workspace (../../ от apps/app/).
+  outputFileTracingRoot: path.join(__dirname, "../../"),
   // Линт отвязан от сборки: ESLint гоняем отдельно (npm run lint / ревью на Шаге 11),
   // чтобы давние замечания в коде не валили прод-сборку и деплой.
   eslint: { ignoreDuringBuilds: true },
