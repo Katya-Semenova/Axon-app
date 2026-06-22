@@ -92,8 +92,8 @@ Donut-легенда, B1/B2 авто-пан) + фикс деплоя ИИ-env (`
 - ✅ `apps/landing/app/sitemap.ts` — только публичные URL (сейчас `/`; юр-страницы — в Задании 3.2).
 - ✅ `apps/landing/public/llms.txt` — GEO-карта продукта для нейросетей (EN).
 - ✅ noindex на сервисе — `robots:{index:false}` в `apps/app/app/layout.tsx` (весь сервис + `/p/[token]`).
-- ⬜ **schema.org JSON-LD (Organization/SoftwareApplication/FAQPage) — ОТЛОЖЕНО** вместе с текстовыми мета:
-  ставится в `layout.tsx`/`page.tsx` лендинга (у соседа). Добавлю при слиянии.
+- 🟡 **schema.org JSON-LD (2026-06-22):** Organization + SoftwareApplication — готово в `layout.tsx`
+  (статичный `<script ld+json>`). FAQPage — делается с видимой секцией FAQ в `page.tsx` (вариант А).
 - ⬜ **Google Search Console** — ручной внешний шаг пользователя: зарегистрировать сайт + отправить sitemap
   (после деплоя лендинга). Опц. Yandex Webmaster.
 - ✅ **Задание 3.2 — юр-страницы:** `/privacy` `/terms` `/cookies` (`apps/landing/app/*/page.tsx`) +

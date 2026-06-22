@@ -89,9 +89,9 @@
   юр-страницы (`/privacy`, `/terms`, `/cookies`) добавятся при их создании (Задание 3.2).
 - **noindex** на внутренних страницах сервиса (`apps/app`: `/settings`, `/admin/*`) — `robots: { index:false }`.
 - **GEO (полный):** `llms.txt` (`apps/landing/public/llms.txt` — markdown-карта продукта для LLM) +
-  **schema.org JSON-LD** (Organization / SoftwareApplication / FAQPage). _JSON-LD — ОТЛОЖЕНА: ставится
-  в `layout.tsx`/`page.tsx` лендинга, которые держит соседний чат; добавлю при их слиянии вместе с
-  текстовыми мета Шага 2._
+  **schema.org JSON-LD** (2026-06-22): Organization + SoftwareApplication — в `layout.tsx` (статичный
+  `<script type="application/ld+json">`); FAQPage — в `page.tsx` рядом с видимой секцией FAQ (разметка
+  без видимого контента нарушает правила Google).
 - **Домен:** `https://axon-app.ru`.
 
 ## Юридические страницы (Урок 6, Задание 3.2) — 2026-06-21

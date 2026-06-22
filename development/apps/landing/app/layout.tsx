@@ -42,6 +42,34 @@ export const metadata: Metadata = {
   },
 };
 
+// GEO / schema.org — помогает поиску и AI-ассистентам понять, что такое Axon.
+// Organization (кто) + SoftwareApplication (что за продукт). FAQPage — отдельно, в page.tsx
+// (рядом с видимой секцией FAQ, иначе разметка без контента нарушает правила Google).
+const jsonLd = [
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: "Axon",
+    url: "https://axon-app.ru",
+    logo: "https://axon-app.ru/apple-icon.png",
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    name: "Axon",
+    applicationCategory: "BusinessApplication",
+    operatingSystem: "Web",
+    url: "https://axon-app.ru/app",
+    description:
+      "AI workspace that turns raw spreadsheets into clear charts, insights and presentation-ready slides in minutes.",
+    offers: {
+      "@type": "Offer",
+      price: "0",
+      priceCurrency: "USD",
+    },
+  },
+];
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -52,7 +80,13 @@ export default function RootLayout({
       lang="en"
       className={`${instrumentSerif.variable} ${inter.variable} ${jetbrainsMono.variable}`}
     >
-      <body className="font-inter antialiased">{children}</body>
+      <body className="font-inter antialiased">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+        {children}
+      </body>
     </html>
   );
 }
