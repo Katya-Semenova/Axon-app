@@ -3,18 +3,21 @@
 import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import { NAVY, GOLD, SURFACE_RAISE, BORDER, T2, NAVY_300 } from "./tokens";
+import { BASE_PATH } from "@/lib/base-path";
 import { useTranslations } from "next-intl";
 
 const STORAGE_KEY = "axon_onboarding_done";
 const OPEN_EVENT  = "axon:open-onboarding";
 
 // Только пути к картинкам; тексты шагов — в словарях (namespace Onboarding.steps.N).
+// Приставка BASE_PATH (/ai-studio) обязательна: next/image грузит строковый src как есть,
+// сам префикс не дописывает → без неё оптимизатор стучится в /onboarding/* и получает 404.
 const STEP_IMAGES = [
-  "/onboarding/onboarding-1.png",
-  "/onboarding/onboarding-2.png",
-  "/onboarding/onboarding-3.png",
-  "/onboarding/onboarding-4.png",
-  "/onboarding/onboarding-5.png",
+  `${BASE_PATH}/onboarding/onboarding-1.png`,
+  `${BASE_PATH}/onboarding/onboarding-2.png`,
+  `${BASE_PATH}/onboarding/onboarding-3.png`,
+  `${BASE_PATH}/onboarding/onboarding-4.png`,
+  `${BASE_PATH}/onboarding/onboarding-5.png`,
 ];
 
 /* Call from anywhere to re-open the tour (e.g. NavBar "How it works" link). */
