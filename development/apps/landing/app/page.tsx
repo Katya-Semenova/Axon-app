@@ -28,6 +28,31 @@ const CARD_OFFSETS = [
   { x: 226, y: 0 },   // Confidence — from the right
 ];
 
+// FAQ — видимая секция + источник для FAQPage JSON-LD (GEO). Один массив,
+// чтобы текст на странице и в разметке не разъезжались.
+const FAQS: { q: string; a: string }[] = [
+  {
+    q: 'What does Axon do?',
+    a: "Axon turns raw spreadsheets — CSV or Excel — into clear charts, insights and presentation-ready slides. Drop your data and the AI proposes the charts and a narrative; you shape the story.",
+  },
+  {
+    q: 'Do I need design or charting skills?',
+    a: 'No. Axon picks the right chart types and handles layout and styling for you. You focus on what the data means, not on slide design.',
+  },
+  {
+    q: 'Is my data private?',
+    a: "Yes. Your files stay tied to your account. To plan charts, Axon sends the AI only a small schema and a short sample — never your full dataset.",
+  },
+  {
+    q: 'Is Axon free to start?',
+    a: 'Yes. You can start with no credit card, and your first deck is on us.',
+  },
+  {
+    q: 'Does Axon work on mobile?',
+    a: 'Axon is made for focused desktop work — analyzing data and composing decks on a large screen. A phone shows a short notice instead of the workspace.',
+  },
+];
+
 export default function Home() {
   const heroRef = useRef<HTMLElement>(null);
   const chaosLayerRef = useRef<HTMLDivElement>(null);
@@ -913,6 +938,46 @@ export default function Home() {
           </div>
 
         </div>
+      </section>
+
+{/* ═══ FAQ ═══ */}
+      <section id="faq" style={{ background: '#F4F0E8', borderTop: '1px solid rgba(26,39,66,0.1)', padding: '96px 24px' }}>
+        <div style={{ maxWidth: 768, margin: '0 auto' }}>
+          <span style={{ fontFamily: "'Inter',sans-serif", fontSize: 12, fontWeight: 600, letterSpacing: '1.2px', textTransform: 'uppercase', color: '#C8A86B', display: 'block', marginBottom: 16 }}>
+            FAQ
+          </span>
+          <h2 style={{ fontFamily: "'Instrument Serif',serif", fontSize: 56, fontWeight: 400, lineHeight: '60px', color: '#1A2742', margin: '0 0 40px' }}>
+            Questions, answered.
+          </h2>
+          <div>
+            {FAQS.map(({ q, a }) => (
+              <details key={q} style={{ borderTop: '1px solid rgba(26,39,66,0.12)', padding: '20px 0' }}>
+                <summary style={{ fontFamily: "'Inter',sans-serif", fontSize: 16, fontWeight: 600, color: '#1A2742', cursor: 'pointer', listStyle: 'none' }}>
+                  {q}
+                </summary>
+                <p style={{ fontFamily: "'Inter',sans-serif", fontSize: 15, lineHeight: 1.65, color: '#8B95A8', margin: '12px 0 0' }}>
+                  {a}
+                </p>
+              </details>
+            ))}
+          </div>
+        </div>
+        {/* FAQPage JSON-LD — строится из того же FAQS, что и видимая секция выше (правила Google:
+            разметка только при видимом контенте). */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'FAQPage',
+              mainEntity: FAQS.map(({ q, a }) => ({
+                '@type': 'Question',
+                name: q,
+                acceptedAnswer: { '@type': 'Answer', text: a },
+              })),
+            }),
+          }}
+        />
       </section>
 
 {/* ═══ CTA ═══ */}
