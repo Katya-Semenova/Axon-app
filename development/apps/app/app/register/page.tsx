@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { authClient } from "@/lib/auth-client";
+import { trackEvent, GOALS } from "@/lib/analytics";
 import { Card, CardHeader, CardContent, CardFooter } from "@/app/components/ui/Card";
 import { FormField } from "@/app/components/ui/FormField";
 import { Input } from "@/app/components/ui/Input";
@@ -16,6 +17,7 @@ export default function RegisterPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [agreed, setAgreed] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -23,12 +25,14 @@ export default function RegisterPage() {
     e.preventDefault();
     setError(null);
     setLoading(true);
+    trackEvent(GOALS.signupStart); // начало регистрации (no-op без согласия на аналитику)
     const res = await authClient.signUp.email({ name, email, password });
     setLoading(false);
     if (res.error) {
       setError(res.error.message ?? "Не удалось зарегистрироваться");
       return;
     }
+    trackEvent(GOALS.signupComplete); // успешная регистрация
     router.push("/");
     router.refresh();
   }
@@ -54,7 +58,22 @@ export default function RegisterPage() {
             {error && <p className="text-[11.5px] text-error">{error}</p>}
           </CardContent>
           <CardFooter className="flex flex-col gap-3">
-            <Button type="submit" loading={loading} className="w-full">Зарегистрироваться</Button>
+            <label className="flex items-start gap-2 text-[12px] text-t3 leading-snug">
+              <input
+                type="checkbox"
+                checked={agreed}
+                onChange={(e) => setAgreed(e.target.checked)}
+                className="mt-0.5 shrink-0"
+                required
+              />
+              <span>
+                Я принимаю{" "}
+                <Link href="/terms" className="text-t1 underline underline-offset-4">Пользовательское соглашение</Link>
+                {" "}и{" "}
+                <Link href="/privacy" className="text-t1 underline underline-offset-4">Политику конфиденциальности</Link>.
+              </span>
+            </label>
+            <Button type="submit" loading={loading} disabled={!agreed} className="w-full">Зарегистрироваться</Button>
             <p className="text-[12px] text-t3 text-center">
               Уже есть аккаунт?{" "}
               <Link href="/login" className="text-t1 underline underline-offset-4">Войти</Link>
