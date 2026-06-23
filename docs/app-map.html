@@ -91,7 +91,10 @@
     .am-dim { opacity: .4 !important; transition: opacity .2s; }
     .mermaid path.am-edge-hl { stroke: var(--hl) !important; stroke-width: 3px !important; opacity: 1 !important; }
     /* крупнее текст внутри прямоугольников-узлов */
-    .mermaid .nodeLabel, .mermaid span.nodeLabel { font-size: 17px !important; }
+    .mermaid .nodeLabel, .mermaid span.nodeLabel { font-size: 19px !important; }
+    /* заголовки столбцов-групп */
+    .mermaid .cluster-label, .mermaid .cluster-label span { font-size: 13px !important; font-weight: 700; letter-spacing: .03em; }
+    .mermaid .cluster rect { fill: #faf8f3 !important; stroke: var(--border) !important; }
 
     table { width: 100%; border-collapse: collapse; background: #fff; font-size: 12px; margin-top: 8px; }
     caption { text-align: left; font-weight: 600; padding: 14px 0 8px; font-size: 14px; }
@@ -105,10 +108,10 @@
     .role-admin { color: var(--navy); }
     .note { font-size: 12px; color: var(--slate); margin-top: 8px; }
 
-    /* на узких экранах НЕ сжимаем схему в кашу — даём горизонтальную прокрутку */
+    /* на узких экранах НЕ сжимаем схему в кашу — рендерим в натуральную величину + прокрутка */
     @media (max-width: 860px) {
       .diagram { overflow-x: auto; }
-      .diagram svg { width: 900px !important; max-width: none !important; }
+      .diagram svg { width: auto !important; max-width: none !important; }
       .infogrid { gap: 18px; }
     }
   </style>
@@ -139,20 +142,31 @@
     <div class="diagram">
       <pre class="mermaid">
 graph LR
-  Landing["Лендинг<br/>/"]:::guest
-  Privacy["Конфиденциальность<br/>/privacy"]:::guest
-  Terms["Соглашение<br/>/terms"]:::guest
-  Cookies["Cookies<br/>/cookies"]:::guest
-
-  Entry["Вход в приложение<br/>/ai-studio"]:::guest
-  Login["Вход<br/>/login"]:::guest
-  Register["Регистрация<br/>/register"]:::guest
-  Forgot["Сброс пароля<br/>/forgot-password"]:::guest
-  Reset["Новый пароль<br/>/reset-password"]:::guest
-  Settings["Настройки<br/>/settings"]:::user
-  Admin["Админка<br/>/admin/users"]:::admin
-  AdminDetail["Профиль юзера<br/>/admin/users/[id]"]:::admin
-  Public["Публичная презентация<br/>/p/[id]"]:::guest
+  subgraph S1["ЛЕНДИНГ · axon-app.ru/"]
+    direction TB
+    Landing["Лендинг<br/>/"]:::guest
+    Privacy["Конфиденциальность<br/>/privacy"]:::guest
+    Terms["Соглашение<br/>/terms"]:::guest
+    Cookies["Cookies<br/>/cookies"]:::guest
+  end
+  subgraph S2["ПРИЛОЖЕНИЕ · вход · холст · слайды · показ"]
+    direction TB
+    Entry["Вход в приложение<br/>/ai-studio"]:::guest
+    Login["Вход<br/>/login"]:::guest
+    Register["Регистрация<br/>/register"]:::guest
+    Forgot["Сброс пароля<br/>/forgot-password"]:::guest
+    Reset["Новый пароль<br/>/reset-password"]:::guest
+    Public["Публичная презентация<br/>/p/[id]"]:::guest
+  end
+  subgraph S3["ЛИЧНЫЙ КАБИНЕТ"]
+    direction TB
+    Settings["Настройки<br/>/settings"]:::user
+  end
+  subgraph S4["АДМИН-КАБИНЕТ"]
+    direction TB
+    Admin["Админка<br/>/admin/users"]:::admin
+    AdminDetail["Профиль юзера<br/>/admin/users/[id]"]:::admin
+  end
 
   Landing -- "CTA «Try Axon»" --> Entry
   Landing --> Privacy
@@ -383,7 +397,7 @@ graph LR
     mermaid.initialize({
       startOnLoad: false,
       securityLevel: "loose",
-      themeVariables: { fontSize: "20px" }, // крупный текст узлов (раскладка учтёт размер боксов)
+      themeVariables: { fontSize: "22px" }, // крупный текст узлов (раскладка учтёт размер боксов)
       flowchart: { useMaxWidth: true, htmlLabels: true, nodeSpacing: 50, rankSpacing: 75 },
     });
     await mermaid.run({ querySelector: ".mermaid" });
