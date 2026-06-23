@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>App Map — Axon</title>
+  <title>App Map — Axon (интерактивная)</title>
   <style>
     :root {
       --navy: #1A2742;
@@ -11,34 +11,70 @@
       --cream: #F4F0E8;
       --slate: #8B95A8;
       --border: #d8d2c4;
+      --blue: #2563eb;
     }
     * { box-sizing: border-box; }
     body {
       margin: 0;
-      padding: 40px 32px 80px;
+      padding: 32px 28px 80px;
       background: var(--cream);
       color: var(--navy);
       font-family: -apple-system, "Inter", "Segoe UI", system-ui, sans-serif;
       line-height: 1.5;
     }
-    .wrap { max-width: 1100px; margin: 0 auto; }
-    header h1 { font-size: 28px; margin: 0 0 4px; }
-    header .meta { color: var(--slate); font-size: 13px; margin-bottom: 28px; }
-    header .meta code {
-      background: #fff; border: 1px solid var(--border);
-      padding: 1px 6px; border-radius: 3px; font-size: 12px;
-    }
-    h2 { font-size: 18px; margin: 36px 0 12px; border-bottom: 2px solid var(--gold); padding-bottom: 6px; }
-    .diagram {
-      background: #fff; border: 1px solid var(--border);
-      border-radius: 6px; padding: 24px; overflow-x: auto; text-align: center;
-    }
-    .legend { display: flex; gap: 18px; flex-wrap: wrap; margin: 16px 0 8px; font-size: 13px; }
+    .wrap { max-width: 1200px; margin: 0 auto; }
+    header h1 { font-size: 26px; margin: 0 0 4px; }
+    header .meta { color: var(--slate); font-size: 13px; margin-bottom: 22px; }
+    header .meta code { background: #fff; border: 1px solid var(--border); padding: 1px 6px; border-radius: 3px; font-size: 12px; }
+    h2 { font-size: 18px; margin: 34px 0 12px; border-bottom: 2px solid var(--gold); padding-bottom: 6px; }
+
+    .legend { display: flex; gap: 18px; flex-wrap: wrap; margin: 4px 0 14px; font-size: 13px; }
     .legend span { display: inline-flex; align-items: center; gap: 7px; }
     .swatch { width: 16px; height: 16px; border-radius: 3px; display: inline-block; }
     .sw-guest { background: var(--cream); border: 1px solid var(--slate); }
     .sw-user { background: var(--gold); border: 1px solid var(--navy); }
     .sw-admin { background: var(--navy); border: 1px solid var(--gold); }
+
+    /* двухколоночная зона: схема + панель */
+    .interactive { display: flex; gap: 18px; align-items: stretch; }
+    .diagram {
+      flex: 1 1 auto; min-width: 0;
+      background: #fff; border: 1px solid var(--border);
+      border-radius: 6px; padding: 18px; overflow: auto;
+    }
+    .diagram .mermaid { text-align: center; }
+    .panel {
+      flex: 0 0 320px;
+      background: #fff; border: 1px solid var(--border);
+      border-radius: 6px; padding: 18px; align-self: flex-start;
+      position: sticky; top: 16px;
+    }
+    .panel h3 { margin: 0 0 4px; font-size: 16px; }
+    .panel .sub { color: var(--slate); font-size: 12px; margin: 0 0 14px; }
+    .panel .route { font-family: "JetBrains Mono", monospace; font-size: 12px; color: var(--slate); }
+    .panel .grp { font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: var(--slate); margin: 16px 0 6px; }
+    .panel ul { list-style: none; margin: 0; padding: 0; }
+    .panel li { padding: 7px 0; border-bottom: 1px dashed var(--border); font-size: 13px; }
+    .panel li:last-child { border-bottom: none; }
+    .panel li .to { font-weight: 600; }
+    .panel li .via { color: var(--slate); font-size: 12px; display: block; }
+    .panel .none { color: var(--slate); font-size: 13px; font-style: italic; }
+    .panel .role-tag { display: inline-block; font-size: 11px; padding: 1px 7px; border-radius: 10px; margin-top: 6px; }
+    .rt-guest { background: var(--cream); border: 1px solid var(--slate); color: var(--navy); }
+    .rt-user { background: var(--gold); border: 1px solid var(--navy); color: var(--navy); }
+    .rt-admin { background: var(--navy); border: 1px solid var(--gold); color: var(--cream); }
+    .reset {
+      margin-top: 16px; width: 100%; cursor: pointer;
+      background: var(--cream); border: 1px solid var(--border); border-radius: 4px;
+      padding: 8px; font-size: 13px; color: var(--navy);
+    }
+    .reset:hover { background: #ece6da; }
+
+    /* интерактив поверх mermaid-SVG */
+    .mermaid g.node { cursor: pointer; }
+    .am-dim { opacity: .12 !important; transition: opacity .2s; }
+    .mermaid path.am-edge-hl { stroke: var(--blue) !important; stroke-width: 3px !important; opacity: 1 !important; }
+
     table { width: 100%; border-collapse: collapse; background: #fff; font-size: 13px; margin-top: 8px; }
     caption { text-align: left; font-weight: 600; padding: 14px 0 8px; font-size: 14px; }
     th, td { border: 1px solid var(--border); padding: 8px 10px; text-align: left; vertical-align: top; }
@@ -49,7 +85,12 @@
     .role-guest { color: var(--slate); }
     .role-user { color: #9a7a3a; }
     .role-admin { color: var(--navy); }
-    .note { font-size: 12px; color: var(--slate); margin-top: 6px; }
+    .note { font-size: 12px; color: var(--slate); margin-top: 8px; }
+
+    @media (max-width: 880px) {
+      .interactive { flex-direction: column; }
+      .panel { flex-basis: auto; position: static; }
+    }
   </style>
 </head>
 <body>
@@ -57,9 +98,9 @@
     <header>
       <h1>App Map — Axon</h1>
       <div class="meta">
-        Карта маршрутов и переходов по фактическому состоянию кода ·
-        сгенерировано <code>2026-06-23</code> (Урок 7, Шаг 1).
-        Источник тех же данных — <code>docs/01-app-map.md</code>.
+        Интерактивная карта маршрутов и переходов · сгенерировано <code>2026-06-23</code>
+        (Урок 7, Шаг 1). Те же данные — в <code>docs/01-app-map.md</code>.
+        <strong>Нажми на любой экран в схеме</strong> — подсветятся переходы с него.
       </div>
     </header>
 
@@ -68,9 +109,12 @@
       <span><i class="swatch sw-guest"></i> гость (без входа)</span>
       <span><i class="swatch sw-user"></i> вошедший пользователь</span>
       <span><i class="swatch sw-admin"></i> админ</span>
+      <span style="color:var(--blue)">━━ синяя линия = активный переход с выбранного экрана</span>
     </div>
-    <div class="diagram">
-      <pre class="mermaid">
+
+    <div class="interactive">
+      <div class="diagram">
+        <pre class="mermaid">
 graph LR
   Landing["Лендинг<br/>/"]:::guest
   Privacy["Конфиденциальность<br/>/privacy"]:::guest
@@ -115,21 +159,29 @@ graph LR
   classDef guest fill:#F4F0E8,stroke:#8B95A8,color:#1A2742;
   classDef user fill:#C8A86B,stroke:#1A2742,color:#1A2742;
   classDef admin fill:#1A2742,stroke:#C8A86B,color:#F4F0E8;
-      </pre>
+        </pre>
+      </div>
+
+      <aside class="panel" id="panel">
+        <h3 id="p-title">Выбери экран</h3>
+        <p class="sub" id="p-hint">Нажми на кружок в схеме слева — здесь появится список,
+          куда с него можно перейти и по какой кнопке/ссылке.</p>
+        <div id="p-body"></div>
+        <button class="reset" id="p-reset" style="display:none">↺ Показать всё</button>
+      </aside>
     </div>
+
     <p class="note">
       Сервис живёт на <code>basePath /ai-studio</code> — физические адреса маршрутов сервиса идут
-      с этой приставкой (например, <code>/login</code> → <code>/ai-studio/login</code>).
-      Middleware нет: доступ гейтится на самих серверных страницах.
+      с этой приставкой (<code>/login</code> → <code>/ai-studio/login</code>). Middleware нет:
+      доступ гейтится на самих серверных страницах.
     </p>
 
     <h2>Маршруты и доступ</h2>
 
     <table>
       <caption>Лендинг (apps/landing, axon-app.ru/)</caption>
-      <thead>
-        <tr><th>URL</th><th>Экран</th><th>Доступ</th><th>Описание</th></tr>
-      </thead>
+      <thead><tr><th>URL</th><th>Экран</th><th>Доступ</th><th>Описание</th></tr></thead>
       <tbody>
         <tr><td><code>/</code></td><td>Маркетинговый лендинг</td><td class="role role-guest">все</td><td>Промо-страница: Hero, секции, FAQ, CTA → сервис</td></tr>
         <tr><td><code>/privacy</code></td><td>Политика конфиденциальности</td><td class="role role-guest">все</td><td>Юр-страница (152-ФЗ)</td></tr>
@@ -140,9 +192,7 @@ graph LR
 
     <table>
       <caption>Сервис (apps/app, axon-app.ru/ai-studio)</caption>
-      <thead>
-        <tr><th>URL</th><th>Экран</th><th>Доступ</th><th>Описание</th></tr>
-      </thead>
+      <thead><tr><th>URL</th><th>Экран</th><th>Доступ</th><th>Описание</th></tr></thead>
       <tbody>
         <tr><td><code>/</code></td><td>Вход в приложение → рабочая область</td><td class="role role-guest">все (гость + вошедший)</td><td>Клиентский переключатель: intro-вью ↔ workspace (холст). Сохранение требует входа</td></tr>
         <tr><td><code>/login</code></td><td>Вход</td><td class="role role-guest">только гость</td><td>Форма входа (Better Auth)</td></tr>
@@ -161,21 +211,158 @@ graph LR
     <ul>
       <li>Middleware нет — доступ проверяется на серверных страницах и в server-actions.</li>
       <li><code>/settings</code>: нет сессии → редирект на <code>/login</code>.</li>
-      <li><code>/admin/*</code>: не-админ → 404 (<code>notFound</code>), скрываем существование. Админ — по env <code>ADMIN_EMAIL</code>.</li>
+      <li><code>/admin/*</code>: не-админ → 404 (<code>notFound</code>). Админ — по env <code>ADMIN_EMAIL</code>.</li>
       <li>Холст <code>/</code> открыт гостю; сохранение проекта требует входа.</li>
       <li><code>/p/[id]</code> — read-only по приватному токену, без входа.</li>
       <li>Весь сервис — <code>robots: index:false</code>; в поиск попадает только лендинг.</li>
     </ul>
     <p class="note">
-      Заметка (смежное): в <code>/register</code> ссылки на <code>/terms</code> и <code>/privacy</code> —
-      внутренние ссылки сервиса, поэтому под basePath резолвятся в <code>/ai-studio/terms</code>,
-      которых в сервисе нет (юр-страницы живут на лендинге). На проверку → backlog.
+      Заметка (смежное): в <code>/register</code> ссылки на <code>/terms</code> и <code>/privacy</code>
+      под basePath резолвятся в <code>/ai-studio/terms</code>, которых в сервисе нет (юр-страницы на лендинге). В backlog.
     </p>
   </div>
 
   <script type="module">
     import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
-    mermaid.initialize({ startOnLoad: true, securityLevel: "loose" });
+
+    // --- Данные для боковой панели (переходы с подписями кнопок/ссылок) ---
+    const NODES = {
+      Landing:     { label: "Лендинг",               route: "/",                 role: "guest" },
+      Privacy:     { label: "Конфиденциальность",     route: "/privacy",          role: "guest" },
+      Terms:       { label: "Соглашение",             route: "/terms",            role: "guest" },
+      Cookies:     { label: "Cookies",                route: "/cookies",          role: "guest" },
+      Entry:       { label: "Вход в приложение",      route: "/ai-studio",        role: "guest" },
+      Login:       { label: "Вход",                   route: "/login",            role: "guest" },
+      Register:    { label: "Регистрация",            route: "/register",         role: "guest" },
+      Forgot:      { label: "Сброс пароля",           route: "/forgot-password",  role: "guest" },
+      Reset:       { label: "Новый пароль",           route: "/reset-password",   role: "guest" },
+      Settings:    { label: "Настройки",              route: "/settings",         role: "user"  },
+      Admin:       { label: "Админка",                route: "/admin/users",      role: "admin" },
+      AdminDetail: { label: "Профиль юзера",          route: "/admin/users/[id]", role: "admin" },
+      Public:      { label: "Публичная презентация",  route: "/p/[id]",           role: "guest" },
+    };
+    const EDGES = [
+      ["Landing", "Entry",       "CTA «Try Axon»"],
+      ["Landing", "Privacy",     "ссылка в футере"],
+      ["Landing", "Terms",       "ссылка в футере"],
+      ["Landing", "Cookies",     "ссылка в футере"],
+      ["Entry",   "Login",       "кнопка «Войти»"],
+      ["Login",   "Entry",       "после успешного входа"],
+      ["Login",   "Forgot",      "ссылка «Забыли пароль?»"],
+      ["Login",   "Register",    "ссылка «Зарегистрироваться»"],
+      ["Register","Entry",       "после регистрации"],
+      ["Register","Login",       "ссылка «Войти»"],
+      ["Register","Terms",       "ссылка на соглашение"],
+      ["Register","Privacy",     "ссылка на политику"],
+      ["Forgot",  "Reset",       "переход по ссылке из письма"],
+      ["Forgot",  "Login",       "ссылка «Вернуться ко входу»"],
+      ["Reset",   "Login",       "после сброса пароля"],
+      ["Entry",   "Settings",    "аватар → «Настройки»"],
+      ["Settings","Login",       "гость → серверный редирект"],
+      ["Settings","Admin",       "пункт «Админка» (только админ)"],
+      ["Settings","Entry",       "кнопка «Выйти»"],
+      ["Admin",   "AdminDetail", "клик по пользователю"],
+      ["Entry",   "Public",      "«Поделиться» → публичная ссылка"],
+    ];
+    const ROLE_RU = { guest: "гость", user: "вошедший", admin: "админ" };
+
+    mermaid.initialize({ startOnLoad: false, securityLevel: "loose" });
+    await mermaid.run({ querySelector: ".mermaid" });
+
+    // --- Привязка интерактива к отрисованному SVG ---
+    const svg = document.querySelector(".diagram svg");
+    const nodeEls = svg ? [...svg.querySelectorAll("g.node")] : [];
+    const edgeEls = svg ? [...new Set([
+      ...svg.querySelectorAll("path.flowchart-link"),
+      ...svg.querySelectorAll(".edgePaths path"),
+    ])] : [];
+
+    function nodeIdOf(g) {
+      const m = (g.id || "").match(/^flowchart-(.+?)-\d+$/);
+      return m ? m[1] : null;
+    }
+    function edgeSrcTgt(p) {
+      let s = null, t = null;
+      (p.getAttribute("class") || "").split(/\s+/).forEach(c => {
+        if (c.startsWith("LS-")) s = c.slice(3);
+        else if (c.startsWith("LE-")) t = c.slice(3);
+      });
+      if (!s || !t) {
+        const id = p.id || "";
+        const sep = id.includes("_") ? "_" : "-";
+        const parts = id.split(sep); // L, src, tgt, n
+        if (parts.length >= 4) { s = s || parts[1]; t = t || parts[2]; }
+      }
+      return { s, t };
+    }
+
+    const pTitle = document.getElementById("p-title");
+    const pHint  = document.getElementById("p-hint");
+    const pBody  = document.getElementById("p-body");
+    const pReset = document.getElementById("p-reset");
+
+    function clearHL() {
+      nodeEls.forEach(g => g.classList.remove("am-dim"));
+      edgeEls.forEach(p => p.classList.remove("am-dim", "am-edge-hl"));
+      svg.querySelectorAll(".edgeLabel, .edgeLabels").forEach(e => e.classList.remove("am-dim"));
+    }
+    function resetPanel() {
+      clearHL();
+      pTitle.textContent = "Выбери экран";
+      pHint.style.display = "";
+      pBody.innerHTML = "";
+      pReset.style.display = "none";
+    }
+    function liHTML(to, via) {
+      const n = NODES[to] || { label: to, route: "" };
+      return `<li><span class="to">${n.label}</span> <span class="route">${n.route}</span>
+              <span class="via">↳ ${via}</span></li>`;
+    }
+    function select(id) {
+      const node = NODES[id];
+      if (!node) return;
+      // подсветка
+      nodeEls.forEach(g => g.classList.toggle("am-dim", nodeIdOf(g) !== id));
+      const targets = [];
+      edgeEls.forEach(p => {
+        const { s, t } = edgeSrcTgt(p);
+        const on = s === id;
+        p.classList.toggle("am-edge-hl", on);
+        p.classList.toggle("am-dim", !on);
+        if (on && t) targets.push(t);
+      });
+      nodeEls.forEach(g => {
+        const nid = nodeIdOf(g);
+        if (nid === id || targets.includes(nid)) g.classList.remove("am-dim");
+      });
+      svg.querySelectorAll(".edgeLabel, .edgeLabels").forEach(e => e.classList.add("am-dim"));
+
+      // панель
+      const outs = EDGES.filter(e => e[0] === id);
+      const ins  = EDGES.filter(e => e[1] === id);
+      pHint.style.display = "none";
+      pTitle.innerHTML = `${node.label} <span class="route">${node.route}</span>`;
+      let html = `<span class="role-tag rt-${node.role}">${ROLE_RU[node.role]}</span>`;
+      html += `<div class="grp">Отсюда можно перейти →</div>`;
+      html += outs.length ? `<ul>${outs.map(e => liHTML(e[1], e[2])).join("")}</ul>`
+                          : `<div class="none">никуда (конечный экран)</div>`;
+      html += `<div class="grp">Сюда попадают из ←</div>`;
+      html += ins.length ? `<ul>${ins.map(e => `<li><span class="to">${(NODES[e[0]]||{}).label||e[0]}</span>
+              <span class="via">↳ ${e[2]}</span></li>`).join("")}</ul>`
+                         : `<div class="none">прямых входов нет</div>`;
+      pBody.innerHTML = html;
+      pReset.style.display = "";
+    }
+
+    nodeEls.forEach(g => {
+      const id = nodeIdOf(g);
+      if (id) g.addEventListener("click", () => select(id));
+    });
+    pReset.addEventListener("click", resetPanel);
+
+    if (!nodeEls.length || !edgeEls.length) {
+      pHint.textContent = "Не удалось привязать интерактив к схеме (проверь интернет — Mermaid грузится из CDN).";
+    }
   </script>
 </body>
 </html>
