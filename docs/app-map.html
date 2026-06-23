@@ -85,7 +85,7 @@ graph LR
   Settings["Настройки<br/>/settings"]:::user
   Admin["Админка<br/>/admin/users"]:::admin
   AdminDetail["Профиль юзера<br/>/admin/users/[id]"]:::admin
-  Public["Публичная дека<br/>/p/[id]"]:::guest
+  Public["Публичная презентация<br/>/p/[id]"]:::guest
 
   Landing -- "CTA «Try Axon»" --> Entry
   Landing --> Privacy
@@ -110,7 +110,7 @@ graph LR
   Settings -- "выйти" --> Entry
   Admin --> AdminDetail
 
-  Entry -- "поделиться декой" --> Public
+  Entry -- "поделиться презентацией" --> Public
 
   classDef guest fill:#F4F0E8,stroke:#8B95A8,color:#1A2742;
   classDef user fill:#C8A86B,stroke:#1A2742,color:#1A2742;
@@ -152,7 +152,7 @@ graph LR
         <tr><td><code>/settings</code></td><td>Настройки аккаунта</td><td class="role role-user">только вошедший</td><td>Имя, пароль, аватар, удаление, выход; вход в админку</td></tr>
         <tr><td><code>/admin/users</code></td><td>Админка: список пользователей</td><td class="role role-admin">только админ</td><td>Read-only сводка + список + поиск (v1)</td></tr>
         <tr><td><code>/admin/users/[id]</code></td><td>Админка: профиль пользователя</td><td class="role role-admin">только админ</td><td>Read-only профиль + доски</td></tr>
-        <tr><td><code>/p/[id]</code></td><td>Публичная презентация</td><td class="role role-guest">все по ссылке</td><td>Read-only показ деки по токену, вход не нужен</td></tr>
+        <tr><td><code>/p/[id]</code></td><td>Публичная презентация</td><td class="role role-guest">все по ссылке</td><td>Read-only показ презентации по токену, вход не нужен</td></tr>
         <tr><td><code>/storybook</code></td><td>Витрина дизайн-системы</td><td class="role role-guest">все (внутреннее)</td><td>UI-kit: токены + компоненты; не в навигации</td></tr>
       </tbody>
     </table>
