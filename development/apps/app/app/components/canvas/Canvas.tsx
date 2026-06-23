@@ -400,6 +400,7 @@ export function Canvas({ saveButton }: { saveButton?: React.ReactNode }) {
                   zIndex: draggingNode === insight.id ? 10 : 1,
                   userSelect: "none",
                 }}
+                title={insight.title}   /* hover tooltip — read the name at any zoom */
                 onMouseDown={(e) => handleNodeMouseDown(insight.id, e)}
               >
                 <InsightCard
@@ -429,6 +430,7 @@ export function Canvas({ saveButton }: { saveButton?: React.ReactNode }) {
                   zIndex: draggingNode === ds.id ? 10 : 1,
                   userSelect: "none",
                 }}
+                title={ds.title}   /* hover tooltip — read the name at any zoom */
                 onMouseDown={(e) => handleNodeMouseDown(ds.id, e)}
               >
                 <DataSetCard
