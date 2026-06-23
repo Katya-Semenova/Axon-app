@@ -54,6 +54,7 @@
     .sw-admin { background: #0d1526; border: 1px solid var(--gold); }
     .lineleg { display: inline-flex; align-items: center; gap: 7px; color: #cfd6e2; padding-left: 4px; }
     .sw-line { width: 24px; height: 0; border-top: 3px solid var(--hl); }
+    .sw-state { background: #eef2f7; border: 1px dashed var(--slate); }
 
     /* карта на всю ширину */
     .diagram {
@@ -99,7 +100,7 @@
     /* крупнее текст внутри прямоугольников-узлов */
     .mermaid .nodeLabel, .mermaid span.nodeLabel { font-size: 18px !important; }
     /* подписи на стрелках-переходах */
-    .mermaid .edgeLabel, .mermaid .edgeLabel *, .mermaid .edgeLabel span { font-size: 13px !important; }
+    .mermaid .edgeLabel, .mermaid .edgeLabel *, .mermaid .edgeLabel span { font-size: 15px !important; }
     /* заголовки столбцов-групп */
     /* группа Canvas/Slides/Present — только для раскладки (держит их вплотную), рамку прячем */
     .mermaid .cluster rect { fill: none !important; stroke: none !important; }
@@ -138,6 +139,7 @@
         <span class="rolechip active" data-role="guest"><i class="swatch sw-guest"></i> гость</span>
         <span class="rolechip active" data-role="user"><i class="swatch sw-user"></i> вошедший</span>
         <span class="rolechip active" data-role="admin"><i class="swatch sw-admin"></i> админ</span>
+        <span class="lineleg"><i class="swatch sw-state"></i> состояние (режим/оверлей)</span>
         <span class="lineleg"><i class="swatch sw-line"></i> переход</span>
       </span>
     </div>
