@@ -11,7 +11,7 @@
       --cream: #F4F0E8;
       --slate: #8B95A8;
       --border: #d8d2c4;
-      --blue: #2563eb;
+      --hl: #16a34a; /* зелёная подсветка активного перехода */
     }
     * { box-sizing: border-box; }
     body {
@@ -22,7 +22,7 @@
       font-family: -apple-system, "Inter", "Segoe UI", system-ui, sans-serif;
       line-height: 1.5;
     }
-    .wrap { max-width: 1200px; margin: 0 auto; }
+    .wrap { max-width: 1280px; margin: 0 auto; }
     header h1 { font-size: 26px; margin: 0 0 4px; }
     header .meta { color: var(--slate); font-size: 13px; margin-bottom: 22px; }
     header .meta code { background: #fff; border: 1px solid var(--border); padding: 1px 6px; border-radius: 3px; font-size: 12px; }
@@ -34,46 +34,53 @@
     .sw-guest { background: var(--cream); border: 1px solid var(--slate); }
     .sw-user { background: var(--gold); border: 1px solid var(--navy); }
     .sw-admin { background: var(--navy); border: 1px solid var(--gold); }
+    .sw-line { width: 26px; height: 0; border-top: 3px solid var(--hl); }
 
-    /* двухколоночная зона: схема + панель */
     .interactive { display: flex; gap: 18px; align-items: stretch; }
     .diagram {
       flex: 1 1 auto; min-width: 0;
       background: #fff; border: 1px solid var(--border);
       border-radius: 6px; padding: 18px; overflow: auto;
     }
-    .diagram .mermaid { text-align: center; }
-    .panel {
-      flex: 0 0 320px;
-      background: #fff; border: 1px solid var(--border);
-      border-radius: 6px; padding: 18px; align-self: flex-start;
-      position: sticky; top: 16px;
+    /* крупная схема — НЕ сжимать под контейнер, скроллить при нехватке места */
+    .diagram .mermaid { text-align: left; }
+    .diagram svg { height: auto !important; max-width: none !important; }
+
+    .panel { flex: 0 0 340px; align-self: flex-start; position: sticky; top: 16px; }
+    .cta {
+      background: var(--navy); color: var(--cream);
+      border-radius: 8px; padding: 16px 18px; margin-bottom: 14px;
+      font-size: 15px; font-weight: 600; line-height: 1.4;
     }
-    .panel h3 { margin: 0 0 4px; font-size: 16px; }
-    .panel .sub { color: var(--slate); font-size: 12px; margin: 0 0 14px; }
-    .panel .route { font-family: "JetBrains Mono", monospace; font-size: 12px; color: var(--slate); }
-    .panel .grp { font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: var(--slate); margin: 16px 0 6px; }
-    .panel ul { list-style: none; margin: 0; padding: 0; }
-    .panel li { padding: 7px 0; border-bottom: 1px dashed var(--border); font-size: 13px; }
-    .panel li:last-child { border-bottom: none; }
-    .panel li .to { font-weight: 600; }
-    .panel li .via { color: var(--slate); font-size: 12px; display: block; }
-    .panel .none { color: var(--slate); font-size: 13px; font-style: italic; }
-    .panel .role-tag { display: inline-block; font-size: 11px; padding: 1px 7px; border-radius: 10px; margin-top: 6px; }
+    .cta small { display: block; font-weight: 400; color: #cfd6e2; font-size: 12.5px; margin-top: 6px; }
+    .card {
+      background: #fff; border: 1px solid var(--border);
+      border-radius: 6px; padding: 18px;
+    }
+    .card h3 { margin: 0 0 2px; font-size: 17px; }
+    .card .route { font-family: "JetBrains Mono", monospace; font-size: 12px; color: var(--slate); }
+    .card .grp { font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: var(--slate); margin: 16px 0 6px; }
+    .card ul { list-style: none; margin: 0; padding: 0; }
+    .card li { padding: 7px 0; border-bottom: 1px dashed var(--border); font-size: 13px; }
+    .card li:last-child { border-bottom: none; }
+    .card li .to { font-weight: 600; }
+    .card li .via { color: var(--slate); font-size: 12px; display: block; }
+    .card .none { color: var(--slate); font-size: 13px; font-style: italic; }
+    .role-tag { display: inline-block; font-size: 11px; padding: 1px 8px; border-radius: 10px; margin-top: 8px; }
     .rt-guest { background: var(--cream); border: 1px solid var(--slate); color: var(--navy); }
     .rt-user { background: var(--gold); border: 1px solid var(--navy); color: var(--navy); }
     .rt-admin { background: var(--navy); border: 1px solid var(--gold); color: var(--cream); }
     .reset {
       margin-top: 16px; width: 100%; cursor: pointer;
       background: var(--cream); border: 1px solid var(--border); border-radius: 4px;
-      padding: 8px; font-size: 13px; color: var(--navy);
+      padding: 9px; font-size: 13px; color: var(--navy);
     }
     .reset:hover { background: #ece6da; }
 
     /* интерактив поверх mermaid-SVG */
     .mermaid g.node { cursor: pointer; }
-    .am-dim { opacity: .12 !important; transition: opacity .2s; }
-    .mermaid path.am-edge-hl { stroke: var(--blue) !important; stroke-width: 3px !important; opacity: 1 !important; }
+    .am-dim { opacity: .1 !important; transition: opacity .2s; }
+    .mermaid path.am-edge-hl { stroke: var(--hl) !important; stroke-width: 3.5px !important; opacity: 1 !important; }
 
     table { width: 100%; border-collapse: collapse; background: #fff; font-size: 13px; margin-top: 8px; }
     caption { text-align: left; font-weight: 600; padding: 14px 0 8px; font-size: 14px; }
@@ -87,7 +94,7 @@
     .role-admin { color: var(--navy); }
     .note { font-size: 12px; color: var(--slate); margin-top: 8px; }
 
-    @media (max-width: 880px) {
+    @media (max-width: 900px) {
       .interactive { flex-direction: column; }
       .panel { flex-basis: auto; position: static; }
     }
@@ -100,7 +107,6 @@
       <div class="meta">
         Интерактивная карта маршрутов и переходов · сгенерировано <code>2026-06-23</code>
         (Урок 7, Шаг 1). Те же данные — в <code>docs/01-app-map.md</code>.
-        <strong>Нажми на любой экран в схеме</strong> — подсветятся переходы с него.
       </div>
     </header>
 
@@ -109,7 +115,7 @@
       <span><i class="swatch sw-guest"></i> гость (без входа)</span>
       <span><i class="swatch sw-user"></i> вошедший пользователь</span>
       <span><i class="swatch sw-admin"></i> админ</span>
-      <span style="color:var(--blue)">━━ синяя линия = активный переход с выбранного экрана</span>
+      <span><i class="swatch sw-line"></i> зелёная линия = активный переход с выбранного экрана</span>
     </div>
 
     <div class="interactive">
@@ -159,15 +165,34 @@ graph LR
   classDef guest fill:#F4F0E8,stroke:#8B95A8,color:#1A2742;
   classDef user fill:#C8A86B,stroke:#1A2742,color:#1A2742;
   classDef admin fill:#1A2742,stroke:#C8A86B,color:#F4F0E8;
+
+  click Landing call nodeClick()
+  click Privacy call nodeClick()
+  click Terms call nodeClick()
+  click Cookies call nodeClick()
+  click Entry call nodeClick()
+  click Login call nodeClick()
+  click Register call nodeClick()
+  click Forgot call nodeClick()
+  click Reset call nodeClick()
+  click Settings call nodeClick()
+  click Admin call nodeClick()
+  click AdminDetail call nodeClick()
+  click Public call nodeClick()
         </pre>
       </div>
 
-      <aside class="panel" id="panel">
-        <h3 id="p-title">Выбери экран</h3>
-        <p class="sub" id="p-hint">Нажми на кружок в схеме слева — здесь появится список,
-          куда с него можно перейти и по какой кнопке/ссылке.</p>
-        <div id="p-body"></div>
-        <button class="reset" id="p-reset" style="display:none">↺ Показать всё</button>
+      <aside class="panel">
+        <div class="cta" id="p-cta">
+          👉 Нажми на любой&nbsp;<u>прямоугольник-экран</u>&nbsp;в схеме слева
+          <small>Подсветятся зелёные стрелки-переходы, а здесь появится список —
+            куда с него можно перейти и по какой кнопке/ссылке.</small>
+        </div>
+        <div class="card" id="p-card" style="display:none">
+          <h3 id="p-title"></h3>
+          <div id="p-body"></div>
+          <button class="reset" id="p-reset">↺ Показать всё</button>
+        </div>
       </aside>
     </div>
 
@@ -225,7 +250,6 @@ graph LR
   <script type="module">
     import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
 
-    // --- Данные для боковой панели (переходы с подписями кнопок/ссылок) ---
     const NODES = {
       Landing:     { label: "Лендинг",               route: "/",                 role: "guest" },
       Privacy:     { label: "Конфиденциальность",     route: "/privacy",          role: "guest" },
@@ -266,20 +290,21 @@ graph LR
     ];
     const ROLE_RU = { guest: "гость", user: "вошедший", admin: "админ" };
 
-    mermaid.initialize({ startOnLoad: false, securityLevel: "loose" });
-    await mermaid.run({ querySelector: ".mermaid" });
+    // элементы панели
+    const pCta   = document.getElementById("p-cta");
+    const pCard  = document.getElementById("p-card");
+    const pTitle = document.getElementById("p-title");
+    const pBody  = document.getElementById("p-body");
+    const pReset = document.getElementById("p-reset");
 
-    // --- Привязка интерактива к отрисованному SVG ---
-    const svg = document.querySelector(".diagram svg");
-    const nodeEls = svg ? [...svg.querySelectorAll("g.node")] : [];
-    const edgeEls = svg ? [...new Set([
-      ...svg.querySelectorAll("path.flowchart-link"),
-      ...svg.querySelectorAll(".edgePaths path"),
-    ])] : [];
+    // SVG-узлы/связи заполним после рендера
+    let svg = null, nodeEls = [], edgeEls = [];
 
-    function nodeIdOf(g) {
-      const m = (g.id || "").match(/^flowchart-(.+?)-\d+$/);
-      return m ? m[1] : null;
+    // вытащить id узла-приложения из токенов id SVG-элемента (Entry, Login, ...)
+    function tokensOf(s) { return (s || "").split(/[^A-Za-z0-9]+/).filter(Boolean); }
+    function appNodeIdOf(g) {
+      const present = tokensOf(g.id).filter(tk => NODES[tk]);
+      return present[0] || null;
     }
     function edgeSrcTgt(p) {
       let s = null, t = null;
@@ -287,31 +312,20 @@ graph LR
         if (c.startsWith("LS-")) s = c.slice(3);
         else if (c.startsWith("LE-")) t = c.slice(3);
       });
-      if (!s || !t) {
-        const id = p.id || "";
-        const sep = id.includes("_") ? "_" : "-";
-        const parts = id.split(sep); // L, src, tgt, n
-        if (parts.length >= 4) { s = s || parts[1]; t = t || parts[2]; }
-      }
-      return { s, t };
+      if (s && NODES[s] && t && NODES[t]) return { s, t };
+      const present = tokensOf(p.id).filter(tk => NODES[tk]);
+      return { s: present[0] || s, t: present[1] || t };
     }
-
-    const pTitle = document.getElementById("p-title");
-    const pHint  = document.getElementById("p-hint");
-    const pBody  = document.getElementById("p-body");
-    const pReset = document.getElementById("p-reset");
 
     function clearHL() {
       nodeEls.forEach(g => g.classList.remove("am-dim"));
       edgeEls.forEach(p => p.classList.remove("am-dim", "am-edge-hl"));
-      svg.querySelectorAll(".edgeLabel, .edgeLabels").forEach(e => e.classList.remove("am-dim"));
+      svg && svg.querySelectorAll(".edgeLabel, .edgeLabels").forEach(e => e.classList.remove("am-dim"));
     }
     function resetPanel() {
       clearHL();
-      pTitle.textContent = "Выбери экран";
-      pHint.style.display = "";
-      pBody.innerHTML = "";
-      pReset.style.display = "none";
+      pCard.style.display = "none";
+      pCta.style.display = "";
     }
     function liHTML(to, via) {
       const n = NODES[to] || { label: to, route: "" };
@@ -321,8 +335,8 @@ graph LR
     function select(id) {
       const node = NODES[id];
       if (!node) return;
-      // подсветка
-      nodeEls.forEach(g => g.classList.toggle("am-dim", nodeIdOf(g) !== id));
+
+      // подсветка стрелок и узлов
       const targets = [];
       edgeEls.forEach(p => {
         const { s, t } = edgeSrcTgt(p);
@@ -332,15 +346,16 @@ graph LR
         if (on && t) targets.push(t);
       });
       nodeEls.forEach(g => {
-        const nid = nodeIdOf(g);
-        if (nid === id || targets.includes(nid)) g.classList.remove("am-dim");
+        const nid = appNodeIdOf(g);
+        g.classList.toggle("am-dim", !(nid === id || targets.includes(nid)));
       });
-      svg.querySelectorAll(".edgeLabel, .edgeLabels").forEach(e => e.classList.add("am-dim"));
+      svg && svg.querySelectorAll(".edgeLabel, .edgeLabels").forEach(e => e.classList.add("am-dim"));
 
       // панель
       const outs = EDGES.filter(e => e[0] === id);
       const ins  = EDGES.filter(e => e[1] === id);
-      pHint.style.display = "none";
+      pCta.style.display = "none";
+      pCard.style.display = "";
       pTitle.innerHTML = `${node.label} <span class="route">${node.route}</span>`;
       let html = `<span class="role-tag rt-${node.role}">${ROLE_RU[node.role]}</span>`;
       html += `<div class="grp">Отсюда можно перейти →</div>`;
@@ -351,17 +366,31 @@ graph LR
               <span class="via">↳ ${e[2]}</span></li>`).join("")}</ul>`
                          : `<div class="none">прямых входов нет</div>`;
       pBody.innerHTML = html;
-      pReset.style.display = "";
     }
 
-    nodeEls.forEach(g => {
-      const id = nodeIdOf(g);
-      if (id) g.addEventListener("click", () => select(id));
-    });
+    // штатный механизм Mermaid: click <node> call nodeClick() передаёт id узла
+    window.nodeClick = (id) => select(id);
     pReset.addEventListener("click", resetPanel);
 
-    if (!nodeEls.length || !edgeEls.length) {
-      pHint.textContent = "Не удалось привязать интерактив к схеме (проверь интернет — Mermaid грузится из CDN).";
+    mermaid.initialize({
+      startOnLoad: false,
+      securityLevel: "loose",
+      flowchart: { useMaxWidth: false, htmlLabels: true, nodeSpacing: 55, rankSpacing: 80 },
+    });
+    await mermaid.run({ querySelector: ".mermaid" });
+
+    // привязка к отрисованному SVG (+ резервный DOM-клик, если директива не сработает)
+    svg = document.querySelector(".diagram svg");
+    if (svg) {
+      nodeEls = [...svg.querySelectorAll("g.node")];
+      edgeEls = [...new Set([
+        ...svg.querySelectorAll("path.flowchart-link"),
+        ...svg.querySelectorAll(".edgePaths path"),
+      ])];
+      nodeEls.forEach(g => {
+        const id = appNodeIdOf(g);
+        if (id) g.addEventListener("click", () => select(id));
+      });
     }
   </script>
 </body>
