@@ -62,8 +62,9 @@
     }
     .diagram .mermaid { text-align: center; }
     .mermaid g.node { cursor: pointer; }
-    /* useMaxWidth:true сам вписывает карту по ширине — без горизонтального скролла */
-    .diagram svg { height: auto !important; }
+    /* карта НЕ ужимается ниже нормального размера: если ширины не хватает (узкий экран
+       или диапазон ~540–900) — горизонтальный скролл, а не уменьшение. */
+    .diagram svg { height: auto !important; min-width: 1100px !important; }
 
     /* блок выделения — в правом верхнем углу карты (там свободно), поверх схемы */
     .stage { position: relative; }
@@ -116,11 +117,6 @@
     .role-admin { color: var(--navy); }
     .note { font-size: 12px; color: var(--slate); margin-top: 8px; }
 
-    /* на узком экране (≤540) НЕ ужимаем карту — даём горизонтальный скролл,
-       чтобы она была видна так же, как на большом экране */
-    @media (max-width: 540px) {
-      .diagram svg { min-width: 1000px !important; max-width: none !important; }
-    }
   </style>
 </head>
 <body>
