@@ -242,6 +242,10 @@ interface WorkspaceActions {
 
   addDataSet:            () => string;
   removeDataSet:         (id: string) => void;
+  /** Canvas-режим: удалить датасет + связи + инсайты, связанные ТОЛЬКО с ним +
+      слайды, ставшие из-за этого пустыми. Общие инсайты (связаны и с другими
+      датасетами) сохраняются. Атомарно — один шаг undo. */
+  removeDataSetCascade:  (id: string) => void;
   updateDataSetRows:     (id: string, rows: DataRow[]) => void;
   updateDataSetChartType: (id: string, type: ChartType) => void;
   updateDataSetSettings: (id: string, partial: Partial<DataSetSettings>) => void;
@@ -537,6 +541,46 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => {
         connections: newConns,
         slidesById,
       };
+    }),
+
+    removeDataSetCascade: (id) => commit((s) => {
+      if (!s.dataSetsById[id]) return {};
+
+      /* Инсайты, связанные с этим датасетом И ни с каким другим → удаляем вместе с ним.
+         Общие (связанные ещё с каким-то датасетом) — оставляем. */
+      const orphanIns = new Set(
+        s.connections
+          .filter(c => c.toDataSetId === id)
+          .map(c => c.fromInsightId)
+          .filter(insId => !s.connections.some(c => c.fromInsightId === insId && c.toDataSetId !== id))
+      );
+
+      const { [id]: _ds, ...dataSetsById } = s.dataSetsById;
+      void _ds;
+      const dataSetOrder = s.dataSetOrder.filter(x => x !== id);
+
+      const insightsById: Record<string, Insight> = { ...s.insightsById };
+      orphanIns.forEach(insId => { delete insightsById[insId]; });
+      const insightOrder = s.insightOrder.filter(insId => !orphanIns.has(insId));
+
+      const connections = s.connections.filter(
+        c => c.toDataSetId !== id && !orphanIns.has(c.fromInsightId)
+      );
+
+      /* Вычищаем датасет из слайдов; слайд, который существовал ТОЛЬКО ради него
+         (стал пустым) — убираем. Изначально пустые слот-плейсхолдеры не трогаем. */
+      const slidesById: Record<string, Slide> = {};
+      const slideOrder: string[] = [];
+      for (const sid of s.slideOrder) {
+        const sl = s.slidesById[sid];
+        if (!sl) continue;
+        const newDsIds = sl.dataSetIds.filter(did => did !== id);
+        if (newDsIds.length === 0 && sl.dataSetIds.length > 0) continue;
+        slidesById[sid] = newDsIds.length !== sl.dataSetIds.length ? { ...sl, dataSetIds: newDsIds } : sl;
+        slideOrder.push(sid);
+      }
+
+      return { dataSetsById, dataSetOrder, insightsById, insightOrder, connections, slidesById, slideOrder };
     }),
 
     updateDataSetRows: (id, rows) => commit((s) => {

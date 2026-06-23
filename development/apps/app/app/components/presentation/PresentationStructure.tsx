@@ -31,12 +31,13 @@ function InsertionLine() {
 /* ── SlideSlot ────────────────────────────────────────────────────────────
    Shows either a fully populated thumbnail (has a linked DataSet) or an
    "empty" dashed-border state (no dataSetIds yet) with a drop-here hint.  */
-function SlideSlot({ slide, isActive, onClick, onDelete, isDraggingSlide }: {
+function SlideSlot({ slide, isActive, onClick, onDelete, isDraggingSlide, deleteTitle }: {
   slide: Slide;
   isActive: boolean;
   onClick: () => void;
   onDelete: () => void;
   isDraggingSlide: boolean;
+  deleteTitle: string;
 }) {
   const [hovered, setHovered] = useState(false);
   const t = useTranslations("SlideTray");
@@ -157,7 +158,7 @@ function SlideSlot({ slide, isActive, onClick, onDelete, isDraggingSlide }: {
       <button
         onClick={(e) => { e.stopPropagation(); onDelete(); }}
         onPointerDown={(e) => e.stopPropagation()}
-        title={t("removeSlide")}
+        title={deleteTitle}
         style={{
           position: "absolute", top: 3, right: 3, width: 15, height: 15,
           display: "flex", alignItems: "center", justifyContent: "center",
@@ -296,6 +297,7 @@ export function PresentationStructure({ insertAt, isDraggingSlide }: {
   const activeSlideId = useWorkspaceStore(s => s.activeSlideId);
   const setActive     = useWorkspaceStore(s => s.setActiveSlide);
   const removeSlide   = useWorkspaceStore(s => s.removeSlide);
+  const removeDataSetCascade = useWorkspaceStore(s => s.removeDataSetCascade);
   const dataSetOrder  = useWorkspaceStore(s => s.dataSetOrder);
   const addSlideWithDataSet = useWorkspaceStore(s => s.addSlideWithDataSet);
 
@@ -318,12 +320,27 @@ export function PresentationStructure({ insertAt, isDraggingSlide }: {
     prevLenRef.current = slides.length;
   }, [slides.length, slideOrder]);
 
-  function handleRemove(id: string) {
-    removeSlide(id);
+  function clearActiveIfNeeded(id: string) {
     if (activeSlideId === id) {
       const remaining = slides.filter(s => s.id !== id);
       setActive(remaining[0]?.id ?? null);
     }
+  }
+
+  function handleRemove(slide: Slide) {
+    /* Slides-режим: лоток = слайды деки → убираем только слайд (данные на холсте целы).
+       Canvas-режим: лоток = датасеты → убираем датасет с холста (со связями и инсайтами,
+       что были только у него) + пустой слайд. С подтверждением — действие разрушительное. */
+    if (isSlideMode) {
+      removeSlide(slide.id);
+      clearActiveIfNeeded(slide.id);
+      return;
+    }
+    const primaryDs = slide.dataSetIds[0];
+    if (!primaryDs) { removeSlide(slide.id); clearActiveIfNeeded(slide.id); return; }
+    if (!window.confirm(t("removeDataSetConfirm"))) return;
+    removeDataSetCascade(primaryDs);   // also drops the now-empty slide
+    clearActiveIfNeeded(slide.id);
   }
 
   return (
@@ -372,8 +389,9 @@ export function PresentationStructure({ insertAt, isDraggingSlide }: {
                       slide={slide}
                       isActive={activeSlideId === slide.id}
                       onClick={() => setActive(slide.id)}
-                      onDelete={() => handleRemove(slide.id)}
+                      onDelete={() => handleRemove(slide)}
                       isDraggingSlide={isDraggingSlide}
+                      deleteTitle={isSlideMode ? t("removeSlide") : t("removeDataSet")}
                     />
                   </div>
                 );
