@@ -8,7 +8,7 @@ import type { Insight, DataSet } from "@/lib/types";
 import { InsightCard } from "./InsightCard";
 import { DataSetCard } from "./DataSetCard";
 import {
-  GOLD, NAVY_300, BORDER, T2, T3, SURFACE, SURFACE_MUTED,
+  GOLD, NAVY, NAVY_300, BORDER, T2, T3, SURFACE, SURFACE_MUTED,
   CARD_W, CARD_H_EST, COL_GAP,
 } from "../ui/tokens";
 import { openOnboarding } from "../ui/OnboardingModal";
@@ -58,6 +58,9 @@ export function Canvas({ saveButton }: { saveButton?: React.ReactNode }) {
   const [draggingNode, setDraggingNode] = useState<string | null>(null);
   /* Edge that the mouse is hovering over — shows gold highlight + delete cursor. */
   const [hoveredConnId, setHoveredConnId] = useState<string | null>(null);
+  /* Кастомный тултип имени узла в ЭКРАННЫХ координатах (вне зум-трансформа) —
+     мгновенный и читаемый на любом масштабе (нативный title тормозил ~2с). */
+  const [hoverTip, setHoverTip] = useState<{ text: string; x: number; y: number } | null>(null);
 
   /* После смены набора карточек (загрузка доски / добавление) форсим один
      ре-рендер: cardHeightRef заполняется реальными высотами во время коммита,
@@ -400,8 +403,9 @@ export function Canvas({ saveButton }: { saveButton?: React.ReactNode }) {
                   zIndex: draggingNode === insight.id ? 10 : 1,
                   userSelect: "none",
                 }}
-                title={insight.title}   /* hover tooltip — read the name at any zoom */
-                onMouseDown={(e) => handleNodeMouseDown(insight.id, e)}
+                onMouseEnter={(e) => setHoverTip({ text: insight.title, x: e.clientX, y: e.clientY })}
+                onMouseLeave={() => setHoverTip(null)}
+                onMouseDown={(e) => { setHoverTip(null); handleNodeMouseDown(insight.id, e); }}
               >
                 <InsightCard
                   insight={insight}
@@ -430,8 +434,9 @@ export function Canvas({ saveButton }: { saveButton?: React.ReactNode }) {
                   zIndex: draggingNode === ds.id ? 10 : 1,
                   userSelect: "none",
                 }}
-                title={ds.title}   /* hover tooltip — read the name at any zoom */
-                onMouseDown={(e) => handleNodeMouseDown(ds.id, e)}
+                onMouseEnter={(e) => setHoverTip({ text: ds.title, x: e.clientX, y: e.clientY })}
+                onMouseLeave={() => setHoverTip(null)}
+                onMouseDown={(e) => { setHoverTip(null); handleNodeMouseDown(ds.id, e); }}
               >
                 <DataSetCard
                   dataSet={ds}
@@ -501,6 +506,21 @@ export function Canvas({ saveButton }: { saveButton?: React.ReactNode }) {
             borderRadius: 4, padding: "4px 10px", pointerEvents: "none",
           }}>
             {t("toolbar.removeEdgeHint")}
+          </div>
+        )}
+
+        {/* Node name tooltip — screen-space (fixed), instant; hidden during drag/pan/connect */}
+        {hoverTip && !draggingNode && !activeConn && !isPanning && (
+          <div style={{
+            position: "fixed", left: hoverTip.x + 12, top: hoverTip.y - 10,
+            zIndex: 50, pointerEvents: "none",
+            background: NAVY, color: "#F5F2EA",
+            fontFamily: "'JetBrains Mono', monospace", fontSize: 11, lineHeight: 1.3,
+            padding: "4px 8px", borderRadius: 3,
+            maxWidth: 280, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
+            boxShadow: "0 4px 14px rgba(27,40,64,0.28)",
+          }}>
+            {hoverTip.text}
           </div>
         )}
       </div>
