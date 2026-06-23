@@ -83,7 +83,7 @@ export function Canvas({ modeSwitcher, saveButton }: { modeSwitcher?: React.Reac
     st.setFocusNode(null);
   }, [focusNodeId]);
 
-  type ActiveConn = { fromId: string; startX: number; startY: number; mouseX: number; mouseY: number };
+  type ActiveConn = { fromId: string; fromSide: "left" | "right"; fromWidth: number; startX: number; startY: number; mouseX: number; mouseY: number };
   const [activeConn, setActiveConn] = useState<ActiveConn | null>(null);
 
   const canvasViewportRef = useRef<HTMLDivElement>(null);
@@ -108,16 +108,23 @@ export function Canvas({ modeSwitcher, saveButton }: { modeSwitcher?: React.Reac
     return `M ${r(x1)} ${r(y1)} C ${r(x1 + dx)} ${r(y1)} ${r(x2 - dx)} ${r(y2)} ${r(x2)} ${r(y2)}`;
   }
 
-  /* ── Port handlers ───────────────────────────────────────────────────── */
-  function handleOutputPortDown(cardId: string, e: React.MouseEvent) {
-    const from = getPortPos(cardId, "right", CARD_W);
+  /* ── Port handlers ───────────────────────────────────────────────────────
+     The gesture is bidirectional: a drag can START from either node and DROP on
+     either node. The port faces the gap between columns (insight → right side,
+     dataset → left side). Edge orientation (always Insight→DataSet) is resolved
+     by the store, so here we only track where the drag began and where it ended. */
+  function handlePortDown(cardId: string, e: React.MouseEvent) {
+    const isInsight = !!insightsById[cardId];
+    const fromSide: "left" | "right" = isInsight ? "right" : "left";
+    const fromWidth = isInsight ? CARD_W : DS_W;
+    const from = getPortPos(cardId, fromSide, fromWidth);
     if (!from) return;
     const viewport = canvasViewportRef.current;
     if (!viewport) return;
     const vRect = viewport.getBoundingClientRect();
     const { x: tx, y: ty, zoom } = canvasTransform;
     const conn: ActiveConn = {
-      fromId: cardId,
+      fromId: cardId, fromSide, fromWidth,
       startX: from.x, startY: from.y,
       mouseX: (e.clientX - vRect.left - tx) / zoom,
       mouseY: (e.clientY - vRect.top  - ty) / zoom,
@@ -126,10 +133,10 @@ export function Canvas({ modeSwitcher, saveButton }: { modeSwitcher?: React.Reac
     setActiveConn(conn);
   }
 
-  function handleDataSetInputPortUp(dataSetId: string) {
+  function handlePortUp(targetId: string) {
     const conn = activeConnRef.current;
     if (!conn) return;
-    addConnection(conn.fromId, dataSetId);
+    addConnection(conn.fromId, targetId);   // store self-orients; same-type = no-op
     activeConnRef.current = null;
     setActiveConn(null);
   }
@@ -360,7 +367,7 @@ export function Canvas({ modeSwitcher, saveButton }: { modeSwitcher?: React.Reac
 
               {/* Active (drawing) connection */}
               {activeConn && (() => {
-                const from = getPortPos(activeConn.fromId, "right", CARD_W);
+                const from = getPortPos(activeConn.fromId, activeConn.fromSide, activeConn.fromWidth);
                 if (!from) return null;
                 return (
                   <path
@@ -395,7 +402,8 @@ export function Canvas({ modeSwitcher, saveButton }: { modeSwitcher?: React.Reac
                   isDraggingNode={draggingNode === insight.id}
                   isConnecting={!!activeConn && activeConn.fromId !== insight.id}
                   onExpand={() => setExpInsight(insight.id)}
-                  onOutputPortDown={(e) => handleOutputPortDown(insight.id, e)}
+                  onPortDown={(e) => handlePortDown(insight.id, e)}
+                  onPortUp={() => handlePortUp(insight.id)}
                 />
               </div>
             ))}
@@ -421,10 +429,11 @@ export function Canvas({ modeSwitcher, saveButton }: { modeSwitcher?: React.Reac
                 <DataSetCard
                   dataSet={ds}
                   isDraggingNode={draggingNode === ds.id}
-                  isConnecting={!!activeConn}
+                  isConnecting={!!activeConn && activeConn.fromId !== ds.id}
                   onExpand={() => setExpDataSet(ds.id)}
                   onChartTypeChange={(type) => updateDsType(ds.id, type)}
-                  onInputPortUp={() => handleDataSetInputPortUp(ds.id)}
+                  onPortDown={(e) => handlePortDown(ds.id, e)}
+                  onPortUp={() => handlePortUp(ds.id)}
                   onDelete={() => removeDataSet(ds.id)}
                   textAnnotations={
                     connections

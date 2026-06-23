@@ -247,7 +247,9 @@ interface WorkspaceActions {
   updateDataSetSettings: (id: string, partial: Partial<DataSetSettings>) => void;
   setExpandedDataSet:    (id: string | null) => void;
 
-  addConnection:    (fromInsightId: string, toDataSetId: string) => void;
+  /* Pass the two dropped node ids in ANY order — the store self-orients the edge
+     to Insight→DataSet. A same-type pair or an unknown node is a silent no-op. */
+  addConnection:    (idA: string, idB: string) => void;
   removeConnection: (id: string) => void;
 
   addEmptySlide:       () => void;
@@ -566,7 +568,15 @@ export const useWorkspaceStore = create<WorkspaceStore>((set, get) => {
        data into the target DataSet so the chart appears instantly.
        removeConnection: delete the edge AND recompute the DataSet's rows from
        whatever connections remain (empty rows if none left → blank state).   */
-    addConnection: (fromInsightId, toDataSetId) => commit((s) => {
+    addConnection: (idA, idB) => commit((s) => {
+      /* Self-orient the gesture: it can start from EITHER node, but data always
+         flows Insight→DataSet. Resolve which dropped id is the insight and which
+         is the dataset. A same-type pair (insight+insight / dataset+dataset) or an
+         unknown node is a silent no-op (per product decision — no warning). */
+      const fromInsightId = s.insightsById[idA] ? idA : s.insightsById[idB] ? idB : null;
+      const toDataSetId   = s.dataSetsById[idA] ? idA : s.dataSetsById[idB] ? idB : null;
+      if (!fromInsightId || !toDataSetId) return {};
+
       const exists = s.connections.some(
         c => c.fromInsightId === fromInsightId && c.toDataSetId === toDataSetId
       );

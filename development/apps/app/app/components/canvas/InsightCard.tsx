@@ -9,11 +9,12 @@ export interface InsightCardProps {
   isDraggingNode?: boolean;
   isConnecting: boolean;
   onExpand: () => void;
-  onOutputPortDown: (e: React.MouseEvent) => void;
+  onPortDown: (e: React.MouseEvent) => void;
+  onPortUp: (e: React.MouseEvent) => void;
 }
 
 export function InsightCard({
-  insight, isDraggingNode, isConnecting, onExpand, onOutputPortDown,
+  insight, isDraggingNode, isConnecting, onExpand, onPortDown, onPortUp,
 }: InsightCardProps) {
   const padded = String(insight.serial).padStart(2, "0");
   const mono = "'JetBrains Mono', monospace";
@@ -45,7 +46,7 @@ export function InsightCard({
         border: `1px solid ${BORDER}`,
       }}
     >
-      {/* Right output port */}
+      {/* Right port — starts a drag, and also accepts a drop (bidirectional gesture) */}
       <div
         data-port="output"
         title={t("insight.outputPort")}
@@ -56,14 +57,18 @@ export function InsightCard({
           cursor: "crosshair",
           transition: "background 120ms ease, box-shadow 120ms ease, transform 120ms ease",
         }}
-        onMouseDown={(e) => { e.stopPropagation(); e.preventDefault(); onOutputPortDown(e); }}
+        onMouseDown={(e) => { e.stopPropagation(); e.preventDefault(); onPortDown(e); }}
+        onMouseUp={(e) => { if (isConnecting) { e.stopPropagation(); onPortUp(e); } }}
         onDragStart={(e) => { e.stopPropagation(); e.preventDefault(); }}
         onClick={(e) => e.stopPropagation()}
         onMouseEnter={(e) => {
-          e.currentTarget.style.transform = "translateY(-50%) scale(1.3)";
-          e.currentTarget.style.background = NAVY;
+          const targeting = isConnecting;
+          e.currentTarget.style.transform = `translateY(-50%) scale(${targeting ? 1.5 : 1.3})`;
+          e.currentTarget.style.background = targeting ? GOLD : NAVY;
           e.currentTarget.style.borderColor = "transparent";
-          e.currentTarget.style.boxShadow = "0 0 0 3px rgba(27,40,64,0.14)";
+          e.currentTarget.style.boxShadow = targeting
+            ? "0 0 0 3px rgba(184,149,72,0.24)"
+            : "0 0 0 3px rgba(27,40,64,0.14)";
         }}
         onMouseLeave={(e) => {
           e.currentTarget.style.transform = "translateY(-50%)";

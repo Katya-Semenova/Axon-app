@@ -15,7 +15,8 @@ export interface DataSetCardProps {
   isConnecting: boolean;
   onExpand: () => void;
   onChartTypeChange: (type: ChartType) => void;
-  onInputPortUp: (e: React.MouseEvent) => void;
+  onPortDown: (e: React.MouseEvent) => void;
+  onPortUp: (e: React.MouseEvent) => void;
   onDelete?: () => void;
   /** First-sentence snippets from connected kind="text" insights, canvas-only. */
   textAnnotations?: string[];
@@ -27,7 +28,7 @@ export interface DataSetCardProps {
    · FORMED (rows.length  >  0): renders chart + row count + expand button. */
 export function DataSetCard({
   dataSet, isDraggingNode, isConnecting,
-  onExpand, onChartTypeChange, onInputPortUp, onDelete,
+  onExpand, onChartTypeChange, onPortDown, onPortUp, onDelete,
   textAnnotations,
 }: DataSetCardProps) {
   const hasRows    = dataSet.rows.length > 0;
@@ -52,7 +53,7 @@ export function DataSetCard({
           : `1px solid ${BORDER}`,
       }}
     >
-      {/* Left input port */}
+      {/* Left port — accepts a drop, and also starts a drag (bidirectional gesture) */}
       <div
         data-port="input"
         title={t("dataset.inputPort")}
@@ -63,8 +64,8 @@ export function DataSetCard({
           cursor: "crosshair",
           transition: "background 120ms ease, box-shadow 120ms ease, transform 120ms ease",
         }}
-        onMouseDown={(e) => { e.stopPropagation(); e.preventDefault(); }}
-        onMouseUp={(e) => { if (isConnecting) { e.stopPropagation(); onInputPortUp(e); } }}
+        onMouseDown={(e) => { e.stopPropagation(); e.preventDefault(); onPortDown(e); }}
+        onMouseUp={(e) => { if (isConnecting) { e.stopPropagation(); onPortUp(e); } }}
         onDragStart={(e) => { e.stopPropagation(); e.preventDefault(); }}
         onClick={(e) => e.stopPropagation()}
         onMouseEnter={(e) => {
