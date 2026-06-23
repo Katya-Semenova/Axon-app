@@ -62,9 +62,8 @@
     }
     .diagram .mermaid { text-align: center; }
     .mermaid g.node { cursor: pointer; }
-    /* схема в натуральную величину (useMaxWidth:false) — вертикальная карта узкая,
-       помещается по ширине; при нехватке места — прокрутка. */
-    .diagram svg { max-width: none !important; height: auto !important; }
+    /* useMaxWidth:true сам вписывает карту по ширине — без горизонтального скролла */
+    .diagram svg { height: auto !important; }
 
     /* инфо-прямоугольник ПОД картой (не перекрывает её) */
     .infobar {
@@ -94,9 +93,9 @@
     .am-dim { opacity: .4 !important; transition: opacity .2s; }
     .mermaid path.am-edge-hl { stroke: var(--hl) !important; stroke-width: 3px !important; opacity: 1 !important; }
     /* крупнее текст внутри прямоугольников-узлов */
-    .mermaid .nodeLabel, .mermaid span.nodeLabel { font-size: 21px !important; }
+    .mermaid .nodeLabel, .mermaid span.nodeLabel { font-size: 17px !important; }
     /* подписи на стрелках-переходах */
-    .mermaid .edgeLabel, .mermaid .edgeLabel *, .mermaid .edgeLabel span { font-size: 16px !important; }
+    .mermaid .edgeLabel, .mermaid .edgeLabel *, .mermaid .edgeLabel span { font-size: 13px !important; }
     /* заголовки столбцов-групп */
     .mermaid .cluster-label, .mermaid .cluster-label span { font-size: 13px !important; font-weight: 700; letter-spacing: .03em; }
     .mermaid .cluster rect { fill: #faf8f3 !important; stroke: var(--border) !important; }
@@ -186,19 +185,6 @@ graph TB
   classDef user fill:#C8A86B,stroke:#1A2742,color:#1A2742;
   classDef admin fill:#1A2742,stroke:#C8A86B,color:#F4F0E8;
 
-  click Landing call nodeClick()
-  click Privacy call nodeClick()
-  click Terms call nodeClick()
-  click Cookies call nodeClick()
-  click Entry call nodeClick()
-  click Login call nodeClick()
-  click Register call nodeClick()
-  click Forgot call nodeClick()
-  click Reset call nodeClick()
-  click Settings call nodeClick()
-  click Admin call nodeClick()
-  click AdminDetail call nodeClick()
-  click Public call nodeClick()
       </pre>
     </div>
 
@@ -369,11 +355,19 @@ graph TB
       infobar.classList.add("open");
     }
 
-    function select(id) { if (NODES[id]) { selected = id; render(); } }
+    function select(id) {
+      if (!NODES[id]) return;
+      selected = (selected === id) ? null : id; // повторный клик по тому же — снять выделение
+      render();
+    }
     function closeInfo() { selected = null; render(); }
 
     window.nodeClick = (id) => select(id);
     document.getElementById("p-close").addEventListener("click", closeInfo);
+    // клик по пустому месту карты (не по квадрату) — сброс к полному виду
+    document.querySelector(".diagram").addEventListener("click", (e) => {
+      if (!e.target.closest("g.node")) closeInfo();
+    });
     document.querySelectorAll(".rolechip").forEach(chip => {
       chip.addEventListener("click", () => {
         const r = chip.dataset.role;
@@ -386,10 +380,9 @@ graph TB
     mermaid.initialize({
       startOnLoad: false,
       securityLevel: "loose",
-      themeVariables: { fontSize: "23px" },
-      // useMaxWidth:false — НЕ сжимать схему под ширину (иначе текст узлов мельчает).
-      // Вертикальная (TB) карта узкая → помещается даже на 760, прокрутка вертикальная.
-      flowchart: { useMaxWidth: false, htmlLabels: true, nodeSpacing: 45, rankSpacing: 70 },
+      themeVariables: { fontSize: "18px" },
+      // useMaxWidth:true — вписывать карту по ширине контейнера (без горизонтального скролла).
+      flowchart: { useMaxWidth: true, htmlLabels: true, nodeSpacing: 40, rankSpacing: 60 },
     });
     await mermaid.run({ querySelector: ".mermaid" });
 
