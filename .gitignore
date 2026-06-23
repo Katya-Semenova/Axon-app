@@ -62,3 +62,6 @@ development/apps/landing/public/brand/_previews/
 
 # тестовые данные (CSV/xlsx) — локально, не в репо
 test-data/
+
+# локальный кэш хуков Claude (глушилки-маркеры) — не в репо
+.claude/.cache/
