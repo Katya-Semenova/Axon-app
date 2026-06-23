@@ -327,7 +327,13 @@
     "duplicateRow": "Duplicate row",
     "deleteRow": "Delete row",
     "label": "Label",
-    "dataSet": "Data Set"
+    "dataSet": "Data Set",
+    "sortAsc": "Sort ascending",
+    "sortDesc": "Sort descending",
+    "sortClear": "Clear sort",
+    "filterPlaceholder": "filter…",
+    "reset": "Reset",
+    "dragDisabledHint": "Clear sort and filters to reorder rows"
   },
   "Desktop": {
     "workspace": "Workspace",

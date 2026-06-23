@@ -50,7 +50,7 @@ function DotsIcon() {
 }
 
 function DraggableRow({
-  row, columns, onChange, onDuplicate, onDelete, insightsById,
+  row, columns, onChange, onDuplicate, onDelete, insightsById, draggable,
 }: {
   row: DataRow;
   columns: string[];
@@ -58,6 +58,9 @@ function DraggableRow({
   onDuplicate: () => void;
   onDelete: () => void;
   insightsById?: Record<string, Insight>;
+  /** When false (a sort/filter view is active) the grip is inert — reordering a
+      sorted/filtered view is meaningless. Cell editing stays enabled. */
+  draggable: boolean;
 }) {
   const controls   = useDragControls();
   const [hovered, setHovered]   = useState(false);
@@ -101,15 +104,17 @@ function DraggableRow({
           gap: 0,
         }}
       >
-        {/* Drag grip */}
+        {/* Drag grip — inert while a sort/filter view is active */}
         <div
-          onPointerDown={e => controls.start(e)}
-          className="cursor-grab active:cursor-grabbing shrink-0 flex items-center justify-center select-none transition-colors"
+          onPointerDown={draggable ? (e => controls.start(e)) : undefined}
+          className="shrink-0 flex items-center justify-center select-none transition-colors"
           style={{
-            width: COL_GRIP, color: hovered ? T2 : T3,
+            width: COL_GRIP,
+            color: draggable ? (hovered ? T2 : T3) : "rgba(168,168,162,0.35)",
+            cursor: draggable ? "grab" : "not-allowed",
             flexShrink: 0, alignSelf: "stretch", display: "flex",
           }}
-          title={t("dragReorder")}
+          title={draggable ? t("dragReorder") : t("dragDisabledHint")}
         >
           <GripIcon />
         </div>
@@ -214,6 +219,58 @@ function DraggableRow({
 
 export function DataTable({ columns, rows, onRowsChange, insightsById }: DataTableProps) {
   const t = useTranslations("Table");
+
+  /* ── Excel-like view: sort by a column + per-column filters ──
+     This is a VIEW only — it never mutates the stored row order/content.
+     Editing writes through by row id; while a view is active, drag-reorder is
+     disabled (a sorted/filtered list can't be manually reordered). */
+  const [sortKey, setSortKey] = useState<string | null>(null);  // "label" | "v0" | "v1" …
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+  const [labelF,  setLabelF]  = useState("");
+  const [valueF,  setValueF]  = useState<string[]>(() => columns.map(() => ""));
+
+  const filtersActive = labelF.trim() !== "" || valueF.some(f => f.trim() !== "");
+  const viewActive    = sortKey !== null || filtersActive;
+
+  function cycleSort(key: string) {
+    if (sortKey !== key) { setSortKey(key); setSortDir("asc"); }
+    else if (sortDir === "asc") setSortDir("desc");
+    else { setSortKey(null); setSortDir("asc"); }
+  }
+  function resetView() {
+    setSortKey(null); setSortDir("asc"); setLabelF(""); setValueF(columns.map(() => ""));
+  }
+  function sortTitle(key: string) {
+    if (sortKey !== key) return t("sortAsc");
+    return sortDir === "asc" ? t("sortDesc") : t("sortClear");
+  }
+  function SortArrow({ k }: { k: string }) {
+    if (sortKey !== k) return null;
+    return <span style={{ marginLeft: 3, fontSize: 8 }}>{sortDir === "asc" ? "▲" : "▼"}</span>;
+  }
+
+  /* Apply filters, then sort — pure view derived from rows. */
+  let viewRows = rows;
+  if (labelF.trim()) {
+    const q = labelF.trim().toLowerCase();
+    viewRows = viewRows.filter(r => r.label.toLowerCase().includes(q));
+  }
+  valueF.forEach((f, i) => {
+    const q = f.trim();
+    if (q) viewRows = viewRows.filter(r => String(r.values[i] ?? "").includes(q));
+  });
+  if (sortKey) {
+    const dir = sortDir === "asc" ? 1 : -1;
+    const sorted = [...viewRows];
+    if (sortKey === "label") {
+      sorted.sort((a, b) => dir * a.label.localeCompare(b.label));
+    } else {
+      const i = Number(sortKey.slice(1));
+      sorted.sort((a, b) => dir * ((a.values[i] ?? 0) - (b.values[i] ?? 0)));
+    }
+    viewRows = sorted;
+  }
+
   function updateRow(id: string, updated: DataRow) {
     onRowsChange(rows.map(r => (r.id === id ? updated : r)));
   }
@@ -231,41 +288,100 @@ export function DataTable({ columns, rows, onRowsChange, insightsById }: DataTab
   }
 
   const headerCell = "text-[10px] font-mono uppercase tracking-[0.08em] text-[#A8A8A2]";
+  const headerBtn  = "bg-transparent border-none p-0 cursor-pointer inline-flex items-center";
+  const filterInputCls =
+    "w-full text-[10.5px] font-mono text-[#1B2840] bg-white outline-none " +
+    "border border-[#E8E4DC] rounded-sm px-[5px] py-[2px] " +
+    "focus:border-[rgba(184,149,72,0.5)] placeholder:text-[#A8A8A2] transition-colors";
 
   return (
     /* Use 100% width, no horizontal scroll — columns distribute via flex */
     <div style={{ width: "100%" }}>
-      {/* Header */}
-      <div
-        className="flex items-center border-b border-[#E8E4DC] sticky top-0 z-10"
-        style={{ background: "#faf9f5", paddingTop: 4, paddingBottom: 6, gap: 0 }}
-      >
-        <div style={{ width: COL_GRIP, flexShrink: 0 }} />
-        <div className={headerCell} style={{ flex: 1, minWidth: 0, paddingRight: 4 }}>{t("label")}</div>
-        {columns.map(col => (
-          <div key={col} className={`${headerCell} text-right`} style={{ width: COL_VALUE, flexShrink: 0 }}>
-            {col}
+      {/* Sticky header zone: optional reset + column headers + per-column filters */}
+      <div className="sticky top-0 z-10" style={{ background: "#faf9f5" }}>
+        {viewActive && (
+          <div className="flex justify-end" style={{ paddingBottom: 4 }}>
+            <button
+              type="button"
+              onClick={resetView}
+              className="text-[10px] font-mono uppercase tracking-[0.08em]"
+              style={{ color: GOLD, background: "transparent", border: "none", cursor: "pointer", padding: "2px 0" }}
+            >
+              {t("reset")}
+            </button>
           </div>
-        ))}
-        {insightsById && (
-          <div className={headerCell} style={{ flex: 1, minWidth: 60, paddingLeft: 8 }}>{t("dataSet")}</div>
         )}
-        <div style={{ width: COL_ACTIONS, flexShrink: 0 }} />
+
+        {/* Column headers — click to sort */}
+        <div
+          className="flex items-center border-b border-[#E8E4DC]"
+          style={{ paddingTop: 4, paddingBottom: 6, gap: 0 }}
+        >
+          <div style={{ width: COL_GRIP, flexShrink: 0 }} />
+          <div style={{ flex: 1, minWidth: 0, paddingRight: 4 }}>
+            <button type="button" onClick={() => cycleSort("label")} title={sortTitle("label")} className={`${headerCell} ${headerBtn}`}>
+              {t("label")}<SortArrow k="label" />
+            </button>
+          </div>
+          {columns.map((col, i) => (
+            <div key={col} style={{ width: COL_VALUE, flexShrink: 0, textAlign: "right" }}>
+              <button
+                type="button"
+                onClick={() => cycleSort(`v${i}`)}
+                title={sortTitle(`v${i}`)}
+                className={`${headerCell} ${headerBtn} justify-end w-full`}
+              >
+                {col}<SortArrow k={`v${i}`} />
+              </button>
+            </div>
+          ))}
+          {insightsById && (
+            <div className={headerCell} style={{ flex: 1, minWidth: 60, paddingLeft: 8 }}>{t("dataSet")}</div>
+          )}
+          <div style={{ width: COL_ACTIONS, flexShrink: 0 }} />
+        </div>
+
+        {/* Per-column filter inputs */}
+        <div className="flex items-center border-b border-[#E8E4DC]" style={{ paddingTop: 4, paddingBottom: 5, gap: 0 }}>
+          <div style={{ width: COL_GRIP, flexShrink: 0 }} />
+          <div style={{ flex: 1, minWidth: 0, paddingRight: 4 }}>
+            <input
+              value={labelF}
+              onChange={e => setLabelF(e.target.value)}
+              placeholder={t("filterPlaceholder")}
+              className={filterInputCls}
+            />
+          </div>
+          {columns.map((col, i) => (
+            <div key={col} style={{ width: COL_VALUE, flexShrink: 0 }}>
+              <input
+                value={valueF[i] ?? ""}
+                onChange={e => setValueF(prev => { const n = [...prev]; n[i] = e.target.value; return n; })}
+                placeholder={t("filterPlaceholder")}
+                className={`${filterInputCls} text-right`}
+              />
+            </div>
+          ))}
+          {insightsById && <div style={{ flex: 1, minWidth: 60, paddingLeft: 8 }} />}
+          <div style={{ width: COL_ACTIONS, flexShrink: 0 }} />
+        </div>
       </div>
 
-      {/* Rows */}
+      {/* Rows. onReorder is guarded — only the natural (unsorted/unfiltered) view
+          can be reordered; viewRows === rows in that case. */}
       <Reorder.Group
         axis="y"
-        values={rows}
-        onReorder={onRowsChange}
+        values={viewRows}
+        onReorder={(newOrder) => { if (!viewActive) onRowsChange(newOrder); }}
         style={{ padding: 0, margin: 0 }}
       >
-        {rows.map(row => (
+        {viewRows.map(row => (
           <DraggableRow
             key={row.id}
             row={row}
             columns={columns}
             insightsById={insightsById}
+            draggable={!viewActive}
             onChange={updated => updateRow(row.id, updated)}
             onDuplicate={() => duplicateRow(row.id)}
             onDelete={() => deleteRow(row.id)}
