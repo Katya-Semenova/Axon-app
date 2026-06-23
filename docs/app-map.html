@@ -65,11 +65,13 @@
     /* useMaxWidth:true сам вписывает карту по ширине — без горизонтального скролла */
     .diagram svg { height: auto !important; }
 
-    /* инфо-прямоугольник ПОД картой (не перекрывает её) */
+    /* блок выделения — в правом верхнем углу карты (там свободно), поверх схемы */
+    .stage { position: relative; }
     .infobar {
-      display: none; margin-top: 12px;
-      background: #fff; border: 1px solid var(--border); border-left: 4px solid var(--gold);
-      border-radius: 6px; padding: 16px 18px;
+      display: none; position: absolute; top: 16px; right: 16px;
+      width: 300px; max-height: calc(100% - 32px); overflow: auto; z-index: 5;
+      background: #fff; border: 1px solid var(--border); border-top: 4px solid var(--gold);
+      border-radius: 6px; padding: 14px 16px; box-shadow: 0 6px 20px rgba(26,39,66,.15);
     }
     .infobar.open { display: block; }
     .infobar .close { float: right; cursor: pointer; border: none; background: none; font-size: 19px; color: var(--slate); line-height: 1; }
@@ -79,8 +81,7 @@
     .rt-guest { background: var(--cream); border: 1px solid var(--slate); color: var(--navy); }
     .rt-user { background: var(--gold); border: 1px solid var(--navy); color: var(--navy); }
     .rt-admin { background: var(--navy); border: 1px solid var(--gold); color: var(--cream); }
-    .infogrid { display: flex; gap: 36px; flex-wrap: wrap; margin-top: 6px; }
-    .infogrid > div { flex: 1 1 280px; min-width: 240px; }
+    .infogrid { display: block; margin-top: 4px; }
     .grp { font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: var(--slate); margin: 12px 0 6px; }
     .infobar ul { list-style: none; margin: 0; padding: 0; }
     .infobar li { padding: 6px 0; border-bottom: 1px dashed var(--border); font-size: 12px; }
@@ -139,6 +140,7 @@
       </span>
     </div>
 
+    <div class="stage">
     <div class="diagram">
       <pre class="mermaid">
 graph TB
@@ -166,7 +168,7 @@ graph TB
   Login -- "забыли пароль" --> Forgot
   Login -- "нет аккаунта" --> Register
   Register -- "после регистрации" --> Entry
-  Register -- "уже есть аккаунт" --> Login
+  Register -- "есть аккаунт" --> Login
   Register --> Terms
   Register --> Privacy
   Forgot -- "ссылка из письма" --> Reset
@@ -195,6 +197,7 @@ graph TB
         <div><div class="grp">Отсюда можно перейти →</div><div id="p-outs"></div></div>
         <div><div class="grp">Сюда попадают из ←</div><div id="p-ins"></div></div>
       </div>
+    </div>
     </div>
 
     <p class="note">
@@ -387,7 +390,7 @@ graph TB
       themeVariables: { fontSize: "16px" },
       // useMaxWidth:true — вписывать карту по ширине контейнера (без горизонтального скролла).
       // больше расстояний между узлами/рангами → подписи переходов не налезают друг на друга.
-      flowchart: { useMaxWidth: true, htmlLabels: true, nodeSpacing: 60, rankSpacing: 95 },
+      flowchart: { useMaxWidth: true, htmlLabels: true, nodeSpacing: 85, rankSpacing: 120 },
     });
     await mermaid.run({ querySelector: ".mermaid" });
 
