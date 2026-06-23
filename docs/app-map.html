@@ -168,7 +168,7 @@ graph TB
   Login -- "забыли пароль" --> Forgot
   Login -- "нет аккаунта" --> Register
   Register -- "после регистрации" --> Entry
-  Register -- "есть аккаунт" --> Login
+  Register --> Login
   Register --> Terms
   Register --> Privacy
   Forgot -- "ссылка из письма" --> Reset
