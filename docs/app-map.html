@@ -97,9 +97,9 @@
     .am-dim { opacity: .4 !important; transition: opacity .2s; }
     .mermaid path.am-edge-hl { stroke: var(--hl) !important; stroke-width: 3px !important; opacity: 1 !important; }
     /* крупнее текст внутри прямоугольников-узлов */
-    .mermaid .nodeLabel, .mermaid span.nodeLabel { font-size: 16px !important; }
+    .mermaid .nodeLabel, .mermaid span.nodeLabel { font-size: 18px !important; }
     /* подписи на стрелках-переходах */
-    .mermaid .edgeLabel, .mermaid .edgeLabel *, .mermaid .edgeLabel span { font-size: 12px !important; }
+    .mermaid .edgeLabel, .mermaid .edgeLabel *, .mermaid .edgeLabel span { font-size: 13px !important; }
     /* заголовки столбцов-групп */
     /* группа Canvas/Slides/Present — только для раскладки (держит их вплотную), рамку прячем */
     .mermaid .cluster rect { fill: none !important; stroke: none !important; }
@@ -442,7 +442,7 @@ graph TB
     mermaid.initialize({
       startOnLoad: false,
       securityLevel: "loose",
-      themeVariables: { fontSize: "18px" },
+      themeVariables: { fontSize: "20px" },
       // useMaxWidth:true — вписывать карту по ширине контейнера.
       // компактные расстояния → карта плотнее, квадраты/текст крупнее.
       flowchart: { useMaxWidth: true, htmlLabels: true, nodeSpacing: 45, rankSpacing: 60 },
