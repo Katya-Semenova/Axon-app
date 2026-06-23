@@ -70,26 +70,28 @@
       border-radius: 6px; padding: 16px 18px;
     }
     .infobar.open { display: block; }
-    .infobar .close { float: right; cursor: pointer; border: none; background: none; font-size: 20px; color: var(--slate); line-height: 1; }
-    .infobar h3 { margin: 0 0 4px; font-size: 17px; display: inline-block; }
-    .infobar .route { font-family: "JetBrains Mono", monospace; font-size: 12px; color: var(--slate); }
-    .infobar .role-tag { display: inline-block; font-size: 11px; padding: 1px 8px; border-radius: 10px; margin-left: 8px; vertical-align: 2px; }
+    .infobar .close { float: right; cursor: pointer; border: none; background: none; font-size: 19px; color: var(--slate); line-height: 1; }
+    .infobar h3 { margin: 0 0 4px; font-size: 16px; display: inline-block; }
+    .infobar .route { font-family: "JetBrains Mono", monospace; font-size: 11px; color: var(--slate); }
+    .infobar .role-tag { display: inline-block; font-size: 10px; padding: 1px 8px; border-radius: 10px; margin-left: 8px; vertical-align: 2px; }
     .rt-guest { background: var(--cream); border: 1px solid var(--slate); color: var(--navy); }
     .rt-user { background: var(--gold); border: 1px solid var(--navy); color: var(--navy); }
     .rt-admin { background: var(--navy); border: 1px solid var(--gold); color: var(--cream); }
     .infogrid { display: flex; gap: 36px; flex-wrap: wrap; margin-top: 6px; }
     .infogrid > div { flex: 1 1 280px; min-width: 240px; }
-    .grp { font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: var(--slate); margin: 12px 0 6px; }
+    .grp { font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: var(--slate); margin: 12px 0 6px; }
     .infobar ul { list-style: none; margin: 0; padding: 0; }
-    .infobar li { padding: 6px 0; border-bottom: 1px dashed var(--border); font-size: 13px; }
+    .infobar li { padding: 6px 0; border-bottom: 1px dashed var(--border); font-size: 12px; }
     .infobar li:last-child { border-bottom: none; }
     .infobar li .to { font-weight: 600; }
-    .infobar li .via { color: var(--slate); font-size: 12px; display: block; }
-    .infobar .none { color: var(--slate); font-size: 13px; font-style: italic; }
+    .infobar li .via { color: var(--slate); font-size: 11px; display: block; }
+    .infobar .none { color: var(--slate); font-size: 12px; font-style: italic; }
 
     /* подсветка/затемнение поверх mermaid-SVG (мягкое — очертания читаются) */
     .am-dim { opacity: .4 !important; transition: opacity .2s; }
-    .mermaid path.am-edge-hl { stroke: var(--hl) !important; stroke-width: 2px !important; opacity: 1 !important; }
+    .mermaid path.am-edge-hl { stroke: var(--hl) !important; stroke-width: 3px !important; opacity: 1 !important; }
+    /* крупнее текст внутри прямоугольников-узлов (+2pt) */
+    .mermaid .nodeLabel, .mermaid span.nodeLabel { font-size: 15px !important; }
 
     table { width: 100%; border-collapse: collapse; background: #fff; font-size: 13px; margin-top: 8px; }
     caption { text-align: left; font-weight: 600; padding: 14px 0 8px; font-size: 14px; }
@@ -374,6 +376,7 @@ graph LR
     mermaid.initialize({
       startOnLoad: false,
       securityLevel: "loose",
+      themeVariables: { fontSize: "18px" }, // +2pt к тексту узлов (раскладка учтёт размер)
       flowchart: { useMaxWidth: true, htmlLabels: true, nodeSpacing: 50, rankSpacing: 75 },
     });
     await mermaid.run({ querySelector: ".mermaid" });
