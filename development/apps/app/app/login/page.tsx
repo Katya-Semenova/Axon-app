@@ -42,10 +42,10 @@ export default function LoginPage() {
         <form onSubmit={handleSubmit}>
           <CardContent className="flex flex-col gap-3">
             <FormField label="Email" htmlFor="email">
-              <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" required />
+              <Input id="email" name="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" required />
             </FormField>
             <FormField label="Пароль" htmlFor="password">
-              <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" required />
+              <Input id="password" name="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" required />
             </FormField>
             {error && <p className="text-[11.5px] text-error">{error}</p>}
           </CardContent>

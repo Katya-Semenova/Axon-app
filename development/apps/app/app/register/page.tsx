@@ -47,13 +47,13 @@ export default function RegisterPage() {
         <form onSubmit={handleSubmit}>
           <CardContent className="flex flex-col gap-3">
             <FormField label="Имя" htmlFor="name">
-              <Input id="name" value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" required />
+              <Input id="name" name="name" value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" required />
             </FormField>
             <FormField label="Email" htmlFor="email">
-              <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" required />
+              <Input id="email" name="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" required />
             </FormField>
             <FormField label="Пароль" htmlFor="password" hint="Минимум 8 символов">
-              <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="new-password" required />
+              <Input id="password" name="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="new-password" required />
             </FormField>
             {error && <p className="text-[11.5px] text-error">{error}</p>}
           </CardContent>

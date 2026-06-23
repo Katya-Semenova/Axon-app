@@ -67,14 +67,14 @@ export function AuthModal({
       <form onSubmit={handleSubmit} className="flex flex-col gap-3">
         {tab === "register" && (
           <FormField label={t("name")} htmlFor="am-name">
-            <Input id="am-name" value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" required />
+            <Input id="am-name" name="name" value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" required />
           </FormField>
         )}
         <FormField label={t("email")} htmlFor="am-email">
-          <Input id="am-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" required />
+          <Input id="am-email" name="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" required />
         </FormField>
         <FormField label={t("password")} htmlFor="am-password">
-          <Input id="am-password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete={tab === "register" ? "new-password" : "current-password"} required />
+          <Input id="am-password" name="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete={tab === "register" ? "new-password" : "current-password"} required />
         </FormField>
         {error && <p className="text-[11.5px] text-error">{error}</p>}
         <Button type="submit" loading={loading} className="w-full mt-1">
