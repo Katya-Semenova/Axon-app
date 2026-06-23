@@ -90,10 +90,10 @@
     /* подсветка/затемнение поверх mermaid-SVG (мягкое — очертания читаются) */
     .am-dim { opacity: .4 !important; transition: opacity .2s; }
     .mermaid path.am-edge-hl { stroke: var(--hl) !important; stroke-width: 3px !important; opacity: 1 !important; }
-    /* крупнее текст внутри прямоугольников-узлов (+2pt) */
-    .mermaid .nodeLabel, .mermaid span.nodeLabel { font-size: 15px !important; }
+    /* крупнее текст внутри прямоугольников-узлов */
+    .mermaid .nodeLabel, .mermaid span.nodeLabel { font-size: 17px !important; }
 
-    table { width: 100%; border-collapse: collapse; background: #fff; font-size: 13px; margin-top: 8px; }
+    table { width: 100%; border-collapse: collapse; background: #fff; font-size: 12px; margin-top: 8px; }
     caption { text-align: left; font-weight: 600; padding: 14px 0 8px; font-size: 14px; }
     th, td { border: 1px solid var(--border); padding: 8px 10px; text-align: left; vertical-align: top; }
     th { background: var(--navy); color: var(--cream); font-weight: 600; }
@@ -104,6 +104,13 @@
     .role-user { color: #9a7a3a; }
     .role-admin { color: var(--navy); }
     .note { font-size: 12px; color: var(--slate); margin-top: 8px; }
+
+    /* на узких экранах НЕ сжимаем схему в кашу — даём горизонтальную прокрутку */
+    @media (max-width: 860px) {
+      .diagram { overflow-x: auto; }
+      .diagram svg { width: 900px !important; max-width: none !important; }
+      .infogrid { gap: 18px; }
+    }
   </style>
 </head>
 <body>
@@ -376,7 +383,7 @@ graph LR
     mermaid.initialize({
       startOnLoad: false,
       securityLevel: "loose",
-      themeVariables: { fontSize: "18px" }, // +2pt к тексту узлов (раскладка учтёт размер)
+      themeVariables: { fontSize: "20px" }, // крупный текст узлов (раскладка учтёт размер боксов)
       flowchart: { useMaxWidth: true, htmlLabels: true, nodeSpacing: 50, rankSpacing: 75 },
     });
     await mermaid.run({ querySelector: ".mermaid" });
