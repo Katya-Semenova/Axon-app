@@ -62,9 +62,9 @@
     }
     .diagram .mermaid { text-align: center; }
     .mermaid g.node { cursor: pointer; }
-    /* КЛЮЧЕВОЕ: схема не сжимается уже этой ширины — на узком экране даёт прокрутку,
-       а не превращает текст в кашу. height:auto сохраняет пропорции. */
-    .diagram svg { min-width: 1150px !important; max-width: none !important; height: auto !important; }
+    /* схема в натуральную величину (useMaxWidth:false) — вертикальная карта узкая,
+       помещается по ширине; при нехватке места — прокрутка. */
+    .diagram svg { max-width: none !important; height: auto !important; }
 
     /* инфо-прямоугольник ПОД картой (не перекрывает её) */
     .infobar {
@@ -94,9 +94,9 @@
     .am-dim { opacity: .4 !important; transition: opacity .2s; }
     .mermaid path.am-edge-hl { stroke: var(--hl) !important; stroke-width: 3px !important; opacity: 1 !important; }
     /* крупнее текст внутри прямоугольников-узлов */
-    .mermaid .nodeLabel, .mermaid span.nodeLabel { font-size: 24px !important; }
-    /* подписи на стрелках-переходах — крупнее */
-    .mermaid .edgeLabel, .mermaid .edgeLabel *, .mermaid .edgeLabel span { font-size: 18px !important; }
+    .mermaid .nodeLabel, .mermaid span.nodeLabel { font-size: 21px !important; }
+    /* подписи на стрелках-переходах */
+    .mermaid .edgeLabel, .mermaid .edgeLabel *, .mermaid .edgeLabel span { font-size: 16px !important; }
     /* заголовки столбцов-групп */
     .mermaid .cluster-label, .mermaid .cluster-label span { font-size: 13px !important; font-weight: 700; letter-spacing: .03em; }
     .mermaid .cluster rect { fill: #faf8f3 !important; stroke: var(--border) !important; }
@@ -142,35 +142,20 @@
 
     <div class="diagram">
       <pre class="mermaid">
-graph LR
-  subgraph S1["ЛЕНДИНГ · axon-app.ru/"]
-    direction TB
-    Landing["Лендинг<br/>/"]:::guest
-    Privacy["Конфиденциальность<br/>/privacy"]:::guest
-    Terms["Соглашение<br/>/terms"]:::guest
-    Cookies["Cookies<br/>/cookies"]:::guest
-  end
-  subgraph S2["ПРИЛОЖЕНИЕ · холст · слайды · показ"]
-    direction TB
-    Entry["Вход в приложение<br/>/ai-studio"]:::guest
-    Public["Публичная презентация<br/>/p/[id]"]:::guest
-  end
-  subgraph S3["АВТОРИЗАЦИЯ"]
-    direction TB
-    Login["Вход<br/>/login"]:::guest
-    Register["Регистрация<br/>/register"]:::guest
-    Forgot["Сброс пароля<br/>/forgot-password"]:::guest
-    Reset["Новый пароль<br/>/reset-password"]:::guest
-  end
-  subgraph S4["ЛИЧНЫЙ КАБИНЕТ"]
-    direction TB
-    Settings["Настройки<br/>/settings"]:::user
-  end
-  subgraph S5["АДМИН-КАБИНЕТ"]
-    direction TB
-    Admin["Админка<br/>/admin/users"]:::admin
-    AdminDetail["Профиль юзера<br/>/admin/users/[id]"]:::admin
-  end
+graph TB
+  Landing["Лендинг<br/>/"]:::guest
+  Privacy["Конфиденциальность<br/>/privacy"]:::guest
+  Terms["Соглашение<br/>/terms"]:::guest
+  Cookies["Cookies<br/>/cookies"]:::guest
+  Entry["Вход в приложение<br/>/ai-studio"]:::guest
+  Public["Публичная презентация<br/>/p/[id]"]:::guest
+  Login["Вход<br/>/login"]:::guest
+  Register["Регистрация<br/>/register"]:::guest
+  Forgot["Сброс пароля<br/>/forgot-password"]:::guest
+  Reset["Новый пароль<br/>/reset-password"]:::guest
+  Settings["Настройки<br/>/settings"]:::user
+  Admin["Админка<br/>/admin/users"]:::admin
+  AdminDetail["Профиль юзера<br/>/admin/users/[id]"]:::admin
 
   Landing -- "CTA «Try Axon»" --> Entry
   Landing --> Privacy
@@ -398,22 +383,12 @@ graph LR
       });
     });
 
-    // движок ELK даёт настоящие вертикальные колонки (dagre с перекрёстными стрелками — нет).
-    // Если CDN недоступен — откат на dagre (схема всё равно нарисуется, но полосами).
-    let layout = "dagre";
-    try {
-      const elk = (await import("https://cdn.jsdelivr.net/npm/@mermaid-js/layout-elk@0.1.7/dist/mermaid-layout-elk.esm.min.mjs")).default;
-      mermaid.registerLayoutLoaders(elk);
-      layout = "elk";
-    } catch (e) { console.warn("ELK-раскладка не загрузилась, использую dagre:", e); }
-
     mermaid.initialize({
       startOnLoad: false,
       securityLevel: "loose",
-      layout,
-      themeVariables: { fontSize: "26px" },
-      // useMaxWidth:false — НЕ сжимать схему под ширину (иначе текст узлов мельчает);
-      // если не влезает — горизонтальная прокрутка в .diagram.
+      themeVariables: { fontSize: "23px" },
+      // useMaxWidth:false — НЕ сжимать схему под ширину (иначе текст узлов мельчает).
+      // Вертикальная (TB) карта узкая → помещается даже на 760, прокрутка вертикальная.
       flowchart: { useMaxWidth: false, htmlLabels: true, nodeSpacing: 45, rankSpacing: 70 },
     });
     await mermaid.run({ querySelector: ".mermaid" });
