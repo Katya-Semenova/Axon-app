@@ -54,7 +54,7 @@
     .sw-admin { background: #0d1526; border: 1px solid var(--gold); }
     .lineleg { display: inline-flex; align-items: center; gap: 7px; color: #cfd6e2; padding-left: 4px; }
     .sw-line { width: 24px; height: 0; border-top: 3px solid var(--hl); }
-    .sw-state { background: #eef2f7; border: 1px dashed var(--slate); }
+    .sw-state { display: inline-block; width: 16px; height: 14px; background: #cdd9ea; border: 1px dashed var(--cream); border-radius: 2px; }
 
     /* карта на всю ширину */
     .diagram {
@@ -98,9 +98,9 @@
     .am-dim { opacity: .4 !important; transition: opacity .2s; }
     .mermaid path.am-edge-hl { stroke: var(--hl) !important; stroke-width: 3px !important; opacity: 1 !important; }
     /* крупнее текст внутри прямоугольников-узлов */
-    .mermaid .nodeLabel, .mermaid span.nodeLabel { font-size: 18px !important; }
+    .mermaid .nodeLabel, .mermaid span.nodeLabel { font-size: 20px !important; }
     /* подписи на стрелках-переходах */
-    .mermaid .edgeLabel, .mermaid .edgeLabel *, .mermaid .edgeLabel span { font-size: 15px !important; }
+    .mermaid .edgeLabel, .mermaid .edgeLabel *, .mermaid .edgeLabel span { font-size: 17px !important; }
     /* заголовки столбцов-групп */
     /* группа Canvas/Slides/Present — только для раскладки (держит их вплотную), рамку прячем */
     .mermaid .cluster rect { fill: none !important; stroke: none !important; }
@@ -444,7 +444,7 @@ graph TB
     mermaid.initialize({
       startOnLoad: false,
       securityLevel: "loose",
-      themeVariables: { fontSize: "20px" },
+      themeVariables: { fontSize: "22px" },
       // useMaxWidth:true — вписывать карту по ширине контейнера.
       // компактные расстояния → карта плотнее, квадраты/текст крупнее.
       flowchart: { useMaxWidth: true, htmlLabels: true, nodeSpacing: 45, rankSpacing: 60 },
