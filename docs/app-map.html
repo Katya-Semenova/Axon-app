@@ -81,6 +81,8 @@
     .rt-guest { background: var(--cream); border: 1px solid var(--slate); color: var(--navy); }
     .rt-user { background: var(--gold); border: 1px solid var(--navy); color: var(--navy); }
     .rt-admin { background: var(--navy); border: 1px solid var(--gold); color: var(--cream); }
+    .rt-state { background: #eef2f7; border: 1px dashed var(--slate); color: var(--navy); }
+    .infobar li.ctrl { color: var(--navy); }
     .infogrid { display: block; margin-top: 4px; }
     .grp { font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: var(--slate); margin: 12px 0 6px; }
     .infobar ul { list-style: none; margin: 0; padding: 0; }
@@ -157,6 +159,11 @@ graph TB
   Settings["Настройки<br/>/settings"]:::user
   Admin["Админка<br/>/admin/users"]:::admin
   AdminDetail["Профиль юзера<br/>/admin/users/[id]"]:::admin
+  Canvas["Canvas — холст<br/>(режим data)"]:::state
+  Slides["Slides — слайды<br/>(режим presentation)"]:::state
+  Present["Present — показ<br/>(режим build)"]:::state
+  InsightDrill["Инсайт — разворот<br/>(оверлей)"]:::state
+  DatasetDrill["Дата-сет — разворот<br/>(оверлей)"]:::state
 
   Landing -- "CTA «Try Axon»" --> Entry
   Landing --> Privacy
@@ -181,11 +188,17 @@ graph TB
   Settings -- "выйти" --> Entry
   Admin --> AdminDetail
 
-  Entry -- "поделиться презентацией" --> Public
+  Entry -- "открыть проект" --> Canvas
+  Canvas -- "режим SLIDES" --> Slides
+  Slides -- "режим PRESENT" --> Present
+  Canvas -- "развернуть инсайт" --> InsightDrill
+  Canvas -- "развернуть дата-сет" --> DatasetDrill
+  Present -- "поделиться" --> Public
 
   classDef guest fill:#F4F0E8,stroke:#8B95A8,color:#1A2742;
   classDef user fill:#C8A86B,stroke:#1A2742,color:#1A2742;
   classDef admin fill:#1A2742,stroke:#C8A86B,color:#F4F0E8;
+  classDef state fill:#eef2f7,stroke:#8B95A8,stroke-dasharray:6 4,color:#1A2742;
 
       </pre>
     </div>
@@ -193,6 +206,7 @@ graph TB
     <div class="infobar" id="infobar">
       <button class="close" id="p-close" title="Закрыть">×</button>
       <h3 id="p-title"></h3><span id="p-role"></span>
+      <div class="grp">Контролы экрана</div><div id="p-controls"></div>
       <div class="infogrid">
         <div><div class="grp">Отсюда можно перейти →</div><div id="p-outs"></div></div>
         <div><div class="grp">Сюда попадают из ←</div><div id="p-ins"></div></div>
@@ -268,6 +282,33 @@ graph TB
       Admin:       { label: "Админка",                route: "/admin/users",      role: "admin" },
       AdminDetail: { label: "Профиль юзера",          route: "/admin/users/[id]", role: "admin" },
       Public:      { label: "Публичная презентация",  route: "/p/[id]",           role: "guest" },
+      // состояния-режимы ВНУТРИ «Вход в приложение» (не отдельные URL)
+      Canvas:       { label: "Canvas — холст",          route: "режим data",         role: "state" },
+      Slides:       { label: "Slides — слайды",          route: "режим presentation", role: "state" },
+      Present:      { label: "Present — показ",          route: "режим build",        role: "state" },
+      InsightDrill: { label: "Инсайт — разворот",        route: "оверлей",            role: "state" },
+      DatasetDrill: { label: "Дата-сет — разворот",      route: "оверлей",            role: "state" },
+    };
+    // Контролы экрана (кнопки/поля) — источник: docs/screens/*.md (сверка в Шаге 2)
+    const CONTROLS = {
+      Landing:     ["CTA «Try Axon» → приложение", "Ссылки футера: privacy · terms · cookies", "Cookie-баннер (Accept / Decline)", "Якоря секций · FAQ"],
+      Privacy:     ["Статический юр-текст", "Ссылки футера"],
+      Terms:       ["Статический юр-текст", "Ссылки футера"],
+      Cookies:     ["Статический юр-текст", "Ссылки футера"],
+      Entry:       ["Dropzone — загрузка CSV/Excel/…", "«Recent Projects» + поиск/фильтр/сортировка", "Аватар → меню (Профиль · Настройки · Выход)", "Nav: Projects · Storybook · Docs", "Переключатель режимов Canvas/Slides/Present", "Кнопка «Сохранить» (для гостя → вход)"],
+      Login:       ["Поле email", "Поле пароль", "Кнопка «Войти»", "Ссылка «Забыли пароль?»", "Ссылка «Зарегистрироваться»"],
+      Register:    ["Поля: имя · email · пароль (+подтверждение)", "Чекбокс согласия (terms/privacy)", "Кнопка «Создать аккаунт»", "Ссылка «Войти»"],
+      Forgot:      ["Поле email", "Кнопка отправки ссылки", "Ссылка «Вернуться ко входу»"],
+      Reset:       ["Поле новый пароль (+подтверждение)", "Кнопка «Сохранить»", "Ссылка ко входу"],
+      Settings:    ["Имя + «Сохранить»", "Смена пароля (текущий/новый/подтв.)", "Загрузка аватара", "Тема: светлая/тёмная", "Удалить аккаунт", "Выйти", "Ссылка «Админка» (только админ)"],
+      Admin:       ["Поиск по имени/email", "Список аккаунтов (клик по строке)", "v1 read-only (роль/блок — позже)"],
+      AdminDetail: ["Профиль пользователя (read-only)", "Список его досок"],
+      Public:      ["Листание слайдов (←/→, свайп, точки)", "Кнопка «Сделать копию себе»"],
+      Canvas:      ["ChatRail — AI-чат (Send)", "Холст: пан/зум, перетаскивание нод", "Перетащить Insight → DataSet (связь)", "Кнопка «+ New Data Set»", "Лоток дата-сетов", "Переключатель режимов"],
+      Slides:      ["Слайд — inline-правка текста", "Дропдаун «Как показать этот слайд»", "Галерея тем + тумблер свет/тьма", "Лента слайдов (сортировка) + «+ Слайд»", "ChatRail"],
+      Present:     ["Build-чат (AI)", "Селекторы: аудитория · тон · narration", "Экспорт: Ссылка · PDF · PPTX · PNG", "Режим показа Present (←/→, Esc)", "Шаринг ссылки + отзыв"],
+      InsightDrill:["Просмотр/правка инсайта", "Закрыть оверлей"],
+      DatasetDrill:["Тип графика", "Настройки графика", "Состав дата-сета", "Закрыть оверлей"],
     };
     const EDGES = [
       ["Landing", "Entry",       "CTA «Try Axon»"],
@@ -290,9 +331,14 @@ graph TB
       ["Settings","Admin",       "пункт «Админка» (только админ)"],
       ["Settings","Entry",       "кнопка «Выйти»"],
       ["Admin",   "AdminDetail", "клик по пользователю"],
-      ["Entry",   "Public",      "«Поделиться» → публичная ссылка"],
+      ["Entry",   "Canvas",      "открыть проект (режим Canvas)"],
+      ["Canvas",  "Slides",      "переключатель режимов"],
+      ["Slides",  "Present",     "переключатель режимов"],
+      ["Canvas",  "InsightDrill","клик «развернуть» на инсайте"],
+      ["Canvas",  "DatasetDrill","клик «развернуть» на дата-сете"],
+      ["Present", "Public",      "«Поделиться» → публичная ссылка"],
     ];
-    const ROLE_RU = { guest: "гость", user: "вошедший", admin: "админ" };
+    const ROLE_RU = { guest: "гость", user: "вошедший", admin: "админ", state: "состояние" };
 
     let selected = null;
     const activeRoles = new Set(["guest", "user", "admin"]);
@@ -300,6 +346,7 @@ graph TB
     const infobar = document.getElementById("infobar");
     const pTitle = document.getElementById("p-title");
     const pRole  = document.getElementById("p-role");
+    const pControls = document.getElementById("p-controls");
     const pOuts  = document.getElementById("p-outs");
     const pIns   = document.getElementById("p-ins");
     let svg = null, nodeEls = [], edgeEls = [];
@@ -316,7 +363,8 @@ graph TB
       const present = tokensOf(p.id).filter(tk => NODES[tk]);
       return { s: present[0] || s, t: present[1] || t };
     }
-    const roleActive = id => NODES[id] && activeRoles.has(NODES[id].role);
+    // состояния-режимы (role:"state") не фильтруются чекбоксами ролей — всегда активны
+    const roleActive = id => NODES[id] && (NODES[id].role === "state" || activeRoles.has(NODES[id].role));
 
     function render() {
       const targets = selected ? EDGES.filter(e => e[0] === selected).map(e => e[1]) : [];
@@ -354,6 +402,10 @@ graph TB
       const ins  = EDGES.filter(e => e[1] === selected);
       pTitle.innerHTML = `${node.label} <span class="route">${node.route}</span>`;
       pRole.innerHTML = `<span class="role-tag rt-${node.role}">${ROLE_RU[node.role]}</span>`;
+      const ctrls = CONTROLS[selected] || [];
+      pControls.innerHTML = ctrls.length
+        ? `<ul>${ctrls.map(c => `<li class="ctrl">${c}</li>`).join("")}</ul>`
+        : `<div class="none">—</div>`;
       pOuts.innerHTML = outs.length ? `<ul>${outs.map(e => liHTML(e[1], e[2])).join("")}</ul>`
                                     : `<div class="none">никуда (конечный экран)</div>`;
       pIns.innerHTML = ins.length ? `<ul>${ins.map(e => `<li><span class="to">${(NODES[e[0]]||{}).label||e[0]}</span>
