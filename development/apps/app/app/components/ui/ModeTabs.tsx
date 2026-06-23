@@ -2,14 +2,15 @@
 
 import { useWorkspaceStore } from "@/lib/store";
 import { useTranslations } from "next-intl";
-import { NAVY, BORDER, T2 } from "./tokens";
+import { NAVY_700, BORDER, T2 } from "./tokens";
 
 /**
  * Three-tab segmented control — CANVAS / SLIDES / PRESENT.
  *
  * Sizing and corner radius match the "+ New data set" button exactly
  * (padding: 15px 20px, borderRadius: 0) per Art Director review item 1.4.
- * Position is controlled by the parent (page.tsx) — centered over canvas.
+ * Position is controlled by the parent (page.tsx): rendered ONCE, absolutely
+ * centered over the full right column so it never shifts between modes.
  *
  *   CANVAS  → mode "data"          — node graph
  *   SLIDES  → mode "presentation"  — slide editor + data set tray
@@ -59,7 +60,7 @@ function Tab({ label, active, onClick, compact }: { label: string; active: boole
         borderRadius: 0,
         border: "none",
         cursor: active ? "default" : "pointer",
-        background: active ? NAVY : "transparent",
+        background: active ? NAVY_700 : "transparent",
         color:      active ? "#F5F2EA" : T2,
         fontWeight: active ? 500 : 400,
         textTransform: "uppercase",

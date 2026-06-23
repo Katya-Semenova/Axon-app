@@ -128,8 +128,6 @@ function Page2({ onBack, boardId, onBoardSaved }: { onBack: () => void; boardId:
   const activeSlideGhostTitle = activeSlideGhostDsId
     ? (dataSetsById[activeSlideGhostDsId]?.title ?? t("emptySlide")) : t("emptySlide");
 
-  const modeTabs = !drillInOpen ? <ModeTabs variant="bar" /> : undefined;
-
   /* Гостевая кнопка «Сохранить» — живёт в правом слоте тулбара каждого режима
      (раньше была плавающим fixed-оверлеем и накрывала правый рельс Слайдов).
      Сама прячется, когда холст уже привязан к доске (boardId !== null). */
@@ -137,10 +135,10 @@ function Page2({ onBack, boardId, onBoardSaved }: { onBack: () => void; boardId:
 
   /* Surface mounted per mode */
   const Surface = mode === "data"
-    ? <Canvas modeSwitcher={modeTabs} saveButton={saveButton} />
+    ? <Canvas saveButton={saveButton} />
     : mode === "presentation"
-    ? <SlideEditor modeSwitcher={modeTabs} saveButton={saveButton} />
-    : <PresentExport modeSwitcher={modeTabs} boardId={boardId} onBoardSaved={onBoardSaved} saveButton={saveButton} />;
+    ? <SlideEditor saveButton={saveButton} />
+    : <PresentExport boardId={boardId} onBoardSaved={onBoardSaved} saveButton={saveButton} />;
 
   /* Data set tray — CANVAS + SLIDES only. Hidden in PRESENT (export gateway). */
   const showDataSetTray = mode === "data" || mode === "presentation";
@@ -161,6 +159,24 @@ function Page2({ onBack, boardId, onBoardSaved }: { onBack: () => void; boardId:
             column: the surface + tray stack in the left sub-column (so the tray
             is narrower), and the rail spans the whole height beside them. */}
         <div className="flex-1 min-w-0 min-h-0 relative flex flex-row overflow-hidden">
+
+          {/* Mode switcher — rendered ONCE here, absolutely centered over the FULL
+              right column (surface + any rail) so it sits in the same spot in every
+              mode and never jumps. Lives in the 64px toolbar band; pointer-events
+              pass through everywhere except the tabs themselves. Hidden in drill-in. */}
+          {!drillInOpen && (
+            <div
+              style={{
+                position: "absolute", top: 0, left: 0, right: 0, height: 64,
+                display: "flex", alignItems: "center", justifyContent: "center",
+                pointerEvents: "none", zIndex: 5,
+              }}
+            >
+              <div style={{ pointerEvents: "auto" }}>
+                <ModeTabs variant="bar" />
+              </div>
+            </div>
+          )}
 
           {/* Left sub-column — surface + bottom tray */}
           <div className="flex-1 min-w-0 min-h-0 flex flex-col overflow-hidden">

@@ -98,8 +98,7 @@ const FORMAT_KEY: Record<OutputFormat, string> = {
 
 /* ── Component ─────────────────────────────────────────────────────────── */
 
-export function PresentExport({ modeSwitcher, boardId, onBoardSaved, saveButton }: {
-  modeSwitcher?: React.ReactNode;
+export function PresentExport({ boardId, onBoardSaved, saveButton }: {
   boardId: string | null;
   onBoardSaved: (id: string) => void;
   saveButton?: React.ReactNode;
@@ -187,7 +186,8 @@ export function PresentExport({ modeSwitcher, boardId, onBoardSaved, saveButton 
             {slideCount === 0 ? t("noSlidesYet") : t("slidesReady", { count: slideCount })}
           </span>
         </div>
-        <div className="flex justify-center">{modeSwitcher}</div>
+        {/* center cell reserved — mode switcher is rendered at page level */}
+        <div />
         <div className="flex items-center justify-end">{saveButton}</div>
       </div>
 

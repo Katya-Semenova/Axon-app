@@ -105,7 +105,7 @@ function ToggleSwitch({ label, checked, onChange }: { label: string; checked: bo
      2. Slide card — bordered container: header (2-line title + chart dropdown)
                      + resizable body (chart panel / splitter / data+settings)
      3. Bottom strip — thumbnail rail (excl. active) + Viz Style + Build CTA   */
-export function SlideEditor({ modeSwitcher, saveButton }: { modeSwitcher?: React.ReactNode; saveButton?: React.ReactNode }) {
+export function SlideEditor({ saveButton }: { saveButton?: React.ReactNode }) {
   /* setMode and clearBuildMessages were only used by the removed
      "Build Presentation" CTA — no longer subscribed here. */
   const t                 = useTranslations("SlideEditor");
@@ -213,7 +213,8 @@ export function SlideEditor({ modeSwitcher, saveButton }: { modeSwitcher?: React
             </>
           )}
         </div>
-        <div className="flex justify-center">{modeSwitcher}</div>
+        {/* center cell reserved — mode switcher is rendered at page level */}
+        <div />
         <div className="flex items-center justify-end gap-2">
           {saveButton}
           <button
