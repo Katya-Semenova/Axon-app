@@ -197,7 +197,10 @@
     "noChartData": "no chart data",
     "removeSlide": "Remove slide",
     "removeDataSet": "Remove data set",
-    "removeDataSetConfirm": "Remove this data set from the canvas along with its insights? You can undo (Ctrl/Cmd+Z).",
+    "removeDataSetTitle": "Remove data set?",
+    "removeDataSetConfirm": "The data set will leave the canvas along with its insights. You can undo (Ctrl/Cmd+Z).",
+    "confirmDelete": "Delete",
+    "cancel": "Cancel",
     "addSlide": "+ SLIDE",
     "pickDataSet": "Pick a data set",
     "noFreeDataSets": "All data sets are already on slides — add a file on Canvas"

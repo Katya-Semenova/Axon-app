@@ -9,6 +9,7 @@ import type { Slide } from "@/lib/types";
 import { MiniChart } from "../MiniChart";
 import { useTranslations } from "next-intl";
 import { BORDER, NAVY, GOLD, T3, SURFACE_RAISE } from "../ui/tokens";
+import { ConfirmDialog } from "../ui/ConfirmDialog";
 
 const mono = "'JetBrains Mono', monospace";
 
@@ -320,6 +321,9 @@ export function PresentationStructure({ insertAt, isDraggingSlide }: {
     prevLenRef.current = slides.length;
   }, [slides.length, slideOrder]);
 
+  /* Slide, для которого открыт диалог подтверждения удаления (Canvas-режим). */
+  const [pendingDelete, setPendingDelete] = useState<Slide | null>(null);
+
   function clearActiveIfNeeded(id: string) {
     if (activeSlideId === id) {
       const remaining = slides.filter(s => s.id !== id);
@@ -338,9 +342,16 @@ export function PresentationStructure({ insertAt, isDraggingSlide }: {
     }
     const primaryDs = slide.dataSetIds[0];
     if (!primaryDs) { removeSlide(slide.id); clearActiveIfNeeded(slide.id); return; }
-    if (!window.confirm(t("removeDataSetConfirm"))) return;
-    removeDataSetCascade(primaryDs);   // also drops the now-empty slide
+    setPendingDelete(slide);   // открыть стилизованный confirm
+  }
+
+  function confirmDelete() {
+    const slide = pendingDelete;
+    if (!slide) return;
+    const primaryDs = slide.dataSetIds[0];
+    if (primaryDs) removeDataSetCascade(primaryDs);   // also drops the now-empty slide
     clearActiveIfNeeded(slide.id);
+    setPendingDelete(null);
   }
 
   return (
@@ -417,6 +428,17 @@ export function PresentationStructure({ insertAt, isDraggingSlide }: {
           </div>
         </SortableContext>
       </div>
+
+      <ConfirmDialog
+        open={pendingDelete !== null}
+        title={t("removeDataSetTitle")}
+        message={t("removeDataSetConfirm")}
+        confirmLabel={t("confirmDelete")}
+        cancelLabel={t("cancel")}
+        danger
+        onConfirm={confirmDelete}
+        onCancel={() => setPendingDelete(null)}
+      />
     </section>
   );
 }

@@ -197,7 +197,10 @@
     "noChartData": "нет данных для графика",
     "removeSlide": "Удалить слайд",
     "removeDataSet": "Удалить дата-сет",
-    "removeDataSetConfirm": "Удалить этот дата-сет с холста вместе с его инсайтами? Действие можно отменить (Ctrl/Cmd+Z).",
+    "removeDataSetTitle": "Удалить дата-сет?",
+    "removeDataSetConfirm": "Дата-сет уйдёт с холста вместе с его инсайтами. Действие можно отменить (Ctrl/Cmd+Z).",
+    "confirmDelete": "Удалить",
+    "cancel": "Отмена",
     "addSlide": "+ СЛАЙД",
     "pickDataSet": "Выбери дата-сет",
     "noFreeDataSets": "Все дата-сеты уже на слайдах — загрузи файл на Холсте"
