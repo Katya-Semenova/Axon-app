@@ -28,28 +28,34 @@
     header .meta code { background: #fff; border: 1px solid var(--border); padding: 1px 6px; border-radius: 3px; font-size: 12px; }
     h2 { font-size: 18px; margin: 30px 0 12px; border-bottom: 2px solid var(--gold); padding-bottom: 6px; }
 
-    /* верхняя прямоугольная панель: подсказка + чекбоксы ролей */
+    /* верхняя прямоугольная панель: подсказка + переключатели ролей */
     .toolbar {
       display: flex; align-items: center; justify-content: space-between; gap: 16px;
       flex-wrap: wrap;
       background: var(--navy); color: var(--cream);
-      border-radius: 6px; padding: 11px 16px; margin-bottom: 12px; font-size: 13px;
+      border-radius: 6px; padding: 10px 16px; margin-bottom: 12px; font-size: 13px;
     }
     .toolbar .hint { font-weight: 600; }
     .toolbar .hint u { text-underline-offset: 3px; }
-    .toolbar .filters { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; }
+    .toolbar .filters { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
     .toolbar .filters .ttl { color: #cfd6e2; font-weight: 400; }
-    .toolbar label { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; user-select: none; }
-    .toolbar input[type=checkbox] { width: 15px; height: 15px; cursor: pointer; accent-color: var(--gold); }
-    .swatch { width: 14px; height: 14px; border-radius: 3px; display: inline-block; }
+
+    /* цветная плашка роли = сам переключатель (без отдельного чекбокса) */
+    .rolechip {
+      display: inline-flex; align-items: center; gap: 7px; cursor: pointer; user-select: none;
+      padding: 4px 11px; border-radius: 14px; border: 1px solid transparent; transition: .15s;
+    }
+    .rolechip .swatch { width: 14px; height: 14px; border-radius: 3px; display: inline-block; }
+    .rolechip.active { border-color: rgba(255,255,255,.55); background: rgba(255,255,255,.07); }
+    .rolechip:not(.active) { opacity: .45; text-decoration: line-through; }
+    .rolechip:hover { background: rgba(255,255,255,.14); }
     .sw-guest { background: var(--cream); border: 1px solid var(--slate); }
     .sw-user { background: var(--gold); border: 1px solid var(--cream); }
     .sw-admin { background: #0d1526; border: 1px solid var(--gold); }
+    .lineleg { display: inline-flex; align-items: center; gap: 7px; color: #cfd6e2; padding-left: 4px; }
     .sw-line { width: 24px; height: 0; border-top: 3px solid var(--hl); }
-    .toolbar .lineleg { display: inline-flex; align-items: center; gap: 7px; color: #cfd6e2; }
 
-    /* сцена: карта на всю ширину + выезжающий справа drawer поверх неё */
-    .stage { position: relative; }
+    /* карта на всю ширину */
     .diagram {
       background: #fff; border: 1px solid var(--border);
       border-radius: 6px; padding: 14px; overflow: auto;
@@ -57,32 +63,33 @@
     .diagram .mermaid { text-align: center; }
     .mermaid g.node { cursor: pointer; }
 
-    .drawer {
-      position: absolute; top: 0; right: 0; height: 100%; width: 330px;
-      background: #fff; border-left: 3px solid var(--gold);
-      box-shadow: -8px 0 24px rgba(26,39,66,.18);
-      border-radius: 0 6px 6px 0; padding: 18px; overflow: auto;
-      transform: translateX(105%); transition: transform .22s ease;
+    /* инфо-прямоугольник ПОД картой (не перекрывает её) */
+    .infobar {
+      display: none; margin-top: 12px;
+      background: #fff; border: 1px solid var(--border); border-left: 4px solid var(--gold);
+      border-radius: 6px; padding: 16px 18px;
     }
-    .drawer.open { transform: translateX(0); }
-    .drawer .close { float: right; cursor: pointer; border: none; background: none; font-size: 20px; color: var(--slate); line-height: 1; }
-    .drawer h3 { margin: 0 6px 2px 0; font-size: 17px; }
-    .drawer .route { font-family: "JetBrains Mono", monospace; font-size: 12px; color: var(--slate); }
-    .drawer .grp { font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: var(--slate); margin: 16px 0 6px; }
-    .drawer ul { list-style: none; margin: 0; padding: 0; }
-    .drawer li { padding: 7px 0; border-bottom: 1px dashed var(--border); font-size: 13px; }
-    .drawer li:last-child { border-bottom: none; }
-    .drawer li .to { font-weight: 600; }
-    .drawer li .via { color: var(--slate); font-size: 12px; display: block; }
-    .drawer .none { color: var(--slate); font-size: 13px; font-style: italic; }
-    .role-tag { display: inline-block; font-size: 11px; padding: 1px 8px; border-radius: 10px; margin-top: 6px; }
+    .infobar.open { display: block; }
+    .infobar .close { float: right; cursor: pointer; border: none; background: none; font-size: 20px; color: var(--slate); line-height: 1; }
+    .infobar h3 { margin: 0 0 4px; font-size: 17px; display: inline-block; }
+    .infobar .route { font-family: "JetBrains Mono", monospace; font-size: 12px; color: var(--slate); }
+    .infobar .role-tag { display: inline-block; font-size: 11px; padding: 1px 8px; border-radius: 10px; margin-left: 8px; vertical-align: 2px; }
     .rt-guest { background: var(--cream); border: 1px solid var(--slate); color: var(--navy); }
     .rt-user { background: var(--gold); border: 1px solid var(--navy); color: var(--navy); }
     .rt-admin { background: var(--navy); border: 1px solid var(--gold); color: var(--cream); }
+    .infogrid { display: flex; gap: 36px; flex-wrap: wrap; margin-top: 6px; }
+    .infogrid > div { flex: 1 1 280px; min-width: 240px; }
+    .grp { font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: var(--slate); margin: 12px 0 6px; }
+    .infobar ul { list-style: none; margin: 0; padding: 0; }
+    .infobar li { padding: 6px 0; border-bottom: 1px dashed var(--border); font-size: 13px; }
+    .infobar li:last-child { border-bottom: none; }
+    .infobar li .to { font-weight: 600; }
+    .infobar li .via { color: var(--slate); font-size: 12px; display: block; }
+    .infobar .none { color: var(--slate); font-size: 13px; font-style: italic; }
 
-    /* подсветка/затемнение поверх mermaid-SVG */
-    .am-dim { opacity: .1 !important; transition: opacity .2s; }
-    .mermaid path.am-edge-hl { stroke: var(--hl) !important; stroke-width: 3.5px !important; opacity: 1 !important; }
+    /* подсветка/затемнение поверх mermaid-SVG (мягкое — очертания читаются) */
+    .am-dim { opacity: .4 !important; transition: opacity .2s; }
+    .mermaid path.am-edge-hl { stroke: var(--hl) !important; stroke-width: 2px !important; opacity: 1 !important; }
 
     table { width: 100%; border-collapse: collapse; background: #fff; font-size: 13px; margin-top: 8px; }
     caption { text-align: left; font-weight: 600; padding: 14px 0 8px; font-size: 14px; }
@@ -95,10 +102,6 @@
     .role-user { color: #9a7a3a; }
     .role-admin { color: var(--navy); }
     .note { font-size: 12px; color: var(--slate); margin-top: 8px; }
-
-    @media (max-width: 640px) {
-      .drawer { width: 86%; }
-    }
   </style>
 </head>
 <body>
@@ -114,19 +117,18 @@
     <h2>Карта переходов</h2>
 
     <div class="toolbar">
-      <span class="hint">👉 Нажми на любой <u>прямоугольник-экран</u> — справа откроется список переходов</span>
+      <span class="hint">👉 Нажми на любой <u>прямоугольник-экран</u> — под картой откроется список переходов</span>
       <span class="filters">
         <span class="ttl">Роли:</span>
-        <label><input type="checkbox" class="rolechk" data-role="guest" checked><i class="swatch sw-guest"></i> гость</label>
-        <label><input type="checkbox" class="rolechk" data-role="user" checked><i class="swatch sw-user"></i> вошедший</label>
-        <label><input type="checkbox" class="rolechk" data-role="admin" checked><i class="swatch sw-admin"></i> админ</label>
+        <span class="rolechip active" data-role="guest"><i class="swatch sw-guest"></i> гость</span>
+        <span class="rolechip active" data-role="user"><i class="swatch sw-user"></i> вошедший</span>
+        <span class="rolechip active" data-role="admin"><i class="swatch sw-admin"></i> админ</span>
         <span class="lineleg"><i class="swatch sw-line"></i> переход</span>
       </span>
     </div>
 
-    <div class="stage">
-      <div class="diagram">
-        <pre class="mermaid">
+    <div class="diagram">
+      <pre class="mermaid">
 graph LR
   Landing["Лендинг<br/>/"]:::guest
   Privacy["Конфиденциальность<br/>/privacy"]:::guest
@@ -185,13 +187,15 @@ graph LR
   click Admin call nodeClick()
   click AdminDetail call nodeClick()
   click Public call nodeClick()
-        </pre>
+      </pre>
+    </div>
 
-        <aside class="drawer" id="drawer">
-          <button class="close" id="p-close" title="Закрыть">×</button>
-          <h3 id="p-title"></h3>
-          <div id="p-body"></div>
-        </aside>
+    <div class="infobar" id="infobar">
+      <button class="close" id="p-close" title="Закрыть">×</button>
+      <h3 id="p-title"></h3><span id="p-role"></span>
+      <div class="infogrid">
+        <div><div class="grp">Отсюда можно перейти →</div><div id="p-outs"></div></div>
+        <div><div class="grp">Сюда попадают из ←</div><div id="p-ins"></div></div>
       </div>
     </div>
 
@@ -289,14 +293,14 @@ graph LR
     ];
     const ROLE_RU = { guest: "гость", user: "вошедший", admin: "админ" };
 
-    // состояние
     let selected = null;
     const activeRoles = new Set(["guest", "user", "admin"]);
 
-    // DOM
-    const drawer = document.getElementById("drawer");
+    const infobar = document.getElementById("infobar");
     const pTitle = document.getElementById("p-title");
-    const pBody  = document.getElementById("p-body");
+    const pRole  = document.getElementById("p-role");
+    const pOuts  = document.getElementById("p-outs");
+    const pIns   = document.getElementById("p-ins");
     let svg = null, nodeEls = [], edgeEls = [];
 
     function tokensOf(s) { return (s || "").split(/[^A-Za-z0-9]+/).filter(Boolean); }
@@ -313,7 +317,6 @@ graph LR
     }
     const roleActive = id => NODES[id] && activeRoles.has(NODES[id].role);
 
-    // единый пересчёт подсветки из состояния (роли-фильтр + выбранный экран)
     function render() {
       const targets = selected ? EDGES.filter(e => e[0] === selected).map(e => e[1]) : [];
       nodeEls.forEach(g => {
@@ -331,7 +334,7 @@ graph LR
         p.classList.toggle("am-dim", dim);
       });
       if (svg) svg.querySelectorAll(".edgeLabel, .edgeLabels").forEach(e => e.classList.toggle("am-dim", !!selected));
-      updateDrawer();
+      updateInfo();
     }
 
     function liHTML(to, via) {
@@ -339,32 +342,31 @@ graph LR
       return `<li><span class="to">${n.label}</span> <span class="route">${n.route}</span>
               <span class="via">↳ ${via}</span></li>`;
     }
-    function updateDrawer() {
-      if (!selected) { drawer.classList.remove("open"); return; }
+    function updateInfo() {
+      if (!selected) { infobar.classList.remove("open"); return; }
       const node = NODES[selected];
       const outs = EDGES.filter(e => e[0] === selected);
       const ins  = EDGES.filter(e => e[1] === selected);
       pTitle.innerHTML = `${node.label} <span class="route">${node.route}</span>`;
-      let html = `<span class="role-tag rt-${node.role}">${ROLE_RU[node.role]}</span>`;
-      html += `<div class="grp">Отсюда можно перейти →</div>`;
-      html += outs.length ? `<ul>${outs.map(e => liHTML(e[1], e[2])).join("")}</ul>`
-                          : `<div class="none">никуда (конечный экран)</div>`;
-      html += `<div class="grp">Сюда попадают из ←</div>`;
-      html += ins.length ? `<ul>${ins.map(e => `<li><span class="to">${(NODES[e[0]]||{}).label||e[0]}</span>
+      pRole.innerHTML = `<span class="role-tag rt-${node.role}">${ROLE_RU[node.role]}</span>`;
+      pOuts.innerHTML = outs.length ? `<ul>${outs.map(e => liHTML(e[1], e[2])).join("")}</ul>`
+                                    : `<div class="none">никуда (конечный экран)</div>`;
+      pIns.innerHTML = ins.length ? `<ul>${ins.map(e => `<li><span class="to">${(NODES[e[0]]||{}).label||e[0]}</span>
               <span class="via">↳ ${e[2]}</span></li>`).join("")}</ul>`
-                         : `<div class="none">прямых входов нет</div>`;
-      pBody.innerHTML = html;
-      drawer.classList.add("open");
+                                  : `<div class="none">прямых входов нет</div>`;
+      infobar.classList.add("open");
     }
 
     function select(id) { if (NODES[id]) { selected = id; render(); } }
-    function closeDrawer() { selected = null; render(); }
+    function closeInfo() { selected = null; render(); }
 
     window.nodeClick = (id) => select(id);
-    document.getElementById("p-close").addEventListener("click", closeDrawer);
-    document.querySelectorAll(".rolechk").forEach(chk => {
-      chk.addEventListener("change", () => {
-        chk.checked ? activeRoles.add(chk.dataset.role) : activeRoles.delete(chk.dataset.role);
+    document.getElementById("p-close").addEventListener("click", closeInfo);
+    document.querySelectorAll(".rolechip").forEach(chip => {
+      chip.addEventListener("click", () => {
+        const r = chip.dataset.role;
+        if (activeRoles.has(r)) { activeRoles.delete(r); chip.classList.remove("active"); }
+        else { activeRoles.add(r); chip.classList.add("active"); }
         render();
       });
     });
