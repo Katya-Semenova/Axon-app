@@ -366,8 +366,14 @@
     "password": "Password",
     "submitRegister": "Sign up & save",
     "submitLogin": "Sign in & save",
+    "submitRegisterPlain": "Sign up",
+    "submitLoginPlain": "Sign in",
     "errRegister": "Couldn’t sign up",
-    "errLogin": "Wrong email or password"
+    "errLogin": "Wrong email or password",
+    "loginButton": "Sign in",
+    "loginTitle": "Sign in to Axon",
+    "loginSubtitle": "Sign in to get back to your projects.",
+    "saveHint": "Sign in to save this project to your account"
   },
   "Settings": {
     "title": "Settings",

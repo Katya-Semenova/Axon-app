@@ -21,6 +21,7 @@ import { OnboardingModal } from "@/app/components/ui/OnboardingModal";
 import { DesktopOnlyNotice } from "@/app/components/ui/DesktopOnlyNotice";
 import { BoardSync } from "@/app/components/BoardSync";
 import { GuestSaveButton } from "@/app/components/GuestSaveButton";
+import { GuestLoginButton } from "@/app/components/GuestLoginButton";
 import { ToastProvider } from "@/app/components/ui/Toast";
 
 /* ── Modifier: pin the DragOverlay top-left to the live cursor. ── */
@@ -128,10 +129,16 @@ function Page2({ onBack, boardId, onBoardSaved }: { onBack: () => void; boardId:
   const activeSlideGhostTitle = activeSlideGhostDsId
     ? (dataSetsById[activeSlideGhostDsId]?.title ?? t("emptySlide")) : t("emptySlide");
 
-  /* Гостевая кнопка «Сохранить» — живёт в правом слоте тулбара каждого режима
-     (раньше была плавающим fixed-оверлеем и накрывала правый рельс Слайдов).
-     Сама прячется, когда холст уже привязан к доске (boardId !== null). */
-  const saveButton = <GuestSaveButton boardId={boardId} onSaved={onBoardSaved} />;
+  /* Правый слот тулбара каждого режима: «Войти» (для разлогиненного — снимает тупик
+     входа с холста; вариант А → onBack ведёт к «Мои проекты») + «Сохранить» (для гостя,
+     сохраняет текущий холст; прячется, когда доска привязана). Каждая кнопка сама решает,
+     показываться ли (по сессии / boardId). */
+  const saveButton = (
+    <>
+      <GuestLoginButton onLoggedIn={onBack} />
+      <GuestSaveButton boardId={boardId} onSaved={onBoardSaved} />
+    </>
+  );
 
   /* Surface mounted per mode */
   const Surface = mode === "data"

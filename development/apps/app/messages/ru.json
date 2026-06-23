@@ -366,8 +366,14 @@
     "password": "Пароль",
     "submitRegister": "Зарегистрироваться и сохранить",
     "submitLogin": "Войти и сохранить",
+    "submitRegisterPlain": "Зарегистрироваться",
+    "submitLoginPlain": "Войти",
     "errRegister": "Не удалось зарегистрироваться",
-    "errLogin": "Неверный email или пароль"
+    "errLogin": "Неверный email или пароль",
+    "loginButton": "Войти",
+    "loginTitle": "Вход в Axon",
+    "loginSubtitle": "Войдите, чтобы вернуться к своим проектам.",
+    "saveHint": "Войдите, чтобы сохранить проект в аккаунт"
   },
   "Settings": {
     "title": "Настройки",

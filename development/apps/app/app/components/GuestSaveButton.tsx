@@ -61,6 +61,7 @@ export function GuestSaveButton({
         size="sm"
         onClick={handleClick}
         loading={saving}
+        title={session ? undefined : t("saveHint")}
         className="hidden lg:inline-flex h-[28px] px-3 gap-1.5"
         style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 10.5, letterSpacing: "0.04em", borderRadius: 0 }}
         leftIcon={

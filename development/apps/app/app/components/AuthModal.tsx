@@ -16,10 +16,10 @@ type Tab = "login" | "register";
  * — дальше вызывающий код переносит текущий холст в аккаунт.
  */
 export function AuthModal({
-  open, onClose, onAuthed,
-}: { open: boolean; onClose: () => void; onAuthed: () => void }) {
+  open, onClose, onAuthed, purpose = "save",
+}: { open: boolean; onClose: () => void; onAuthed: () => void; purpose?: "save" | "login" }) {
   const t = useTranslations("SaveFlow");
-  const [tab, setTab] = useState<Tab>("register");
+  const [tab, setTab] = useState<Tab>(purpose === "login" ? "login" : "register");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -53,10 +53,18 @@ export function AuthModal({
     </button>
   );
 
+  /* Тексты зависят от назначения: «save» (по клику «Сохранить») говорит про
+     сохранение текущей работы; «login» (по клику «Войти») — про возврат к проектам. */
+  const title    = purpose === "login" ? t("loginTitle") : t("modalTitle");
+  const subtitle = purpose === "login" ? t("loginSubtitle") : t("modalSubtitle");
+  const submitLabel = purpose === "login"
+    ? (tab === "register" ? t("submitRegisterPlain") : t("submitLoginPlain"))
+    : (tab === "register" ? t("submitRegister") : t("submitLogin"));
+
   return (
-    <Modal open={open} onClose={onClose} title={t("modalTitle")} size="sm">
+    <Modal open={open} onClose={onClose} title={title} size="sm">
       <p className="text-[12.5px] text-t3 mb-4 -mt-1">
-        {t("modalSubtitle")}
+        {subtitle}
       </p>
 
       <div className="flex gap-4 mb-5">
@@ -78,7 +86,7 @@ export function AuthModal({
         </FormField>
         {error && <p className="text-[11.5px] text-error">{error}</p>}
         <Button type="submit" loading={loading} className="w-full mt-1">
-          {tab === "register" ? t("submitRegister") : t("submitLogin")}
+          {submitLabel}
         </Button>
       </form>
     </Modal>
