@@ -20,6 +20,9 @@ const INS_COL_X      = 28;
 const INS_COL_STRIDE = CARD_W + 12;    /* 2-column insight grid stride */
 const DS_COL_X       = INS_COL_X + 2 * INS_COL_STRIDE + 48;  /* = 500 */
 const DS_W           = 340;
+/* Новые узлы (после загрузки файла / «построить из чата») подтягиваются как минимум
+   к этому зуму, чтобы быть читаемыми даже если пользователь отдалил холст. */
+const READABLE_ZOOM  = 1.0;
 void COL_GAP;
 
 export function Canvas({ saveButton }: { saveButton?: React.ReactNode }) {
@@ -66,8 +69,9 @@ export function Canvas({ saveButton }: { saveButton?: React.ReactNode }) {
   const cardKey = insightOrder.join() + "|" + dataSetOrder.join();
   useLayoutEffect(() => { bumpMeasure((n) => n + 1); }, [cardKey]);
 
-  /* B1: авто-пан к узлу, который попросили показать (после «построить» из чата).
-     Центрируем карточку во вьюпорте при текущем зуме; затем сбрасываем фокус. */
+  /* B1: авто-пан + авто-зум к узлу, который попросили показать (после загрузки файла
+     или «построить из чата»). Центрируем карточку и подтягиваем зум до читаемого
+     (но не отдаляем, если пользователь уже ближе), затем сбрасываем фокус. */
   useEffect(() => {
     if (!focusNodeId) return;
     const st  = useWorkspaceStore.getState();
@@ -75,10 +79,10 @@ export function Canvas({ saveButton }: { saveButton?: React.ReactNode }) {
     const viewport = canvasViewportRef.current;
     if (pos && viewport) {
       const vRect = viewport.getBoundingClientRect();
-      const { zoom } = st.canvasTransform;
+      const targetZoom = Math.max(st.canvasTransform.zoom, READABLE_ZOOM);
       const cx = pos.x + DS_W / 2;
       const cy = pos.y + CARD_H_EST / 2;
-      st.setCanvasTransform({ zoom, x: vRect.width / 2 - cx * zoom, y: vRect.height / 2 - cy * zoom });
+      st.setCanvasTransform({ zoom: targetZoom, x: vRect.width / 2 - cx * targetZoom, y: vRect.height / 2 - cy * targetZoom });
     }
     st.setFocusNode(null);
   }, [focusNodeId]);
