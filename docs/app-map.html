@@ -62,6 +62,9 @@
     }
     .diagram .mermaid { text-align: center; }
     .mermaid g.node { cursor: pointer; }
+    /* КЛЮЧЕВОЕ: схема не сжимается уже этой ширины — на узком экране даёт прокрутку,
+       а не превращает текст в кашу. height:auto сохраняет пропорции. */
+    .diagram svg { min-width: 1150px !important; max-width: none !important; height: auto !important; }
 
     /* инфо-прямоугольник ПОД картой (не перекрывает её) */
     .infobar {
@@ -91,7 +94,9 @@
     .am-dim { opacity: .4 !important; transition: opacity .2s; }
     .mermaid path.am-edge-hl { stroke: var(--hl) !important; stroke-width: 3px !important; opacity: 1 !important; }
     /* крупнее текст внутри прямоугольников-узлов */
-    .mermaid .nodeLabel, .mermaid span.nodeLabel { font-size: 21px !important; }
+    .mermaid .nodeLabel, .mermaid span.nodeLabel { font-size: 24px !important; }
+    /* подписи на стрелках-переходах — крупнее */
+    .mermaid .edgeLabel, .mermaid .edgeLabel *, .mermaid .edgeLabel span { font-size: 18px !important; }
     /* заголовки столбцов-групп */
     .mermaid .cluster-label, .mermaid .cluster-label span { font-size: 13px !important; font-weight: 700; letter-spacing: .03em; }
     .mermaid .cluster rect { fill: #faf8f3 !important; stroke: var(--border) !important; }
@@ -406,7 +411,7 @@ graph LR
       startOnLoad: false,
       securityLevel: "loose",
       layout,
-      themeVariables: { fontSize: "22px" },
+      themeVariables: { fontSize: "26px" },
       // useMaxWidth:false — НЕ сжимать схему под ширину (иначе текст узлов мельчает);
       // если не влезает — горизонтальная прокрутка в .diagram.
       flowchart: { useMaxWidth: false, htmlLabels: true, nodeSpacing: 45, rankSpacing: 70 },
