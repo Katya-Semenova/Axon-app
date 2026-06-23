@@ -16,69 +16,71 @@
     * { box-sizing: border-box; }
     body {
       margin: 0;
-      padding: 32px 28px 80px;
+      padding: 28px 28px 80px;
       background: var(--cream);
       color: var(--navy);
       font-family: -apple-system, "Inter", "Segoe UI", system-ui, sans-serif;
       line-height: 1.5;
     }
-    .wrap { max-width: 1280px; margin: 0 auto; }
+    .wrap { max-width: 1320px; margin: 0 auto; }
     header h1 { font-size: 26px; margin: 0 0 4px; }
-    header .meta { color: var(--slate); font-size: 13px; margin-bottom: 22px; }
+    header .meta { color: var(--slate); font-size: 13px; margin-bottom: 18px; }
     header .meta code { background: #fff; border: 1px solid var(--border); padding: 1px 6px; border-radius: 3px; font-size: 12px; }
-    h2 { font-size: 18px; margin: 34px 0 12px; border-bottom: 2px solid var(--gold); padding-bottom: 6px; }
+    h2 { font-size: 18px; margin: 30px 0 12px; border-bottom: 2px solid var(--gold); padding-bottom: 6px; }
 
-    .legend { display: flex; gap: 18px; flex-wrap: wrap; margin: 4px 0 14px; font-size: 13px; }
-    .legend span { display: inline-flex; align-items: center; gap: 7px; }
-    .swatch { width: 16px; height: 16px; border-radius: 3px; display: inline-block; }
-    .sw-guest { background: var(--cream); border: 1px solid var(--slate); }
-    .sw-user { background: var(--gold); border: 1px solid var(--navy); }
-    .sw-admin { background: var(--navy); border: 1px solid var(--gold); }
-    .sw-line { width: 26px; height: 0; border-top: 3px solid var(--hl); }
-
-    .interactive { display: flex; gap: 18px; align-items: stretch; }
-    .diagram {
-      flex: 1 1 auto; min-width: 0;
-      background: #fff; border: 1px solid var(--border);
-      border-radius: 6px; padding: 18px; overflow: auto;
-    }
-    /* крупная схема — НЕ сжимать под контейнер, скроллить при нехватке места */
-    .diagram .mermaid { text-align: left; }
-    .diagram svg { height: auto !important; max-width: none !important; }
-
-    .panel { flex: 0 0 340px; align-self: flex-start; position: sticky; top: 16px; }
-    .cta {
+    /* верхняя прямоугольная панель: подсказка + чекбоксы ролей */
+    .toolbar {
+      display: flex; align-items: center; justify-content: space-between; gap: 16px;
+      flex-wrap: wrap;
       background: var(--navy); color: var(--cream);
-      border-radius: 8px; padding: 16px 18px; margin-bottom: 14px;
-      font-size: 15px; font-weight: 600; line-height: 1.4;
+      border-radius: 6px; padding: 11px 16px; margin-bottom: 12px; font-size: 13px;
     }
-    .cta small { display: block; font-weight: 400; color: #cfd6e2; font-size: 12.5px; margin-top: 6px; }
-    .card {
+    .toolbar .hint { font-weight: 600; }
+    .toolbar .hint u { text-underline-offset: 3px; }
+    .toolbar .filters { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; }
+    .toolbar .filters .ttl { color: #cfd6e2; font-weight: 400; }
+    .toolbar label { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; user-select: none; }
+    .toolbar input[type=checkbox] { width: 15px; height: 15px; cursor: pointer; accent-color: var(--gold); }
+    .swatch { width: 14px; height: 14px; border-radius: 3px; display: inline-block; }
+    .sw-guest { background: var(--cream); border: 1px solid var(--slate); }
+    .sw-user { background: var(--gold); border: 1px solid var(--cream); }
+    .sw-admin { background: #0d1526; border: 1px solid var(--gold); }
+    .sw-line { width: 24px; height: 0; border-top: 3px solid var(--hl); }
+    .toolbar .lineleg { display: inline-flex; align-items: center; gap: 7px; color: #cfd6e2; }
+
+    /* сцена: карта на всю ширину + выезжающий справа drawer поверх неё */
+    .stage { position: relative; }
+    .diagram {
       background: #fff; border: 1px solid var(--border);
-      border-radius: 6px; padding: 18px;
+      border-radius: 6px; padding: 14px; overflow: auto;
     }
-    .card h3 { margin: 0 0 2px; font-size: 17px; }
-    .card .route { font-family: "JetBrains Mono", monospace; font-size: 12px; color: var(--slate); }
-    .card .grp { font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: var(--slate); margin: 16px 0 6px; }
-    .card ul { list-style: none; margin: 0; padding: 0; }
-    .card li { padding: 7px 0; border-bottom: 1px dashed var(--border); font-size: 13px; }
-    .card li:last-child { border-bottom: none; }
-    .card li .to { font-weight: 600; }
-    .card li .via { color: var(--slate); font-size: 12px; display: block; }
-    .card .none { color: var(--slate); font-size: 13px; font-style: italic; }
-    .role-tag { display: inline-block; font-size: 11px; padding: 1px 8px; border-radius: 10px; margin-top: 8px; }
+    .diagram .mermaid { text-align: center; }
+    .mermaid g.node { cursor: pointer; }
+
+    .drawer {
+      position: absolute; top: 0; right: 0; height: 100%; width: 330px;
+      background: #fff; border-left: 3px solid var(--gold);
+      box-shadow: -8px 0 24px rgba(26,39,66,.18);
+      border-radius: 0 6px 6px 0; padding: 18px; overflow: auto;
+      transform: translateX(105%); transition: transform .22s ease;
+    }
+    .drawer.open { transform: translateX(0); }
+    .drawer .close { float: right; cursor: pointer; border: none; background: none; font-size: 20px; color: var(--slate); line-height: 1; }
+    .drawer h3 { margin: 0 6px 2px 0; font-size: 17px; }
+    .drawer .route { font-family: "JetBrains Mono", monospace; font-size: 12px; color: var(--slate); }
+    .drawer .grp { font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: var(--slate); margin: 16px 0 6px; }
+    .drawer ul { list-style: none; margin: 0; padding: 0; }
+    .drawer li { padding: 7px 0; border-bottom: 1px dashed var(--border); font-size: 13px; }
+    .drawer li:last-child { border-bottom: none; }
+    .drawer li .to { font-weight: 600; }
+    .drawer li .via { color: var(--slate); font-size: 12px; display: block; }
+    .drawer .none { color: var(--slate); font-size: 13px; font-style: italic; }
+    .role-tag { display: inline-block; font-size: 11px; padding: 1px 8px; border-radius: 10px; margin-top: 6px; }
     .rt-guest { background: var(--cream); border: 1px solid var(--slate); color: var(--navy); }
     .rt-user { background: var(--gold); border: 1px solid var(--navy); color: var(--navy); }
     .rt-admin { background: var(--navy); border: 1px solid var(--gold); color: var(--cream); }
-    .reset {
-      margin-top: 16px; width: 100%; cursor: pointer;
-      background: var(--cream); border: 1px solid var(--border); border-radius: 4px;
-      padding: 9px; font-size: 13px; color: var(--navy);
-    }
-    .reset:hover { background: #ece6da; }
 
-    /* интерактив поверх mermaid-SVG */
-    .mermaid g.node { cursor: pointer; }
+    /* подсветка/затемнение поверх mermaid-SVG */
     .am-dim { opacity: .1 !important; transition: opacity .2s; }
     .mermaid path.am-edge-hl { stroke: var(--hl) !important; stroke-width: 3.5px !important; opacity: 1 !important; }
 
@@ -94,9 +96,8 @@
     .role-admin { color: var(--navy); }
     .note { font-size: 12px; color: var(--slate); margin-top: 8px; }
 
-    @media (max-width: 900px) {
-      .interactive { flex-direction: column; }
-      .panel { flex-basis: auto; position: static; }
+    @media (max-width: 640px) {
+      .drawer { width: 86%; }
     }
   </style>
 </head>
@@ -111,14 +112,19 @@
     </header>
 
     <h2>Карта переходов</h2>
-    <div class="legend">
-      <span><i class="swatch sw-guest"></i> гость (без входа)</span>
-      <span><i class="swatch sw-user"></i> вошедший пользователь</span>
-      <span><i class="swatch sw-admin"></i> админ</span>
-      <span><i class="swatch sw-line"></i> зелёная линия = активный переход с выбранного экрана</span>
+
+    <div class="toolbar">
+      <span class="hint">👉 Нажми на любой <u>прямоугольник-экран</u> — справа откроется список переходов</span>
+      <span class="filters">
+        <span class="ttl">Роли:</span>
+        <label><input type="checkbox" class="rolechk" data-role="guest" checked><i class="swatch sw-guest"></i> гость</label>
+        <label><input type="checkbox" class="rolechk" data-role="user" checked><i class="swatch sw-user"></i> вошедший</label>
+        <label><input type="checkbox" class="rolechk" data-role="admin" checked><i class="swatch sw-admin"></i> админ</label>
+        <span class="lineleg"><i class="swatch sw-line"></i> переход</span>
+      </span>
     </div>
 
-    <div class="interactive">
+    <div class="stage">
       <div class="diagram">
         <pre class="mermaid">
 graph LR
@@ -180,20 +186,13 @@ graph LR
   click AdminDetail call nodeClick()
   click Public call nodeClick()
         </pre>
-      </div>
 
-      <aside class="panel">
-        <div class="cta" id="p-cta">
-          👉 Нажми на любой&nbsp;<u>прямоугольник-экран</u>&nbsp;в схеме слева
-          <small>Подсветятся зелёные стрелки-переходы, а здесь появится список —
-            куда с него можно перейти и по какой кнопке/ссылке.</small>
-        </div>
-        <div class="card" id="p-card" style="display:none">
+        <aside class="drawer" id="drawer">
+          <button class="close" id="p-close" title="Закрыть">×</button>
           <h3 id="p-title"></h3>
           <div id="p-body"></div>
-          <button class="reset" id="p-reset">↺ Показать всё</button>
-        </div>
-      </aside>
+        </aside>
+      </div>
     </div>
 
     <p class="note">
@@ -290,22 +289,18 @@ graph LR
     ];
     const ROLE_RU = { guest: "гость", user: "вошедший", admin: "админ" };
 
-    // элементы панели
-    const pCta   = document.getElementById("p-cta");
-    const pCard  = document.getElementById("p-card");
+    // состояние
+    let selected = null;
+    const activeRoles = new Set(["guest", "user", "admin"]);
+
+    // DOM
+    const drawer = document.getElementById("drawer");
     const pTitle = document.getElementById("p-title");
     const pBody  = document.getElementById("p-body");
-    const pReset = document.getElementById("p-reset");
-
-    // SVG-узлы/связи заполним после рендера
     let svg = null, nodeEls = [], edgeEls = [];
 
-    // вытащить id узла-приложения из токенов id SVG-элемента (Entry, Login, ...)
     function tokensOf(s) { return (s || "").split(/[^A-Za-z0-9]+/).filter(Boolean); }
-    function appNodeIdOf(g) {
-      const present = tokensOf(g.id).filter(tk => NODES[tk]);
-      return present[0] || null;
-    }
+    function appNodeIdOf(g) { return tokensOf(g.id).filter(tk => NODES[tk])[0] || null; }
     function edgeSrcTgt(p) {
       let s = null, t = null;
       (p.getAttribute("class") || "").split(/\s+/).forEach(c => {
@@ -316,46 +311,39 @@ graph LR
       const present = tokensOf(p.id).filter(tk => NODES[tk]);
       return { s: present[0] || s, t: present[1] || t };
     }
+    const roleActive = id => NODES[id] && activeRoles.has(NODES[id].role);
 
-    function clearHL() {
-      nodeEls.forEach(g => g.classList.remove("am-dim"));
-      edgeEls.forEach(p => p.classList.remove("am-dim", "am-edge-hl"));
-      svg && svg.querySelectorAll(".edgeLabel, .edgeLabels").forEach(e => e.classList.remove("am-dim"));
+    // единый пересчёт подсветки из состояния (роли-фильтр + выбранный экран)
+    function render() {
+      const targets = selected ? EDGES.filter(e => e[0] === selected).map(e => e[1]) : [];
+      nodeEls.forEach(g => {
+        const id = appNodeIdOf(g); if (!id) return;
+        let dim = !roleActive(id);
+        if (selected) dim = dim || !(id === selected || targets.includes(id));
+        g.classList.toggle("am-dim", dim);
+      });
+      edgeEls.forEach(p => {
+        const { s, t } = edgeSrcTgt(p);
+        const rolesOk = s && t && roleActive(s) && roleActive(t);
+        const hl = !!selected && s === selected && rolesOk;
+        const dim = selected ? !hl : !rolesOk;
+        p.classList.toggle("am-edge-hl", hl);
+        p.classList.toggle("am-dim", dim);
+      });
+      if (svg) svg.querySelectorAll(".edgeLabel, .edgeLabels").forEach(e => e.classList.toggle("am-dim", !!selected));
+      updateDrawer();
     }
-    function resetPanel() {
-      clearHL();
-      pCard.style.display = "none";
-      pCta.style.display = "";
-    }
+
     function liHTML(to, via) {
       const n = NODES[to] || { label: to, route: "" };
       return `<li><span class="to">${n.label}</span> <span class="route">${n.route}</span>
               <span class="via">↳ ${via}</span></li>`;
     }
-    function select(id) {
-      const node = NODES[id];
-      if (!node) return;
-
-      // подсветка стрелок и узлов
-      const targets = [];
-      edgeEls.forEach(p => {
-        const { s, t } = edgeSrcTgt(p);
-        const on = s === id;
-        p.classList.toggle("am-edge-hl", on);
-        p.classList.toggle("am-dim", !on);
-        if (on && t) targets.push(t);
-      });
-      nodeEls.forEach(g => {
-        const nid = appNodeIdOf(g);
-        g.classList.toggle("am-dim", !(nid === id || targets.includes(nid)));
-      });
-      svg && svg.querySelectorAll(".edgeLabel, .edgeLabels").forEach(e => e.classList.add("am-dim"));
-
-      // панель
-      const outs = EDGES.filter(e => e[0] === id);
-      const ins  = EDGES.filter(e => e[1] === id);
-      pCta.style.display = "none";
-      pCard.style.display = "";
+    function updateDrawer() {
+      if (!selected) { drawer.classList.remove("open"); return; }
+      const node = NODES[selected];
+      const outs = EDGES.filter(e => e[0] === selected);
+      const ins  = EDGES.filter(e => e[1] === selected);
       pTitle.innerHTML = `${node.label} <span class="route">${node.route}</span>`;
       let html = `<span class="role-tag rt-${node.role}">${ROLE_RU[node.role]}</span>`;
       html += `<div class="grp">Отсюда можно перейти →</div>`;
@@ -366,20 +354,28 @@ graph LR
               <span class="via">↳ ${e[2]}</span></li>`).join("")}</ul>`
                          : `<div class="none">прямых входов нет</div>`;
       pBody.innerHTML = html;
+      drawer.classList.add("open");
     }
 
-    // штатный механизм Mermaid: click <node> call nodeClick() передаёт id узла
+    function select(id) { if (NODES[id]) { selected = id; render(); } }
+    function closeDrawer() { selected = null; render(); }
+
     window.nodeClick = (id) => select(id);
-    pReset.addEventListener("click", resetPanel);
+    document.getElementById("p-close").addEventListener("click", closeDrawer);
+    document.querySelectorAll(".rolechk").forEach(chk => {
+      chk.addEventListener("change", () => {
+        chk.checked ? activeRoles.add(chk.dataset.role) : activeRoles.delete(chk.dataset.role);
+        render();
+      });
+    });
 
     mermaid.initialize({
       startOnLoad: false,
       securityLevel: "loose",
-      flowchart: { useMaxWidth: false, htmlLabels: true, nodeSpacing: 55, rankSpacing: 80 },
+      flowchart: { useMaxWidth: true, htmlLabels: true, nodeSpacing: 50, rankSpacing: 75 },
     });
     await mermaid.run({ querySelector: ".mermaid" });
 
-    // привязка к отрисованному SVG (+ резервный DOM-клик, если директива не сработает)
     svg = document.querySelector(".diagram svg");
     if (svg) {
       nodeEls = [...svg.querySelectorAll("g.node")];
