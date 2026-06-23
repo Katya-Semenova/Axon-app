@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>App Map — Axon</title>
+  <style>
+    :root {
+      --navy: #1A2742;
+      --gold: #C8A86B;
+      --cream: #F4F0E8;
+      --slate: #8B95A8;
+      --border: #d8d2c4;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 40px 32px 80px;
+      background: var(--cream);
+      color: var(--navy);
+      font-family: -apple-system, "Inter", "Segoe UI", system-ui, sans-serif;
+      line-height: 1.5;
+    }
+    .wrap { max-width: 1100px; margin: 0 auto; }
+    header h1 { font-size: 28px; margin: 0 0 4px; }
+    header .meta { color: var(--slate); font-size: 13px; margin-bottom: 28px; }
+    header .meta code {
+      background: #fff; border: 1px solid var(--border);
+      padding: 1px 6px; border-radius: 3px; font-size: 12px;
+    }
+    h2 { font-size: 18px; margin: 36px 0 12px; border-bottom: 2px solid var(--gold); padding-bottom: 6px; }
+    .diagram {
+      background: #fff; border: 1px solid var(--border);
+      border-radius: 6px; padding: 24px; overflow-x: auto; text-align: center;
+    }
+    .legend { display: flex; gap: 18px; flex-wrap: wrap; margin: 16px 0 8px; font-size: 13px; }
+    .legend span { display: inline-flex; align-items: center; gap: 7px; }
+    .swatch { width: 16px; height: 16px; border-radius: 3px; display: inline-block; }
+    .sw-guest { background: var(--cream); border: 1px solid var(--slate); }
+    .sw-user { background: var(--gold); border: 1px solid var(--navy); }
+    .sw-admin { background: var(--navy); border: 1px solid var(--gold); }
+    table { width: 100%; border-collapse: collapse; background: #fff; font-size: 13px; margin-top: 8px; }
+    caption { text-align: left; font-weight: 600; padding: 14px 0 8px; font-size: 14px; }
+    th, td { border: 1px solid var(--border); padding: 8px 10px; text-align: left; vertical-align: top; }
+    th { background: var(--navy); color: var(--cream); font-weight: 600; }
+    tr:nth-child(even) td { background: #faf8f3; }
+    code { font-family: "JetBrains Mono", "SF Mono", Menlo, monospace; font-size: 12px; }
+    .role { font-weight: 600; white-space: nowrap; }
+    .role-guest { color: var(--slate); }
+    .role-user { color: #9a7a3a; }
+    .role-admin { color: var(--navy); }
+    .note { font-size: 12px; color: var(--slate); margin-top: 6px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>App Map — Axon</h1>
+      <div class="meta">
+        Карта маршрутов и переходов по фактическому состоянию кода ·
+        сгенерировано <code>2026-06-23</code> (Урок 7, Шаг 1).
+        Источник тех же данных — <code>docs/01-app-map.md</code>.
+      </div>
+    </header>
+
+    <h2>Карта переходов</h2>
+    <div class="legend">
+      <span><i class="swatch sw-guest"></i> гость (без входа)</span>
+      <span><i class="swatch sw-user"></i> вошедший пользователь</span>
+      <span><i class="swatch sw-admin"></i> админ</span>
+    </div>
+    <div class="diagram">
+      <pre class="mermaid">
+graph LR
+  Landing["Лендинг<br/>/"]:::guest
+  Privacy["Конфиденциальность<br/>/privacy"]:::guest
+  Terms["Соглашение<br/>/terms"]:::guest
+  Cookies["Cookies<br/>/cookies"]:::guest
+
+  Entry["Вход в приложение<br/>/ai-studio"]:::guest
+  Login["Вход<br/>/login"]:::guest
+  Register["Регистрация<br/>/register"]:::guest
+  Forgot["Сброс пароля<br/>/forgot-password"]:::guest
+  Reset["Новый пароль<br/>/reset-password"]:::guest
+  Settings["Настройки<br/>/settings"]:::user
+  Admin["Админка<br/>/admin/users"]:::admin
+  AdminDetail["Профиль юзера<br/>/admin/users/[id]"]:::admin
+  Public["Публичная дека<br/>/p/[id]"]:::guest
+
+  Landing -- "CTA «Try Axon»" --> Entry
+  Landing --> Privacy
+  Landing --> Terms
+  Landing --> Cookies
+
+  Entry -- "«Войти»" --> Login
+  Login -- "после входа" --> Entry
+  Login -- "забыли пароль" --> Forgot
+  Login -- "нет аккаунта" --> Register
+  Register -- "после регистрации" --> Entry
+  Register -- "уже есть аккаунт" --> Login
+  Register --> Terms
+  Register --> Privacy
+  Forgot -- "ссылка из письма" --> Reset
+  Forgot -- "назад" --> Login
+  Reset -- "после сброса" --> Login
+
+  Entry -- "аватар → настройки" --> Settings
+  Settings -- "гость → редирект" --> Login
+  Settings -- "если админ" --> Admin
+  Settings -- "выйти" --> Entry
+  Admin --> AdminDetail
+
+  Entry -- "поделиться декой" --> Public
+
+  classDef guest fill:#F4F0E8,stroke:#8B95A8,color:#1A2742;
+  classDef user fill:#C8A86B,stroke:#1A2742,color:#1A2742;
+  classDef admin fill:#1A2742,stroke:#C8A86B,color:#F4F0E8;
+      </pre>
+    </div>
+    <p class="note">
+      Сервис живёт на <code>basePath /ai-studio</code> — физические адреса маршрутов сервиса идут
+      с этой приставкой (например, <code>/login</code> → <code>/ai-studio/login</code>).
+      Middleware нет: доступ гейтится на самих серверных страницах.
+    </p>
+
+    <h2>Маршруты и доступ</h2>
+
+    <table>
+      <caption>Лендинг (apps/landing, axon-app.ru/)</caption>
+      <thead>
+        <tr><th>URL</th><th>Экран</th><th>Доступ</th><th>Описание</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>/</code></td><td>Маркетинговый лендинг</td><td class="role role-guest">все</td><td>Промо-страница: Hero, секции, FAQ, CTA → сервис</td></tr>
+        <tr><td><code>/privacy</code></td><td>Политика конфиденциальности</td><td class="role role-guest">все</td><td>Юр-страница (152-ФЗ)</td></tr>
+        <tr><td><code>/terms</code></td><td>Пользовательское соглашение</td><td class="role role-guest">все</td><td>Юр-страница</td></tr>
+        <tr><td><code>/cookies</code></td><td>Политика cookies</td><td class="role role-guest">все</td><td>Юр-страница</td></tr>
+      </tbody>
+    </table>
+
+    <table>
+      <caption>Сервис (apps/app, axon-app.ru/ai-studio)</caption>
+      <thead>
+        <tr><th>URL</th><th>Экран</th><th>Доступ</th><th>Описание</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>/</code></td><td>Вход в приложение → рабочая область</td><td class="role role-guest">все (гость + вошедший)</td><td>Клиентский переключатель: intro-вью ↔ workspace (холст). Сохранение требует входа</td></tr>
+        <tr><td><code>/login</code></td><td>Вход</td><td class="role role-guest">только гость</td><td>Форма входа (Better Auth)</td></tr>
+        <tr><td><code>/register</code></td><td>Регистрация</td><td class="role role-guest">только гость</td><td>Форма + чекбокс согласия</td></tr>
+        <tr><td><code>/forgot-password</code></td><td>Запрос сброса пароля</td><td class="role role-guest">только гость</td><td>Ввод email → письмо со ссылкой</td></tr>
+        <tr><td><code>/reset-password</code></td><td>Новый пароль</td><td class="role role-guest">гость по токену</td><td>Установка нового пароля</td></tr>
+        <tr><td><code>/settings</code></td><td>Настройки аккаунта</td><td class="role role-user">только вошедший</td><td>Имя, пароль, аватар, удаление, выход; вход в админку</td></tr>
+        <tr><td><code>/admin/users</code></td><td>Админка: список пользователей</td><td class="role role-admin">только админ</td><td>Read-only сводка + список + поиск (v1)</td></tr>
+        <tr><td><code>/admin/users/[id]</code></td><td>Админка: профиль пользователя</td><td class="role role-admin">только админ</td><td>Read-only профиль + доски</td></tr>
+        <tr><td><code>/p/[id]</code></td><td>Публичная презентация</td><td class="role role-guest">все по ссылке</td><td>Read-only показ деки по токену, вход не нужен</td></tr>
+        <tr><td><code>/storybook</code></td><td>Витрина дизайн-системы</td><td class="role role-guest">все (внутреннее)</td><td>UI-kit: токены + компоненты; не в навигации</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Глобальные правила доступа</h2>
+    <ul>
+      <li>Middleware нет — доступ проверяется на серверных страницах и в server-actions.</li>
+      <li><code>/settings</code>: нет сессии → редирект на <code>/login</code>.</li>
+      <li><code>/admin/*</code>: не-админ → 404 (<code>notFound</code>), скрываем существование. Админ — по env <code>ADMIN_EMAIL</code>.</li>
+      <li>Холст <code>/</code> открыт гостю; сохранение проекта требует входа.</li>
+      <li><code>/p/[id]</code> — read-only по приватному токену, без входа.</li>
+      <li>Весь сервис — <code>robots: index:false</code>; в поиск попадает только лендинг.</li>
+    </ul>
+    <p class="note">
+      Заметка (смежное): в <code>/register</code> ссылки на <code>/terms</code> и <code>/privacy</code> —
+      внутренние ссылки сервиса, поэтому под basePath резолвятся в <code>/ai-studio/terms</code>,
+      которых в сервисе нет (юр-страницы живут на лендинге). На проверку → backlog.
+    </p>
+  </div>
+
+  <script type="module">
+    import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
+    mermaid.initialize({ startOnLoad: true, securityLevel: "loose" });
+  </script>
+</body>
+</html>
