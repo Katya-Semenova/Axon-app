@@ -253,8 +253,10 @@ function DonutChart({ rows, columns, expanded, containerWidth, containerHeight }
   /* Legend sizing — proper text-sized rows */
   const n      = rows.length;
   const rowH   = Math.min(28, Math.max(16, (H - 16) / Math.max(n, 1)));
-  const fSize  = Math.max(11, Math.min(14, rowH - 3));
-  const markerS = Math.max(8, fSize - 2);
+  /* Компактная карточка: легенда мельче (иначе текст «гигантский» рядом с маркером);
+     в drill-in (expanded) допускаем крупнее. Маркер — квадрат ~0.85 от шрифта. */
+  const fSize   = Math.max(9, Math.min(expanded ? 14 : 11, rowH - 3));
+  const markerS = Math.max(8, Math.round(fSize * 0.85));
   const startY  = Math.max(8, (H - n * rowH) / 2);
 
   /* Value text width: measure the widest value string (monospace, 0.63 ratio).
@@ -316,7 +318,7 @@ function DonutChart({ rows, columns, expanded, containerWidth, containerHeight }
             ? row.label.slice(0, maxCharsFull - 1) + "…" : row.label;
           return (
             <g key={i} transform={`translate(${legendX}, ${y})`}>
-              <rect x="0" y={rowH * 0.58 - markerS * 0.30} width={markerS} height={markerS * 0.60} rx="1" fill={SERIES[i % SERIES.length]} />
+              <rect x="0" y={rowH * 0.58 - markerS * 0.5} width={markerS} height={markerS} rx="1.5" fill={SERIES[i % SERIES.length]} />
               <text x={LABEL_X} y={rowH * 0.46} fontSize={fSize - 1} fill={INK_MUTED} fontFamily={SANS_FAMILY}>
                 {lbl}
               </text>
@@ -333,7 +335,7 @@ function DonutChart({ rows, columns, expanded, containerWidth, containerHeight }
         const textY  = rowH * 0.5 + fSize * 0.34;
         return (
           <g key={i} transform={`translate(${legendX}, ${y})`}>
-            <rect x="0" y={rowH * 0.5 - markerS * 0.325} width={markerS} height={markerS * 0.65} rx="1" fill={SERIES[i % SERIES.length]} />
+            <rect x="0" y={rowH * 0.5 - markerS * 0.5} width={markerS} height={markerS} rx="1.5" fill={SERIES[i % SERIES.length]} />
             <text x={LABEL_X} y={textY} fontSize={fSize} fill={INK_MUTED} fontFamily={SANS_FAMILY}>
               {label}
             </text>
