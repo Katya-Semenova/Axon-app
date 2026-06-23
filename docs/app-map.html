@@ -265,8 +265,9 @@ graph TB
       <li>Весь сервис — <code>robots: index:false</code>; в поиск попадает только лендинг.</li>
     </ul>
     <p class="note">
-      Заметка (смежное): в <code>/register</code> ссылки на <code>/terms</code> и <code>/privacy</code>
-      под basePath резолвятся в <code>/ai-studio/terms</code>, которых в сервисе нет (юр-страницы на лендинге). В backlog.
+      Заметка: в <code>/register</code> ссылки на <code>/terms</code>/<code>/privacy</code> сделаны
+      обычным <code>&lt;a href="/terms"&gt;</code> (не <code>&lt;Link&gt;</code>) — намеренно ведут на корень
+      домена (юр-страницы лендинга), открываются в новой вкладке. Работает корректно.
     </p>
   </div>
 
