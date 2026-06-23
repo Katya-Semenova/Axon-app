@@ -96,7 +96,7 @@
     .am-dim { opacity: .4 !important; transition: opacity .2s; }
     .mermaid path.am-edge-hl { stroke: var(--hl) !important; stroke-width: 3px !important; opacity: 1 !important; }
     /* крупнее текст внутри прямоугольников-узлов */
-    .mermaid .nodeLabel, .mermaid span.nodeLabel { font-size: 15px !important; }
+    .mermaid .nodeLabel, .mermaid span.nodeLabel { font-size: 16px !important; }
     /* подписи на стрелках-переходах */
     .mermaid .edgeLabel, .mermaid .edgeLabel *, .mermaid .edgeLabel span { font-size: 12px !important; }
     /* заголовки столбцов-групп */
@@ -115,8 +115,11 @@
     .role-admin { color: var(--navy); }
     .note { font-size: 12px; color: var(--slate); margin-top: 8px; }
 
-    /* схема всегда в натуральную величину (useMaxWidth:false) — при нехватке места прокрутка */
-    @media (max-width: 860px) { .infogrid { gap: 18px; } }
+    /* на узком экране (≤540) НЕ ужимаем карту — даём горизонтальный скролл,
+       чтобы она была видна так же, как на большом экране */
+    @media (max-width: 540px) {
+      .diagram svg { min-width: 1000px !important; max-width: none !important; }
+    }
   </style>
 </head>
 <body>
@@ -188,9 +191,9 @@ graph TB
   Settings -- "выйти" --> Entry
   Admin --> AdminDetail
 
-  Entry -- "открыть проект" --> Canvas
-  Canvas -- "режим SLIDES" --> Slides
-  Slides -- "режим PRESENT" --> Present
+  Entry -- "режим Canvas" --> Canvas
+  Entry -- "режим Slides" --> Slides
+  Entry -- "режим Present" --> Present
   Canvas -- "развернуть инсайт" --> InsightDrill
   Canvas -- "развернуть дата-сет" --> DatasetDrill
   Present -- "поделиться" --> Public
@@ -331,9 +334,9 @@ graph TB
       ["Settings","Admin",       "пункт «Админка» (только админ)"],
       ["Settings","Entry",       "кнопка «Выйти»"],
       ["Admin",   "AdminDetail", "клик по пользователю"],
-      ["Entry",   "Canvas",      "открыть проект (режим Canvas)"],
-      ["Canvas",  "Slides",      "переключатель режимов"],
-      ["Slides",  "Present",     "переключатель режимов"],
+      ["Entry",   "Canvas",      "переключатель режимов → Canvas"],
+      ["Entry",   "Slides",      "переключатель режимов → Slides"],
+      ["Entry",   "Present",     "переключатель режимов → Present"],
       ["Canvas",  "InsightDrill","клик «развернуть» на инсайте"],
       ["Canvas",  "DatasetDrill","клик «развернуть» на дата-сете"],
       ["Present", "Public",      "«Поделиться» → публичная ссылка"],
@@ -439,10 +442,10 @@ graph TB
     mermaid.initialize({
       startOnLoad: false,
       securityLevel: "loose",
-      themeVariables: { fontSize: "16px" },
-      // useMaxWidth:true — вписывать карту по ширине контейнера (без горизонтального скролла).
-      // больше расстояний между узлами/рангами → подписи переходов не налезают друг на друга.
-      flowchart: { useMaxWidth: true, htmlLabels: true, nodeSpacing: 85, rankSpacing: 120 },
+      themeVariables: { fontSize: "18px" },
+      // useMaxWidth:true — вписывать карту по ширине контейнера.
+      // компактные расстояния → карта плотнее, квадраты/текст крупнее.
+      flowchart: { useMaxWidth: true, htmlLabels: true, nodeSpacing: 45, rankSpacing: 60 },
     });
     await mermaid.run({ querySelector: ".mermaid" });
 
