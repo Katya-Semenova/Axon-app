@@ -93,9 +93,9 @@
     .am-dim { opacity: .4 !important; transition: opacity .2s; }
     .mermaid path.am-edge-hl { stroke: var(--hl) !important; stroke-width: 3px !important; opacity: 1 !important; }
     /* крупнее текст внутри прямоугольников-узлов */
-    .mermaid .nodeLabel, .mermaid span.nodeLabel { font-size: 17px !important; }
+    .mermaid .nodeLabel, .mermaid span.nodeLabel { font-size: 15px !important; }
     /* подписи на стрелках-переходах */
-    .mermaid .edgeLabel, .mermaid .edgeLabel *, .mermaid .edgeLabel span { font-size: 13px !important; }
+    .mermaid .edgeLabel, .mermaid .edgeLabel *, .mermaid .edgeLabel span { font-size: 12px !important; }
     /* заголовки столбцов-групп */
     .mermaid .cluster-label, .mermaid .cluster-label span { font-size: 13px !important; font-weight: 700; letter-spacing: .03em; }
     .mermaid .cluster rect { fill: #faf8f3 !important; stroke: var(--border) !important; }
@@ -331,7 +331,8 @@ graph TB
         p.classList.toggle("am-edge-hl", hl);
         p.classList.toggle("am-dim", dim);
       });
-      if (svg) svg.querySelectorAll(".edgeLabel, .edgeLabels").forEach(e => e.classList.toggle("am-dim", !!selected));
+      // подписи переходов НЕ гасим — должны читаться, в т.ч. на активных (зелёных) линиях
+      if (svg) svg.querySelectorAll(".edgeLabel, .edgeLabels").forEach(e => e.classList.remove("am-dim"));
       updateInfo();
     }
 
@@ -380,9 +381,10 @@ graph TB
     mermaid.initialize({
       startOnLoad: false,
       securityLevel: "loose",
-      themeVariables: { fontSize: "18px" },
+      themeVariables: { fontSize: "16px" },
       // useMaxWidth:true — вписывать карту по ширине контейнера (без горизонтального скролла).
-      flowchart: { useMaxWidth: true, htmlLabels: true, nodeSpacing: 40, rankSpacing: 60 },
+      // больше расстояний между узлами/рангами → подписи переходов не налезают друг на друга.
+      flowchart: { useMaxWidth: true, htmlLabels: true, nodeSpacing: 60, rankSpacing: 95 },
     });
     await mermaid.run({ querySelector: ".mermaid" });
 
