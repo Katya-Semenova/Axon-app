@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { createPortal } from "react-dom";
 import { useTranslations } from "next-intl";
 import { Reorder, useDragControls } from "framer-motion";
 import type { DataRow, Insight } from "@/lib/types";
@@ -10,6 +11,7 @@ const T3      = "#A8A8A2";
 const T2      = "#5C6478";
 const NAVY    = "#1B2840";
 const GOLD    = "#B89548";
+const MONO    = "'JetBrains Mono', monospace";
 
 /* ── column geometry ─────────────────────────────────────────────────────── */
 const COL_GRIP    = 22;  /* px, fixed */
@@ -196,7 +198,7 @@ function DraggableRow({
                       style={{
                         display: "block", width: "100%", textAlign: "left",
                         padding: "5px 12px",
-                        fontFamily: "'JetBrains Mono', monospace", fontSize: 10.5, lineHeight: 1.5,
+                        fontFamily: MONO, fontSize: 10.5, lineHeight: 1.5,
                         color: item.danger ? "#C0392B" : T2,
                         background: "transparent", border: "none", cursor: "pointer",
                         outline: "none", userSelect: "none",
@@ -217,87 +219,124 @@ function DraggableRow({
   );
 }
 
+/* ── Column menu primitive ───────────────────────────────────────────────── */
+function MenuBtn({ active, danger, onClick, children }: {
+  active?: boolean; danger?: boolean; onClick: () => void; children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      style={{
+        display: "block", width: "100%", textAlign: "left", padding: "6px 12px",
+        fontFamily: MONO, fontSize: 11,
+        color: danger ? "#C0392B" : active ? NAVY : T2,
+        fontWeight: active ? 500 : 400,
+        background: active ? "rgba(27,40,64,0.06)" : "transparent",
+        border: "none", cursor: "pointer",
+      }}
+      onMouseEnter={e => { if (!active) e.currentTarget.style.background = "rgba(27,40,64,0.05)"; }}
+      onMouseLeave={e => { if (!active) e.currentTarget.style.background = "transparent"; }}
+    >
+      {children}
+    </button>
+  );
+}
+
 export function DataTable({ columns, rows, onRowsChange, insightsById }: DataTableProps) {
   const t = useTranslations("Table");
 
-  /* ── Excel-like view: sort by a column + per-column filters ──
-     This is a VIEW only — it never mutates the stored row order/content.
-     Editing writes through by row id; while a view is active, drag-reorder is
-     disabled (a sorted/filtered list can't be manually reordered). */
-  const [sortKey, setSortKey] = useState<string | null>(null);  // "label" | "v0" | "v1" …
+  /* ── Excel-style per-column menu: sort + filter ──
+     View-only — never mutates the stored row order/content. Editing writes by id;
+     while a view is active, drag-reorder is disabled (a sorted/filtered list
+     can't be manually reordered). */
+  const [sortKey, setSortKey] = useState<string | null>(null);  // "label" | "v0" | …
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
-  const [labelF,  setLabelF]  = useState("");
-  const [valueF,  setValueF]  = useState<string[]>(() => columns.map(() => ""));
+  const [labelContains, setLabelContains] = useState("");
+  const [valueRanges, setValueRanges] = useState<{ min: string; max: string }[]>(
+    () => columns.map(() => ({ min: "", max: "" }))
+  );
+  const [menu, setMenu] = useState<{ key: string; x: number; y: number } | null>(null);
 
-  const filtersActive = labelF.trim() !== "" || valueF.some(f => f.trim() !== "");
+  const num = (s: string) => { const v = parseFloat(s.replace(",", ".")); return isNaN(v) ? null : v; };
+  const valueFilterOn = (i: number) => {
+    const r = valueRanges[i];
+    return !!r && (num(r.min) !== null || num(r.max) !== null);
+  };
+  const labelFilterOn = labelContains.trim() !== "";
+  const filtersActive = labelFilterOn || valueRanges.some((_, i) => valueFilterOn(i));
   const viewActive    = sortKey !== null || filtersActive;
 
-  function cycleSort(key: string) {
-    if (sortKey !== key) { setSortKey(key); setSortDir("asc"); }
-    else if (sortDir === "asc") setSortDir("desc");
-    else { setSortKey(null); setSortDir("asc"); }
+  function applySort(key: string, dir: "asc" | "desc") { setSortKey(key); setSortDir(dir); setMenu(null); }
+  function clearColumn(key: string) {
+    if (sortKey === key) setSortKey(null);
+    if (key === "label") setLabelContains("");
+    else { const i = Number(key.slice(1)); setValueRanges(p => p.map((r, j) => (j === i ? { min: "", max: "" } : r))); }
+    setMenu(null);
   }
   function resetView() {
-    setSortKey(null); setSortDir("asc"); setLabelF(""); setValueF(columns.map(() => ""));
-  }
-  function sortTitle(key: string) {
-    if (sortKey !== key) return t("sortAsc");
-    return sortDir === "asc" ? t("sortDesc") : t("sortClear");
-  }
-  function SortArrow({ k }: { k: string }) {
-    if (sortKey !== k) return null;
-    return <span style={{ marginLeft: 3, fontSize: 8 }}>{sortDir === "asc" ? "▲" : "▼"}</span>;
+    setSortKey(null); setSortDir("asc"); setLabelContains("");
+    setValueRanges(columns.map(() => ({ min: "", max: "" }))); setMenu(null);
   }
 
   /* Apply filters, then sort — pure view derived from rows. */
   let viewRows = rows;
-  if (labelF.trim()) {
-    const q = labelF.trim().toLowerCase();
+  if (labelFilterOn) {
+    const q = labelContains.trim().toLowerCase();
     viewRows = viewRows.filter(r => r.label.toLowerCase().includes(q));
   }
-  valueF.forEach((f, i) => {
-    const q = f.trim();
-    if (q) viewRows = viewRows.filter(r => String(r.values[i] ?? "").includes(q));
+  valueRanges.forEach((r, i) => {
+    const mn = num(r.min), mx = num(r.max);
+    if (mn !== null) viewRows = viewRows.filter(row => (row.values[i] ?? 0) >= mn);
+    if (mx !== null) viewRows = viewRows.filter(row => (row.values[i] ?? 0) <= mx);
   });
   if (sortKey) {
     const dir = sortDir === "asc" ? 1 : -1;
     const sorted = [...viewRows];
-    if (sortKey === "label") {
-      sorted.sort((a, b) => dir * a.label.localeCompare(b.label));
-    } else {
-      const i = Number(sortKey.slice(1));
-      sorted.sort((a, b) => dir * ((a.values[i] ?? 0) - (b.values[i] ?? 0)));
-    }
+    if (sortKey === "label") sorted.sort((a, b) => dir * a.label.localeCompare(b.label));
+    else { const i = Number(sortKey.slice(1)); sorted.sort((a, b) => dir * ((a.values[i] ?? 0) - (b.values[i] ?? 0))); }
     viewRows = sorted;
   }
 
   function updateRow(id: string, updated: DataRow) {
     onRowsChange(rows.map(r => (r.id === id ? updated : r)));
   }
-
   function duplicateRow(id: string) {
     const idx = rows.findIndex(r => r.id === id);
     if (idx === -1) return;
     const clone = { ...rows[idx], id: `row-${Date.now().toString(36)}` };
-    const next = [...rows.slice(0, idx + 1), clone, ...rows.slice(idx + 1)];
-    onRowsChange(next);
+    onRowsChange([...rows.slice(0, idx + 1), clone, ...rows.slice(idx + 1)]);
   }
-
-  function deleteRow(id: string) {
-    onRowsChange(rows.filter(r => r.id !== id));
-  }
+  function deleteRow(id: string) { onRowsChange(rows.filter(r => r.id !== id)); }
 
   const headerCell = "text-[10px] font-mono uppercase tracking-[0.08em] text-[#A8A8A2]";
-  const headerBtn  = "bg-transparent border-none p-0 cursor-pointer inline-flex items-center";
+  const headerBtn  = "bg-transparent border-none p-0 cursor-pointer inline-flex items-center hover:text-[#5C6478]";
   const filterInputCls =
-    "w-full text-[10.5px] font-mono text-[#1B2840] bg-white outline-none " +
+    "text-[11px] font-mono text-[#1B2840] bg-white outline-none " +
     "border border-[#E8E4DC] rounded-sm px-[5px] py-[2px] " +
     "focus:border-[rgba(184,149,72,0.5)] placeholder:text-[#A8A8A2] transition-colors";
 
+  function colActive(key: string) {
+    if (key === "label") return sortKey === "label" || labelFilterOn;
+    const i = Number(key.slice(1));
+    return sortKey === key || valueFilterOn(i);
+  }
+  function openMenu(e: React.MouseEvent, key: string) {
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    setMenu(prev => (prev?.key === key ? null : { key, x: rect.left, y: rect.bottom + 5 }));
+  }
+  function ColIndicator({ k }: { k: string }) {
+    const sorted = sortKey === k;
+    return (
+      <span style={{ marginLeft: 4, fontSize: 8, color: colActive(k) ? GOLD : T3 }}>
+        {sorted ? (sortDir === "asc" ? "▲" : "▼") : "▾"}
+      </span>
+    );
+  }
+
   return (
-    /* Use 100% width, no horizontal scroll — columns distribute via flex */
     <div style={{ width: "100%" }}>
-      {/* Sticky header zone: optional reset + column headers + per-column filters */}
+      {/* Sticky header: optional reset-all + column headers (each opens a sort/filter menu) */}
       <div className="sticky top-0 z-10" style={{ background: "#faf9f5" }}>
         {viewActive && (
           <div className="flex justify-end" style={{ paddingBottom: 4 }}>
@@ -312,26 +351,17 @@ export function DataTable({ columns, rows, onRowsChange, insightsById }: DataTab
           </div>
         )}
 
-        {/* Column headers — click to sort */}
-        <div
-          className="flex items-center border-b border-[#E8E4DC]"
-          style={{ paddingTop: 4, paddingBottom: 6, gap: 0 }}
-        >
+        <div className="flex items-center border-b border-[#E8E4DC]" style={{ paddingTop: 4, paddingBottom: 6, gap: 0 }}>
           <div style={{ width: COL_GRIP, flexShrink: 0 }} />
           <div style={{ flex: 1, minWidth: 0, paddingRight: 4 }}>
-            <button type="button" onClick={() => cycleSort("label")} title={sortTitle("label")} className={`${headerCell} ${headerBtn}`}>
-              {t("label")}<SortArrow k="label" />
+            <button type="button" onClick={(e) => openMenu(e, "label")} title={t("columnMenu")} className={`${headerCell} ${headerBtn}`}>
+              {t("label")}<ColIndicator k="label" />
             </button>
           </div>
           {columns.map((col, i) => (
             <div key={col} style={{ width: COL_VALUE, flexShrink: 0, textAlign: "right" }}>
-              <button
-                type="button"
-                onClick={() => cycleSort(`v${i}`)}
-                title={sortTitle(`v${i}`)}
-                className={`${headerCell} ${headerBtn} justify-end w-full`}
-              >
-                {col}<SortArrow k={`v${i}`} />
+              <button type="button" onClick={(e) => openMenu(e, `v${i}`)} title={t("columnMenu")} className={`${headerCell} ${headerBtn} justify-end w-full`}>
+                {col}<ColIndicator k={`v${i}`} />
               </button>
             </div>
           ))}
@@ -340,32 +370,48 @@ export function DataTable({ columns, rows, onRowsChange, insightsById }: DataTab
           )}
           <div style={{ width: COL_ACTIONS, flexShrink: 0 }} />
         </div>
-
-        {/* Per-column filter inputs */}
-        <div className="flex items-center border-b border-[#E8E4DC]" style={{ paddingTop: 4, paddingBottom: 5, gap: 0 }}>
-          <div style={{ width: COL_GRIP, flexShrink: 0 }} />
-          <div style={{ flex: 1, minWidth: 0, paddingRight: 4 }}>
-            <input
-              value={labelF}
-              onChange={e => setLabelF(e.target.value)}
-              placeholder={t("filterPlaceholder")}
-              className={filterInputCls}
-            />
-          </div>
-          {columns.map((col, i) => (
-            <div key={col} style={{ width: COL_VALUE, flexShrink: 0 }}>
-              <input
-                value={valueF[i] ?? ""}
-                onChange={e => setValueF(prev => { const n = [...prev]; n[i] = e.target.value; return n; })}
-                placeholder={t("filterPlaceholder")}
-                className={`${filterInputCls} text-right`}
-              />
-            </div>
-          ))}
-          {insightsById && <div style={{ flex: 1, minWidth: 60, paddingLeft: 8 }} />}
-          <div style={{ width: COL_ACTIONS, flexShrink: 0 }} />
-        </div>
       </div>
+
+      {/* Column sort/filter menu — portal */}
+      {menu && createPortal(
+        <>
+          <div style={{ position: "fixed", inset: 0, zIndex: 9998 }} onMouseDown={() => setMenu(null)} />
+          <div style={{
+            position: "fixed", top: menu.y, left: menu.x, zIndex: 9999, minWidth: 176,
+            background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 4,
+            boxShadow: "0 6px 18px rgba(27,40,64,0.14)", padding: "4px 0",
+          }}>
+            <MenuBtn active={sortKey === menu.key && sortDir === "asc"} onClick={() => applySort(menu.key, "asc")}>{t("sortAsc")}</MenuBtn>
+            <MenuBtn active={sortKey === menu.key && sortDir === "desc"} onClick={() => applySort(menu.key, "desc")}>{t("sortDesc")}</MenuBtn>
+            <div style={{ height: 1, background: BORDER, margin: "4px 0" }} />
+            {menu.key === "label" ? (
+              <div style={{ padding: "4px 10px" }}>
+                <input
+                  autoFocus
+                  value={labelContains}
+                  onChange={e => setLabelContains(e.target.value)}
+                  placeholder={t("filterPlaceholder")}
+                  className={`${filterInputCls} w-full`}
+                />
+              </div>
+            ) : (() => {
+              const i = Number(menu.key.slice(1));
+              const r = valueRanges[i] ?? { min: "", max: "" };
+              return (
+                <div style={{ padding: "4px 10px", display: "flex", alignItems: "center", gap: 6 }}>
+                  <span style={{ fontFamily: MONO, fontSize: 11, color: T2 }}>{t("gte")}</span>
+                  <input value={r.min} onChange={e => setValueRanges(p => p.map((x, j) => (j === i ? { ...x, min: e.target.value } : x)))} className={filterInputCls} style={{ width: 50 }} inputMode="decimal" />
+                  <span style={{ fontFamily: MONO, fontSize: 11, color: T2 }}>{t("lte")}</span>
+                  <input value={r.max} onChange={e => setValueRanges(p => p.map((x, j) => (j === i ? { ...x, max: e.target.value } : x)))} className={filterInputCls} style={{ width: 50 }} inputMode="decimal" />
+                </div>
+              );
+            })()}
+            <div style={{ height: 1, background: BORDER, margin: "4px 0" }} />
+            <MenuBtn onClick={() => clearColumn(menu.key)}>{t("clearColumn")}</MenuBtn>
+          </div>
+        </>,
+        document.body
+      )}
 
       {/* Rows. onReorder is guarded — only the natural (unsorted/unfiltered) view
           can be reordered; viewRows === rows in that case. */}

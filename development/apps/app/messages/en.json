@@ -336,12 +336,16 @@
     "deleteRow": "Delete row",
     "label": "Label",
     "dataSet": "Data Set",
-    "sortAsc": "Sort ascending",
-    "sortDesc": "Sort descending",
+    "sortAsc": "Sort ↑",
+    "sortDesc": "Sort ↓",
     "sortClear": "Clear sort",
-    "filterPlaceholder": "filter…",
-    "reset": "Reset",
-    "dragDisabledHint": "Clear sort and filters to reorder rows"
+    "filterPlaceholder": "contains…",
+    "reset": "Reset all",
+    "dragDisabledHint": "Clear sort and filters to reorder rows",
+    "columnMenu": "Sort & filter",
+    "gte": "≥",
+    "lte": "≤",
+    "clearColumn": "Clear column"
   },
   "Desktop": {
     "workspace": "Workspace",
