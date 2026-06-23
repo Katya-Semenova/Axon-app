@@ -323,16 +323,19 @@ graph TB
         if (selected) dim = dim || !(id === selected || targets.includes(id));
         g.classList.toggle("am-dim", dim);
       });
-      edgeEls.forEach(p => {
+      // рёбра и их подписи идут в одинаковом порядке (i-й путь ↔ i-я подпись):
+      // подпись гаснет ВМЕСТЕ со своей линией, на активной (зелёной) — остаётся яркой.
+      const epaths = svg ? [...svg.querySelectorAll(".edgePaths > path")] : [];
+      const elabels = svg ? [...svg.querySelectorAll(".edgeLabels > g")] : [];
+      epaths.forEach((p, i) => {
         const { s, t } = edgeSrcTgt(p);
         const rolesOk = s && t && roleActive(s) && roleActive(t);
         const hl = !!selected && s === selected && rolesOk;
         const dim = selected ? !hl : !rolesOk;
         p.classList.toggle("am-edge-hl", hl);
         p.classList.toggle("am-dim", dim);
+        if (elabels[i]) elabels[i].classList.toggle("am-dim", dim);
       });
-      // подписи переходов НЕ гасим — должны читаться, в т.ч. на активных (зелёных) линиях
-      if (svg) svg.querySelectorAll(".edgeLabel, .edgeLabels").forEach(e => e.classList.remove("am-dim"));
       updateInfo();
     }
 
