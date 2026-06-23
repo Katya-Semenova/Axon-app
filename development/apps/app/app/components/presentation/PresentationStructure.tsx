@@ -10,6 +10,7 @@ import { MiniChart } from "../MiniChart";
 import { useTranslations } from "next-intl";
 import { BORDER, NAVY, GOLD, T3, SURFACE_RAISE } from "../ui/tokens";
 import { ConfirmDialog } from "../ui/ConfirmDialog";
+import { useToast } from "../ui/Toast";
 
 const mono = "'JetBrains Mono', monospace";
 
@@ -299,7 +300,26 @@ export function PresentationStructure({ insertAt, isDraggingSlide }: {
   const setActive     = useWorkspaceStore(s => s.setActiveSlide);
   const removeSlide   = useWorkspaceStore(s => s.removeSlide);
   const removeDataSetCascade = useWorkspaceStore(s => s.removeDataSetCascade);
+  const undo          = useWorkspaceStore(s => s.undo);
   const dataSetOrder  = useWorkspaceStore(s => s.dataSetOrder);
+  const { toast }     = useToast();
+
+  /* Тост «Удалено · Вернуть» — мягкая страховка поверх Ctrl/Cmd+Z. */
+  function toastDeleted(label: string) {
+    toast(
+      <span className="flex items-center gap-2.5">
+        {label}
+        <button
+          type="button"
+          onClick={() => undo()}
+          className="underline underline-offset-2 font-medium cursor-pointer"
+        >
+          {t("undo")}
+        </button>
+      </span>,
+      { duration: 6000 }
+    );
+  }
   const addSlideWithDataSet = useWorkspaceStore(s => s.addSlideWithDataSet);
 
   /* Data sets on Canvas not yet placed on any slide — source for «+ Слайд». */
@@ -338,10 +358,11 @@ export function PresentationStructure({ insertAt, isDraggingSlide }: {
     if (isSlideMode) {
       removeSlide(slide.id);
       clearActiveIfNeeded(slide.id);
+      toastDeleted(t("deletedSlide"));
       return;
     }
     const primaryDs = slide.dataSetIds[0];
-    if (!primaryDs) { removeSlide(slide.id); clearActiveIfNeeded(slide.id); return; }
+    if (!primaryDs) { removeSlide(slide.id); clearActiveIfNeeded(slide.id); toastDeleted(t("deletedSlide")); return; }
     setPendingDelete(slide);   // открыть стилизованный confirm
   }
 
@@ -352,6 +373,7 @@ export function PresentationStructure({ insertAt, isDraggingSlide }: {
     if (primaryDs) removeDataSetCascade(primaryDs);   // also drops the now-empty slide
     clearActiveIfNeeded(slide.id);
     setPendingDelete(null);
+    toastDeleted(t("deletedDataSet"));
   }
 
   return (

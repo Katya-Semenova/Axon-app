@@ -201,6 +201,9 @@
     "removeDataSetConfirm": "The data set will leave the canvas along with its insights. You can undo (Ctrl/Cmd+Z).",
     "confirmDelete": "Delete",
     "cancel": "Cancel",
+    "deletedSlide": "Slide deleted",
+    "deletedDataSet": "Data set deleted",
+    "undo": "Undo",
     "addSlide": "+ SLIDE",
     "pickDataSet": "Pick a data set",
     "noFreeDataSets": "All data sets are already on slides — add a file on Canvas"
