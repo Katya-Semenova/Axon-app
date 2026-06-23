@@ -68,9 +68,12 @@ export default function RegisterPage() {
               />
               <span>
                 Я принимаю{" "}
-                <Link href="/terms" className="text-t1 underline underline-offset-4">Пользовательское соглашение</Link>
+                {/* Юр-страницы живут на ЛЕНДИНГЕ (корень домена), а сервис под basePath
+                    `/ai-studio` — поэтому обычный <a> (Next не дописывает приставку), а не
+                    <Link>. target=_blank, чтобы не потерять заполненную форму регистрации. */}
+                <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-t1 underline underline-offset-4">Пользовательское соглашение</a>
                 {" "}и{" "}
-                <Link href="/privacy" className="text-t1 underline underline-offset-4">Политику конфиденциальности</Link>.
+                <a href="/privacy" target="_blank" rel="noopener noreferrer" className="text-t1 underline underline-offset-4">Политику конфиденциальности</a>.
               </span>
             </label>
             <Button type="submit" loading={loading} disabled={!agreed} className="w-full">Зарегистрироваться</Button>
