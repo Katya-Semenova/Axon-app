@@ -100,8 +100,9 @@
     /* подписи на стрелках-переходах */
     .mermaid .edgeLabel, .mermaid .edgeLabel *, .mermaid .edgeLabel span { font-size: 12px !important; }
     /* заголовки столбцов-групп */
-    .mermaid .cluster-label, .mermaid .cluster-label span { font-size: 13px !important; font-weight: 700; letter-spacing: .03em; }
-    .mermaid .cluster rect { fill: #faf8f3 !important; stroke: var(--border) !important; }
+    /* группа Canvas/Slides/Present — только для раскладки (держит их вплотную), рамку прячем */
+    .mermaid .cluster rect { fill: none !important; stroke: none !important; }
+    .mermaid .cluster-label { display: none !important; }
 
     table { width: 100%; border-collapse: collapse; background: #fff; font-size: 12px; margin-top: 8px; }
     caption { text-align: left; font-weight: 600; padding: 14px 0 8px; font-size: 14px; }
@@ -162,11 +163,14 @@ graph TB
   Settings["Настройки<br/>/settings"]:::user
   Admin["Админка<br/>/admin/users"]:::admin
   AdminDetail["Профиль юзера<br/>/admin/users/[id]"]:::admin
-  Canvas["Canvas — холст<br/>(режим data)"]:::state
-  Slides["Slides — слайды<br/>(режим presentation)"]:::state
-  Present["Present — показ<br/>(режим build)"]:::state
   InsightDrill["Инсайт — разворот<br/>(оверлей)"]:::state
   DatasetDrill["Дата-сет — разворот<br/>(оверлей)"]:::state
+  subgraph modes [" "]
+    direction LR
+    Canvas["Canvas — холст<br/>(режим data)"]:::state
+    Slides["Slides — слайды<br/>(режим presentation)"]:::state
+    Present["Present — показ<br/>(режим build)"]:::state
+  end
 
   Landing -- "CTA «Try Axon»" --> Entry
   Landing --> Privacy
