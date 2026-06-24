@@ -8,6 +8,15 @@
 Механизм + готовое ПОШАГОВОЕ СНЯТИЕ (SSH → убрать 2 строки `auth_basic*` → `nginx -t && systemctl reload
 nginx`) — в `docs/memory/infrastructure.md` (раздел «⚠️ ВРЕМЕННЫЙ ПАРОЛЬ»). Память: `project_temp_app_password`.
 
+## ◀ ЛЕНДИНГ (чат дизайна) — Prototype + ритм + адаптив (2026-06-24)
+Зона дизайна лендинга (`development/apps/landing`), параллельно Уроку 7. Сегодня:
+- Восстановлен вчерашний рерайт **Prototype** (откатился незакоммиченным) → 4 живые плитки заполняют слот, EN-копирайт.
+- **Адаптив `--k`:** текст + плитки Prototype ужимаются одной пропорцией на всех вьюпортах (9 брейкпоинтов); кнопка не ужимается.
+- **Ритм секций по Figma:** modes/«Three chapters» + CTA → голубой (`#B4C6DC`), footer → navy, «Built for analysts» скрыта, порядок через CSS `order` (hero→modes→shift→prototype→«You stay the author»→faq→cta→footer). Заголовок Why Axon → «You stay the author».
+- **CTA-цвета по Figma**, белые → `#F4F0E8`. **Висяки:** правило в `DESIGN.md → Typography`; «and clean dataset» склеено.
+- Создан `docs/deploy-howto.md`. Коммиты `b4facc3`, `748b5d6`. **Завтра:** добить висяки (out/a/story/it) — `backlog.md` (вверху).
+- Журнал: `docs/decisions/sessions/2026-06-24-landing-rhythm-adaptive.md`.
+
 ## ◀ ТЕКУЩИЙ СТАТУС (2026-06-23) — ЧИТАЙ ПЕРВЫМ
 **Урок 7 (финализация) — В РАБОТЕ. Шаги 1–4 закрыты на доступном уровне** (лейн доки/спеки/тесты/инфра):
 - **Шаг 1** — карта приложения: `docs/01-app-map.md` + интерактивная `docs/app-map.html`; `screens-map.md` сверён.
