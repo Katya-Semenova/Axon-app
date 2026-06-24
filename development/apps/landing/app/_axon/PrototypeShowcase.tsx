@@ -20,12 +20,13 @@ const PHASE_HOLD = [1.1, 0.85, 0.55, 0.9]; // raw · insight · connect · slide
 /* Each tile loops only the beats of its own stage, so the three teaser tiles
    read as "raw → insight/dataset → slide" side by side instead of one square
    cycling through everything. `full` keeps the original all-in-one loop. */
-type ShowcaseVariant = "full" | "raw" | "insight" | "slide";
+type ShowcaseVariant = "full" | "raw" | "insight" | "dataset" | "slide";
 const SEQUENCES: Record<ShowcaseVariant, number[]> = {
   full: [0, 1, 2, 3],
   raw: [0, 1], // numbers float, then gather into the vortex, and back
-  insight: [2], // insight + dataset stay linked on screen (nodes always drawn)
-  slide: [3], // the finished slide stays on screen
+  insight: [2], // (legacy) only `full` still uses the phase machine for insight
+  dataset: [0], // bespoke dark tile — phase unused
+  slide: [3], // (legacy) only `full` still uses the phase machine for slide
 };
 
 /* ── Easing — one Apple-ish vocabulary across the whole showcase ── */
@@ -353,9 +354,151 @@ function SlideLayer({ phase }: { phase: number }) {
   );
 }
 
+/* ════════════════ Dark teaser tiles (insight · dataset · slide) ════════════════
+   All read in one gold-on-navy language so the inline strip feels unified, while
+   the content stays distinct so the raw → insight → dataset → slide transformation
+   still reads. Drawn inside the 400×364 stage like the other layers. */
+
+const GOLD_BRIGHT = "#C8A86B";
+const CREAM       = "#F4F0E8";
+const CREAM_DIM   = "rgba(244,240,232,0.6)";
+const TILE_NAVY   = "rgba(244,240,232,0.045)"; // card fill — same light wash as insight
+
+function DarkTile({ children }: { children: React.ReactNode }) {
+  return <div style={{ position: "absolute", inset: 0, overflow: "hidden" }}>{children}</div>;
+}
+
+/* ── Insight — dark replica of the product InsightCard (no ports/nodes) ── */
+function MiniInsight({ active }: { active: boolean }) {
+  return (
+    <motion.div
+      initial={false}
+      animate={active ? { opacity: 1, y: 0 } : { opacity: 0, y: 12 }}
+      transition={{ duration: 0.5, ease: EASE_OUT }}
+      style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}
+    >
+      <div style={{
+        width: "100%", height: "100%", background: "rgba(244,240,232,0.045)", border: "1px solid rgba(200,168,107,0.5)",
+        borderRadius: 4, padding: "18px 20px", fontFamily: "Inter, sans-serif", boxShadow: "0 18px 42px rgba(0,0,0,0.28)",
+        display: "flex", flexDirection: "column", justifyContent: "space-between", boxSizing: "border-box",
+      }}>
+        <div>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
+            <span style={{ fontFamily: MONO, fontSize: 15, color: CREAM_DIM, letterSpacing: "0.06em" }}>02 /</span>
+            <span style={{ fontFamily: MONO, fontSize: 11, letterSpacing: "0.14em", color: GOLD_BRIGHT, border: "1px solid rgba(200,168,107,0.4)", padding: "2px 7px", borderRadius: 3 }}>INSIGHT</span>
+          </div>
+          <div style={{ fontSize: 20, fontWeight: 600, color: CREAM, lineHeight: 1.25, marginBottom: 12 }}>
+            Evening peak drives 3× traffic
+          </div>
+          <div style={{ fontFamily: MONO, fontSize: 13, color: GOLD_BRIGHT }}>
+            7PM · 88 visits · +71%
+          </div>
+        </div>
+        <div style={{ borderTop: "1px solid rgba(244,240,232,0.12)", paddingTop: 11, display: "flex", justifyContent: "space-between" }}>
+          <span style={{ fontFamily: MONO, fontSize: 12, color: CREAM_DIM }}>Conf 94%</span>
+          <span style={{ fontFamily: MONO, fontSize: 12, color: CREAM_DIM }}>data</span>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+/* ── Dataset — squarified treemap (restaurant-costs.csv, top 6) ── */
+const TM_CELLS = [
+  { name: "Supplies",  v: "1.24M", x: 0,   y: 24,  w: 128, h: 184, fill: "#C8A86B", ink: "#16213A", big: true },
+  { name: "Kitchen",   v: "680K",  x: 128, y: 24,  w: 120, h: 108, fill: "#1B2840", ink: CREAM,    big: true },
+  { name: "Dining",    v: "520K",  x: 248, y: 24,  w: 92,  h: 108, fill: "#33415E", ink: CREAM,    big: true },
+  { name: "Rent",      v: "450K",  x: 128, y: 132, w: 114, h: 76,  fill: "#E9E3D4", ink: "#16213A", big: true },
+  { name: "Delivery",  v: "210K",  x: 242, y: 132, w: 53,  h: 76,  fill: "#A98A4A", ink: "#16213A", big: false },
+  { name: "Mktg",      v: "180K",  x: 295, y: 132, w: 45,  h: 76,  fill: "#26344F", ink: CREAM,    big: false },
+];
+function MiniTreemap({ active }: { active: boolean }) {
+  return (
+    <motion.div initial={false} animate={{ opacity: active ? 1 : 0 }} transition={{ duration: CROSSFADE }}
+      style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <div style={{ position: "relative", width: "100%", height: "100%", background: TILE_NAVY, border: "1px solid rgba(200,168,107,0.5)", borderRadius: 4, boxShadow: "0 20px 46px rgba(0,0,0,0.32)", overflow: "hidden", fontFamily: "Inter, sans-serif", boxSizing: "border-box" }}>
+        <div style={{ position: "absolute", left: 14, top: 10, display: "flex", alignItems: "center", gap: 9, zIndex: 1 }}>
+          <span style={{ fontFamily: MONO, fontSize: 11, letterSpacing: "0.14em", color: GOLD_BRIGHT }}>DATA SET</span>
+          <span style={{ fontSize: 14, fontWeight: 500, color: CREAM }}>Spend · by category</span>
+        </div>
+        <div style={{ position: "absolute", left: 22, top: 6, width: 340, height: 208, transform: "scale(0.88)", transformOrigin: "top left" }}>
+          {TM_CELLS.map((c, i) => (
+            <motion.div
+              key={c.name}
+              initial={false}
+              animate={active ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.82 }}
+              transition={{ duration: 0.42, ease: EASE_OUT, delay: active ? i * 0.06 : 0 }}
+              style={{ position: "absolute", left: c.x + 3, top: c.y + 3, width: c.w - 6, height: c.h - 6, background: c.fill, borderRadius: 3, padding: "7px 9px", overflow: "hidden", transformOrigin: "center" }}
+            >
+              <div style={{ fontSize: c.big ? 13 : 10.5, fontWeight: 600, color: c.ink, lineHeight: 1.12 }}>{c.name}</div>
+              {c.big && <div style={{ fontFamily: MONO, fontSize: 12, color: c.ink, opacity: 0.72, marginTop: 3 }}>{c.v}</div>}
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+/* ── Slide — finished slide carrying a dramatic radar (gym-traffic.csv, weekday
+   hourly: 42·28·18·22·26·55·88·64 → jagged, peaks hard at 19:00) ── */
+const RADAR_VALS = [42, 28, 18, 22, 26, 55, 88, 64];
+function MiniSlideRadar({ active }: { active: boolean }) {
+  const W = 344, H = 208;
+  const cx = 256, cy = 108, R = 68, N = RADAR_VALS.length;
+  const RMAX = 100;
+  const angle = (i: number) => -Math.PI / 2 + i * ((2 * Math.PI) / N);
+  const pt = (v: number, i: number) => [cx + (v / RMAX) * R * Math.cos(angle(i)), cy + (v / RMAX) * R * Math.sin(angle(i))] as const;
+  const ring = (f: number) => RADAR_VALS.map((_, i) => `${(cx + f * R * Math.cos(angle(i))).toFixed(1)},${(cy + f * R * Math.sin(angle(i))).toFixed(1)}`).join(" ");
+  const poly = RADAR_VALS.map((v, i) => pt(v, i).map((n) => n.toFixed(1)).join(",")).join(" ");
+  const peak = Math.max(...RADAR_VALS);
+  return (
+    <motion.div initial={false} animate={{ opacity: active ? 1 : 0 }} transition={{ duration: CROSSFADE, ease: EASE_INOUT }}
+      style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <motion.div initial={false}
+        animate={active ? { scale: 1, y: 0, filter: "blur(0px)" } : { scale: 0.92, y: 8, filter: "blur(8px)" }}
+        transition={{ duration: 0.45, ease: EASE_OUT }}
+        style={{ width: "100%", height: "100%", background: TILE_NAVY, border: "1px solid rgba(200,168,107,0.5)", borderRadius: 4,
+          boxShadow: "0 20px 46px rgba(0,0,0,0.32)", padding: "16px 18px", overflow: "hidden", position: "relative", fontFamily: "Inter, sans-serif", boxSizing: "border-box" }}>
+        <span style={{ fontFamily: MONO, fontSize: 11, letterSpacing: "0.18em", color: GOLD_BRIGHT }}>GYM TRAFFIC</span>
+        <div style={{ fontSize: 21, fontWeight: 600, color: CREAM, lineHeight: 1.15, marginTop: 6, maxWidth: 175 }}>Peak load — evening</div>
+        <div style={{ marginTop: 13, display: "flex", flexDirection: "column", gap: 9, maxWidth: 165 }}>
+          {["Low at 11AM — 18", "Peak 7PM — 88"].map((b, i) => (
+            <motion.div key={i} initial={false}
+              animate={active ? { opacity: 1, x: 0 } : { opacity: 0, x: -8 }}
+              transition={{ duration: 0.3, ease: EASE_OUT, delay: active ? 0.25 + i * 0.08 : 0 }}
+              style={{ display: "flex", gap: 7, alignItems: "flex-start" }}>
+              <span style={{ width: 5, height: 5, borderRadius: "50%", background: GOLD_BRIGHT, marginTop: 5, flexShrink: 0 }} />
+              <span style={{ fontSize: 12, color: CREAM_DIM, lineHeight: 1.3 }}>{b}</span>
+            </motion.div>
+          ))}
+        </div>
+        <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} style={{ position: "absolute", inset: 0, pointerEvents: "none" }}>
+          {[1, 0.66, 0.33].map((f, k) => (
+            <polygon key={k} points={ring(f)} fill="none" stroke="rgba(244,240,232,0.24)" strokeWidth={1.3} />
+          ))}
+          {RADAR_VALS.map((_, i) => (
+            <line key={i} x1={cx} y1={cy} x2={cx + R * Math.cos(angle(i))} y2={cy + R * Math.sin(angle(i))} stroke="rgba(244,240,232,0.16)" strokeWidth={1.1} />
+          ))}
+          <motion.polygon points={poly} fill="rgba(200,168,107,0.16)" stroke={GOLD_BRIGHT} strokeWidth={1.6} strokeLinejoin="round"
+            initial={false} animate={{ opacity: active ? 1 : 0 }} transition={{ duration: 0.55, ease: EASE_OUT, delay: active ? 0.2 : 0 }} />
+          {RADAR_VALS.map((v, i) => {
+            const [x, y] = pt(v, i);
+            const isPeak = v === peak;
+            return (
+              <motion.circle key={i} cx={x} cy={y} r={isPeak ? 4.5 : 2.6} fill={isPeak ? GOLD_BRIGHT : CREAM}
+                initial={false} animate={{ opacity: active ? 1 : 0 }} transition={{ duration: 0.3, delay: active ? 0.4 + i * 0.04 : 0 }} />
+            );
+          })}
+        </svg>
+      </motion.div>
+    </motion.div>
+  );
+}
+
 /* ════════════════ Orchestrator ════════════════ */
 export function PrototypeShowcase({ inView, variant = "full", transparentBg = false }: { inView: boolean; variant?: ShowcaseVariant; transparentBg?: boolean }) {
-  const seq = SEQUENCES[variant];
+  const seq = SEQUENCES[variant] ?? [0];
   const [idx, setIdx] = useState(0);
   const phase = seq[idx];
 
@@ -365,17 +508,23 @@ export function PrototypeShowcase({ inView, variant = "full", transparentBg = fa
     if (inView) setIdx(0);
   }, [inView]);
 
-  /* Chained timeline so each beat can hold for a different length. The parent
-     starts/pauses this by toggling `inView` (at 30% of the section). */
+  /* Chained timeline so each beat can hold for a different length. Only the
+     legacy phase-machine variants (raw/full) need it. */
   useEffect(() => {
-    if (!inView) return;
+    if (!inView || (variant !== "raw" && variant !== "full")) return;
     const id = setTimeout(() => setIdx((i) => (i + 1) % seq.length), (PHASE_HOLD[phase] + CROSSFADE) * 1000);
     return () => clearTimeout(id);
-  }, [inView, idx, phase, seq.length]);
+  }, [inView, idx, phase, seq.length, variant]);
 
+  /* New unified dark teaser tiles. */
+  if (variant === "insight") return <DarkTile><MiniInsight active={inView} /></DarkTile>;
+  if (variant === "dataset") return <DarkTile><MiniTreemap active={inView} /></DarkTile>;
+  if (variant === "slide")   return <DarkTile><MiniSlideRadar active={inView} /></DarkTile>;
+
+  /* raw / full — original layered render. */
   const showRaw = variant === "full" || variant === "raw";
-  const showFlow = variant === "full" || variant === "insight";
-  const showSlide = variant === "full" || variant === "slide";
+  const showFlow = variant === "full";
+  const showSlide = variant === "full";
 
   return (
     <div style={transparentBg

@@ -324,8 +324,9 @@ export default function Home() {
         </div>
       </nav>
 
+      <div style={{ display: 'flex', flexDirection: 'column' }}>
       {/* ═══ HERO ═══ */}
-      <section id="hero" ref={heroRef} style={{ height: '100vh', position: 'relative', overflow: 'hidden', background: '#F4F0E8' }}>
+      <section id="hero" ref={heroRef} style={{ order: 1,height: '100vh', position: 'relative', overflow: 'hidden', background: '#F4F0E8' }}>
         <div id="chaosLayer" ref={chaosLayerRef} style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 1 }} />
         <div id="heroContent" style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 0, zIndex: 2, padding: '0 24px' }}>
           <div id="heroHeadline" style={{ textAlign: 'center', lineHeight: 1.05, marginBottom: 32 }}>
@@ -386,7 +387,7 @@ export default function Home() {
       </section>
 
       {/* ═══ PROBLEM / WHY AXON ═══ */}
-      <section ref={problemRef} id="problem" style={{ background: '#F4F0E8', borderTop: '1px solid rgba(26,39,66,0.1)', padding: '113px 24px 112px' }}>
+      <section ref={problemRef} id="problem" style={{ order: 5,background: '#F4F0E8', borderTop: '1px solid rgba(26,39,66,0.1)', padding: '113px 24px 112px' }}>
         <div style={{ maxWidth: 1152, margin: '0 auto' }}>
 
           {/* ── Header ── */}
@@ -395,8 +396,8 @@ export default function Home() {
               Why Axon
             </span>
             <h2 className="big-serif-h2" style={{ margin: 0 }}>
-              <span style={{ display: 'block', fontFamily: "'Instrument Serif',serif", fontSize: 72, fontWeight: 400, lineHeight: '60px', color: '#1A2742' }}>Your data already</span>
-              <span style={{ display: 'block', fontFamily: "'Instrument Serif',serif", fontSize: 72, fontWeight: 400, fontStyle: 'italic', lineHeight: '86px', color: '#C8A86B' }}>knows the story.</span>
+              <span style={{ display: 'block', fontFamily: "'Instrument Serif',serif", fontSize: 72, fontWeight: 400, lineHeight: '60px', color: '#1A2742' }}>You stay</span>
+              <span style={{ display: 'block', fontFamily: "'Instrument Serif',serif", fontSize: 72, fontWeight: 400, fontStyle: 'italic', lineHeight: '86px', color: '#C8A86B' }}>the author.</span>
             </h2>
             <p style={{ fontFamily: "'Inter',sans-serif", fontSize: 14, lineHeight: '22px', color: 'rgba(26,39,66,0.8)', margin: '4px 0 0', maxWidth: 512 }}>
               The insight is there. The bottleneck is the translation layer between raw numbers and a room that acts on them.
@@ -552,7 +553,7 @@ export default function Home() {
       </section>
 
       {/* ═══ THE SHIFT ═══ */}
-      <section id="shift" className="border-t divider">
+      <section id="shift" className="border-t divider" style={{ order: 3 }}>
         <div id="shiftTrack" style={{ height: '500vh', position: 'relative' }}>
           <div id="shiftSticky" style={{ position: 'sticky', top: 0, height: '100vh' }} className="px-6">
             <div className="max-w-[1152px] mx-auto h-full flex flex-col justify-center gap-12">
@@ -730,7 +731,7 @@ export default function Home() {
       </section>
 
       {/* ═══ THREE MODES ═══ */}
-      <section id="modes" className="py-[194px] px-6 border-t divider">
+      <section id="modes" className="py-[194px] px-6 border-t divider" style={{ order: 2,background: 'rgba(180,198,220,0.2)' }}>
         <div className="max-w-[1152px] mx-auto">
           <div className="mb-16 text-center modes-head">
             <span style={{ fontFamily: "'Inter',sans-serif", fontSize: 12, fontWeight: 600, letterSpacing: '1.2px', textTransform: 'uppercase', color: '#C8A86B', display: 'block', marginBottom: 16 }}>The Workflow</span>
@@ -822,39 +823,51 @@ export default function Home() {
       </section>
 
       {/* ═══ PROTOTYPE TEASER ═══ */}
-      <section ref={protoSectionRef} id="prototype" style={{ background: '#1A2742', borderTop: '1px solid rgba(26,39,66,0.1)', padding: '112px 24px' }}>
+      <section ref={protoSectionRef} id="prototype" style={{ order: 4,background: '#1A2742', borderTop: '1px solid rgba(26,39,66,0.1)', padding: '112px 24px' }}>
         <div style={{ maxWidth: 1152, margin: '0 auto' }}>
 
           {/* Editorial headline — Inter × Instrument Serif at one size, dense
               flow, with the three flow stages woven in as small live fragments
               (raw numbers → insight/dataset → slide), each ≈ the type height. */}
           <div className="proto-head">
-            <span className="proto-word">From a</span>
+            <span className="proto-word">From</span>
             <span className="proto-serif">messy</span>
-            <span className="proto-word">export</span>
+            <span className="proto-word">data</span>
 
-            <div className="proto-frag proto-frag--box" style={{ width: 136, height: 124 }}>
-              <div className="proto-frag-inner" style={{ width: 400, height: 364, left: 0, top: 0, transform: 'scale(0.34)' }}>
+            <div className="proto-frag proto-frag--box" style={{ width: 'calc(179px * var(--k))', height: 'calc(108px * var(--k))' }}>
+              <div className="proto-frag-inner" style={{ width: 400, height: 364, left: 0, top: 0, transform: 'scale(calc(0.45 * var(--k)))' }}>
                 <PrototypeShowcase inView={protoInView} variant="raw" transparentBg />
               </div>
             </div>
 
             <span className="proto-word">into</span>
-            <span className="proto-serif">connected</span>
-            <span className="proto-word">insights</span>
+            <span className="proto-serif">sharp</span>
+            <span className="proto-word">insight</span>
 
-            <div className="proto-frag" style={{ width: 176, height: 161 }}>
-              <div className="proto-frag-inner" style={{ width: 400, height: 364, left: 0, top: 0, transform: 'scale(0.44)' }}>
+            <div className="proto-frag" style={{ width: 'calc(179px * var(--k))', height: 'calc(108px * var(--k))' }}>
+              <div className="proto-frag-inner" style={{ width: 344, height: 208, left: 0, top: 0, transform: 'scale(calc(0.52 * var(--k)))' }}>
                 <PrototypeShowcase inView={protoInView} variant="insight" transparentBg />
               </div>
             </div>
 
-            <span className="proto-word">that become</span>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 'calc(14px * var(--k))' }}>
+              <span className="proto-word">and</span>
+              <span className="proto-serif">clean</span>
+              <span className="proto-word">dataset</span>
+            </span>
+
+            <div className="proto-frag" style={{ width: 'calc(179px * var(--k))', height: 'calc(108px * var(--k))' }}>
+              <div className="proto-frag-inner" style={{ width: 344, height: 208, left: 0, top: 0, transform: 'scale(calc(0.52 * var(--k)))' }}>
+                <PrototypeShowcase inView={protoInView} variant="dataset" transparentBg />
+              </div>
+            </div>
+
+            <span className="proto-word">that becomes</span>
             <span className="proto-serif">finished</span>
             <span className="proto-word">slide</span>
 
-            <div className="proto-frag" style={{ width: 185, height: 168 }}>
-              <div className="proto-frag-inner" style={{ width: 400, height: 364, left: 0, top: 0, transform: 'scale(0.46)' }}>
+            <div className="proto-frag" style={{ width: 'calc(179px * var(--k))', height: 'calc(108px * var(--k))' }}>
+              <div className="proto-frag-inner" style={{ width: 344, height: 208, left: 0, top: 0, transform: 'scale(calc(0.52 * var(--k)))' }}>
                 <PrototypeShowcase inView={protoInView} variant="slide" transparentBg />
               </div>
             </div>
@@ -862,14 +875,14 @@ export default function Home() {
             <span className="proto-word">in under</span>
             <span className="proto-word proto-12">12</span>
             <span className="proto-serif" style={{ lineHeight: 1 }}>minutes</span>
-            <span className="proto-minutes" style={{ display: 'inline-flex', alignItems: 'flex-end', gap: 18, flex: '0 0 auto' }}>
+            <span className="proto-minutes">
               <a
                 href="https://axon-app.ru/ai-studio"
                 target="_blank"
                 rel="noopener"
                 onClick={() => trackEvent(GOALS.ctaClick)}
                 className="proto-cta"
-                style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', marginBottom: 'clamp(8px, 1.2vw, 19px)', background: '#C8A86B', color: '#1A2742', border: '1px solid #C8A86B', borderRadius: 4, padding: 'clamp(8px, 0.85vw, 13px) clamp(20px, 2.6vw, 40px)', fontFamily: 'var(--font-inter-sans), sans-serif', fontSize: 'clamp(11px, 0.95vw, 14px)', lineHeight: 1, fontWeight: 600, textDecoration: 'none', whiteSpace: 'nowrap', boxSizing: 'border-box' }}
+                style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: '#C8A86B', color: '#1A2742', border: '1px solid #C8A86B', borderRadius: 4, padding: '16px 50px', fontFamily: 'var(--font-inter-sans), sans-serif', fontSize: 14, lineHeight: 1.4, fontWeight: 600, textDecoration: 'none', whiteSpace: 'nowrap', boxSizing: 'border-box' }}
               >
                 Open prototype
               </a>
@@ -880,7 +893,7 @@ export default function Home() {
       </section>
 
       {/* ═══ FEATURES ═══ */}
-      <section id="features" style={{ background: '#F4F0E8', borderTop: '1px solid rgba(26,39,66,0.1)', padding: '113px 24px 112px' }}>
+      <section id="features" style={{ display: 'none',background: '#F4F0E8', borderTop: '1px solid rgba(26,39,66,0.1)', padding: '113px 24px 112px' }}>
         <div style={{ maxWidth: 1152, margin: '0 auto', display: 'grid', gridTemplateColumns: '1fr 1.5fr', columnGap: 20, rowGap: 20 }}>
 
           {/* ── Heading: full width ── */}
@@ -948,7 +961,7 @@ export default function Home() {
       </section>
 
 {/* ═══ FAQ ═══ */}
-      <section id="faq" style={{ background: '#F4F0E8', borderTop: '1px solid rgba(26,39,66,0.1)', padding: '96px 24px' }}>
+      <section id="faq" style={{ order: 6,background: '#F4F0E8', borderTop: '1px solid rgba(26,39,66,0.1)', padding: '96px 24px' }}>
         <div className="faq-grid" style={{ maxWidth: 1080, margin: '0 auto' }}>
           <div className="faq-head">
             <span style={{ fontFamily: "'Inter',sans-serif", fontSize: 12, fontWeight: 600, letterSpacing: '1.2px', textTransform: 'uppercase', color: '#C8A86B', display: 'block', marginBottom: 16 }}>
@@ -991,26 +1004,26 @@ export default function Home() {
       </section>
 
 {/* ═══ CTA ═══ */}
-      <section id="cta" className="py-28 px-6 border-t divider">
+      <section id="cta" className="py-28 px-6 border-t divider" style={{ order: 7,background: '#B4C6DC' }}>
         <div className="max-w-2xl mx-auto text-center">
           <h2 className="big-serif-h2" style={{ margin: '0 0 20px' }}>
             <span style={{ display: 'block', fontFamily: "'Instrument Serif',serif", fontSize: 72, fontWeight: 400, lineHeight: '60px', color: '#1A2742' }}>Your data has a story.</span>
-            <span style={{ display: 'block', fontFamily: "'Instrument Serif',serif", fontSize: 72, fontWeight: 400, fontStyle: 'italic', lineHeight: '86px', color: '#C8A86B' }}>Time to tell it.</span>
+            <span style={{ display: 'block', fontFamily: "'Instrument Serif',serif", fontSize: 72, fontWeight: 400, fontStyle: 'italic', lineHeight: '86px', color: '#F4F0E8' }}>Time to tell it.</span>
           </h2>
-          <p className="font-body text-soft mb-10 leading-relaxed">Join thousands of analysts who&apos;ve stopped translating and started presenting.</p>
+          <p className="font-body text-[#1B2840] mb-10 leading-relaxed">Join thousands of analysts who&apos;ve stopped translating and started presenting.</p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center mb-5">
             <a href="https://axon-app.ru/ai-studio" target="_blank" onClick={() => trackEvent(GOALS.ctaClick)} className="inline-flex items-center justify-center gap-2 bg-primary text-bg font-body font-medium text-sm px-8 py-4 rounded-[4px] hover:bg-primary/90 transition-all">Try Axon free →</a>
-            <a href="mailto:hello@axon-app.ru?subject=Axon%20demo" className="inline-flex items-center justify-center gap-2 border border-primary/25 text-primary font-body font-medium text-sm px-8 py-4 rounded-[4px] hover:border-accent hover:text-accent transition-all">Book a demo</a>
+            <a href="mailto:hello@axon-app.ru?subject=Axon%20demo" className="inline-flex items-center justify-center gap-2 bg-[#F4F0E8] text-primary font-body font-medium text-sm px-8 py-4 rounded-[4px] hover:bg-[#EDE9E0] transition-all">Book a demo</a>
           </div>
-          <p className="text-xs font-body text-soft/60">No credit card. First deck on us.</p>
+          <p className="text-xs font-body text-[#F4F0E8]">No credit card. First deck on us.</p>
         </div>
       </section>
 
       {/* ═══ FOOTER ═══ */}
-      <footer className="border-t divider py-10 px-6">
+      <footer className="border-t divider py-10 px-6" style={{ order: 8,background: '#1A2742' }}>
         <div className="max-w-[1152px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-          <span className="font-mono text-[13px] font-medium tracking-[0.14em] text-primary">AXON</span>
-          <p className="text-xs font-body text-soft/40 text-center hidden sm:block">The Neural Network for Your Data Narrative.</p>
+          <span className="font-mono text-[13px] font-medium tracking-[0.14em] text-bg">AXON</span>
+          <p className="text-xs font-body text-bg/40 text-center hidden sm:block">The Neural Network for Your Data Narrative.</p>
           <div className="flex gap-6">
             {[
               { label: 'Privacy', href: '/privacy' },
@@ -1018,11 +1031,12 @@ export default function Home() {
               { label: 'Cookies', href: '/cookies' },
               { label: 'Contact', href: 'mailto:hello@axon-app.ru' },
             ].map(({ label, href }) => (
-              <a key={label} href={href} className="text-xs font-body text-soft hover:text-primary transition-colors">{label}</a>
+              <a key={label} href={href} className="text-xs font-body text-bg/60 hover:text-accent transition-colors">{label}</a>
             ))}
           </div>
         </div>
       </footer>
+      </div>
     </>
   );
 }
