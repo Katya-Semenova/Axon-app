@@ -35,11 +35,27 @@ export const metadata: Metadata = {
     url: "https://axon-app.ru",
     type: "website",
     locale: "en_US",
-    // og:image берётся из app/opengraph-image.png (file-convention) — здесь не дублируем.
+    // og:image — статик-файл из /public (НЕ file-convention из app/). File-convention
+    // Next отдаёт chunked-ответом без Content-Length → обработчик картинок Telegram его
+    // бракует и не строит превью. Статик из /public отдаётся с Content-Length+ETag.
+    images: [
+      {
+        url: "/og.png",
+        width: 1200,
+        height: 630,
+        alt: "AXON — From data to story. Without translation.",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "From data to story, in minutes",
+    images: [
+      {
+        url: "/og.png",
+        alt: "AXON — From data to story. Without translation.",
+      },
+    ],
   },
 };
 
