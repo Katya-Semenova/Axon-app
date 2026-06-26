@@ -563,7 +563,7 @@ export default function Home() {
                 <span style={{ fontFamily: "'Inter',sans-serif", fontSize: 12, fontWeight: 600, letterSpacing: '1.2px', textTransform: 'uppercase', color: '#C8A86B', display: 'block', marginBottom: 16 }}>The Shift</span>
                 <h2 className="big-serif-h2" style={{ margin: 0 }}>
                   <span style={{ display: 'block', fontFamily: "'Instrument Serif',serif", fontSize: 72, fontWeight: 400, lineHeight: '60px', color: '#1A2742' }}>Three files in.</span>
-                  <span style={{ display: 'block', fontFamily: "'Instrument Serif',serif", fontSize: 72, fontWeight: 400, fontStyle: 'italic', lineHeight: '86px', color: '#C8A86B' }}>A board-ready deck out.</span>
+                  <span style={{ display: 'block', fontFamily: "'Instrument Serif',serif", fontSize: 72, fontWeight: 400, fontStyle: 'italic', lineHeight: '86px', color: '#C8A86B' }}>A board-ready <span style={{ whiteSpace: 'nowrap' }}>deck out.</span></span>
                 </h2>
               </div>
 
