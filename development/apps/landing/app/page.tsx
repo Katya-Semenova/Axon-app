@@ -1007,8 +1007,8 @@ export default function Home() {
       <section id="cta" className="py-28 px-6 border-t divider" style={{ order: 7,background: '#B4C6DC' }}>
         <div className="max-w-2xl mx-auto text-center">
           <h2 className="big-serif-h2" style={{ margin: '0 0 20px' }}>
-            <span style={{ display: 'block', fontFamily: "'Instrument Serif',serif", fontSize: 72, fontWeight: 400, lineHeight: '60px', color: '#1A2742' }}>Your data has a story.</span>
-            <span style={{ display: 'block', fontFamily: "'Instrument Serif',serif", fontSize: 72, fontWeight: 400, fontStyle: 'italic', lineHeight: '86px', color: '#F4F0E8' }}>Time to tell it.</span>
+            <span style={{ display: 'block', fontFamily: "'Instrument Serif',serif", fontSize: 72, fontWeight: 400, lineHeight: '60px', color: '#1A2742' }}>Your data has <span style={{ whiteSpace: 'nowrap' }}>a story.</span></span>
+            <span style={{ display: 'block', fontFamily: "'Instrument Serif',serif", fontSize: 72, fontWeight: 400, fontStyle: 'italic', lineHeight: '86px', color: '#F4F0E8' }}>Time to <span style={{ whiteSpace: 'nowrap' }}>tell it.</span></span>
           </h2>
           <p className="font-body text-[#1B2840] mb-10 leading-relaxed">Join thousands of analysts who&apos;ve stopped translating and started presenting.</p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center mb-5">
