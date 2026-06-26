@@ -21,15 +21,53 @@
     в локальной памяти проекта (`project_temp_app_password.md`) и у пользователя.
 - **Доступ к серверу для снятия:** SSH, данные в `.env.deploy` (в корне репо, не в git).
 
-**Пошаговое СНЯТИЕ (≈1 мин, без пересборки приложения):**
-1. Зайти на сервер по SSH (ключ/IP/user — из `.env.deploy`).
-2. Убрать 2 строки `auth_basic*` из блока `/ai-studio` в `/etc/nginx/sites-available/axon-app`
-   (или восстановить из бэкапа `cp axon-app.bak.<ts> axon-app`).
-3. (по желанию) `rm /etc/nginx/.htpasswd`.
-4. Проверить и применить: `nginx -t && systemctl reload nginx`.
-5. Убедиться: `curl -s -o /dev/null -w '%{http_code}' https://axon-app.ru/ai-studio` → должно быть НЕ 401.
+### Снять / вернуть пароль — инструкция «своими руками» (без Claude/Codex)
 
-**Когда снимать:** после показа / перед публичным запуском (решение пользователя).
+**Принцип.** Замок включают/выключают 2 строки `auth_basic*` в
+`/etc/nginx/sites-available/axon-app`. Мы их НЕ удаляем, а «комментируем» (ставим `#` в начале).
+Поэтому возврат всегда симметричен, файл пароля `.htpasswd` остаётся на месте, и **сам пароль
+`axon/1902` перепечатывать не нужно** — он всё время лежит на сервере.
+
+**Шаг 0 — зайти на сервер (одинаково для снять и вернуть).**
+Открой данные доступа из `.env.deploy` (корень репо, не в git): `SERVER_IP`, `SERVER_USER`, `SERVER_PASSWORD`.
+В Терминале на своём компьютере:
+```
+ssh <SERVER_USER>@<SERVER_IP>
+```
+→ введи `SERVER_PASSWORD` (символы при вводе не показываются — это нормально, печатай вслепую и Enter).
+_Если `SERVER_USER` = `root`, слово `sudo` в командах ниже можно опускать._
+
+**🔓 СНЯТЬ пароль (перед показом).** После входа на сервер выполни:
+```
+sudo sed -i.bak 's/^\([[:space:]]*\)auth_basic/\1# auth_basic/' /etc/nginx/sites-available/axon-app
+sudo nginx -t && sudo systemctl reload nginx
+```
+Проверка (с любого компьютера, не на сервере):
+```
+curl -s -o /dev/null -w '%{http_code}\n' https://axon-app.ru/ai-studio
+```
+→ должно быть **НЕ 401** (200/302/307). Значит вход открыт, гости проходят.
+
+**🔒 ВЕРНУТЬ пароль (после показа).** Снова зайди по SSH (Шаг 0) и выполни:
+```
+sudo sed -i.bak 's/^\([[:space:]]*\)#[[:space:]]*auth_basic/\1auth_basic/' /etc/nginx/sites-available/axon-app
+sudo nginx -t && sudo systemctl reload nginx
+```
+Проверка: тот же `curl ...` → должно быть **401**. Значит замок снова стоит (`axon/1902`).
+
+**Запасной путь — правка руками, если команды выше не сработали:**
+1. `sudo nano /etc/nginx/sites-available/axon-app`
+2. Найди 2 строки внутри блока `location /ai-studio`:
+   `auth_basic "AXON demo access";` и `auth_basic_user_file /etc/nginx/.htpasswd;`
+3. **Снять** = поставь `#` в начале обеих строк. **Вернуть** = убери `#`.
+4. Сохрани (`Ctrl+O`, Enter) и выйди (`Ctrl+X`).
+5. Примени: `sudo nginx -t && sudo systemctl reload nginx`
+6. `nginx -t` должен сказать `syntax is ok` / `test is successful`. Если ошибка — **НЕ перезагружай**,
+   верни `#` как было и проверь, что не задел соседние строки.
+
+⚠️ **Никогда не удаляй** `/etc/nginx/.htpasswd` — пока он на месте, возврат пароля всегда сработает.
+
+**Когда:** снять — перед показом; вернуть — сразу после.
 
 ---
 
