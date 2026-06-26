@@ -59,12 +59,27 @@ export function checkIpLimit(ip: string): LimitResult {
   return slide(ipHits, ip, IP_MAX, IP_WINDOW_MS);
 }
 
-/** Реальный IP клиента: nginx кладёт его в X-Forwarded-For (первый в списке). */
+/**
+ * Реальный IP клиента — для лимита по IP. ВАЖНО (обход лимита):
+ * клиент может САМ прислать X-Forwarded-For/X-Real-IP, поэтому доверяем только
+ * тому, что ПЕРЕЗАПИСЫВАЕТ nginx, а не клиентскому значению.
+ *
+ * Требуемый конфиг nginx на /ai-studio (см. docs/memory/infrastructure.md):
+ *   proxy_set_header X-Real-IP        $remote_addr;            # перезаписывает → не подделать
+ *   proxy_set_header X-Forwarded-For  $proxy_add_x_forwarded_for;  # реальный peer ДОПИСАН в конец
+ *
+ * Поэтому: берём X-Real-IP (доверенный); иначе — ПОСЛЕДНИЙ элемент XFF (его дописал
+ * nginx, не клиент); иначе — "unknown" (все валятся в один счётчик, мимо лимита не идут).
+ * Первый элемент XFF НЕ берём — он подделывается клиентом.
+ */
 export function clientIp(headers: Headers): string {
+  const real = headers.get("x-real-ip")?.trim();
+  if (real) return real;
   const xff = headers.get("x-forwarded-for");
   if (xff) {
-    const first = xff.split(",")[0]?.trim();
-    if (first) return first;
+    const parts = xff.split(",").map((s) => s.trim()).filter(Boolean);
+    const last = parts[parts.length - 1];
+    if (last) return last;
   }
-  return headers.get("x-real-ip")?.trim() || "unknown";
+  return "unknown";
 }

@@ -69,6 +69,27 @@ sudo nginx -t && sudo systemctl reload nginx
 
 **Когда:** снять — перед показом; вернуть — сразу после.
 
+### Демо-режим: лимит ИИ по IP требует доверенного заголовка от nginx
+
+Лимит «5 запросов/час на IP» (`lib/ai/rate-limit.ts`) защищает деньги на показе, КОГДА Basic Auth
+снят и заходят посторонние. Чтобы его нельзя было обойти подделкой заголовка, в блоке
+`location /ai-studio` (`/etc/nginx/sites-available/axon-app`) **должны быть** строки:
+```
+proxy_set_header X-Real-IP        $remote_addr;
+proxy_set_header X-Forwarded-For  $proxy_add_x_forwarded_for;
+```
+`X-Real-IP` nginx **перезаписывает** реальным адресом → клиент его не подделает. Приложение берёт
+именно его. Если этих строк нет — гость может слать фейковый IP в каждом запросе и обходить лимит.
+
+**Проверка перед показом (на сервере):**
+```
+grep -nE 'X-Real-IP|X-Forwarded-For' /etc/nginx/sites-available/axon-app
+```
+Если строк нет — добавить в блок `location /ai-studio`, затем `sudo nginx -t && sudo systemctl reload nginx`.
+
+**Нужные env для демо** (`development/apps/app/.env` на сервере): `DEMO_USER_EMAIL` (почта общего
+демо-аккаунта; включает лимит по IP), опц. `AI_IP_RATE_MAX` (дефолт 5), `AI_IP_RATE_WINDOW` (дефолт 3600).
+
 ---
 
 ## Монорепо (Урок 6, Шаг 0 — с 2026-06-20). ADR-009.
