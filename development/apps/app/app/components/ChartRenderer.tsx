@@ -3,6 +3,8 @@
 import { hierarchy, treemap, treemapSquarify } from "d3-hierarchy";
 import { makePoints, smoothPath, roundTo } from "@/lib/charts";
 import type { DataRow, ChartType } from "@/lib/mockData";
+import { RENDER_ENGINE } from "@/lib/renderEngine";
+import { HighchartsRenderer } from "./HighchartsRenderer";
 
 const r = roundTo;
 
@@ -1006,6 +1008,17 @@ export function ChartRenderer({
   containerHeight?: number;
 }) {
   const props = { rows, columns, expanded, containerWidth, containerHeight };
+
+  /* SPIKE: за фича-флагом bar-типы рисует движок Highcharts. По умолчанию
+     RENDER_ENGINE === 'native', поэтому этот блок не активен и старый путь
+     ниже работает как раньше. */
+  if (
+    RENDER_ENGINE === "highcharts" &&
+    (chartType === "Bar" || chartType === "Clean Columns" || chartType === "Stacked Bar")
+  ) {
+    return <HighchartsRenderer {...props} />;
+  }
+
   switch (chartType) {
     /* Active 8 (round-4) */
     case "Treemap":       return <TreemapChart {...props} />;
