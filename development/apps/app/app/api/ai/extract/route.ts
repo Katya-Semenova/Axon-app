@@ -3,7 +3,7 @@ import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
 import { getAIClient } from "@/lib/ai";
 import { AIError } from "@/lib/ai/types";
-import { checkRateLimit } from "@/lib/ai/rate-limit";
+import { checkRateLimit, checkIpLimit, clientIp, IP_LIMIT_MAX } from "@/lib/ai/rate-limit";
 import { buildExtractionMessages, parsePlan, type AIExtractionInput } from "@/lib/insight-engine/ai-plan";
 
 /**
@@ -23,8 +23,21 @@ export async function POST(req: NextRequest) {
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
 
-  // 2. Rate-limit на пользователя.
-  if (!checkRateLimit(session.user.id)) {
+  // 2. Rate-limit. Демо-аккаунт (показ) — по IP (все гости = один аккаунт);
+  //    обычный пользователь — по аккаунту, как раньше.
+  const demoEmail = process.env.DEMO_USER_EMAIL?.toLowerCase();
+  const isDemo = !!demoEmail && session.user.email.toLowerCase() === demoEmail;
+  let demoRemaining: number | undefined;
+  if (isDemo) {
+    const lim = checkIpLimit(clientIp(req.headers));
+    if (!lim.allowed) {
+      return NextResponse.json(
+        { error: "demo-rate-limit", remaining: 0, limit: IP_LIMIT_MAX, resetInSec: lim.resetInSec },
+        { status: 429 },
+      );
+    }
+    demoRemaining = lim.remaining;
+  } else if (!checkRateLimit(session.user.id)) {
     return NextResponse.json({ error: "rate-limit" }, { status: 429 });
   }
 
@@ -59,7 +72,9 @@ export async function POST(req: NextRequest) {
       json: true,
     });
     const plan = parsePlan(res.content);
-    return NextResponse.json({ plan });
+    return NextResponse.json(
+      demoRemaining !== undefined ? { plan, demoRemaining, demoLimit: IP_LIMIT_MAX } : { plan },
+    );
   } catch (err) {
     const code = err instanceof AIError ? err.code : "bad-response";
     console.error("[ai/extract] failed:", err);
