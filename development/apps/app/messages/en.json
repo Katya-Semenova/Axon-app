@@ -80,7 +80,9 @@
     "loginHint": "Sign up to ask AI about your data.",
     "error": "Couldn't get a response. Please try again.",
     "applyBuild": "Apply",
-    "built": "Built"
+    "built": "Built",
+    "demoCounter": "Demo · {left} of {limit} left",
+    "demoLimitReached": "Demo limit reached. Try again later."
   },
   "ModeTabs": {
     "ariaLabel": "Workspace mode",

@@ -48,6 +48,8 @@ export function ChatRail({ onBack }: { onBack: () => void }) {
   const setSourceTable        = useWorkspaceStore(s => s.setSourceTable);
   const [draftData, setDraftData] = useState("");
   const [sending, setSending] = useState(false);
+  /* Демо-режим: остаток запросов на IP (приходит в ответе ИИ). null — не демо. */
+  const [demo, setDemo] = useState<{ left: number; limit: number } | null>(null);
   /* Гость кликает по полю чата → то же инлайн-окно входа, что и «Сохранить» (EC-4).
      Холст не теряется: после входа сессия обновляется и чат разблокируется. */
   const [authOpen, setAuthOpen] = useState(false);
@@ -128,10 +130,21 @@ export function ChatRail({ onBack }: { onBack: () => void }) {
           columns,
         }),
       });
+      if (res.status === 429) {
+        const body = (await res.json().catch(() => ({}))) as { error?: string; limit?: number };
+        if (body.error === "demo-rate-limit") {
+          if (typeof body.limit === "number") setDemo({ left: 0, limit: body.limit });
+          updateDataChatMessage(axonMsgId, { content: t("demoLimitReached"), pending: false, error: true });
+          return;
+        }
+      }
       if (!res.ok) throw new Error(`chat ${res.status}`);
-      const { reply } = (await res.json()) as { reply: ChatReply };
-      const action = validateAction(reply.action, table);
-      updateDataChatMessage(axonMsgId, { content: reply.answer, pending: false, action: action ?? undefined });
+      const data = (await res.json()) as { reply: ChatReply; demoRemaining?: number; demoLimit?: number };
+      if (typeof data.demoRemaining === "number" && typeof data.demoLimit === "number") {
+        setDemo({ left: data.demoRemaining, limit: data.demoLimit });
+      }
+      const action = validateAction(data.reply.action, table);
+      updateDataChatMessage(axonMsgId, { content: data.reply.answer, pending: false, action: action ?? undefined });
     } catch (e) {
       console.warn("[chat] не удалось получить ответ:", e);
       updateDataChatMessage(axonMsgId, { content: t("error"), pending: false, error: true });
@@ -329,6 +342,13 @@ export function ChatRail({ onBack }: { onBack: () => void }) {
           ))
         )}
       </div>
+
+      {/* Демо-счётчик: остаток запросов на показе (Урок 7). Только в data-режиме у вошедшего демо. */}
+      {demo && session && !isBuild && (
+        <div className={`px-5 py-2 border-t border-border font-mono text-[10.5px] uppercase tracking-[0.08em] shrink-0 ${demo.left === 0 ? "text-error" : "text-gold-600"}`}>
+          {t("demoCounter", { left: demo.left, limit: demo.limit })}
+        </div>
+      )}
 
       {/* Input */}
       <div className="px-5 py-4 border-t border-border flex gap-[10px] items-end shrink-0">
