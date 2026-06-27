@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
+import Link from "next/link";
 import {
   NAVY, GOLD, BORDER, T2, T3,
   SURFACE, SURFACE_MUTED, CANVAS_BG,
@@ -12,7 +13,7 @@ import type { ChartType } from "@/lib/types";
 // ─── UI Kit (новые компоненты на токенах) ───
 import { Button } from "@/app/components/ui/Button";
 import { Badge } from "@/app/components/ui/Badge";
-import { Card, CardHeader, CardContent, CardFooter } from "@/app/components/ui/Card";
+import { Card, CardHeader, CardContent } from "@/app/components/ui/Card";
 import { Avatar } from "@/app/components/ui/Avatar";
 import { Input } from "@/app/components/ui/Input";
 import { Textarea } from "@/app/components/ui/Textarea";
@@ -979,12 +980,12 @@ export default function StorybookPage() {
       }}>
         {/* Header */}
         <div style={{ padding: "18px 20px 14px", borderBottom: `1px solid ${BORDER}` }}>
-          <a
+          <Link
             href="/"
             style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 11.5, fontWeight: 500, color: NAVY, textDecoration: "none", letterSpacing: "0.04em" }}
           >
             ← AXON
-          </a>
+          </Link>
           <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 9.5, color: T3, marginTop: 4, letterSpacing: "0.06em" }}>
             /storybook
           </div>

@@ -6,7 +6,7 @@ import { cn } from "./cn";
  * DRY-ит повторяющийся паттерн возврата (Back / Back to Grid / Back to Canvas).
  * Текст — через children (по умолчанию «Back»). На токенах: text-t2 → hover text-t1.
  */
-export interface BackButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {}
+export type BackButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement>;
 
 export function BackButton({ className, children = "Back", ...props }: BackButtonProps) {
   return (

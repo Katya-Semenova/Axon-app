@@ -52,7 +52,7 @@ function DotsIcon() {
 }
 
 function DraggableRow({
-  row, columns, onChange, onDuplicate, onDelete, insightsById, draggable,
+  row, onChange, onDuplicate, onDelete, insightsById, draggable,
 }: {
   row: DataRow;
   columns: string[];

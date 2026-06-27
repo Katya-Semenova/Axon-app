@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
-import { NAVY, GOLD, SURFACE_RAISE, BORDER, T2, NAVY_300 } from "./tokens";
+import { NAVY, GOLD, BORDER, T2, NAVY_300 } from "./tokens";
 import { BASE_PATH } from "@/lib/base-path";
 import { useTranslations } from "next-intl";
 
