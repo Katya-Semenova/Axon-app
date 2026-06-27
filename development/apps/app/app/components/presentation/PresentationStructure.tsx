@@ -8,7 +8,7 @@ import { useWorkspaceStore } from "@/lib/store";
 import type { Slide } from "@/lib/types";
 import { MiniChart } from "../MiniChart";
 import { useTranslations } from "next-intl";
-import { BORDER, NAVY, GOLD, T3, SURFACE_RAISE } from "../ui/tokens";
+import { BORDER, NAVY, NAVY_700, GOLD, T3, SURFACE_RAISE } from "../ui/tokens";
 import { ConfirmDialog } from "../ui/ConfirmDialog";
 import { useToast } from "../ui/Toast";
 
@@ -150,7 +150,7 @@ function SlideSlot({ slide, isActive, onClick, onDelete, isDraggingSlide, delete
           ) : (
             /* Fully populated */
             <g transform="translate(6, 30)">
-              <MiniChart rows={ds.rows} chartType={ds.chartType} color={NAVY} W={104} H={34} />
+              <MiniChart rows={ds.rows} chartType={ds.chartType} color={NAVY_700} W={104} H={34} />
             </g>
           )}
         </svg>

@@ -17,7 +17,7 @@ const GOLD_300 = "#C9A961";
 /* Themeable via --slide-series-* (resolves when the thumbnail is under a slide
    theme root); Editorial colours are the fallback elsewhere. Mirrors ChartRenderer. */
 const SERIES   = [
-  `var(--slide-series-1, ${NAVY})`,
+  `var(--slide-series-1, ${NAVY_700})`,  // заливка данных = navy-700 (текст/цифры = navy-900)
   `var(--slide-series-2, ${NAVY_500})`,
   `var(--slide-series-3, ${GOLD})`,
   `var(--slide-series-4, ${NAVY_300})`,
@@ -268,7 +268,7 @@ function MiniTreemap({ rows, color, W, H }: { rows: DataRow[]; color: string; W:
     .padding(1)
     (root)
     .leaves();
-  const fills = [NAVY, NAVY_700, GOLD, NAVY_500, GOLD_300, NAVY_300, NAVY_100];
+  const fills = [NAVY_700, NAVY_500, GOLD, NAVY_300, GOLD_300, NAVY_100, NAVY_700];  // navy-900 ушёл из заливок
   const r = Math.round;
   return (
     <>

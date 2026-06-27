@@ -24,7 +24,7 @@ const T3       = "#8A8B87";
    slide/deck root in SLIDES mode); the hardcoded Editorial colours are the
    fallback, so on canvas / drill-in (no theme vars) the look is unchanged. */
 const SERIES = [
-  `var(--slide-series-1, ${NAVY})`,
+  `var(--slide-series-1, ${NAVY_700})`,  // заливка данных = navy-700 (текст/цифры = navy-900, см. INK)
   `var(--slide-series-2, ${NAVY_500})`,
   `var(--slide-series-3, ${GOLD})`,
   `var(--slide-series-4, ${NAVY_300})`,
@@ -568,15 +568,16 @@ function TreemapChart({ rows, expanded, containerWidth, containerHeight }: Chart
      fallback (unchanged on canvas / non-themed contexts). On dark themes the
      fill becomes bright and the single --slide-tm-ink keeps labels readable. */
   const fills = [
-    `var(--slide-series-1, ${NAVY})`,
-    `var(--slide-series-2, ${NAVY_700})`,
+    `var(--slide-series-1, ${NAVY_700})`,  // navy-900 ушёл из заливок (остаётся только для текста)
+    `var(--slide-series-2, ${NAVY_500})`,
     `var(--slide-series-3, ${GOLD})`,
-    `var(--slide-series-4, ${NAVY_500})`,
+    `var(--slide-series-4, ${NAVY_300})`,
     `var(--slide-series-5, ${GOLD_300})`,
-    `var(--slide-series-6, ${NAVY_300})`,
-    `var(--slide-series-7, ${NAVY_100})`,
+    `var(--slide-series-6, ${NAVY_100})`,
+    `var(--slide-series-7, ${NAVY_700})`,  // повтор на самой мелкой плитке — остальные оттенки различимы
   ];
-  const textOnDark = ["#F5F2EA", "#F5F2EA", NAVY, "#F5F2EA", NAVY, NAVY, NAVY];
+  // Цвет подписи под каждую заливку: тёмные плитки → кремовый текст, светлые → navy.
+  const textOnDark = ["#F5F2EA", "#F5F2EA", NAVY, NAVY, NAVY, NAVY, "#F5F2EA"];
 
   function fmtVal(v: number) {
     if (v >= 1000) return `${(v / 1000).toFixed(1)}K`;
