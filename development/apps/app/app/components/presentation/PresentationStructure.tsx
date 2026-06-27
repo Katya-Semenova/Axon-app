@@ -126,7 +126,7 @@ function SlideSlot({ slide, isActive, onClick, onDelete, isDraggingSlide, delete
                 <text x="7" y="34" fontSize="10" fontFamily="Georgia, serif" fill={T3} fillOpacity="0.35">&ldquo;</text>
                 <foreignObject x={13} y={27} width={97} height={44}>
                   <div
-                    // @ts-ignore — xmlns needed for SVG foreignObject in React
+                    // @ts-expect-error — xmlns needed for SVG foreignObject in React
                     xmlns="http://www.w3.org/1999/xhtml"
                     style={{
                       fontFamily: "'Instrument Serif', Georgia, serif",

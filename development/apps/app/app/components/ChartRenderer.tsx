@@ -890,7 +890,7 @@ function DotMatrixChart({ rows, expanded, containerWidth, containerHeight }: Cha
   const total = rows.reduce((s, row) => s + (row.values[0] ?? 0), 0) || 1;
   const shares = rows.map(row => ((row.values[0] ?? 0) / total) * 100);
   const counts = shares.map(s => Math.floor(s));
-  let remainder = 100 - counts.reduce((s, c) => s + c, 0);
+  const remainder = 100 - counts.reduce((s, c) => s + c, 0);
   const fracs = shares.map((s, i) => ({ frac: s - Math.floor(s), idx: i }))
     .sort((a, b) => b.frac - a.frac);
   for (let i = 0; i < remainder && fracs.length; i++) {

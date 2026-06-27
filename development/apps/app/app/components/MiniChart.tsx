@@ -7,7 +7,6 @@ import type { DataRow, ChartType } from "@/lib/mockData";
 const r = roundTo;
 
 /* ── Color tokens — must match ChartRenderer.tsx exactly ── */
-const NAVY     = "#1B2840";
 const NAVY_700 = "#2A3654";
 const NAVY_500 = "#4A5878";
 const NAVY_300 = "#8892AA";
@@ -161,14 +160,13 @@ function MiniWaterfall({ rows, color, W, H }: { rows: DataRow[]; color: string; 
 }
 
 /* ── Stacked Bar ── */
-function MiniStacked({ rows, color, W, H }: { rows: DataRow[]; color: string; W: number; H: number }) {
+function MiniStacked({ rows, W, H }: { rows: DataRow[]; color: string; W: number; H: number }) {
   const data = rows.slice(0, 6);
   const maxTotal = Math.max(...data.map(r => r.values.reduce((s, v) => s + v, 0))) || 1;
   const rowH = Math.max(3, (H - 2) / data.length - 2);
   return (
     <>
       {data.map((row, i) => {
-        const total = row.values.reduce((s, v) => s + v, 0);
         let xOff = 0;
         const y = r(i * (rowH + 2));
         return (
@@ -193,7 +191,7 @@ function MiniStacked({ rows, color, W, H }: { rows: DataRow[]; color: string; W:
 }
 
 /* ── Donut ── */
-function MiniDonut({ rows, color, W, H }: { rows: DataRow[]; color: string; W: number; H: number }) {
+function MiniDonut({ rows, W, H }: { rows: DataRow[]; color: string; W: number; H: number }) {
   const cx = W / 2, cy = H / 2;
   const OR = Math.min(cx, cy) - 1, IR = OR * 0.52;
   const total = rows.reduce((s, row) => s + (row.values[0] ?? 0), 0) || 1;
@@ -255,7 +253,7 @@ function MiniScatter({ rows, color, W, H }: { rows: DataRow[]; color: string; W:
 }
 
 /* ── Treemap ── */
-function MiniTreemap({ rows, color, W, H }: { rows: DataRow[]; color: string; W: number; H: number }) {
+function MiniTreemap({ rows, W, H }: { rows: DataRow[]; color: string; W: number; H: number }) {
   if (rows.length === 0) return null;
   type TmDatum = { value?: number; children?: TmDatum[] };
   const data: TmDatum = { children: rows.map(r => ({ value: r.values[0] ?? 0 })) };
@@ -284,7 +282,7 @@ function MiniTreemap({ rows, color, W, H }: { rows: DataRow[]; color: string; W:
 }
 
 /* ── Mini Map — proportional dot-grid per region ── */
-function MiniMap({ rows, color, W, H }: { rows: DataRow[]; color: string; W: number; H: number }) {
+function MiniMap({ rows, W, H }: { rows: DataRow[]; color: string; W: number; H: number }) {
   const sorted = [...rows].sort((a, b) => (b.values[0] ?? 0) - (a.values[0] ?? 0));
   const total  = sorted.reduce((s, r) => s + (r.values[0] ?? 0), 0) || 1;
   const dotR   = 2.0;
@@ -391,12 +389,12 @@ function MiniRadar({ rows, color, W, H }: { rows: DataRow[]; color: string; W: n
 }
 
 /* ── Mini Dot Matrix — 10×10 waffle ── */
-function MiniDotMatrix({ rows, color, W, H }: { rows: DataRow[]; color: string; W: number; H: number }) {
+function MiniDotMatrix({ rows, W, H }: { rows: DataRow[]; color: string; W: number; H: number }) {
   const COLS = 10, GRID_ROWS = 10;
   const total = rows.reduce((s, r) => s + (r.values[0] ?? 0), 0) || 1;
   const shares = rows.map(r => ((r.values[0] ?? 0) / total) * 100);
   const counts = shares.map(s => Math.floor(s));
-  let remainder = 100 - counts.reduce((s, c) => s + c, 0);
+  const remainder = 100 - counts.reduce((s, c) => s + c, 0);
   const fracs = shares.map((s, i) => ({ frac: s - Math.floor(s), idx: i }))
     .sort((a, b) => b.frac - a.frac);
   for (let i = 0; i < remainder && fracs.length; i++) counts[fracs[i % fracs.length].idx]++;

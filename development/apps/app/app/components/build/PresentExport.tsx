@@ -6,7 +6,7 @@ import { MiniChart } from "../MiniChart";
 import { useWorkspaceStore, currentBoardData } from "@/lib/store";
 import type { Slide, DataSet } from "@/lib/types";
 import { PRESENTATION_THEMES } from "@/lib/types";
-import { BORDER, GOLD, NAVY, NAVY_700, T2, T3, SURFACE, SURFACE_RAISE, SURFACE_MUTED } from "../ui/tokens";
+import { BORDER, GOLD, NAVY, NAVY_700, T2, T3, SURFACE, SURFACE_RAISE } from "../ui/tokens";
 import { useTranslations } from "next-intl";
 import { authClient } from "@/lib/auth-client";
 import { BASE_PATH } from "@/lib/base-path";
@@ -516,23 +516,6 @@ function DeckReorderTray({
   );
 }
 
-/* 12px-wide flex child that shows a 2px gold vertical line when active */
-function InsertionGap({ show, onDragOver }: { show: boolean; onDragOver: () => void }) {
-  return (
-    <div
-      style={{ flexShrink: 0, width: 12, alignSelf: "stretch", position: "relative" }}
-      onDragOver={e => { e.stopPropagation(); e.preventDefault(); onDragOver(); }}
-    >
-      {show && (
-        <div style={{
-          position: "absolute", left: "50%", transform: "translateX(-50%)",
-          top: 0, bottom: 0, width: 2, background: GOLD, pointerEvents: "none",
-        }} />
-      )}
-    </div>
-  );
-}
-
 function DeckTile({
   idx, slide, ds, isDragging,
   onDragStart, onDragOver, onDragEnd,
@@ -548,7 +531,7 @@ function DeckTile({
   insertBefore: boolean;
   insertAfter: boolean;
 }) {
-  const W = 168, H = 130;
+  const W = 168;
   const serial = String(slide.serial).padStart(2, "0");
   const title  = ds?.title ?? "—";
 

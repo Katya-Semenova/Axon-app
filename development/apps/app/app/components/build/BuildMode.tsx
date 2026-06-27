@@ -7,7 +7,6 @@ import { MiniChart } from "../MiniChart";
 import { SlideArchetypeRenderer, inferArchetype, deriveSlideSummary } from "../presentation/SlideArchetypeRenderer";
 import { useWorkspaceStore } from "@/lib/store";
 import type { Slide, BuildAudience, BuildTone, DataSet, BuildMessage, SlideArchetype } from "@/lib/types";
-import { NON_CHART_ARCHETYPES } from "@/lib/types";
 import { BORDER, NAVY, T2, T3, SURFACE, SURFACE_RAISE, SURFACE_MUTED } from "../ui/tokens";
 import { useTranslations } from "next-intl";
 
@@ -152,7 +151,7 @@ export function BuildMode() {
       if (filtered.length === prev.length && added.length === 0) return prev;
       return [...filtered, ...added];
     });
-  }, [slideOrder]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [slideOrder]);
 
   const localSlides = localSlideOrder.map(id => slidesById[id]).filter(Boolean) as Slide[];
 

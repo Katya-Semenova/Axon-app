@@ -4,7 +4,7 @@ import { useRef, useEffect, useState } from "react";
 import { ChartFill } from "../ChartFill";
 import type { DataRow, ChartType } from "@/lib/mockData";
 import type { SlideArchetype } from "@/lib/types";
-import { NAVY, GOLD, T2, T3, BORDER } from "../ui/tokens";
+import { NAVY, T2, T3, BORDER } from "../ui/tokens";
 
 const mono = "'JetBrains Mono', monospace";
 const CREAM = "#F5F2EA";
@@ -298,7 +298,7 @@ function ArchQuote({ narrative, title, W, H }: ArchProps) {
       {/* Quote body — Playfair Display italic, theme title ink */}
       <foreignObject x={44} y={H * 0.18} width={W - 72} height={H * 0.66}>
         <div
-          // @ts-ignore — xmlns needed for SVG foreignObject in React
+          // @ts-expect-error — xmlns needed for SVG foreignObject in React
           xmlns="http://www.w3.org/1999/xhtml"
           style={{
             fontFamily: "'Playfair Display', 'Instrument Serif', Georgia, serif",

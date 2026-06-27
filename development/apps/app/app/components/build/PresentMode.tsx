@@ -5,7 +5,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ChartFill } from "../ChartFill";
 import { useWorkspaceStore } from "@/lib/store";
 import type { Slide } from "@/lib/types";
-import { T3 } from "../ui/tokens";
 import { useTranslations } from "next-intl";
 
 
