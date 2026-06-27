@@ -333,30 +333,31 @@ export const PRESENTATION_THEMES: PresentationTheme[] = [
       "--slide-font-display": "var(--font-inter), system-ui, sans-serif",
       "--slide-font-body":    "var(--font-inter), system-ui, sans-serif",
       "--slide-font-mono":    "'JetBrains Mono', monospace",
-      "--slide-title":        "#F4F6FA",
-      "--slide-text":         "#9AA6BA",
-      "--slide-accent":       "#D4A94E",
-      /* Raycast pass (2026-06-27): deeper neutral near-black, more air, rounded 12. */
-      "--slide-bg":           "#0A0B0F",
-      "--slide-border":       "#23272F",
-      "--slide-muted":        "#14171E",
-      "--slide-radius":       "12px",
+      "--slide-title":        "#F4F4F8",
+      "--slide-text":         "#9B9BB0",
+      /* Raycast violet (по рефам 2026-06-27): фиолет-акцент, почти-чёрная база,
+         угольные карточки, воздух, скругление 14. */
+      "--slide-accent":       "#9B87F5",
+      "--slide-bg":           "#0D0D12",
+      "--slide-border":       "#262630",
+      /* Полупрозрачная фиолетовая подложка инсайта — лёгкое «стекло» на чёрном. */
+      "--slide-muted":        "rgba(155,135,245,0.10)",
+      "--slide-radius":       "14px",
       "--slide-block-pad":    "26px 40px",
       "--slide-title-align":  "left",
       /* Soft floating card on near-black (read by SlideEditor/PublicDeckView). */
-      "--slide-shadow":       "0 18px 44px rgba(0,0,0,0.5)",
-      /* Bright categorical palette readable on the near-black bg — Editorial's
-         dark navies would vanish here (Slides rework: web-dashboard palette). */
-      "--slide-series-1":     "#D4A94E",
-      "--slide-series-2":     "#6F9CE0",
-      "--slide-series-3":     "#4FB6A0",
+      "--slide-shadow":       "0 18px 44px rgba(8,6,24,0.55)",
+      /* Прохладная палитра с фиолетом-героем, читается на почти-чёрном. */
+      "--slide-series-1":     "#9B87F5",
+      "--slide-series-2":     "#6FA8E0",
+      "--slide-series-3":     "#5FC9B0",
       "--slide-series-4":     "#C98AD6",
-      "--slide-series-5":     "#E2B85E",
-      "--slide-series-6":     "#8FA6C8",
-      "--slide-series-7":     "#B0D67E",
-      "--slide-tm-ink":       "#0A0B0F",
-      /* Gridlines/axes/spokes — dim but readable on near-black. */
-      "--slide-axis":         "#4F5A70",
+      "--slide-series-5":     "#B6AEF2",
+      "--slide-series-6":     "#E0926A",
+      "--slide-series-7":     "#7FB37F",
+      "--slide-tm-ink":       "#0D0D12",
+      /* Gridlines/axes/spokes — dim cool grey on near-black. */
+      "--slide-axis":         "#46465A",
     },
   },
   {
@@ -370,30 +371,30 @@ export const PRESENTATION_THEMES: PresentationTheme[] = [
       "--slide-font-display": "var(--font-inter), system-ui, sans-serif",
       "--slide-font-body":    "var(--font-inter), system-ui, sans-serif",
       "--slide-font-mono":    "'JetBrains Mono', monospace",
-      "--slide-title":        "#10151C",
-      "--slide-text":         "#54607A",
-      "--slide-accent":       "#B8862E",
-      /* Raycast pass (2026-06-27): cleaner near-white, more air, rounded 12. */
-      "--slide-bg":           "#FAFBFD",
-      "--slide-border":       "#DEE3EC",
-      "--slide-muted":        "#EEF1F6",
-      "--slide-radius":       "12px",
+      "--slide-title":        "#14141C",
+      "--slide-text":         "#54546A",
+      /* Raycast violet, светлый: фиолет-акцент, near-white, воздух, скругление 14. */
+      "--slide-accent":       "#7A5CE0",
+      "--slide-bg":           "#FAFAFD",
+      "--slide-border":       "#E4E2F0",
+      /* Полупрозрачная фиолетовая подложка инсайта на белом. */
+      "--slide-muted":        "rgba(122,92,224,0.08)",
+      "--slide-radius":       "14px",
       "--slide-block-pad":    "26px 40px",
       "--slide-title-align":  "left",
       /* Soft floating card on near-white. */
-      "--slide-shadow":       "0 14px 36px rgba(40,50,80,0.12)",
-      /* Saturated-but-dark categorical palette — all dark enough for the light
-         --slide-tm-ink to stay readable on filled tiles. */
-      "--slide-series-1":     "#1B2840",
-      "--slide-series-2":     "#2F5C96",
-      "--slide-series-3":     "#8A6420",
-      "--slide-series-4":     "#5E3D86",
-      "--slide-series-5":     "#1F6E5B",
-      "--slide-series-6":     "#44506A",
-      "--slide-series-7":     "#6E4A1E",
-      "--slide-tm-ink":       "#F7F9FB",
-      /* Gridlines/axes/spokes — clear grey on the light bg. */
-      "--slide-axis":         "#BCC6D4",
+      "--slide-shadow":       "0 14px 36px rgba(60,40,120,0.12)",
+      /* Тёмная фиолет-семья — читается под светлый tm-ink на заливках. */
+      "--slide-series-1":     "#7A5CE0",
+      "--slide-series-2":     "#2F6FB0",
+      "--slide-series-3":     "#1F8A74",
+      "--slide-series-4":     "#9A4FB0",
+      "--slide-series-5":     "#5A4CC0",
+      "--slide-series-6":     "#C06A3E",
+      "--slide-series-7":     "#3E8A4E",
+      "--slide-tm-ink":       "#FAFAFD",
+      /* Gridlines/axes/spokes — clear cool grey on light bg. */
+      "--slide-axis":         "#C8C4DC",
     },
   },
 ];
