@@ -125,15 +125,16 @@ function LollipopChart({ rows, expanded, containerWidth, containerHeight }: Char
           fill={i === lastIdx ? ACCENT : SERIES[1]} />
       ))}
       {data.length > 0 && (
-        <text x={r(xv(lastIdx))} y={r(yv(data[lastIdx]) - currentDotR - 6)}
-          textAnchor="middle" fontSize={heroSize}
+        <text x={r(xv(lastIdx))} y={r(Math.max(pt + heroSize, yv(data[lastIdx]) - currentDotR - 6))}
+          textAnchor="end" fontSize={heroSize}
           fontFamily={SERIF_FAMILY} fill={ACCENT}>
           {data[lastIdx]}
         </text>
       )}
       {labels.map((l, i) => i % step === 0 && (
-        <text key={i} x={r(xv(i))} y={H - 6} textAnchor="middle" fontSize="10"
-          fill={INK_FAINT} fontFamily={MONO_FAMILY} fontWeight="500">{l}</text>
+        <text key={i} x={r(xv(i))} y={H - 6}
+          textAnchor={i === 0 ? "start" : i === lastIdx ? "end" : "middle"}
+          fontSize="10" fill={INK_FAINT} fontFamily={MONO_FAMILY} fontWeight="500">{l}</text>
       ))}
     </svg>
   );
@@ -172,8 +173,8 @@ function SplineAreaChart({ rows, expanded, containerWidth, containerHeight }: Ch
         <>
           <circle cx={r(last.x)} cy={r(last.y)} r={expanded ? 5 : 4} fill={ACCENT} />
           {data.length > 0 && (
-            <text x={r(last.x)} y={r(last.y - (expanded ? 12 : 9))}
-              textAnchor="middle" fontSize={expanded ? 18 : 13}
+            <text x={r(last.x)} y={r(Math.max(pt + (expanded ? 16 : 12), last.y - (expanded ? 12 : 9)))}
+              textAnchor="end" fontSize={expanded ? 18 : 13}
               fontFamily={SERIF_FAMILY} fill={ACCENT}>
               {data[data.length - 1]}
             </text>
@@ -181,8 +182,9 @@ function SplineAreaChart({ rows, expanded, containerWidth, containerHeight }: Ch
         </>
       )}
       {labels.map((l, i) => i % step === 0 && (
-        <text key={i} x={r(pts[i]?.x ?? 0)} y={H - 4} textAnchor="middle" fontSize="10"
-          fill={INK_FAINT} fontFamily={MONO_FAMILY} fontWeight="500">{l}</text>
+        <text key={i} x={r(pts[i]?.x ?? 0)} y={H - 4}
+          textAnchor={i === 0 ? "start" : i === data.length - 1 ? "end" : "middle"}
+          fontSize="10" fill={INK_FAINT} fontFamily={MONO_FAMILY} fontWeight="500">{l}</text>
       ))}
     </svg>
   );
@@ -380,8 +382,9 @@ function CleanColumnsChart({ rows, expanded, containerWidth, containerHeight }: 
             <rect x={r(x - barW / 2)} y={r(y)} width={r(barW)} height={r(bh)}
               fill={isMax ? ACCENT : SERIES[1]} />
             {i % bStep === 0 && (
-              <text x={r(x)} y={H - 4} textAnchor="middle" fontSize="10"
-                fill={INK_FAINT} fontFamily={MONO_FAMILY} fontWeight="500">{labels[i]}</text>
+              <text x={r(x)} y={H - 4}
+                textAnchor={i === 0 ? "start" : i === n - 1 ? "end" : "middle"}
+                fontSize="10" fill={INK_FAINT} fontFamily={MONO_FAMILY} fontWeight="500">{labels[i]}</text>
             )}
           </g>
         );
@@ -392,7 +395,7 @@ function CleanColumnsChart({ rows, expanded, containerWidth, containerHeight }: 
 
 /* ── Stacked Horizontal Bar ───────────────────────────── */
 function StackedBarChart({ rows, columns, expanded, containerWidth, containerHeight }: ChartProps) {
-  const pl = 90, pr = 36, pt = 26, rowH = 22, gap = 14;
+  const pl = 90, pr = 56, pt = 26, rowH = 22, gap = 14;  // pr шире — число-итог в конце строки не режется
   const W = containerWidth ?? 280;
   const H = containerHeight ?? (pt + rows.length * (rowH + gap) - gap + 10);
   const plotW = W - pl - pr;
@@ -490,14 +493,15 @@ function WaterfallChart({ rows, expanded, containerWidth, containerHeight }: Cha
             <rect x={r(x)} y={r(Math.min(y1, y2))} width={r(barW)} height={r(bh)}
               fill={color} />
             {!b.isTot && Math.abs(y2 - y1) > 12 && (
-              <text x={r(x + barW / 2)} y={r(Math.min(y1, y2) - 4)} textAnchor="middle" fontSize="9"
+              <text x={r(x + barW / 2)} y={r(Math.max(pt + 8, Math.min(y1, y2) - 4))} textAnchor="middle" fontSize="9"
                 fontFamily={MONO_FAMILY} fill={color} fontWeight="500">
                 {b.delta > 0 ? `+${b.delta}` : b.delta}
               </text>
             )}
             {i % bStep === 0 && (
-              <text x={r(x + barW / 2)} y={H - 6} textAnchor="middle" fontSize="9"
-                fill={INK_FAINT} fontFamily={MONO_FAMILY} fontWeight="500">
+              <text x={r(x + barW / 2)} y={H - 6}
+                textAnchor={i === 0 ? "start" : i === n - 1 ? "end" : "middle"}
+                fontSize="9" fill={INK_FAINT} fontFamily={MONO_FAMILY} fontWeight="500">
                 {rows[i].label.slice(0, 6)}
               </text>
             )}
@@ -539,11 +543,14 @@ function ScatterPlotChart({ rows, columns, expanded, containerWidth, containerHe
         const cx = xv(row.values[0] ?? 0);
         const cy = yv(row.values[1] ?? 0);
         const fill = i === 0 ? ACCENT : (i % 2 === 0 ? SERIES[0] : SERIES[1]);
+        const nearRight = cx > W - 64;  // у правого края подпись растёт влево, иначе обрежется
         return (
           <g key={i}>
             <circle cx={cx} cy={cy} r={i === 0 ? 7 : 5.5} fill={fill} />
             {expanded && (
-              <text x={cx + 10} y={cy + 4} fontSize="9.5" fill={INK_MUTED} fontFamily={SANS_FAMILY}>
+              <text x={nearRight ? cx - 9 : cx + 9} y={cy + 4}
+                textAnchor={nearRight ? "end" : "start"}
+                fontSize="9.5" fill={INK_MUTED} fontFamily={SANS_FAMILY}>
                 {row.label}
               </text>
             )}
