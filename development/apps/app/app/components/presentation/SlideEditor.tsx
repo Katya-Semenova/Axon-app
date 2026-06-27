@@ -408,7 +408,7 @@ function SummaryBlock({
           rows={2}
           style={{
             width: "100%",
-            fontFamily: "var(--slide-font-body)",
+            fontFamily: "var(--slide-font-display)",
             fontSize: 16.5, fontWeight: 500, lineHeight: 1.4,
             color: "var(--slide-title)",
             background: "transparent",
@@ -420,7 +420,7 @@ function SummaryBlock({
           onClick={() => setEditing(true)}
           title={t("clickToEdit")}
           style={{
-            fontFamily: "var(--slide-font-body)",
+            fontFamily: "var(--slide-font-display)",
             fontSize: 16.5, fontWeight: 500, lineHeight: 1.4,
             color: "var(--slide-title)",
             cursor: "text",
