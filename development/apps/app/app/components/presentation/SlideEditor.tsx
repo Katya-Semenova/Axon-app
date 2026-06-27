@@ -298,7 +298,8 @@ export function SlideEditor({ saveButton }: { saveButton?: React.ReactNode }) {
               {/* ── Block 3: Chart — just the visualization ── */}
               <div style={{
                 flex: 1, minHeight: 0,
-                padding: "14px 32px 10px",
+                /* Larger top pad (24) = clear breath between insight and chart. */
+                padding: "24px 32px 12px",
                 background: slideBg,
                 display: "flex", flexDirection: "column",
                 overflow: "hidden",
@@ -384,7 +385,9 @@ function SummaryBlock({
   return (
     <div style={{
       flexShrink: 0,
-      margin: "14px 28px 4px",
+      /* Vertical rhythm (2026-06-27): clear gap after the title (top 22) and a
+         larger breath before the chart (bottom 6 + chart block's top pad). */
+      margin: "22px 28px 6px",
       background: "var(--slide-muted)",
       borderLeft: "4px solid var(--slide-accent)",
       padding: "18px 22px",
