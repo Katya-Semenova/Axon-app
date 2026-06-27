@@ -15,7 +15,7 @@ import type {
 } from "@/lib/types";
 import type { ParsedTable, RawCell } from "@/lib/file-parsing";
 import { profileTable, parseNumeric, type ColumnProfile } from "./column-types";
-import { pickChartType, pickNumericMatrixChart, isWideChart } from "./chart-rules";
+import { pickChartType, pickNumericMatrixChart, isWideChart, metricLooksShare } from "./chart-rules";
 import { layoutPositions } from "./layout";
 
 /* Капы — держим доску читаемой, а вкладку — отзывчивой. */
@@ -145,7 +145,9 @@ function singleMetricByDim(
   // Категория: сумма метрики по категории, топ-N.
   const agg = aggregateByCategory(table, dim, metric);
   const rows = agg.map((a, i) => row(`r${i + 1}`, a.label, r2(a.sum)));
-  const chart = pickChartType("category", rows.length, 1);
+  // Складываемая величина (а не ставка/%) → Donut честен; иначе Radar/Treemap/Lollipop.
+  const additive = !metricLooksShare(metric.name, table.rows.map((r) => r[metric.index] ?? null));
+  const chart = pickChartType("category", rows.length, 1, additive);
   return dataInsight(serial, `${metric.name} · ${dim.name}`, chart, [metric.name], rows, ratio);
 }
 
