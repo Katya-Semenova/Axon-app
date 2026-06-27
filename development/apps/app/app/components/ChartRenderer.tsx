@@ -620,18 +620,18 @@ function TreemapChart({ rows, expanded, containerWidth, containerHeight }: Chart
         return (
           <g key={i}>
             <rect x={r(x0)} y={r(y0)} width={r(lw)} height={r(lh)} fill={fill} />
-            {lh >= 20 && lw >= 20 && (
+            {lh >= 26 && lw >= 24 && (
               <text
-                x={r(x0 + 6)} y={r(y0 + 14)}
-                fontSize={Math.min(11, lw * 0.22)}
+                x={r(x0 + 7)} y={r(y0 + 19)}
+                fontSize={Math.min(16, lw * 0.30)}
                 fontWeight="500" fill={ink} fontFamily={SANS_FAMILY}>
                 {lbl}
               </text>
             )}
-            {lh >= 32 && lw >= 30 && (
+            {lh >= 44 && lw >= 40 && (
               <text
-                x={r(x0 + 6)} y={r(y0 + 28)}
-                fontSize={Math.min(13, lw * 0.18)}
+                x={r(x0 + 7)} y={r(y0 + 38)}
+                fontSize={Math.min(19, lw * 0.26)}
                 fill={ink} fillOpacity="0.78" fontFamily={SERIF_FAMILY}>
                 {fmtVal(val)}
               </text>
@@ -682,11 +682,11 @@ function HeatmapChart({ rows, columns, expanded, containerWidth, containerHeight
   const nRows = rows.length;
   const nCols = columns.length || Math.max(...rows.map(row => row.values.length), 1);
 
-  /* Y-axis label width — scales to longest label, capped at 56 px */
+  /* Y-axis label width — scales to longest label, capped (шире под крупный шрифт) */
   const maxLabelLen = Math.max(...rows.map(row => row.label.length), 3);
-  const pl = Math.max(28, Math.min(56, Math.round(maxLabelLen * 5.5 + 4)));
-  const pb = 20;  // X-axis labels
-  const pt = 18;  // top (legend + breathing room)
+  const pl = Math.max(36, Math.min(84, Math.round(maxLabelLen * 7 + 6)));
+  const pb = 24;  // X-axis labels (крупнее)
+  const pt = 20;  // top (legend + breathing room)
   const pr = 8;
 
   const gridW = W - pl - pr;
@@ -725,21 +725,21 @@ function HeatmapChart({ rows, columns, expanded, containerWidth, containerHeight
 
       {/* ── Legend ── */}
       <rect x={lgX} y={lgY} width={lgW} height={lgH} fill="url(#hm-grad)" />
-      <text x={lgX} y={lgY + lgH + 7}
-        fontSize="6" fontFamily={MONO_FAMILY} fill={INK_FAINT} textAnchor="start">
+      <text x={lgX} y={lgY + lgH + 9}
+        fontSize="9" fontFamily={MONO_FAMILY} fill={INK_FAINT} textAnchor="start">
         {fmtV(minVal)}
       </text>
-      <text x={lgX + lgW} y={lgY + lgH + 7}
-        fontSize="6" fontFamily={MONO_FAMILY} fill={INK_FAINT} textAnchor="end">
+      <text x={lgX + lgW} y={lgY + lgH + 9}
+        fontSize="9" fontFamily={MONO_FAMILY} fill={INK_FAINT} textAnchor="end">
         {fmtV(maxVal)}
       </text>
 
       {/* ── Y-axis labels ── */}
       {rows.map((row, ri) => (
         <text key={`yl-${ri}`}
-          x={pl - 5} y={r(pt + ri * cellH + cellH / 2 + 3.5)}
+          x={pl - 6} y={r(pt + ri * cellH + cellH / 2 + 4.5)}
           textAnchor="end"
-          fontSize={Math.min(9.5, cellH * 0.42)}
+          fontSize={Math.min(14, cellH * 0.5)}
           fontFamily={SANS_FAMILY} fill={INK_MUTED}>
           {row.label}
         </text>
@@ -748,9 +748,9 @@ function HeatmapChart({ rows, columns, expanded, containerWidth, containerHeight
       {/* ── X-axis labels ── */}
       {columns.map((col, ci) => (
         <text key={`xl-${ci}`}
-          x={r(pl + ci * cellW + cellW / 2)} y={H - 4}
+          x={r(pl + ci * cellW + cellW / 2)} y={H - 6}
           textAnchor="middle"
-          fontSize={Math.min(8.5, cellW * 0.28)}
+          fontSize={Math.min(13, cellW * 0.34)}
           fontFamily={SANS_FAMILY} fill={INK_MUTED}>
           {col}
         </text>
@@ -768,11 +768,11 @@ function HeatmapChart({ rows, columns, expanded, containerWidth, containerHeight
           return (
             <g key={`${ri}-${ci}`}>
               <rect x={cx} y={cy} width={cw} height={ch} fill={heatFill(tv)} />
-              {cw > 18 && ch > 9 && (
+              {cw > 26 && ch > 14 && (
                 <text
-                  x={r(cx + cw / 2)} y={r(cy + ch / 2 + 3.5)}
+                  x={r(cx + cw / 2)} y={r(cy + ch / 2 + 4.5)}
                   textAnchor="middle"
-                  fontSize={Math.min(9, cw * 0.2, ch * 0.38)}
+                  fontSize={Math.min(13, cw * 0.26, ch * 0.5)}
                   fontFamily={MONO_FAMILY} fill={heatInk(tv)}>
                   {fmtV(v)}
                 </text>
