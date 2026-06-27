@@ -333,15 +333,18 @@ export const PRESENTATION_THEMES: PresentationTheme[] = [
       "--slide-font-display": "var(--font-inter), system-ui, sans-serif",
       "--slide-font-body":    "var(--font-inter), system-ui, sans-serif",
       "--slide-font-mono":    "'JetBrains Mono', monospace",
-      "--slide-title":        "#F2F5FA",
-      "--slide-text":         "#A6B2C4",
+      "--slide-title":        "#F4F6FA",
+      "--slide-text":         "#9AA6BA",
       "--slide-accent":       "#D4A94E",
-      "--slide-bg":           "#0E1117",
-      "--slide-border":       "#232C3A",
-      "--slide-muted":        "#1A212C",
-      "--slide-radius":       "8px",
-      "--slide-block-pad":    "22px 34px",
+      /* Raycast pass (2026-06-27): deeper neutral near-black, more air, rounded 12. */
+      "--slide-bg":           "#0A0B0F",
+      "--slide-border":       "#23272F",
+      "--slide-muted":        "#14171E",
+      "--slide-radius":       "12px",
+      "--slide-block-pad":    "26px 40px",
       "--slide-title-align":  "left",
+      /* Soft floating card on near-black (read by SlideEditor/PublicDeckView). */
+      "--slide-shadow":       "0 18px 44px rgba(0,0,0,0.5)",
       /* Bright categorical palette readable on the near-black bg — Editorial's
          dark navies would vanish here (Slides rework: web-dashboard palette). */
       "--slide-series-1":     "#D4A94E",
@@ -351,10 +354,9 @@ export const PRESENTATION_THEMES: PresentationTheme[] = [
       "--slide-series-5":     "#E2B85E",
       "--slide-series-6":     "#8FA6C8",
       "--slide-series-7":     "#B0D67E",
-      "--slide-tm-ink":       "#10151C",
-      /* Gridlines/axes/spokes — brighter than the structural border so they
-         read on the near-black bg (border #232C3A would vanish). */
-      "--slide-axis":         "#5A6A85",
+      "--slide-tm-ink":       "#0A0B0F",
+      /* Gridlines/axes/spokes — dim but readable on near-black. */
+      "--slide-axis":         "#4F5A70",
     },
   },
   {
@@ -369,14 +371,17 @@ export const PRESENTATION_THEMES: PresentationTheme[] = [
       "--slide-font-body":    "var(--font-inter), system-ui, sans-serif",
       "--slide-font-mono":    "'JetBrains Mono', monospace",
       "--slide-title":        "#10151C",
-      "--slide-text":         "#4A586B",
+      "--slide-text":         "#54607A",
       "--slide-accent":       "#B8862E",
-      "--slide-bg":           "#F7F9FB",
-      "--slide-border":       "#DCE3EC",
-      "--slide-muted":        "#EAEFF5",
-      "--slide-radius":       "8px",
-      "--slide-block-pad":    "22px 34px",
+      /* Raycast pass (2026-06-27): cleaner near-white, more air, rounded 12. */
+      "--slide-bg":           "#FAFBFD",
+      "--slide-border":       "#DEE3EC",
+      "--slide-muted":        "#EEF1F6",
+      "--slide-radius":       "12px",
+      "--slide-block-pad":    "26px 40px",
       "--slide-title-align":  "left",
+      /* Soft floating card on near-white. */
+      "--slide-shadow":       "0 14px 36px rgba(40,50,80,0.12)",
       /* Saturated-but-dark categorical palette — all dark enough for the light
          --slide-tm-ink to stay readable on filled tiles. */
       "--slide-series-1":     "#1B2840",
