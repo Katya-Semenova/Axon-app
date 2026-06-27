@@ -6,7 +6,7 @@ import { MiniChart } from "../MiniChart";
 import { useWorkspaceStore, currentBoardData } from "@/lib/store";
 import type { Slide, DataSet } from "@/lib/types";
 import { PRESENTATION_THEMES } from "@/lib/types";
-import { BORDER, GOLD, NAVY, T2, T3, SURFACE, SURFACE_RAISE, SURFACE_MUTED } from "../ui/tokens";
+import { BORDER, GOLD, NAVY, NAVY_700, T2, T3, SURFACE, SURFACE_RAISE, SURFACE_MUTED } from "../ui/tokens";
 import { useTranslations } from "next-intl";
 import { authClient } from "@/lib/auth-client";
 import { BASE_PATH } from "@/lib/base-path";
@@ -633,7 +633,7 @@ function DeckTile({
               </div>
             </foreignObject>
           ) : ds && ds.rows.length > 0 ? (
-            <MiniChart rows={ds.rows} chartType={ds.chartType} color={NAVY} W={W - 20} H={60} />
+            <MiniChart rows={ds.rows} chartType={ds.chartType} color={NAVY_700} W={W - 20} H={60} />
           ) : (
             <text x={(W - 20) / 2} y="32" textAnchor="middle"
               fontSize="9" fill={T3} fontFamily={mono} fillOpacity="0.7">
