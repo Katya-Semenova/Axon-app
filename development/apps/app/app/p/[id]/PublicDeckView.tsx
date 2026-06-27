@@ -76,28 +76,37 @@ export function PublicDeckView({ deck }: { deck: PublicDeck | null }) {
             borderRadius: "var(--slide-radius)",
           }}
         >
-          {/* Заголовок слайда — название дата-сета + краткое summary (как в редакторе) */}
-          {(ds?.title || summary) && (
-            <div style={{ padding: "22px 32px 10px", flexShrink: 0 }}>
-              {ds?.title && (
-                <h2 style={{
-                  margin: 0, fontFamily: "var(--slide-font-display)", color: "var(--slide-title)",
-                  fontSize: 24, lineHeight: 1.15, fontWeight: 500,
-                }}>
-                  {ds.title}
-                </h2>
-              )}
-              {summary && (
-                <p style={{
-                  margin: "6px 0 0", fontFamily: "var(--slide-font-body)", color: "var(--slide-text)",
-                  fontSize: 13, lineHeight: 1.45,
-                }}>
-                  {summary}
-                </p>
-              )}
+          {/* Block 1: заголовок слайда */}
+          {ds?.title && (
+            <div style={{ padding: "22px 32px 0", flexShrink: 0 }}>
+              <h2 style={{
+                margin: 0, fontFamily: "var(--slide-font-display)", color: "var(--slide-title)",
+                fontSize: 24, lineHeight: 1.15, fontWeight: 500,
+              }}>
+                {ds.title}
+              </h2>
             </div>
           )}
-          <div style={{ flex: 1, minHeight: 0, padding: "0 24px 16px" }}>
+          {/* Block 2: summary-врез — тот же приём, что в редакторе (SlideEditor SummaryBlock):
+              приглушённый фон + 4px акцентная вертикаль + заголовочный шрифт. */}
+          {summary && (
+            <div style={{
+              flexShrink: 0,
+              margin: "18px 28px 6px",
+              background: "var(--slide-muted)",
+              borderLeft: "4px solid var(--slide-accent)",
+              padding: "14px 20px",
+            }}>
+              <div style={{
+                fontFamily: "var(--slide-font-display)", fontSize: 15.5, fontWeight: 500,
+                lineHeight: 1.4, color: "var(--slide-title)",
+              }}>
+                {summary}
+              </div>
+            </div>
+          )}
+          {/* Block 3: график */}
+          <div style={{ flex: 1, minHeight: 0, padding: "18px 24px 16px" }}>
             <SlideArchetypeRenderer
               rows={ds?.rows ?? []}
               columns={ds?.columns ?? []}
