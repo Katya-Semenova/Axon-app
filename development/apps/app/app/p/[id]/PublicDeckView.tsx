@@ -74,6 +74,8 @@ export function PublicDeckView({ deck }: { deck: PublicDeck | null }) {
             background: "var(--slide-bg)",
             border: "1px solid var(--slide-border)",
             borderRadius: "var(--slide-radius)",
+            /* Soft theme floats the card; other themes leave this unset → none. */
+            boxShadow: "var(--slide-shadow, none)",
           }}
         >
           {/* Block 1: заголовок слайда */}
