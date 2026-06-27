@@ -1,4 +1,9 @@
 {
+  "NotFound": {
+    "title": "Page not found",
+    "description": "The link may be outdated, or the address was mistyped.",
+    "cta": "Back to home"
+  },
   "Public": {
     "unavailable": "Presentation unavailable",
     "unavailableHint": "The link is invalid, has been revoked, or the presentation was removed.",
