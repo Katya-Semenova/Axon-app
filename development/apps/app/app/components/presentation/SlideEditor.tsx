@@ -409,7 +409,7 @@ function SummaryBlock({
           style={{
             width: "100%",
             fontFamily: "var(--slide-font-body)",
-            fontSize: 19, fontWeight: 500, lineHeight: 1.4,
+            fontSize: 16.5, fontWeight: 500, lineHeight: 1.4,
             color: "var(--slide-title)",
             background: "transparent",
             border: "none", outline: "none", resize: "vertical",
@@ -421,7 +421,7 @@ function SummaryBlock({
           title={t("clickToEdit")}
           style={{
             fontFamily: "var(--slide-font-body)",
-            fontSize: 19, fontWeight: 500, lineHeight: 1.4,
+            fontSize: 16.5, fontWeight: 500, lineHeight: 1.4,
             color: "var(--slide-title)",
             cursor: "text",
           }}
