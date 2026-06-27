@@ -261,6 +261,8 @@ export function SlideEditor({ saveButton }: { saveButton?: React.ReactNode }) {
                 display: "flex", flexDirection: "column",
                 border: "1px solid var(--slide-border)",
                 borderRadius: "var(--slide-radius)",
+                /* Soft theme floats the card; other themes leave this unset → none. */
+                boxShadow: "var(--slide-shadow, none)",
                 background: slideBg,
                 overflow: "hidden",
               }}

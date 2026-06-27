@@ -293,20 +293,36 @@ export const PRESENTATION_THEMES: PresentationTheme[] = [
   {
     id: "soft",
     label: "Soft",
-    blurb: "Pinterest · rounded · airy",
+    blurb: "Pastel · rounded · airy",
     vars: {
-      "--slide-font-display": "'Fraunces', 'Playfair Display', Georgia, serif",
+      "--slide-font-display": "var(--font-inter), system-ui, sans-serif",
       "--slide-font-body":    "var(--font-inter), system-ui, sans-serif",
-      "--slide-font-mono":    "var(--font-inter), system-ui, sans-serif",
-      "--slide-title":        "#3A2E2A",
-      "--slide-text":         "#7A6A60",
-      "--slide-accent":       "#C97B5A",
-      "--slide-bg":           "#FBF6EF",
-      "--slide-border":       "#EBE0D4",
-      "--slide-muted":        "#F1E8DE",
-      "--slide-radius":       "16px",
-      "--slide-block-pad":    "26px 36px",
-      "--slide-title-align":  "center",
+      "--slide-font-mono":    "'JetBrains Mono', monospace",
+      "--slide-title":        "#232135",
+      "--slide-text":         "#6E6B85",
+      /* Lime is the signature accent (insight border, focus). NOT used as a
+         chart fill — too low-contrast on white; series carry the pastels. */
+      "--slide-accent":       "#C6F000",
+      "--slide-bg":           "#FFFFFF",
+      "--slide-border":       "#ECEAF6",
+      /* Translucent lavender — soft "frosted" insight background on white. */
+      "--slide-muted":        "rgba(155,140,239,0.10)",
+      "--slide-radius":       "18px",
+      "--slide-block-pad":    "26px 38px",
+      "--slide-title-align":  "left",
+      /* Soft floating shadow on the slide card (read by SlideEditor). */
+      "--slide-shadow":       "0 12px 32px rgba(120,110,180,0.18)",
+      /* Candy pastel series from the references — readable on white; hero is a
+         pastel purple (not lime). */
+      "--slide-series-1":     "#9B8CEF",
+      "--slide-series-2":     "#F2A8CE",
+      "--slide-series-3":     "#84C9F2",
+      "--slide-series-4":     "#7FD8C0",
+      "--slide-series-5":     "#B6AEF2",
+      "--slide-series-6":     "#F6B79C",
+      "--slide-series-7":     "#EFD78C",
+      "--slide-tm-ink":       "#232135",
+      "--slide-axis":         "#D9D5EC",
     },
   },
   {
