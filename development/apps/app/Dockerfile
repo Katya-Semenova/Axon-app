@@ -17,6 +17,9 @@ ENV NEXT_PUBLIC_YM_ID=${NEXT_PUBLIC_YM_ID}
 ENV DATABASE_URL="postgresql://placeholder:placeholder@localhost:5432/placeholder"
 RUN npx prisma generate --schema=apps/app/prisma/schema.prisma
 # Сборка только сервиса (standalone — см. apps/app/next.config.ts).
+# Поднимаем потолок кучи Node на время сборки: на боксе 1 ГБ дефолтный лимит V8
+# мал, и next build падал с "JS heap out of memory" (2026-06-27). RAM+swap покрывают.
+ENV NODE_OPTIONS=--max-old-space-size=2048
 RUN npm run build -w axon-app
 
 FROM node:20-alpine AS runner
