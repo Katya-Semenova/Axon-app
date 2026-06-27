@@ -395,10 +395,16 @@ function CleanColumnsChart({ rows, expanded, containerWidth, containerHeight }: 
 
 /* ── Stacked Horizontal Bar ───────────────────────────── */
 function StackedBarChart({ rows, columns, expanded, containerWidth, containerHeight }: ChartProps) {
-  const pl = 90, pr = 56, pt = 26, rowH = 22, gap = 14;  // pr шире — число-итог в конце строки не режется
+  const pl = 90, pr = 56, pt = 26;  // pr шире — число-итог в конце строки не режется
   const W = containerWidth ?? 280;
-  const H = containerHeight ?? (pt + rows.length * (rowH + gap) - gap + 10);
+  const DEFAULT_SLOT = 36;          // высота строки 22 + зазор 14 — поведение по умолчанию
+  const bottomPad = 10;
+  const H = containerHeight ?? (pt + rows.length * DEFAULT_SLOT + bottomPad);
   const plotW = W - pl - pr;
+  // Строка подстраивается под высоту ящика — все строки влезают, ничего не режется снизу.
+  const slot = Math.max(8, (H - pt - bottomPad) / Math.max(1, rows.length));
+  const gap  = Math.min(14, slot * 0.32);
+  const rowH = Math.max(4, slot - gap);
 
   const maxTotal = Math.max(...rows.map(row => row.values.reduce((s, v) => s + v, 0)));
 
@@ -411,7 +417,7 @@ function StackedBarChart({ rows, columns, expanded, containerWidth, containerHei
         </g>
       ))}
       {rows.map((row, i) => {
-        const y = pt + i * (rowH + gap);
+        const y = pt + i * slot;
         const total = row.values.reduce((s, v) => s + v, 0);
         let xOff = pl;
         return (
