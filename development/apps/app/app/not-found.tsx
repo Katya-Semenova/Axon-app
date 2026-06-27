@@ -16,7 +16,9 @@ export default function NotFound() {
 
   return (
     <main className="min-h-screen flex flex-col items-center justify-center px-6 text-center">
-      <div className="font-display text-t1 leading-none text-[120px] sm:text-[168px]">404</div>
+      <div className="font-display text-t1 leading-none text-[120px] sm:text-[168px]">
+        4<span className="text-gold-500">0</span>4
+      </div>
       <h1 className="font-display text-t1 text-[26px] sm:text-[32px] mt-2 mb-3">
         {t("title")}
       </h1>
