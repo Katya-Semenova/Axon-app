@@ -224,7 +224,7 @@ export interface Slide {
    presentation root. Consumed in SLIDES mode; the picker lives in the right
    rail (section «Тема»). */
 
-export type PresentationThemeId = "editorial" | "soft" | "web" | "web-light";
+export type PresentationThemeId = "editorial" | "swiss" | "soft" | "web" | "web-light";
 
 export interface PresentationTheme {
   id: PresentationThemeId;
@@ -256,6 +256,38 @@ export const PRESENTATION_THEMES: PresentationTheme[] = [
       "--slide-radius":       "0px",
       "--slide-block-pad":    "18px 32px",
       "--slide-title-align":  "left",
+    },
+  },
+  {
+    id: "swiss",
+    label: "Swiss",
+    blurb: "Grotesk · left · red accent",
+    vars: {
+      "--slide-font-display": "'Helvetica Neue', var(--font-inter), Arial, sans-serif",
+      "--slide-font-body":    "'Helvetica Neue', var(--font-inter), Arial, sans-serif",
+      "--slide-font-mono":    "'JetBrains Mono', monospace",
+      "--slide-title":        "#0A0A0A",
+      "--slide-text":         "#444444",
+      "--slide-accent":       "#D72638",
+      "--slide-bg":           "#FFFFFF",
+      "--slide-border":       "#DADADA",
+      "--slide-muted":        "#EFEFEF",
+      "--slide-radius":       "0px",
+      "--slide-block-pad":    "24px 44px",
+      "--slide-title-align":  "left",
+      /* Swiss series: one "hot" row = accent red, the rest a neutral grey ramp
+         (dark→light). On the white bg bars/lines/donut read cleanly; treemap ink
+         is white — ideal on the accent + dark-grey tiles (largest), faint only on
+         the lightest small tiles (see DESIGN.md caveat). */
+      "--slide-series-1":     "#D72638",
+      "--slide-series-2":     "#1A1A1A",
+      "--slide-series-3":     "#3D3D3D",
+      "--slide-series-4":     "#5F5F5F",
+      "--slide-series-5":     "#828282",
+      "--slide-series-6":     "#A1A1A1",
+      "--slide-series-7":     "#BFBFBF",
+      "--slide-tm-ink":       "#FFFFFF",
+      "--slide-axis":         "#CFCFCF",
     },
   },
   {
