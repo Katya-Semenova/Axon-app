@@ -107,7 +107,8 @@ export function buildExtractionMessages(input: AIExtractionInput): LLMMessage[] 
     "- категория + одно число → Donut ТОЛЬКО при явной доле-от-целого (складываемые величины: деньги, штуки, сумма ≈ 100%);",
     "  иначе Radar (3–8 категорий) / Treemap (до ~14) / Lollipop (много категорий). Donut НЕ для ставок/процентов/коэффициентов — там доли врут.",
     "- категория + несколько чисел → Stacked Bar. Дата + число → Spline Area (честный временной ряд).",
-    "- две числовые без измерения → Scatter. Матрица чисел → Heatmap.",
+    "- две числовые → Scatter; если есть осмысленная категория, укажи её в dimension —",
+    "  точки сгруппируются по ней и подпишутся её названиями (иначе точки безымянные). Матрица чисел → Heatmap.",
     "Используй ТОЛЬКО имена колонок из схемы. Ответь СТРОГО JSON-объектом вида:",
     '{"insights":[{"title":"","narrative":"","chartType":"","dimension":null,"metrics":[""]}]}',
   ].join("\n");
@@ -251,9 +252,9 @@ function buildRows(
   const chartType = resolveChartType(requestedChart, dim, metrics.length);
   const multi = MULTI_METRIC_CHARTS.has(chartType) && metrics.length >= 2;
 
-  // Scatter — две числовые без агрегации.
+  // Scatter — две числовые. С измерением → точка на категорию (подпись = название).
   if (chartType === "Scatter" && metrics.length >= 2) {
-    return { columns: [metrics[0].name, metrics[1].name], chartType, rows: scatterRows(table, metrics[0], metrics[1]) };
+    return { columns: [metrics[0].name, metrics[1].name], chartType, rows: scatterRows(table, metrics[0], metrics[1], dim) };
   }
 
   // Без измерения — матрица/рейтинг по строкам файла.
@@ -327,7 +328,26 @@ function timeSeriesRows(table: ParsedTable, dim: ColumnProfile, metric: ColumnPr
   return keyed.slice(0, MAX_SERIES_POINTS).map((x, i) => row(`r${i + 1}`, x.p.label, x.p.value));
 }
 
-function scatterRows(table: ParsedTable, mx: ColumnProfile, my: ColumnProfile): DataRow[] {
+function scatterRows(
+  table: ParsedTable, mx: ColumnProfile, my: ColumnProfile, dim?: ColumnProfile | null,
+): DataRow[] {
+  // С измерением — одна точка на категорию (сумма обеих метрик), подпись = название категории.
+  if (dim) {
+    const byCat = new Map<string, [number, number]>();
+    for (const r of table.rows) {
+      const x = parseNumeric(r[mx.index]);
+      const y = parseNumeric(r[my.index]);
+      if (x === null || y === null) continue;
+      const label = cellLabel(r[dim.index]);
+      const acc = byCat.get(label) ?? [0, 0];
+      acc[0] += x; acc[1] += y;
+      byCat.set(label, acc);
+    }
+    return [...byCat.entries()]
+      .slice(0, TOP_CATEGORIES)
+      .map(([label, [x, y]], i) => ({ id: `r${i + 1}`, label, values: [r2(x), r2(y)] }));
+  }
+  // Без измерения — каждая строка точкой (название взять неоткуда).
   const rows: DataRow[] = [];
   table.rows.forEach((r, i) => {
     const x = parseNumeric(r[mx.index]);
