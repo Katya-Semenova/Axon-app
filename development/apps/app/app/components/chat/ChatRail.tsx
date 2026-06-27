@@ -31,6 +31,7 @@ export function ChatRail({ onBack }: { onBack: () => void }) {
   const isBuild = mode === "build";
   const t = useTranslations("Chat");
   const tErr = useTranslations("Landing.dropzone.error");
+  const tDrop = useTranslations("Landing.dropzone");
 
   /* ── Добавление файла на холст (Шаг 11) ─ */
   const sourceFiles    = useWorkspaceStore(s => s.sourceFiles);
@@ -84,6 +85,12 @@ export function ChatRail({ onBack }: { onBack: () => void }) {
       const { board } = await extractBoardData(table, { useAI: !!session });
       mergeBoardData(board);
       toast(t("added", { name: table.sourceName }), { variant: "success" });
+      // Файл урезан капом строк → честно предупреждаем (shown построено, total всего в файле).
+      if (table.truncatedRows > 0) {
+        const shown = table.rows.length;
+        toast(tDrop("truncated", { shown, total: shown + table.truncatedRows }),
+          { variant: "warning", duration: 8000 });
+      }
     } catch (err) {
       const msg = err instanceof fp.FileParseError ? parseErrorText(err.code) : tErr("generic");
       toast(msg, { variant: "error" });

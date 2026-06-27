@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import { MyProjects } from "./MyProjects";
 import { LanguageSwitcher } from "../ui/LanguageSwitcher";
 import { AuthNav } from "../AuthNav";
+import { useToast } from "../ui/Toast";
 import { authClient } from "@/lib/auth-client";
 import { createProject, createProjectFromData } from "@/app/actions/board";
 import { useWorkspaceStore } from "@/lib/store";
@@ -25,6 +26,7 @@ export function LandingPage({ onNavigate }: { onNavigate: (boardId: string | nul
   const [errorCode, setErrorCode] = useState<ParseErrorCode | "generic" | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const t = useTranslations("Landing");
+  const { toast } = useToast();
   const { data: session } = authClient.useSession();
 
   /* Открыть воркспейс без разбора данных (beta-форматы и вход без файла):
@@ -57,6 +59,13 @@ export function LandingPage({ onNavigate }: { onNavigate: (boardId: string | nul
       const table = await fp.parseFile(file);
       // Держим таблицу в памяти — чтобы AI-чат мог строить новые инсайты на реальных числах.
       useWorkspaceStore.getState().setSourceTable(table);
+      // Файл урезан капом строк → честно предупреждаем (тост живёт в ToastProvider-родителе,
+      // переживает переход на холст). shown = построено, total = всего строк в файле.
+      if (table.truncatedRows > 0) {
+        const shown = table.rows.length;
+        toast(t("dropzone.truncated", { shown, total: shown + table.truncatedRows }),
+          { variant: "warning", duration: 8000 });
+      }
       // Вошедший → реальный ИИ (с fallback на правила); гость → правила (данные не уходят).
       const { extractBoardData } = await import("@/lib/insight-engine/extract");
       const { board } = await extractBoardData(table, { useAI: !!session });

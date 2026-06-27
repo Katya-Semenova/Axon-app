@@ -22,6 +22,7 @@
       "cta": "Drop a file or click to upload",
       "formats": "CSV, Excel — full parse · PDF, images, SQL — beta · up to 50 MB",
       "parsing": "Parsing file…",
+      "truncated": "Showing the first {shown, number} rows of {total, number}. Charts are built from these.",
       "error": {
         "tooBig": "File is larger than 50 MB — please upload a smaller one",
         "empty": "The file is empty — no data rows found",
