@@ -1,5 +1,15 @@
 import type { Metadata } from "next";
-import { Inter, JetBrains_Mono, Instrument_Serif, Old_Standard_TT } from "next/font/google";
+import {
+  Inter,
+  JetBrains_Mono,
+  Instrument_Serif,
+  Old_Standard_TT,
+  Roboto_Condensed,
+  Nunito,
+  Mulish,
+  Manrope,
+  IBM_Plex_Sans,
+} from "next/font/google";
 import "./globals.css";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale } from "next-intl/server";
@@ -41,6 +51,46 @@ const oldStandard = Old_Standard_TT({
   style: ["normal", "italic"],
 });
 
+// --- Шрифтовые пары тем презентации (одна пара на тему, все НЕ Inter) ---
+// Подключаются как variable-шрифты (полный диапазон весов), с кириллицей.
+// Раскидываются по темам через --slide-font-display/-body в PRESENTATION_THEMES.
+
+// Swiss — конденсный гротеск, контраст веса 900↔300 («постер»).
+const robotoCondensed = Roboto_Condensed({
+  variable: "--font-roboto-condensed",
+  subsets: ["latin", "cyrillic"],
+  display: "swap",
+});
+
+// Soft — display: круглый дружелюбный Nunito.
+const nunito = Nunito({
+  variable: "--font-nunito",
+  subsets: ["latin", "cyrillic"],
+  display: "swap",
+});
+
+// Soft — body: гуманистический Mulish.
+const mulish = Mulish({
+  variable: "--font-mulish",
+  subsets: ["latin", "cyrillic"],
+  display: "swap",
+});
+
+// Web/Raycast — display: Manrope.
+const manrope = Manrope({
+  variable: "--font-manrope",
+  subsets: ["latin", "cyrillic"],
+  display: "swap",
+});
+
+// Web/Raycast — body: модерн-дашборд IBM Plex Sans.
+const ibmPlexSans = IBM_Plex_Sans({
+  variable: "--font-ibm-plex",
+  subsets: ["latin", "cyrillic"],
+  display: "swap",
+  weight: ["400", "500", "600", "700"],
+});
+
 export const metadata: Metadata = {
   title: "Axon — Data Insights",
   description: "AI agent that turns SQL files into human-friendly data insights.",
@@ -59,7 +109,7 @@ export default async function RootLayout({
   return (
     <html
       lang={locale}
-      className={`${inter.variable} ${jetbrainsMono.variable} ${instrumentSerif.variable} ${oldStandard.variable} antialiased`}
+      className={`${inter.variable} ${jetbrainsMono.variable} ${instrumentSerif.variable} ${oldStandard.variable} ${robotoCondensed.variable} ${nunito.variable} ${mulish.variable} ${manrope.variable} ${ibmPlexSans.variable} antialiased`}
     >
       <body>
         <NextIntlClientProvider>{children}</NextIntlClientProvider>

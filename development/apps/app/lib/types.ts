@@ -263,8 +263,8 @@ export const PRESENTATION_THEMES: PresentationTheme[] = [
     label: "Swiss",
     blurb: "Grotesk · left · red accent",
     vars: {
-      "--slide-font-display": "'Helvetica Neue', var(--font-inter), Arial, sans-serif",
-      "--slide-font-body":    "'Helvetica Neue', var(--font-inter), Arial, sans-serif",
+      "--slide-font-display": "var(--font-roboto-condensed), 'Arial Narrow', sans-serif",
+      "--slide-font-body":    "var(--font-roboto-condensed), 'Arial Narrow', sans-serif",
       "--slide-font-mono":    "'JetBrains Mono', monospace",
       "--slide-title":        "#0A0A0A",
       "--slide-text":         "#444444",
@@ -295,8 +295,8 @@ export const PRESENTATION_THEMES: PresentationTheme[] = [
     label: "Soft",
     blurb: "Pastel · rounded · airy",
     vars: {
-      "--slide-font-display": "var(--font-inter), system-ui, sans-serif",
-      "--slide-font-body":    "var(--font-inter), system-ui, sans-serif",
+      "--slide-font-display": "var(--font-nunito), system-ui, sans-serif",
+      "--slide-font-body":    "var(--font-mulish), system-ui, sans-serif",
       "--slide-font-mono":    "'JetBrains Mono', monospace",
       "--slide-title":        "#232135",
       "--slide-text":         "#6E6B85",
@@ -330,8 +330,8 @@ export const PRESENTATION_THEMES: PresentationTheme[] = [
     label: "Web-dashboard",
     blurb: "Dark · sans · modern",
     vars: {
-      "--slide-font-display": "var(--font-inter), system-ui, sans-serif",
-      "--slide-font-body":    "var(--font-inter), system-ui, sans-serif",
+      "--slide-font-display": "var(--font-manrope), system-ui, sans-serif",
+      "--slide-font-body":    "var(--font-ibm-plex), system-ui, sans-serif",
       "--slide-font-mono":    "'JetBrains Mono', monospace",
       "--slide-title":        "#F4F4F8",
       "--slide-text":         "#9B9BB0",
@@ -368,8 +368,8 @@ export const PRESENTATION_THEMES: PresentationTheme[] = [
     blurb: "Light · sans · modern",
     hidden: true,
     vars: {
-      "--slide-font-display": "var(--font-inter), system-ui, sans-serif",
-      "--slide-font-body":    "var(--font-inter), system-ui, sans-serif",
+      "--slide-font-display": "var(--font-manrope), system-ui, sans-serif",
+      "--slide-font-body":    "var(--font-ibm-plex), system-ui, sans-serif",
       "--slide-font-mono":    "'JetBrains Mono', monospace",
       "--slide-title":        "#14141C",
       "--slide-text":         "#54546A",
