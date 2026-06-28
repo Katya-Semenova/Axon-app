@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import LegalShell from "../_legal/LegalShell";
+import { CookieSettings } from "../_components/CookieSettings";
 
 export const metadata: Metadata = {
   title: "Политика cookie — AXON",
@@ -44,9 +45,15 @@ export default function CookiesPage() {
 
       <h2>3. Как управлять cookie</h2>
       <p>
-        Вы можете удалить или заблокировать cookie в настройках своего браузера. Учтите,
-        что при отключении необходимых cookie часть функций Сервиса (например, вход в
-        аккаунт) перестанет работать.
+        Согласие на <strong>аналитические</strong> cookie можно изменить в любой момент —
+        кнопка ниже сбросит ваш выбор и снова покажет баннер cookie, где вы сможете принять
+        или отклонить аналитику заново:
+      </p>
+      <CookieSettings />
+      <p>
+        Необходимые cookie вы можете удалить или заблокировать в настройках своего браузера.
+        Учтите, что при их отключении часть функций Сервиса (например, вход в аккаунт)
+        перестанет работать.
       </p>
 
       <h2>4. Подробнее</h2>

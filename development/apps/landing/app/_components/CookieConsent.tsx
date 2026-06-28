@@ -2,12 +2,11 @@
 
 import { useEffect, useState } from 'react';
 import Script from 'next/script';
-import { YM_COUNTER_ID } from '../../lib/analytics';
+import { YM_COUNTER_ID, CONSENT_KEY } from '../../lib/analytics';
 
 // Cookie-баннер + consent-gated Яндекс.Метрика (Урок 6, Задание 3.1).
 // Метрика грузится ТОЛЬКО после явного «Accept». Решение хранится в localStorage,
 // чтобы не спрашивать повторно. Без согласия счётчик не подключается вовсе.
-const STORAGE_KEY = 'axon_cookie_consent';
 
 type Consent = 'accepted' | 'declined';
 
@@ -16,12 +15,12 @@ export function CookieConsent() {
   const [consent, setConsent] = useState<Consent | null | undefined>(undefined);
 
   useEffect(() => {
-    const stored = localStorage.getItem(STORAGE_KEY);
+    const stored = localStorage.getItem(CONSENT_KEY);
     setConsent(stored === 'accepted' || stored === 'declined' ? stored : null);
   }, []);
 
   function decide(value: Consent) {
-    localStorage.setItem(STORAGE_KEY, value);
+    localStorage.setItem(CONSENT_KEY, value);
     setConsent(value);
   }
 

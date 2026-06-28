@@ -4,6 +4,10 @@
 
 export const YM_COUNTER_ID = process.env.NEXT_PUBLIC_YM_ID;
 
+// Ключ согласия на cookie в localStorage. Один источник правды для баннера
+// (CookieConsent) и контрола отзыва (CookieSettings) — чтобы ключ не разъехался.
+export const CONSENT_KEY = "axon_cookie_consent";
+
 // Ключевые цели лендинга (reachGoal Метрики). Имена держим в одном месте,
 // чтобы не разъезжались между местом вызова и настройкой целей в Метрике.
 export const GOALS = {
