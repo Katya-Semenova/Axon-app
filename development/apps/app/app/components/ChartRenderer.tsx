@@ -57,6 +57,12 @@ const SERIF_FAMILY = "'Instrument Serif', 'GT Sectra', 'Fraunces', Georgia, seri
 const MONO_FAMILY  = "'JetBrains Mono', monospace";
 const SANS_FAMILY  = "Inter, sans-serif";
 
+/* Display font for big in-chart figures (donut total, spline endpoint value).
+   Follows the deck theme's display face; fallback = Editorial serif, so canvas /
+   drill-in (no theme vars) stay identical. Numbers no longer render serif under
+   sans themes (Swiss/Soft/Web). var() fallback may itself contain commas. */
+const FONT_DISPLAY = `var(--slide-font-display, ${SERIF_FAMILY})`;
+
 interface ChartProps {
   rows: DataRow[];
   columns: string[];
@@ -177,7 +183,7 @@ function SplineAreaChart({ rows, expanded, containerWidth, containerHeight }: Ch
         </linearGradient>
       </defs>
       <GridLines pl={pl} pr={W - pr} pt={pt} plotH={plotH} />
-      {areaD && <path d={areaD} fill={SERIES[5]} fillOpacity="0.4" />}
+      {areaD && <path d={areaD} fill={SERIES[0]} fillOpacity="0.18" />}
       {pd    && <path d={pd} stroke={SERIES[0]} strokeWidth="2" strokeLinecap="round" />}
       {last && (
         <>
@@ -185,7 +191,7 @@ function SplineAreaChart({ rows, expanded, containerWidth, containerHeight }: Ch
           {data.length > 0 && (
             <text x={r(last.x)} y={r(Math.max(pt + (expanded ? 16 : 12), last.y - (expanded ? 12 : 9)))}
               textAnchor="end" fontSize={expanded ? 18 : 13}
-              fontFamily={SERIF_FAMILY} fill={ACCENT}>
+              fontFamily={FONT_DISPLAY} fill={ACCENT}>
               {data[data.length - 1]}
             </text>
           )}
@@ -319,7 +325,7 @@ function DonutChart({ rows, columns, expanded, containerWidth, containerHeight }
         <path key={i} d={arc(s)} fill={s.color} />
       ))}
       <text x={CX} y={numY} textAnchor="middle"
-        fontSize={numSize} fontFamily={SERIF_FAMILY} fill={INK}>
+        fontSize={numSize} fontFamily={FONT_DISPLAY} fill={INK}>
         {compactNum(total)}
       </text>
       <text x={CX} y={chanY} textAnchor="middle" fontSize={CHAN_SIZE}
