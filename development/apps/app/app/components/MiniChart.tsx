@@ -24,6 +24,14 @@ const SERIES   = [
   `var(--slide-series-6, ${NAVY_100})`,
 ];
 
+/* Bar/tile rounding — themeable per deck theme; mirrors ChartRenderer.
+   CSS geometry property (resolves var()); browser clamps to half the side.
+   Fallback 0px → thumbnails outside a theme root stay sharp. */
+const CHART_RADIUS = {
+  rx: "var(--slide-chart-radius, 0px)",
+  ry: "var(--slide-chart-radius, 0px)",
+};
+
 interface MiniChartProps {
   rows: DataRow[];
   chartType: ChartType;
@@ -116,6 +124,7 @@ function MiniColumns({ rows, color, W, H }: { rows: DataRow[]; color: string; W:
             width={r(barW)} height={r(bh)}
             fill={v === Math.max(...data) ? GOLD : color}
             fillOpacity={v === Math.max(...data) ? 1 : 0.35 + (v / mx) * 0.45}
+            style={CHART_RADIUS}
           />
         );
       })}
@@ -152,6 +161,7 @@ function MiniWaterfall({ rows, color, W, H }: { rows: DataRow[]; color: string; 
             y={r(Math.min(y1, y2))}
             width={r(barW)} height={r(bh)}
             fill={b.pos ? color : GOLD} fillOpacity="0.85"
+            style={CHART_RADIUS}
           />
         );
       })}
@@ -178,6 +188,7 @@ function MiniStacked({ rows, W, H }: { rows: DataRow[]; color: string; W: number
                   x={r(xOff)} y={y}
                   width={bw} height={r(rowH)}
                   fill={SERIES[j % SERIES.length]}
+                  style={CHART_RADIUS}
                 />
               );
               xOff += bw + 1;
@@ -275,6 +286,7 @@ function MiniTreemap({ rows, W, H }: { rows: DataRow[]; color: string; W: number
           x={r(leaf.x0)} y={r(leaf.y0)}
           width={r(leaf.x1 - leaf.x0)} height={r(leaf.y1 - leaf.y0)}
           fill={fills[i % fills.length]}
+          style={CHART_RADIUS}
         />
       ))}
     </>

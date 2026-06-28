@@ -43,6 +43,16 @@ const INK_FAINT = `var(--slide-text,   ${T3})`;     // tick labels
 const ACCENT    = `var(--slide-accent, ${GOLD})`;   // gold highlight
 const AXIS      = `var(--slide-axis, var(--slide-border, ${BORDER}))`; // gridlines / rings / spokes / connectors — dedicated token, more visible than the structural border on dark themes
 
+/* Bar / treemap-tile corner rounding — themeable per deck theme (Editorial/Swiss
+   sharp = 0, Soft round, Web ≈8). Applied as the CSS geometry property rx/ry:
+   only the CSS property resolves var(); the SVG presentation attribute would not.
+   The browser clamps to half the shorter side, so thin bars round gracefully.
+   Fallback 0px → canvas / drill-in (no theme vars) stay sharp, unchanged. */
+const CHART_RADIUS = {
+  rx: "var(--slide-chart-radius, 0px)",
+  ry: "var(--slide-chart-radius, 0px)",
+};
+
 const SERIF_FAMILY = "'Instrument Serif', 'GT Sectra', 'Fraunces', Georgia, serif";
 const MONO_FAMILY  = "'JetBrains Mono', monospace";
 const SANS_FAMILY  = "Inter, sans-serif";
@@ -380,7 +390,7 @@ function CleanColumnsChart({ rows, expanded, containerWidth, containerHeight }: 
         return (
           <g key={i}>
             <rect x={r(x - barW / 2)} y={r(y)} width={r(barW)} height={r(bh)}
-              fill={isMax ? ACCENT : SERIES[1]} />
+              fill={isMax ? ACCENT : SERIES[1]} style={CHART_RADIUS} />
             {i % bStep === 0 && (
               <text x={r(x)} y={H - 4}
                 textAnchor={i === 0 ? "start" : i === n - 1 ? "end" : "middle"}
@@ -428,7 +438,7 @@ function StackedBarChart({ rows, columns, expanded, containerWidth, containerHei
               const bw = r((v / maxTotal) * plotW);
               const rect = (
                 <rect key={j} x={r(xOff)} y={r(y)} width={bw} height={rowH}
-                  fill={SERIES[j % SERIES.length]} />
+                  fill={SERIES[j % SERIES.length]} style={CHART_RADIUS} />
               );
               xOff += bw + 1;
               return rect;
@@ -497,7 +507,7 @@ function WaterfallChart({ rows, expanded, containerWidth, containerHeight }: Cha
         return (
           <g key={i}>
             <rect x={r(x)} y={r(Math.min(y1, y2))} width={r(barW)} height={r(bh)}
-              fill={color} />
+              fill={color} style={CHART_RADIUS} />
             {!b.isTot && Math.abs(y2 - y1) > 12 && (
               <text x={r(x + barW / 2)} y={r(Math.max(pt + 8, Math.min(y1, y2) - 4))} textAnchor="middle" fontSize="9"
                 fontFamily={MONO_FAMILY} fill={color} fontWeight="500">
@@ -632,7 +642,7 @@ function TreemapChart({ rows, expanded, containerWidth, containerHeight }: Chart
 
         return (
           <g key={i}>
-            <rect x={r(x0)} y={r(y0)} width={r(lw)} height={r(lh)} fill={fill} />
+            <rect x={r(x0)} y={r(y0)} width={r(lw)} height={r(lh)} fill={fill} style={CHART_RADIUS} />
             {lh >= 26 && lw >= 24 && (
               <text
                 x={r(x0 + 7)} y={r(y0 + 19)}

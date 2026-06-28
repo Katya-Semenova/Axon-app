@@ -216,6 +216,7 @@ components:
   `PublicDeckView`; графики читают ряды из `--slide-series-1..7`.
 - **Словарь токенов:** `--slide-bg` · `--slide-title` · `--slide-text` · `--slide-accent` ·
   `--slide-border` (hairline) · `--slide-muted` · `--slide-axis` (оси/сетка) · `--slide-radius` ·
+  `--slide-chart-radius` (скругление баров/плиток графиков — отдельно от `--slide-radius` карточки) ·
   `--slide-block-pad` · `--slide-title-align` · `--slide-font-display`/`-body`/`-mono` ·
   `--slide-series-1..7` (палитра рядов графиков) · `--slide-tm-ink` (подписи на залитых плитках treemap) ·
   `--slide-shadow` (мягкая тень карточки слайда; задаётся только в Soft, остальные — фолбэк `none`).
@@ -226,6 +227,11 @@ components:
   грузятся как variable через `next/font` в `app/layout.tsx`:
   Editorial — сериф Instrument/Old Standard + Inter (без изменений) · Swiss — Roboto Condensed (обе роли) ·
   Soft — Nunito (display) + Mulish (body) · Web-dashboard (тёмный и светлый) — Manrope (display) + IBM Plex Sans (body).
+- **Форма графиков (`--slide-chart-radius`, 2026-06-28):** тему держит не только цвет, но и геометрия —
+  скругление баров и плиток treemap. Значения: Editorial `0` · Swiss `0` (острые — их ДНК) · Soft `12px` ·
+  Web (тёмн.+светл.) `8px`. Применяется к вертикальным барам, Waterfall, горизонтальному стеку и плиткам
+  treemap в `ChartRenderer.tsx` и зеркально в `MiniChart.tsx` (CSS-свойство `rx/ry` — только оно резолвит
+  `var()`; браузер обрезает радиус до половины стороны). Heatmap (сетка) и waffle (кружки) — не скругляются.
 
 ### Swiss (швейцарский стиль, 2026-06-27)
 Гротеск, выключка влево, острые углы, максимальный контраст; ряды — серая шкала + один «горящий» акцентом.

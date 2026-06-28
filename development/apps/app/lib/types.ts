@@ -254,6 +254,7 @@ export const PRESENTATION_THEMES: PresentationTheme[] = [
       "--slide-border":       "#D9D3C2",
       "--slide-muted":        "#E5E0D2",
       "--slide-radius":       "0px",
+      "--slide-chart-radius": "0px",
       "--slide-block-pad":    "18px 32px",
       "--slide-title-align":  "left",
     },
@@ -273,6 +274,7 @@ export const PRESENTATION_THEMES: PresentationTheme[] = [
       "--slide-border":       "#DADADA",
       "--slide-muted":        "#EFEFEF",
       "--slide-radius":       "0px",
+      "--slide-chart-radius": "0px",
       "--slide-block-pad":    "24px 44px",
       "--slide-title-align":  "left",
       /* Swiss series: one "hot" row = accent red, the rest a neutral grey ramp
@@ -308,6 +310,7 @@ export const PRESENTATION_THEMES: PresentationTheme[] = [
       /* Translucent lavender — soft "frosted" insight background on white. */
       "--slide-muted":        "rgba(155,140,239,0.10)",
       "--slide-radius":       "18px",
+      "--slide-chart-radius": "12px",
       "--slide-block-pad":    "26px 38px",
       "--slide-title-align":  "left",
       /* Soft floating shadow on the slide card (read by SlideEditor). */
@@ -343,6 +346,7 @@ export const PRESENTATION_THEMES: PresentationTheme[] = [
       /* Полупрозрачная фиолетовая подложка инсайта — лёгкое «стекло» на чёрном. */
       "--slide-muted":        "rgba(155,135,245,0.10)",
       "--slide-radius":       "14px",
+      "--slide-chart-radius": "8px",
       "--slide-block-pad":    "26px 40px",
       "--slide-title-align":  "left",
       /* Soft floating card on near-black (read by SlideEditor/PublicDeckView). */
@@ -380,6 +384,7 @@ export const PRESENTATION_THEMES: PresentationTheme[] = [
       /* Полупрозрачная фиолетовая подложка инсайта на белом. */
       "--slide-muted":        "rgba(122,92,224,0.08)",
       "--slide-radius":       "14px",
+      "--slide-chart-radius": "8px",
       "--slide-block-pad":    "26px 40px",
       "--slide-title-align":  "left",
       /* Soft floating card on near-white. */
