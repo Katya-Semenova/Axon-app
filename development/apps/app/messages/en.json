@@ -228,6 +228,8 @@
     "labelNarration": "Narration",
     "narrativeSpeaker": "Speaker narrative · AI · editable",
     "addSpeakerNotes": "Add speaker notes…",
+    "emptyNoSlides": "No slides yet — switch to Canvas and drag a Data Set into the strip below.",
+    "emptySelectSlide": "Select a slide below.",
     "presentationTheme": "Presentation theme",
     "themeHint": "Theme restyles the whole deck — fonts, colour, shape.",
     "themeBlurb": {

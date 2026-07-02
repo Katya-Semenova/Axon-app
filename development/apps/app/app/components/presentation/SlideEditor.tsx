@@ -335,8 +335,8 @@ export function SlideEditor({ saveButton }: { saveButton?: React.ReactNode }) {
             <div className="flex-1 flex items-center justify-center">
               <span style={{ fontFamily: mono, fontSize: 11, color: T3 }}>
                 {slides.length === 0
-                  ? "No slides yet — switch to Data Mode and drag a Data Set into the strip below."
-                  : "Select a slide below."}
+                  ? t("emptyNoSlides")
+                  : t("emptySelectSlide")}
               </span>
             </div>
           )}
