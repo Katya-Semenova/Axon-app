@@ -290,6 +290,9 @@ export const PRESENTATION_THEMES: PresentationTheme[] = [
       "--slide-series-7":     "#BFBFBF",
       "--slide-tm-ink":       "#FFFFFF",
       "--slide-axis":         "#CFCFCF",
+      /* Heatmap (тема Б): светло-серый → красный акцент. */
+      "--slide-heat-from":    "#EFEFEF",
+      "--slide-heat-to":      "#D72638",
     },
   },
   {
@@ -326,6 +329,9 @@ export const PRESENTATION_THEMES: PresentationTheme[] = [
       "--slide-series-7":     "#EFD78C",
       "--slide-tm-ink":       "#232135",
       "--slide-axis":         "#D9D5EC",
+      /* Heatmap: бледная лаванда → фиолет-герой. */
+      "--slide-heat-from":    "#ECEAF6",
+      "--slide-heat-to":      "#9B8CEF",
     },
   },
   {
@@ -362,6 +368,9 @@ export const PRESENTATION_THEMES: PresentationTheme[] = [
       "--slide-tm-ink":       "#0D0D12",
       /* Gridlines/axes/spokes — dim cool grey on near-black. */
       "--slide-axis":         "#46465A",
+      /* Heatmap: почти-фон → фиолет-акцент (низкие клетки «холодные», тёмные). */
+      "--slide-heat-from":    "#1B1B26",
+      "--slide-heat-to":      "#9B87F5",
     },
   },
   {
@@ -400,6 +409,9 @@ export const PRESENTATION_THEMES: PresentationTheme[] = [
       "--slide-tm-ink":       "#FAFAFD",
       /* Gridlines/axes/spokes — clear cool grey on light bg. */
       "--slide-axis":         "#C8C4DC",
+      /* Heatmap: бледная лаванда → фиолет. */
+      "--slide-heat-from":    "#ECEAF6",
+      "--slide-heat-to":      "#7A5CE0",
     },
   },
 ];

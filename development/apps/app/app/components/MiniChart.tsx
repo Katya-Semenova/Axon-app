@@ -32,6 +32,10 @@ const CHART_RADIUS = {
   ry: "var(--slide-chart-radius, 0px)",
 };
 
+/* Heatmap: двухцветная шкала темы (зеркалит ChartRenderer). Фолбэк = Editorial крем→navy. */
+const HEAT_FROM = "var(--slide-heat-from, #E9E4D5)";
+const HEAT_TO   = "var(--slide-heat-to, #1B2840)";
+
 interface MiniChartProps {
   rows: DataRow[];
   chartType: ChartType;
@@ -337,15 +341,10 @@ function MiniHeatmap({ rows, W, H }: { rows: DataRow[]; color: string; W: number
   const maxVal = allVals.length ? Math.max(...allVals) : 1;
   const span   = maxVal - minVal || 1;
 
-  /* Inline lerp: GOLD[184,149,72] → cream[233,228,213] → NAVY[27,40,64] */
+  /* Двухцветная шкала темы low→high через CSS color-mix (резолвит var()). */
   function miniHeatColor(v: number): string {
-    const t = (v - minVal) / span;
-    if (t < 0.5) {
-      const s = t * 2;
-      return `rgb(${Math.round(184+(233-184)*s)},${Math.round(149+(228-149)*s)},${Math.round(72+(213-72)*s)})`;
-    }
-    const s = (t - 0.5) * 2;
-    return `rgb(${Math.round(233+(27-233)*s)},${Math.round(228+(40-228)*s)},${Math.round(213+(64-213)*s)})`;
+    const p = Math.round(Math.min(1, Math.max(0, (v - minVal) / span)) * 100);
+    return `color-mix(in srgb, ${HEAT_TO} ${p}%, ${HEAT_FROM})`;
   }
 
   const cellW = W / cols;
@@ -361,7 +360,7 @@ function MiniHeatmap({ rows, W, H }: { rows: DataRow[]; color: string; W: number
               key={`${ri}-${ci}`}
               x={r(ci * cellW + 0.5)} y={r(ri * cellH + 0.5)}
               width={r(cellW - 1)} height={r(cellH - 1)}
-              fill={miniHeatColor(v)}
+              style={{ fill: miniHeatColor(v) }}
             />
           );
         })

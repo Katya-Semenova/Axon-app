@@ -219,6 +219,8 @@ components:
   `--slide-chart-radius` (скругление баров/плиток графиков — отдельно от `--slide-radius` карточки) ·
   `--slide-block-pad` · `--slide-title-align` · `--slide-font-display`/`-body`/`-mono` ·
   `--slide-series-1..7` (палитра рядов графиков) · `--slide-tm-ink` (подписи на залитых плитках treemap) ·
+  `--slide-heat-from`/`--slide-heat-to` (двухцветная шкала heatmap low→high; фолбэк = Editorial крем→navy;
+  клетки мешаются через CSS `color-mix`, цвет цифры = противоположный конец шкалы) ·
   `--slide-shadow` (мягкая тень карточки слайда; задаётся только в Soft, остальные — фолбэк `none`).
 - **Темы:** Editorial (дефолт, журнальный serif) · **Swiss** · **Soft** (пастель) ·
   Web-dashboard (тёмный + светлый `web-light` под ☀/🌙).

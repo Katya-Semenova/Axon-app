@@ -682,32 +682,24 @@ function TreemapChart({ rows, expanded, containerWidth, containerHeight }: Chart
   );
 }
 
-/* ── Heatmap color helpers ────────────────────────────────
-   Two-segment diverging scale: GOLD → warm cream → NAVY.
-   Anchors:
-     cold  #B89548 (GOLD)      — rgb(184,149, 72)
-     mid   #E9E4D5 (warm cream)— rgb(233,228,213)
-     hot   #1B2840 (NAVY)      — rgb( 27, 40, 64)
-   Cell ink flips light/dark at the brightness midpoint.   */
-const HEAT_LOW  = "#B89548";
-const HEAT_MID  = "#E9E4D5";
-const HEAT_HIGH = "#1B2840";
+/* ── Heatmap colours — themeable per deck theme (тема Б, 2026-07-02) ──────
+   Двухцветная шкала low→high из токенов темы `--slide-heat-from`/`-to`.
+   Смешивание — CSS color-mix() ПО ЗНАЧЕНИЮ каждой клетки: резолвит var()
+   без getComputedStyle и без пересчёта в JS. Фолбэки = Editorial (крем→navy),
+   поэтому холст/drill-in (без тем) и тема Editorial выглядят одинаково.
+   Цвет цифры в клетке = ПРОТИВОПОЛОЖНЫЙ конец шкалы → всегда контрастен фону
+   клетки (на светлой клетке — тёмный конец, на тёмной — светлый).
+   Значения возвращаются как CSS-строки → применять через style={{ fill }},
+   т.к. только CSS-свойство (не SVG-атрибут) резолвит color-mix/var.        */
+const HEAT_FROM = "var(--slide-heat-from, #E9E4D5)";  // low end (обычно светлый)
+const HEAT_TO   = "var(--slide-heat-to, #1B2840)";    // high end (обычно тёмный/насыщенный)
 
-function lerpHex(a: string, b: string, t: number): string {
-  const ah = [parseInt(a.slice(1,3),16), parseInt(a.slice(3,5),16), parseInt(a.slice(5,7),16)];
-  const bh = [parseInt(b.slice(1,3),16), parseInt(b.slice(3,5),16), parseInt(b.slice(5,7),16)];
-  return "#" + ah.map((av, i) =>
-    Math.round(av + (bh[i] - av) * t).toString(16).padStart(2, "0")
-  ).join("");
-}
 function heatFill(t: number): string {
-  return t < 0.5 ? lerpHex(HEAT_LOW, HEAT_MID, t * 2)
-                 : lerpHex(HEAT_MID, HEAT_HIGH, (t - 0.5) * 2);
+  const p = Math.round(Math.min(1, Math.max(0, t)) * 100);
+  return `color-mix(in srgb, ${HEAT_TO} ${p}%, ${HEAT_FROM})`;
 }
 function heatInk(t: number): string {
-  return t > 0.62 ? "#F5F2EA"   // cream on dark navy
-       : t < 0.35 ? "#1B2840"   // navy on gold
-       :            "#5C6478";  // T2 on neutral mid
+  return t < 0.5 ? HEAT_TO : HEAT_FROM;  // противоположный конец шкалы
 }
 
 /* ── Heatmap ──────────────────────────────────────────────
@@ -756,9 +748,8 @@ function HeatmapChart({ rows, columns, expanded, containerWidth, containerHeight
     <svg viewBox={`0 0 ${W} ${H}`} fill="none" {...svgAttrs(containerWidth, containerHeight, expanded)}>
       <defs>
         <linearGradient id="hm-grad" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0%"   stopColor={HEAT_LOW}  />
-          <stop offset="50%"  stopColor={HEAT_MID}  />
-          <stop offset="100%" stopColor={HEAT_HIGH} />
+          <stop offset="0%"   style={{ stopColor: HEAT_FROM }} />
+          <stop offset="100%" style={{ stopColor: HEAT_TO }} />
         </linearGradient>
       </defs>
 
@@ -806,13 +797,13 @@ function HeatmapChart({ rows, columns, expanded, containerWidth, containerHeight
           const ch = r(cellH - 1);
           return (
             <g key={`${ri}-${ci}`}>
-              <rect x={cx} y={cy} width={cw} height={ch} fill={heatFill(tv)} />
+              <rect x={cx} y={cy} width={cw} height={ch} style={{ fill: heatFill(tv) }} />
               {cw > 26 && ch > 14 && (
                 <text
                   x={r(cx + cw / 2)} y={r(cy + ch / 2 + 4.5)}
                   textAnchor="middle"
                   fontSize={Math.min(13, cw * 0.26, ch * 0.5)}
-                  fontFamily={MONO_FAMILY} fill={heatInk(tv)}>
+                  fontFamily={MONO_FAMILY} style={{ fill: heatInk(tv) }}>
                   {fmtV(v)}
                 </text>
               )}
