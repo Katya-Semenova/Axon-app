@@ -531,6 +531,7 @@ function DeckTile({
   insertBefore: boolean;
   insertAfter: boolean;
 }) {
+  const t = useTranslations("Export");
   const W = 168;
   const serial = String(slide.serial).padStart(2, "0");
   const title  = ds?.title ?? "—";
@@ -620,7 +621,7 @@ function DeckTile({
           ) : (
             <text x={(W - 20) / 2} y="32" textAnchor="middle"
               fontSize="9" fill={T3} fontFamily={mono} fillOpacity="0.7">
-              — no data —
+              {t("noData")}
             </text>
           )}
         </svg>
@@ -631,7 +632,7 @@ function DeckTile({
         padding: "0 10px 8px",
         fontFamily: mono, fontSize: 8.5, letterSpacing: "0.1em", color: T3, textTransform: "uppercase",
       }}>
-        position {idx + 1}
+        {t("position", { n: idx + 1 })}
       </div>
     </div>
   );

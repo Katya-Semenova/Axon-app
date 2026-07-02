@@ -272,6 +272,8 @@
     "speakerNoteTone": "Speaker Note — {tone}",
     "play": "Play",
     "present": "PRESENT",
+    "noData": "— no data —",
+    "position": "position {n}",
     "export": "EXPORT",
     "download": "Download {fmt}",
     "share": "SHARE",
@@ -395,6 +397,8 @@
   "Settings": {
     "title": "Settings",
     "back": "Back to projects",
+    "adminCard": "Admin",
+    "adminUsers": "Users ›",
     "signOut": "Sign out",
     "genericError": "Something went wrong, please try again",
     "profileTitle": "Profile",

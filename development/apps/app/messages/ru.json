@@ -272,6 +272,8 @@
     "speakerNoteTone": "Речь докладчика — {tone}",
     "play": "Воспроизвести",
     "present": "ПОКАЗ",
+    "noData": "— нет данных —",
+    "position": "позиция {n}",
     "export": "ЭКСПОРТ",
     "download": "Скачать {fmt}",
     "share": "ПОДЕЛИТЬСЯ",
@@ -395,6 +397,8 @@
   "Settings": {
     "title": "Настройки",
     "back": "К проектам",
+    "adminCard": "Админка",
+    "adminUsers": "Пользователи ›",
     "signOut": "Выйти",
     "genericError": "Что-то пошло не так, попробуйте ещё раз",
     "profileTitle": "Профиль",

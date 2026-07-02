@@ -134,8 +134,8 @@ export function SettingsForm({ initialName, email, initialImage, isAdmin = false
         {isAdmin && (
           <Card variant="interactive">
             <Link href="/admin/users" className="flex items-center justify-between px-5 py-3">
-              <span className="font-sans text-[14px] font-semibold text-t1">Админка</span>
-              <span className="font-mono text-[11.5px] text-t2">Пользователи ›</span>
+              <span className="font-sans text-[14px] font-semibold text-t1">{t("adminCard")}</span>
+              <span className="font-mono text-[11.5px] text-t2">{t("adminUsers")}</span>
             </Link>
           </Card>
         )}
