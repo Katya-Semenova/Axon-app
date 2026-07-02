@@ -949,13 +949,14 @@ function DotMatrixChart({ rows, expanded, containerWidth, containerHeight }: Cha
       })}
       {/* Legend right of the grid */}
       {rows.map((row, ri) => {
-        const ly = startY + 6 + ri * 18;
+        // Шаг 24px под двухстрочный блок (метка + %), иначе % налезает на метку следующей записи.
+        const ly = startY + 6 + ri * 24;
         if (ly > startY + gridH) return null;   // hide overflow rows on tiny canvases
         return (
           <g key={ri} transform={`translate(${r(startX + gridW + 16)}, ${r(ly)})`}>
             <circle cx="3" cy="0" r="3.5" fill={SERIES[ri % SERIES.length]} />
             <text x="11" y="3" fontSize="10" fill={INK_MUTED} fontFamily={SANS_FAMILY}>{row.label}</text>
-            <text x="11" y="14" fontSize="9" fill={INK_FAINT} fontFamily={MONO_FAMILY}>{counts[ri]}%</text>
+            <text x="11" y="15" fontSize="9" fill={INK_FAINT} fontFamily={MONO_FAMILY}>{counts[ri]}%</text>
           </g>
         );
       })}
@@ -1011,7 +1012,8 @@ function MapChart({ rows, expanded, containerWidth, containerHeight }: ChartProp
         const lx       = padX + ri * Math.floor((W - padX * 2) / maxCols);
         const ly       = H - legendH + 8;
         const pct      = total > 0 ? Math.round((row.values[0] ?? 0) / total * 100) : 0;
-        const maxChars = Math.floor((W - padX * 2) / maxCols / 5.5);
+        // −5 символов под « NN%», иначе процент вылезает в соседнюю запись.
+        const maxChars = Math.max(3, Math.floor((W - padX * 2) / maxCols / 5.5) - 5);
         return (
           <g key={ri}>
             <circle cx={r(lx + dotR)} cy={r(ly + dotR)} r={dotR} fill={SERIES[ri % SERIES.length]} />
