@@ -143,7 +143,7 @@ function LollipopChart({ rows, expanded, containerWidth, containerHeight }: Char
       {data.length > 0 && (
         <text x={r(xv(lastIdx))} y={r(Math.max(pt + heroSize, yv(data[lastIdx]) - currentDotR - 6))}
           textAnchor="end" fontSize={heroSize}
-          fontFamily={SERIF_FAMILY} fill={ACCENT}>
+          fontFamily={FONT_DISPLAY} fill={ACCENT}>
           {data[lastIdx]}
         </text>
       )}
@@ -671,7 +671,7 @@ function TreemapChart({ rows, expanded, containerWidth, containerHeight }: Chart
               <text
                 x={r(x0 + 7)} y={r(y0 + 38)}
                 fontSize={Math.min(19, lw * 0.26)}
-                fill={ink} fillOpacity="0.78" fontFamily={SERIF_FAMILY}>
+                fill={ink} fillOpacity="0.78" fontFamily={FONT_DISPLAY}>
                 {fmtVal(val)}
               </text>
             )}
