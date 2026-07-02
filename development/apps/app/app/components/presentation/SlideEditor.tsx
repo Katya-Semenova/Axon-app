@@ -603,7 +603,7 @@ export function VisualizationStyleRail() {
         const activeTheme = PRESENTATION_THEMES.find(x => x.id === themeId);
         /* When the web tile is active, preview + blurb reflect the live sub-mode. */
         const previewVars = (isWebTile && active && activeTheme ? activeTheme.vars : th.vars) as React.CSSProperties;
-        const blurb = isWebTile && active && activeTheme ? activeTheme.blurb : th.blurb;
+        const blurbId = isWebTile && active && activeTheme ? activeTheme.id : th.id;
         return (
           <div key={th.id} style={{ display: "flex", flexDirection: "column", gap: 6 }}>
             <button
@@ -646,7 +646,7 @@ export function VisualizationStyleRail() {
                 <span style={{
                   fontFamily: mono, fontSize: 8.5, letterSpacing: "0.04em", color: T3, lineHeight: 1.4,
                 }}>
-                  {blurb}
+                  {t(`themeBlurb.${blurbId}`)}
                 </span>
               </div>
             </button>

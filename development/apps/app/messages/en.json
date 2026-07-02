@@ -230,6 +230,13 @@
     "addSpeakerNotes": "Add speaker notes…",
     "presentationTheme": "Presentation theme",
     "themeHint": "Theme restyles the whole deck — fonts, colour, shape.",
+    "themeBlurb": {
+      "editorial": "Sharp · serif display · hairline",
+      "swiss": "Grotesk · left · red accent",
+      "soft": "Pastel · rounded · airy",
+      "web": "Dark · sans · modern",
+      "web-light": "Light · sans · modern"
+    },
     "sectionThisSlide": "This slide",
     "sectionDeck": "Whole presentation",
     "viewLabel": "How to show this slide",
