@@ -541,10 +541,20 @@ function ScatterPlotChart({ rows, columns, expanded, containerWidth, containerHe
   const pl = 28, pr = 12, pt = 12, pb = 24;
   const plotW = W - pl - pr, plotH = H - pt - pb;
 
-  const xs = rows.map(row => row.values[0] ?? 0);
-  const ys = rows.map(row => row.values[1] ?? 0);
-  const xMin = Math.min(...xs), xMax = Math.max(...xs) || 1;
-  const yMin = Math.min(...ys), yMax = Math.max(...ys) || 1;
+  const n = rows.length;
+  const metric0 = rows.map(row => row.values[0] ?? 0);
+  const metric1 = rows.map(row => row.values[1] ?? 0);
+  // Есть ли НАСТОЯЩАЯ вторая величина? Если нет (одно число на строку), точки без
+  // фолбэка схлопнулись бы в самый низ. Тогда: Y = единственное число, X = порядок строк.
+  const yVaries = Math.max(...metric1) !== Math.min(...metric1);
+  const xs = yVaries ? metric0 : metric0.map((_, i) => i);
+  const ys = yVaries ? metric1 : metric0;
+  const xLabel = yVaries ? (columns[0] ?? "X") : "";
+  const yLabel = yVaries ? (columns[1] ?? "Y") : (columns[0] ?? "Y");
+  const lblStep = Math.max(1, Math.ceil(n / (expanded ? 8 : 4)));  // прореживание подписей
+
+  const xMin = Math.min(...xs), xMax = Math.max(...xs);
+  const yMin = Math.min(...ys), yMax = Math.max(...ys);
 
   const xv = (v: number) => r(pl + ((v - xMin) / (xMax - xMin || 1)) * plotW);
   const yv = (v: number) => r(pt + plotH - ((v - yMin) / (yMax - yMin || 1)) * plotH);
@@ -553,23 +563,23 @@ function ScatterPlotChart({ rows, columns, expanded, containerWidth, containerHe
     <svg viewBox={`0 0 ${W} ${H}`} fill="none" {...svgAttrs(containerWidth, containerHeight, expanded)}>
       <GridLines pl={pl} pr={W - pr} pt={pt} plotH={plotH} />
       <line x1={pl} y1={pt} x2={pl} y2={pt + plotH}
-        stroke={AXIS} strokeWidth="0.75" strokeOpacity="0.12" />
+        stroke={AXIS} strokeWidth="1" strokeOpacity="0.35" />
       <line x1={pl} y1={pt + plotH} x2={W - pr} y2={pt + plotH}
-        stroke={AXIS} strokeWidth="0.75" strokeOpacity="0.12" />
+        stroke={AXIS} strokeWidth="1" strokeOpacity="0.35" />
       <text x={W / 2} y={H - 4} textAnchor="middle" fontSize="8.5"
-        fill={INK_FAINT} fontFamily="'JetBrains Mono',monospace">{columns[0] ?? "X"}</text>
+        fill={INK_FAINT} fontFamily="'JetBrains Mono',monospace">{xLabel}</text>
       <text x="10" y={H / 2} textAnchor="middle" fontSize="8.5"
         fill={INK_FAINT} fontFamily="'JetBrains Mono',monospace"
-        transform={`rotate(-90, 10, ${H / 2})`}>{columns[1] ?? "Y"}</text>
+        transform={`rotate(-90, 10, ${H / 2})`}>{yLabel}</text>
       {rows.map((row, i) => {
-        const cx = xv(row.values[0] ?? 0);
-        const cy = yv(row.values[1] ?? 0);
+        const cx = xv(xs[i]);
+        const cy = yv(ys[i]);
         const fill = i === 0 ? ACCENT : (i % 2 === 0 ? SERIES[0] : SERIES[1]);
         const nearRight = cx > W - 64;  // у правого края подпись растёт влево, иначе обрежется
         return (
           <g key={i}>
             <circle cx={cx} cy={cy} r={i === 0 ? 7 : 5.5} fill={fill} />
-            {expanded && (
+            {expanded && i % lblStep === 0 && (
               <text x={nearRight ? cx - 9 : cx + 9} y={cy + 4}
                 textAnchor={nearRight ? "end" : "start"}
                 fontSize="9.5" fill={INK_MUTED} fontFamily={SANS_FAMILY}>
