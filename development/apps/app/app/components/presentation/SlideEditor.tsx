@@ -1,13 +1,13 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useWorkspaceStore } from "@/lib/store";
 import { SlideViewDropdown } from "../ui/SlideViewDropdown";
 import { SlideArchetypeRenderer, deriveSlideSummary } from "./SlideArchetypeRenderer";
-import type { Slide, ColorAccent, BuildAudience, BuildTone, NarrationMode, SlideArchetype } from "@/lib/types";
+import type { Slide, ColorAccent, BuildAudience, BuildTone } from "@/lib/types";
 import { PRESENTATION_THEMES, WEB_THEME_IDS } from "@/lib/types";
 import type { PresentationThemeId } from "@/lib/types";
-import { BORDER, NAVY, GOLD, T2, T3, SURFACE, SURFACE_RAISE, SURFACE_MUTED } from "../ui/tokens";
+import { BORDER, NAVY, GOLD, T2, T3, SURFACE, SURFACE_RAISE } from "../ui/tokens";
 import { openOnboarding } from "../ui/OnboardingModal";
 import { useTranslations } from "next-intl";
 
@@ -28,7 +28,6 @@ const ACCENT_COLOR: Record<ColorAccent, string> = {
   Slate:    "#4A5878",
   Graphite: "#2A3654",
 };
-const SLIDES_PER_PAGE = 4;
 const mono = "'JetBrains Mono', monospace";
 
 /* ── Audience × Tone narrative lookup — drives SummaryBlock headline ──────
@@ -61,22 +60,6 @@ const NARRATIVES: Record<BuildAudience, Record<BuildTone, string>> = {
     Casual:  "Revenue down 18% in Q3 — mid-market churn is telling a clear story in the data.",
   },
 };
-
-/* ── Smart pagination ────────────────────────────────────────────────────── */
-function buildPages(current: number, total: number): (number | "...")[] {
-  if (total <= 7) return Array.from({ length: total }, (_, i) => i);
-  const show = new Set<number>([0, 1, total - 2, total - 1]);
-  for (let i = current - 1; i <= current + 1; i++) {
-    if (i >= 0 && i < total) show.add(i);
-  }
-  const sorted = Array.from(show).sort((a, b) => a - b);
-  const result: (number | "...")[] = [];
-  sorted.forEach((p, idx) => {
-    if (idx > 0 && p > sorted[idx - 1] + 1) result.push("...");
-    result.push(p);
-  });
-  return result;
-}
 
 /* (PanelSelect removed in Шаг 4d — its only consumer DeliverySettingsStrip is gone.) */
 
@@ -116,40 +99,11 @@ export function SlideEditor({ saveButton }: { saveButton?: React.ReactNode }) {
   const insightsById      = useWorkspaceStore(s => s.insightsById);
   const connections       = useWorkspaceStore(s => s.connections);
   const activeSlideId     = useWorkspaceStore(s => s.activeSlideId);
-  const setActiveSlide    = useWorkspaceStore(s => s.setActiveSlide);
   const updateSlide       = useWorkspaceStore(s => s.updateSlide);
-  const removeSlide       = useWorkspaceStore(s => s.removeSlide);
-  const updateDsRows      = useWorkspaceStore(s => s.updateDataSetRows);
   const audience          = useWorkspaceStore(s => s.buildAudience);
   const tone              = useWorkspaceStore(s => s.buildTone);
   const narrMode          = useWorkspaceStore(s => s.buildNarrationMode);
   const presentationThemeId = useWorkspaceStore(s => s.presentationThemeId);
-
-  const [page, setPage] = useState(0);
-
-  /* ── Resizable chart / data-panel split ── */
-  const [chartH, setChartH] = useState(280);
-  const dragState = useRef<{ startY: number; startH: number } | null>(null);
-
-  useEffect(() => {
-    const onMouseMove = (e: MouseEvent) => {
-      if (!dragState.current) return;
-      const delta = e.clientY - dragState.current.startY;
-      setChartH(Math.max(120, Math.min(520, dragState.current.startH + delta)));
-    };
-    const onMouseUp = () => { dragState.current = null; };
-    window.addEventListener("mousemove", onMouseMove);
-    window.addEventListener("mouseup",   onMouseUp);
-    return () => {
-      window.removeEventListener("mousemove", onMouseMove);
-      window.removeEventListener("mouseup",   onMouseUp);
-    };
-  }, []);
-
-  function handleSplitterDown(e: React.MouseEvent) {
-    e.preventDefault();
-    dragState.current = { startY: e.clientY, startH: chartH };
-  }
 
   /* ── Derived ── */
   const activeSlide = activeSlideId ? slides.find(s => s.id === activeSlideId) ?? slides[0] ?? null : slides[0] ?? null;
@@ -165,21 +119,6 @@ export function SlideEditor({ saveButton }: { saveButton?: React.ReactNode }) {
         const ins = insightsById[c.fromInsightId];
         if (ins) slideInsightsById[c.fromInsightId] = ins;
       });
-  }
-
-  /* ── Pagination ── */
-  const totalPages   = Math.max(1, Math.ceil(slides.length / SLIDES_PER_PAGE));
-  const safePage     = Math.min(page, totalPages - 1);
-  const pageSlides   = slides.slice(safePage * SLIDES_PER_PAGE, (safePage + 1) * SLIDES_PER_PAGE);
-  /* With ≤3 total slides show all (including active); with ≥4 exclude the active */
-  const thumbnailSlides = slides.length <= 3
-    ? pageSlides
-    : pageSlides.filter(s => s.id !== activeSlideId);
-
-  function handleRemove(id: string) {
-    removeSlide(id);
-    const remaining = slides.filter(s => s.id !== id);
-    setActiveSlide(remaining[0]?.id ?? null);
   }
 
   /* Deck-wide theme — its --slide-* vars are applied at the main-row root
@@ -323,7 +262,6 @@ export function SlideEditor({ saveButton }: { saveButton?: React.ReactNode }) {
               {narrMode !== "None" && (
                 <NarrativeBlock
                   slide={activeSlide}
-                  narrMode={narrMode}
                   narrativeText={activeSlide.narrative ?? deriveSpeakerNarrative(activeDs.title, deriveSlideSummary(activeDs.rows, activeDs.columns))}
                   onChange={(t) => updateSlide(activeSlide.id, { narrative: t })}
                 />
@@ -444,10 +382,9 @@ function SummaryBlock({
    "None"                   → block is not rendered (parent gates with &&)  */
 
 function NarrativeBlock({
-  slide, narrMode, narrativeText, onChange,
+  slide, narrativeText, onChange,
 }: {
   slide: Slide;
-  narrMode: NarrationMode;
   narrativeText: string;
   onChange: (text: string) => void;
 }) {
@@ -461,6 +398,8 @@ function NarrativeBlock({
   useEffect(() => { setDraft(narrativeText); }, [narrativeText, slide.id]);
   useEffect(() => {
     setNarrativeExpanded(Boolean(slide.narrative?.trim()));
+    // намеренно только slide.id: сброс раскрытия при СМЕНЕ слайда, не при каждой правке narrative
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [slide.id]);
 
   function commit() {

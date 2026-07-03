@@ -173,6 +173,7 @@ function ArchComparison({ rows, W, H }: ArchProps) {
 /* ══════════════════════════════════════════════════════════════════
    5. Map — dot-grid proportional to value per region
 ══════════════════════════════════════════════════════════════════ */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars -- вестигиальный: отрисовку Map делает ChartRenderer; оставлен намеренно (см. коммент ниже)
 function ArchMap({ rows, accentColor, W, H }: ArchProps) {
   if (!rows.length) return <svg width={W} height={H} style={{ display: "block" }} />;
 
@@ -236,6 +237,7 @@ function ArchMap({ rows, accentColor, W, H }: ArchProps) {
 /* ══════════════════════════════════════════════════════════════════
    7. Treemap archetype — rectangles sized by value
 ══════════════════════════════════════════════════════════════════ */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars -- вестигиальный: отрисовку Treemap делает ChartRenderer; оставлен намеренно (см. коммент ниже)
 function ArchTreemap({ rows, W, H }: ArchProps) {
   if (!rows.length) return <svg width={W} height={H} style={{ display: "block" }} />;
 

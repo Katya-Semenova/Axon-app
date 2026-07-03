@@ -18,9 +18,9 @@ const nextConfig: NextConfig = {
   // Без этого standalone не дотягивает их в коробку и сервис падает «модуль не найден».
   // Корень трассировки = корень workspace (../../ от apps/app/).
   outputFileTracingRoot: path.join(__dirname, "../../"),
-  // Линт отвязан от сборки: ESLint гоняем отдельно (npm run lint / ревью на Шаге 11),
-  // чтобы давние замечания в коде не валили прод-сборку и деплой.
-  eslint: { ignoreDuringBuilds: true },
+  // Линт ВКЛЮЧЁН в сборку (2026-07-02, после уборки — 0 замечаний). Сборка падает на
+  // ESLint-ошибках → долг больше не копится молча. Предупреждения сборку не валят.
+  eslint: { ignoreDuringBuilds: false },
   images: {
     // next/image отдаёт современные форматы (в 2–4× легче PNG/JPG)
     formats: ["image/avif", "image/webp"],
