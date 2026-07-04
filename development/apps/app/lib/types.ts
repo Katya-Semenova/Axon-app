@@ -257,6 +257,14 @@ export const PRESENTATION_THEMES: PresentationTheme[] = [
       "--slide-chart-radius": "0px",
       "--slide-block-pad":    "18px 32px",
       "--slide-title-align":  "left",
+      /* Heatmap — фирменная трёхстоповая шкала (вариант Б, 2026-07-04):
+         GOLD → крем → NAVY, как до переезда карты на токены; цифры в клетках
+         по зонам: navy (фолбэк) / серый / крем. См. DESIGN.md → словарь токенов. */
+      "--slide-heat-from":     "#B89548",
+      "--slide-heat-mid":      "#E9E4D5",
+      "--slide-heat-to":       "#1B2840",
+      "--slide-heat-ink-mid":  "#5C6478",
+      "--slide-heat-ink-high": "#F5F2EA",
     },
   },
   {

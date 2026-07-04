@@ -32,9 +32,12 @@ const CHART_RADIUS = {
   ry: "var(--slide-chart-radius, 0px)",
 };
 
-/* Heatmap: двухцветная шкала темы (зеркалит ChartRenderer). Фолбэк = Editorial крем→navy. */
+/* Heatmap: шкала темы from→mid→to (зеркалит ChartRenderer, вариант Б+ 2026-07-04).
+   Фолбэк mid = середина from→to → двухтоновые темы рисуются как раньше;
+   фолбэк вне тем = крем→navy; Editorial задаёт GOLD→крем→NAVY токенами. */
 const HEAT_FROM = "var(--slide-heat-from, #E9E4D5)";
 const HEAT_TO   = "var(--slide-heat-to, #1B2840)";
+const HEAT_MID  = `var(--slide-heat-mid, color-mix(in srgb, ${HEAT_TO} 50%, ${HEAT_FROM}))`;
 
 interface MiniChartProps {
   rows: DataRow[];
@@ -341,10 +344,12 @@ function MiniHeatmap({ rows, W, H }: { rows: DataRow[]; color: string; W: number
   const maxVal = allVals.length ? Math.max(...allVals) : 1;
   const span   = maxVal - minVal || 1;
 
-  /* Двухцветная шкала темы low→high через CSS color-mix (резолвит var()). */
+  /* Шкала темы from→mid→to через CSS color-mix (резолвит var()). */
   function miniHeatColor(v: number): string {
-    const p = Math.round(Math.min(1, Math.max(0, (v - minVal) / span)) * 100);
-    return `color-mix(in srgb, ${HEAT_TO} ${p}%, ${HEAT_FROM})`;
+    const t = Math.min(1, Math.max(0, (v - minVal) / span));
+    return t < 0.5
+      ? `color-mix(in srgb, ${HEAT_MID} ${Math.round(t * 200)}%, ${HEAT_FROM})`
+      : `color-mix(in srgb, ${HEAT_TO} ${Math.round((t - 0.5) * 200)}%, ${HEAT_MID})`;
   }
 
   const cellW = W / cols;

@@ -702,24 +702,32 @@ function TreemapChart({ rows, expanded, containerWidth, containerHeight }: Chart
   );
 }
 
-/* ── Heatmap colours — themeable per deck theme (тема Б, 2026-07-02) ──────
-   Двухцветная шкала low→high из токенов темы `--slide-heat-from`/`-to`.
-   Смешивание — CSS color-mix() ПО ЗНАЧЕНИЮ каждой клетки: резолвит var()
-   без getComputedStyle и без пересчёта в JS. Фолбэки = Editorial (крем→navy),
-   поэтому холст/drill-in (без тем) и тема Editorial выглядят одинаково.
-   Цвет цифры в клетке = ПРОТИВОПОЛОЖНЫЙ конец шкалы → всегда контрастен фону
-   клетки (на светлой клетке — тёмный конец, на тёмной — светлый).
-   Значения возвращаются как CSS-строки → применять через style={{ fill }},
-   т.к. только CSS-свойство (не SVG-атрибут) резолвит color-mix/var.        */
+/* ── Heatmap colours — themeable per deck theme (вариант Б+, 2026-07-04) ──
+   Шкала low→high из токенов темы: `--slide-heat-from` / `-mid` (опц.) / `-to`.
+   Смешивание — CSS color-mix() ПО ЗНАЧЕНИЮ клетки (резолвит var() без
+   getComputedStyle): нижняя половина from→mid, верхняя mid→to. Фолбэк mid =
+   ровно середина from→to, поэтому темы с двумя токенами рисуются КАК РАНЬШЕ.
+   Фолбэк всей шкалы (холст/drill-in вне тем) = крем→navy; Editorial задаёт
+   фирменную трёхстоповую GOLD→крем→NAVY (см. PRESENTATION_THEMES).
+   Цвет цифры в клетке: по умолчанию противоположный конец шкалы (флип на
+   50%); тема может переопределить нейтральную (35–62%) и тёмную (>62%) зоны
+   токенами `--slide-heat-ink-mid`/`-high` (Editorial: серый/крем — как в
+   старой шкале). Значения возвращаются как CSS-строки → применять через
+   style={{ fill }}: только CSS-свойство (не SVG-атрибут) резолвит var().   */
 const HEAT_FROM = "var(--slide-heat-from, #E9E4D5)";  // low end (обычно светлый)
 const HEAT_TO   = "var(--slide-heat-to, #1B2840)";    // high end (обычно тёмный/насыщенный)
+const HEAT_MID  = `var(--slide-heat-mid, color-mix(in srgb, ${HEAT_TO} 50%, ${HEAT_FROM}))`;
 
 function heatFill(t: number): string {
-  const p = Math.round(Math.min(1, Math.max(0, t)) * 100);
-  return `color-mix(in srgb, ${HEAT_TO} ${p}%, ${HEAT_FROM})`;
+  const tc = Math.min(1, Math.max(0, t));
+  return tc < 0.5
+    ? `color-mix(in srgb, ${HEAT_MID} ${Math.round(tc * 200)}%, ${HEAT_FROM})`
+    : `color-mix(in srgb, ${HEAT_TO} ${Math.round((tc - 0.5) * 200)}%, ${HEAT_MID})`;
 }
 function heatInk(t: number): string {
-  return t < 0.5 ? HEAT_TO : HEAT_FROM;  // противоположный конец шкалы
+  if (t >= 0.62) return `var(--slide-heat-ink-high, ${HEAT_FROM})`;
+  if (t >= 0.35) return `var(--slide-heat-ink-mid, ${t < 0.5 ? HEAT_TO : HEAT_FROM})`;
+  return HEAT_TO;  // светлая зона — тёмный конец шкалы
 }
 
 /* ── Heatmap ──────────────────────────────────────────────
@@ -769,6 +777,7 @@ function HeatmapChart({ rows, columns, expanded, containerWidth, containerHeight
       <defs>
         <linearGradient id="hm-grad" x1="0" y1="0" x2="1" y2="0">
           <stop offset="0%"   style={{ stopColor: HEAT_FROM }} />
+          <stop offset="50%"  style={{ stopColor: HEAT_MID }} />
           <stop offset="100%" style={{ stopColor: HEAT_TO }} />
         </linearGradient>
       </defs>
