@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Script from 'next/script';
 import { YM_COUNTER_ID, CONSENT_KEY } from '../../lib/analytics';
 
@@ -40,12 +40,31 @@ export function CookieConsent() {
   // undefined — ещё не прочитали localStorage (SSR/первый кадр); null — решения нет (показать баннер).
   const [consent, setConsent] = useState<Consent | null | undefined>(undefined);
   const [lang, setLang] = useState<Lang>('en');
+  const bannerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     const stored = localStorage.getItem(CONSENT_KEY);
     setConsent(stored === 'accepted' || stored === 'declined' ? stored : null);
     setLang(navigator.language?.toLowerCase().startsWith('ru') ? 'ru' : 'en');
   }, []);
+
+  // Пока баннер виден, резервируем под него место внизу страницы (padding-bottom
+  // на <body> = высоте баннера): fixed-плашка иначе ложится ПОВЕРХ футера, и кнопки
+  // Privacy/Terms/Cookies не кликаются, пока не ответишь на согласие (баг 2026-07-04).
+  // ResizeObserver держит отступ при переносах строк (flex-col на узких экранах).
+  useEffect(() => {
+    if (consent !== null) return;
+    const el = bannerRef.current;
+    if (!el) return;
+    const apply = () => { document.body.style.paddingBottom = `${el.offsetHeight}px`; };
+    apply();
+    const ro = new ResizeObserver(apply);
+    ro.observe(el);
+    return () => {
+      ro.disconnect();
+      document.body.style.paddingBottom = '';
+    };
+  }, [consent]);
 
   function decide(value: Consent) {
     localStorage.setItem(CONSENT_KEY, value);
@@ -64,6 +83,7 @@ export function CookieConsent() {
       {/* Баннер — только когда решения ещё нет. */}
       {consent === null && (
         <div
+          ref={bannerRef}
           role="dialog"
           aria-label={COPY[lang].aria}
           className="fixed bottom-0 inset-x-0 z-50 bg-primary text-bg px-6 py-4"
