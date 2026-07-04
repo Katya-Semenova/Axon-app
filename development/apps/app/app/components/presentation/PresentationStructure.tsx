@@ -8,7 +8,7 @@ import { useWorkspaceStore } from "@/lib/store";
 import type { Slide } from "@/lib/types";
 import { MiniChart } from "../MiniChart";
 import { useTranslations } from "next-intl";
-import { BORDER, NAVY, NAVY_700, GOLD, T3, SURFACE_RAISE } from "../ui/tokens";
+import { BORDER, NAVY, NAVY_700, GOLD, T3, SURFACE_RAISE, CANVAS_HEAT_VARS } from "../ui/tokens";
 import { ConfirmDialog } from "../ui/ConfirmDialog";
 import { useToast } from "../ui/Toast";
 
@@ -379,7 +379,7 @@ export function PresentationStructure({ insertAt, isDraggingSlide }: {
   return (
     <section
       className="shrink-0 flex border-t"
-      style={{ height: 164, borderColor: BORDER, background: "#EDE9E0" }}
+      style={{ height: 164, borderColor: BORDER, background: "#EDE9E0", ...CANVAS_HEAT_VARS }}
     >
       <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
         {/* Header */}
