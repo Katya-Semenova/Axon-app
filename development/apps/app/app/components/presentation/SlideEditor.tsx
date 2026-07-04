@@ -303,7 +303,9 @@ function SummaryBlock({
       /* Vertical rhythm (2026-06-27): clear gap after the title (top 22) and a
          larger breath before the chart (bottom 6 + chart block's top pad). */
       margin: "22px 28px 6px",
-      background: "var(--slide-muted)",
+      /* Мягче на ~30%: muted разбавлен фоном слайда (просьба 2026-07-04 —
+         «жестковато»); работает во всех темах, включая тёмные. */
+      background: "color-mix(in srgb, var(--slide-muted) 70%, var(--slide-bg, #FBF9F3))",
       borderLeft: "4px solid var(--slide-accent)",
       padding: "18px 22px",
     }}>
@@ -324,6 +326,7 @@ function SummaryBlock({
           style={{
             width: "100%",
             fontFamily: "var(--slide-font-display)",
+            fontStyle: "var(--slide-summary-style, normal)" as React.CSSProperties["fontStyle"],
             fontSize: 16.5, fontWeight: "var(--slide-body-weight, 500)" as React.CSSProperties["fontWeight"], lineHeight: 1.4,
             color: "var(--slide-title)",
             background: "transparent",
@@ -336,6 +339,7 @@ function SummaryBlock({
           title={t("clickToEdit")}
           style={{
             fontFamily: "var(--slide-font-display)",
+            fontStyle: "var(--slide-summary-style, normal)" as React.CSSProperties["fontStyle"],
             fontSize: 16.5, fontWeight: "var(--slide-body-weight, 500)" as React.CSSProperties["fontWeight"], lineHeight: 1.4,
             color: "var(--slide-title)",
             cursor: "text",
