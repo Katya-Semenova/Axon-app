@@ -306,10 +306,12 @@ function DonutChart({ rows, columns, expanded, containerWidth, containerHeight }
      ≥25px breathing room from the inner ring at compact card scale. */
   const numSize = Math.max(13, OR * 0.38);
   const CHAN_SIZE = 7.5;
-  const CHAN_GAP  = 5;
-  const pairH  = numSize * 0.75 + CHAN_GAP + CHAN_SIZE;
+  /* Зазор до подписи растёт вместе с числом: у display-серифов тем деки цифры
+     свисают ниже базовой линии (~0.2em) — константные 5px они перекрывали. */
+  const chanGap = Math.max(5, numSize * 0.3);
+  const pairH  = numSize * 0.75 + chanGap + CHAN_SIZE;
   const numY   = CY - pairH / 2 + numSize * 0.75;
-  const chanY  = numY + CHAN_GAP + CHAN_SIZE;
+  const chanY  = numY + chanGap + CHAN_SIZE;
 
   // Центр пончика = «целое»: компактный итог (1.3M / 4.2K) вместо числа секторов.
   const compactNum = (v: number) => {
