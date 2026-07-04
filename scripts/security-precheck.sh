@@ -13,12 +13,16 @@ if [ -n "$bad_env" ]; then
   echo "⛔ precheck: env-файлы с секретами в git:"; echo "$bad_env"; fail=1
 fi
 
-# 2. В отслеживаемых файлах — сигнатуры живых ключей (OpenRouter/AWS/приватные ключи)
-leaks="$(git grep -I -l -E 'sk-or-v1-[A-Za-z0-9]{20,}|AKIA[0-9A-Z]{16}' -- . 2>/dev/null | grep -v 'security-precheck.sh' || true)"
+# 2. В отслеживаемых файлах — сигнатуры живых ключей (OpenRouter/AWS/приватные ключи).
+#    Детекторы (этот скрипт и хуки .claude/hooks/) исключены: они ЛЕГАЛЬНО содержат
+#    сигнатуры как шаблоны поиска — иначе пречек ловит сам себя (ложный стоп 2026-07-04).
+#    Сигнатура приватного ключа собрана из двух кусков по той же причине.
+key_sig='-----BEGIN.*PRIVATE ''KEY'
+leaks="$(git grep -I -l -E 'sk-or-v1-[A-Za-z0-9]{20,}|AKIA[0-9A-Z]{16}' -- . 2>/dev/null | grep -v 'security-precheck.sh' | grep -v '^\.claude/hooks/' || true)"
 if [ -n "$leaks" ]; then
   echo "⛔ precheck: похоже на живые API-ключи в git:"; echo "$leaks"; fail=1
 fi
-keys="$(git grep -I -l -- '-----BEGIN.*PRIVATE KEY' -- . 2>/dev/null | grep -v 'security-precheck.sh' || true)"
+keys="$(git grep -I -l -e "$key_sig" -- . 2>/dev/null | grep -v 'security-precheck.sh' | grep -v '^\.claude/hooks/' || true)"
 if [ -n "$keys" ]; then
   echo "⛔ precheck: приватные ключи в git:"; echo "$keys"; fail=1
 fi
