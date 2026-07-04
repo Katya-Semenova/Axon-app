@@ -22,14 +22,48 @@ export function pickChartType(
   metricCount: number,
   metricIsAdditive = false,
 ): ChartType {
-  if (dimType === "date") return "Spline Area";          // дата + число → честный временной ряд
-  if (metricCount >= 2) return "Stacked Bar";            // категория + несколько метрик — законный дом Stacked Bar
+  return rankChartTypes(dimType, dimCard, metricCount, metricIsAdditive)[0];
+}
 
-  // Категория + одно число — самый яркий совместимый тип по числу категорий.
-  if (metricIsAdditive && dimCard >= 3 && dimCard <= 6) return "Donut";  // складываемая величина → доля-от-целого
-  if (!metricIsAdditive && dimCard >= 3 && dimCard <= 8) return "Radar"; // ставка/% → «звезда» без вранья о долях
-  if (dimCard <= 14) return "Treemap";                   // универсально — площади
-  return "Lollipop";                                     // много категорий → рейтинг
+/**
+ * Ранжированный список СОВМЕСТИМЫХ с формой данных типов, ярче — раньше.
+ * Первый элемент = прежний выбор pickChartType (поведение не менялось).
+ * Все типы одного ранга строятся из ОДНИХ И ТЕХ ЖЕ строк (label+values) —
+ * подмена внутри ранга меняет только вид, не данные. Это опора «разведения
+ * типов»: соседние слайды не должны повторять тип (spec.md, 2026-07-04).
+ */
+export function rankChartTypes(
+  dimType: ColumnType,
+  dimCard: number,
+  metricCount: number,
+  metricIsAdditive = false,
+): ChartType[] {
+  if (dimType === "date") {
+    // Короткий ряд можно показать и рейтингом периодов; длинный — только линией.
+    return dimCard <= 16 ? ["Spline Area", "Lollipop"] : ["Spline Area"];
+  }
+  if (metricCount >= 2) return ["Stacked Bar", "Heatmap"];               // категория × метрики = матрица
+
+  // Категория + одно число.
+  if (metricIsAdditive && dimCard >= 3 && dimCard <= 6) return ["Donut", "Treemap", "Lollipop"];
+  if (!metricIsAdditive && dimCard >= 3 && dimCard <= 8) return ["Radar", "Lollipop"]; // ставки/% — без «долей»
+  if (dimCard <= 14) return ["Treemap", "Lollipop"];
+  return ["Lollipop", "Treemap"];
+}
+
+/**
+ * Выбор типа с разведением: лучший из совместимых, но НЕ тот же, что у соседа
+ * (если у формы есть альтернатива; нет — повтор допустим, честность важнее).
+ */
+export function pickDistinctChartType(
+  prev: ChartType | null,
+  dimType: ColumnType,
+  dimCard: number,
+  metricCount: number,
+  metricIsAdditive = false,
+): ChartType {
+  const rank = rankChartTypes(dimType, dimCard, metricCount, metricIsAdditive);
+  return rank.find((t) => t !== prev) ?? rank[0];
 }
 
 /**

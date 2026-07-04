@@ -15,7 +15,7 @@ import type {
 } from "@/lib/types";
 import type { ParsedTable, RawCell } from "@/lib/file-parsing";
 import { profileTable, parseNumeric, type ColumnProfile } from "./column-types";
-import { pickChartType, pickNumericMatrixChart, isWideChart, metricLooksShare } from "./chart-rules";
+import { pickDistinctChartType, pickNumericMatrixChart, isWideChart, metricLooksShare } from "./chart-rules";
 import { layoutPositions } from "./layout";
 
 /* Капы — держим доску читаемой, а вкладку — отзывчивой. */
@@ -97,14 +97,19 @@ function planInsights(
   }
 
   // Категория + несколько метрик → сводный Stacked Bar первым.
+  let prevChart: ChartType | null = null;
   if (primaryDim.type === "category" && metrics.length >= 2) {
     out.push(multiMetricByCategory(table, primaryDim, metrics, serial++));
+    prevChart = "Stacked Bar";
   }
 
-  // По одному инсайту на метрику.
+  // По одному инсайту на метрику. Тип соседа прокидываем дальше — «разведение
+  // типов»: одинаковая форма данных не должна давать одинаковые графики подряд.
   for (const metric of metrics) {
     if (out.length >= MAX_INSIGHTS) break;
-    out.push(singleMetricByDim(table, primaryDim, metric, serial++));
+    const ins = singleMetricByDim(table, primaryDim, metric, serial++, prevChart);
+    out.push(ins);
+    prevChart = ins.data?.chartType ?? prevChart;
   }
 
   return out;
@@ -123,6 +128,7 @@ function pickPrimaryDim(dims: ColumnProfile[]): ColumnProfile | null {
 
 function singleMetricByDim(
   table: ParsedTable, dim: ColumnProfile, metric: ColumnProfile, serial: number,
+  prevChart: ChartType | null = null,
 ): Insight {
   const ratio = metric.nonNull / Math.max(1, table.rows.length);
 
@@ -139,7 +145,8 @@ function singleMetricByDim(
     const keyed = pts.map((p) => ({ p, k: dateSortKey(p.label) }));
     if (keyed.every((x) => !Number.isNaN(x.k))) keyed.sort((a, b) => a.k - b.k);
     const rows = keyed.slice(0, MAX_SERIES_POINTS).map((x, i) => row(`r${i + 1}`, x.p.label, x.p.value));
-    return dataInsight(serial, `${metric.name} · ${dim.name}`, "Spline Area", [metric.name], rows, ratio);
+    const chart = pickDistinctChartType(prevChart, "date", rows.length, 1);
+    return dataInsight(serial, `${metric.name} · ${dim.name}`, chart, [metric.name], rows, ratio);
   }
 
   // Категория: сумма метрики по категории, топ-N.
@@ -147,7 +154,7 @@ function singleMetricByDim(
   const rows = agg.map((a, i) => row(`r${i + 1}`, a.label, r2(a.sum)));
   // Складываемая величина (а не ставка/%) → Donut честен; иначе Radar/Treemap/Lollipop.
   const additive = !metricLooksShare(metric.name, table.rows.map((r) => r[metric.index] ?? null));
-  const chart = pickChartType("category", rows.length, 1, additive);
+  const chart = pickDistinctChartType(prevChart, "category", rows.length, 1, additive);
   return dataInsight(serial, `${metric.name} · ${dim.name}`, chart, [metric.name], rows, ratio);
 }
 

@@ -23,7 +23,7 @@ import type { LLMMessage } from "@/lib/ai/types";
 export type { AIInsightPlan } from "@/lib/types";
 import type { ParsedTable, RawCell } from "@/lib/file-parsing";
 import { profileTable, parseNumeric, type ColumnProfile, type ColumnType } from "./column-types";
-import { pickChartType, isWideChart } from "./chart-rules";
+import { pickChartType, rankChartTypes, metricLooksShare, isWideChart } from "./chart-rules";
 import { layoutPositions } from "./layout";
 
 /* Капы — держим доску читаемой, выборку для ИИ — дешёвой. */
@@ -109,6 +109,8 @@ export function buildExtractionMessages(input: AIExtractionInput): LLMMessage[] 
     "- категория + несколько чисел → Stacked Bar. Дата + число → Spline Area (честный временной ряд).",
     "- две числовые → Scatter; если есть осмысленная категория, укажи её в dimension —",
     "  точки сгруппируются по ней и подпишутся её названиями (иначе точки безымянные). Матрица чисел → Heatmap.",
+    "- РАЗНООБРАЗИЕ: чередуй типы — у двух СОСЕДНИХ инсайтов не предлагай один и тот же chartType,",
+    "  если данным подходит другой тип из списка (три Treemap подряд утомляют деку).",
     "Используй ТОЛЬКО имена колонок из схемы. Ответь СТРОГО JSON-объектом вида:",
     '{"insights":[{"title":"","narrative":"","chartType":"","dimension":null,"metrics":[""]}]}',
   ].join("\n");
@@ -179,13 +181,17 @@ export function executePlan(table: ParsedTable, plan: AIPlan): BoardData {
   const byName = new Map(profiles.map((p) => [p.name.toLowerCase(), p]));
 
   // Инсайт + его нарратив идут парой: отсеянные планы (null) не сдвигают сопоставление.
+  // Тип соседа прокидываем дальше — детерминированная страховка «разведения типов»
+  // (промпт просит чередовать, но гарантию даёт код).
   const insights: Insight[] = [];
   const narratives: string[] = [];
+  let prevChart: ChartType | null = null;
   for (const p of plan.insights) {
-    const ins = buildInsight(table, profiles, byName, p, insights.length + 1);
+    const ins = buildInsight(table, profiles, byName, p, insights.length + 1, prevChart);
     if (!ins) continue;
     insights.push(ins);
     narratives.push(p.narrative);
+    prevChart = ins.data?.chartType ?? prevChart;
     if (insights.length >= MAX_INSIGHTS) break;
   }
   if (insights.length === 0) throw new Error("ИИ-план не дал ни одного инсайта на реальных данных");
@@ -220,6 +226,7 @@ function buildInsight(
   byName: Map<string, ColumnProfile>,
   plan: AIInsightPlan,
   serial: number,
+  prevChart: ChartType | null = null,
 ): Insight | null {
   const metrics = plan.metrics
     .map((m) => byName.get(m.toLowerCase()))
@@ -228,7 +235,7 @@ function buildInsight(
 
   const dim = plan.dimension ? byName.get(plan.dimension.toLowerCase()) ?? null : null;
 
-  const built = buildRows(table, dim, metrics, plan.chartType);
+  const built = buildRows(table, dim, metrics, plan.chartType, prevChart);
   if (built.rows.length === 0) return null;
 
   const ratio = metrics[0].nonNull / Math.max(1, table.rows.length);
@@ -248,8 +255,22 @@ function buildRows(
   dim: ColumnProfile | null,
   metrics: ColumnProfile[],
   requestedChart: string,
+  prevChart: ChartType | null = null,
 ): { columns: string[]; rows: DataRow[]; chartType: ChartType } {
-  const chartType = resolveChartType(requestedChart, dim, metrics.length);
+  let chartType = resolveChartType(requestedChart, dim, metrics.length);
+
+  // Разведение типов (spec.md 2026-07-04): сосед не должен повторять тип.
+  // Подменяем ТОЛЬКО внутри совместимого ранга (те же строки, другой вид) и
+  // только при совпадении с соседом; Scatter и планы без измерения не трогаем.
+  if (prevChart && chartType === prevChart && dim && chartType !== "Scatter") {
+    const dimCard = Math.min(dim.distinct, dim.type === "date" ? MAX_SERIES_POINTS : TOP_CATEGORIES);
+    const additive = !metricLooksShare(metrics[0].name, table.rows.map((r) => r[metrics[0].index] ?? null));
+    const rank = rankChartTypes(dim.type === "date" ? "date" : "category", dimCard, metrics.length, additive);
+    if (rank.includes(chartType)) {
+      chartType = rank.find((t) => t !== prevChart) ?? chartType;
+    }
+  }
+
   const multi = MULTI_METRIC_CHARTS.has(chartType) && metrics.length >= 2;
 
   // Scatter — две числовые. С измерением → точка на категорию (подпись = название).
