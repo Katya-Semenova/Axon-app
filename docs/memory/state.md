@@ -18,8 +18,13 @@
 `pre-read-suggest`, `docs/automations.md`), **5.3 память ✅** (ADR-011 spec→test→код, IMPL-теги
 во всех ADR, `project-context.md`, `feature-registry.md`, этот state), **5.4 правила — в работе**
 (6 правил в `docs/rules/` + таблица AGENTS.md).
-**Осталось в Уроке 7:** 5.1 автотесты + гейт pre-push/deploy (⚠️ отдельным заходом — Mac не
-тянет dev-сервер, см. ниже) → Задание 6 (безопасная выкатка) → 12 (спрятать /storybook с прода)
+**5.1 автотесты — часть 1 ✅ (04.07):** Vitest, 29 интеграционных тестов (`apps/app/tests/`:
+разбор CSV, евро-числа, типизация колонок, выбор графика, buildBoardData, регрессии ревью) +
+гейты: pre-push (`scripts/git-hooks/pre-push`, подключение `git config core.hooksPath
+scripts/git-hooks`) и деплой (`deploy-remote.sh`, обход `SKIP_TESTS=1`). Красный тест реально
+блокирует (продемонстрировано).
+**Осталось в Уроке 7:** 5.1 часть 2 — Playwright e2e (нужна тестовая БД + прод-сборка `next
+start`; Mac тянет, см. ниже) → Задание 6 (безопасная выкатка) → 12 (спрятать /storybook с прода)
 → 13–14 (/ux-testing + финальный security-check) → 7–10 (библиотека модулей) → 15 (README)
 → 16 (финальный /save-session).
 

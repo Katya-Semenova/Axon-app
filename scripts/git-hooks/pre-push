@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+# Гейт тестов перед push (Урок 7, Задание 5.1): красные тесты блокируют push.
+# Обход РАЗОВО (осознанно): git push --no-verify
+# Подключение на новой машине (один раз): git config core.hooksPath scripts/git-hooks
+set -euo pipefail
+cd "$(git rev-parse --show-toplevel)/development"
+echo "→ pre-push: прогоняю тесты (обход разово: git push --no-verify)…"
+npm run test -w apps/app
+echo "→ pre-push: тесты зелёные, пушим."
