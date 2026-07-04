@@ -17,6 +17,7 @@ import type { ParsedTable, RawCell } from "@/lib/file-parsing";
 import { profileTable, parseNumeric, type ColumnProfile } from "./column-types";
 import { pickDistinctChartType, pickNumericMatrixChart, isWideChart, metricLooksShare } from "./chart-rules";
 import { layoutPositions } from "./layout";
+import { dataLang } from "@/lib/lang";
 
 /* Капы — держим доску читаемой, а вкладку — отзывчивой. */
 const MAX_INSIGHTS = 5;
@@ -216,11 +217,18 @@ function indexSeriesInsight(table: ParsedTable, metric: ColumnProfile, serial: n
 
 function buildSummaryInsight(table: ParsedTable, profiles: ColumnProfile[]): Insight {
   const colList = profiles.map((p) => p.name).join(", ");
-  const text =
-    `Файл «${table.sourceName}»: ${table.rows.length} строк, ${table.headers.length} колонок ` +
-    `(${colList}). Числовых колонок не найдено — графики не построены автоматически. ` +
-    `Опишите в чате, что показать, или добавьте инсайт вручную.`;
-  return { id: "ins-up-1", serial: 1, title: "Сводка по файлу", kind: "text", text, confFilled: 2, confPct: 60 };
+  // Служебная сводка — на языке ДАННЫХ (spec.md 2026-07-04): раньше текст был
+  // жёстко русским, и английский файл получал русскую карточку.
+  const lang = dataLang(...profiles.map((p) => p.name), table.sourceName);
+  const text = lang === "ru"
+    ? `Файл «${table.sourceName}»: ${table.rows.length} строк, ${table.headers.length} колонок ` +
+      `(${colList}). Числовых колонок не найдено — графики не построены автоматически. ` +
+      `Опишите в чате, что показать, или добавьте инсайт вручную.`
+    : `File “${table.sourceName}”: ${table.rows.length} rows, ${table.headers.length} columns ` +
+      `(${colList}). No numeric columns found — charts were not built automatically. ` +
+      `Describe in chat what to show, or add an insight manually.`;
+  const title = lang === "ru" ? "Сводка по файлу" : "File summary";
+  return { id: "ins-up-1", serial: 1, title, kind: "text", text, confFilled: 2, confPct: 60 };
 }
 
 /* ── Дата-сет из инсайта ───────────────────────────────────────────────── */

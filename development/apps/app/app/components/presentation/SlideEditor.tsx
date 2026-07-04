@@ -4,21 +4,25 @@ import React, { useState, useEffect } from "react";
 import { useWorkspaceStore } from "@/lib/store";
 import { SlideViewDropdown } from "../ui/SlideViewDropdown";
 import { SlideArchetypeRenderer, deriveSlideSummary } from "./SlideArchetypeRenderer";
-import type { Slide, ColorAccent, BuildAudience, BuildTone } from "@/lib/types";
+import type { Slide, ColorAccent } from "@/lib/types";
 import { PRESENTATION_THEMES, WEB_THEME_IDS } from "@/lib/types";
 import type { PresentationThemeId } from "@/lib/types";
 import { BORDER, NAVY, GOLD, T2, T3, SURFACE, SURFACE_RAISE } from "../ui/tokens";
 import { openOnboarding } from "../ui/OnboardingModal";
 import { useTranslations } from "next-intl";
+import { dataLang } from "@/lib/lang";
 
 /* ── Speaker narrative — 2–4 sentence first-person prose derived from
-   the slide's title + data summary. Replaces the per-tone variants in
-   BuildMode that lived behind the old PRESENT overlay. The user can
-   override by clicking the block and editing inline. */
+   the slide's title + data summary. The user can override by clicking
+   the block and editing inline. Язык связок = язык ДАННЫХ (spec.md
+   2026-07-04): раньше обвязка была только английской. */
 function deriveSpeakerNarrative(title: string, summary: string): string {
-  return `Here's the story on ${title.toLowerCase().replace(/[.!?]+$/, "")}. ` +
-    `${summary} ` +
-    `That's the headline — happy to go deeper on the drivers or what we should do next.`;
+  const clean = title.replace(/[.!?]+$/, "");
+  return dataLang(title, summary) === "ru"
+    ? `Коротко о «${clean}». ${summary} Это главное — дальше могу разобрать причины и следующие шаги.`
+    : `Here's the story on ${clean.toLowerCase()}. ` +
+      `${summary} ` +
+      `That's the headline — happy to go deeper on the drivers or what we should do next.`;
 }
 
 /* ── Palette constants ───────────────────────────────────────────────────── */
@@ -30,36 +34,9 @@ const ACCENT_COLOR: Record<ColorAccent, string> = {
 };
 const mono = "'JetBrains Mono', monospace";
 
-/* ── Audience × Tone narrative lookup — drives SummaryBlock headline ──────
-   15 hardcoded variants (5 audiences × 3 tones). Falls back to
-   deriveSlideSummary() when the combination has no entry.              */
-const NARRATIVES: Record<BuildAudience, Record<BuildTone, string>> = {
-  CEO: {
-    Formal:  "Revenue contracted 18% in Q3, driven by mid-market churn — Jul marks the inflection point.",
-    Neutral: "Q3 showed an 18% revenue dip; July led the decline — mid-market churn is the primary story.",
-    Casual:  "Revenue dropped about a fifth in Q3 — mid-market fell off fast after July peaked.",
-  },
-  Board: {
-    Formal:  "Q3 revenue performance was 18% below plan; mid-market attrition is the primary risk vector.",
-    Neutral: "The board should note Q3's 18% revenue shortfall — mid-market churn explains most of the gap.",
-    Casual:  "Q3 was rough — revenue down 18%, mostly mid-market. Worth a focused discussion.",
-  },
-  Investor: {
-    Formal:  "Q3 revenue declined 18% year-over-year; mid-market churn represents a recoverable headwind.",
-    Neutral: "Q3 shows an 18% revenue decline — the mid-market segment is the key driver to watch.",
-    Casual:  "Revenue was down 18% in Q3. Mid-market is struggling, but the thesis holds long-term.",
-  },
-  Team: {
-    Formal:  "Team performance in Q3 resulted in an 18% revenue shortfall; root cause is mid-market retention.",
-    Neutral: "Q3 revenue was 18% lower than target — let's align on what drove mid-market churn.",
-    Casual:  "We missed Q3 by 18%. Mid-market churn hit hard — let's dig into why and what to change.",
-  },
-  Custom: {
-    Formal:  "The data indicates an 18% revenue contraction in Q3 attributable to mid-market segment attrition.",
-    Neutral: "Q3 revenue declined 18%; mid-market churn is the explanatory variable across the dataset.",
-    Casual:  "Revenue down 18% in Q3 — mid-market churn is telling a clear story in the data.",
-  },
-};
+/* (NARRATIVES — 15 выдуманных Audience×Tone заглушек про «Q3 −18%» — СНЯТЫ
+   2026-07-04, spec.md: запасной текст не может противоречить данным пользователя.
+   Без ИИ-нарратива показывается честная сводка deriveSlideSummary из чисел.) */
 
 /* (PanelSelect removed in Шаг 4d — its only consumer DeliverySettingsStrip is gone.) */
 
@@ -100,8 +77,6 @@ export function SlideEditor({ saveButton }: { saveButton?: React.ReactNode }) {
   const connections       = useWorkspaceStore(s => s.connections);
   const activeSlideId     = useWorkspaceStore(s => s.activeSlideId);
   const updateSlide       = useWorkspaceStore(s => s.updateSlide);
-  const audience          = useWorkspaceStore(s => s.buildAudience);
-  const tone              = useWorkspaceStore(s => s.buildTone);
   const narrMode          = useWorkspaceStore(s => s.buildNarrationMode);
   const presentationThemeId = useWorkspaceStore(s => s.presentationThemeId);
 
@@ -231,7 +206,7 @@ export function SlideEditor({ saveButton }: { saveButton?: React.ReactNode }) {
               {activeSlide.archetype !== "Quote" && (
                 <SummaryBlock
                   slide={activeSlide}
-                  summaryText={activeSlide.summary ?? NARRATIVES[audience]?.[tone] ?? deriveSlideSummary(activeDs.rows, activeDs.columns)}
+                  summaryText={activeSlide.summary ?? deriveSlideSummary(activeDs.rows, activeDs.columns)}
                   onChange={(s) => updateSlide(activeSlide.id, { summary: s })}
                 />
               )}

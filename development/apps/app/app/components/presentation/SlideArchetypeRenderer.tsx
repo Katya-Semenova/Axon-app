@@ -5,6 +5,7 @@ import { ChartFill } from "../ChartFill";
 import type { DataRow, ChartType } from "@/lib/mockData";
 import type { SlideArchetype } from "@/lib/types";
 import { NAVY, T2, T3, BORDER } from "../ui/tokens";
+import { dataLang } from "@/lib/lang";
 
 const mono = "'JetBrains Mono', monospace";
 const CREAM = "#F5F2EA";
@@ -378,9 +379,12 @@ export function SlideArchetypeRenderer(props: SlideArchetypeRendererProps) {
   );
 }
 
-/* ── Slide summary — factual, data-derived, tone-independent ─────────────── */
+/* ── Slide summary — factual, data-derived, tone-independent ───────────────
+   Язык фраз = язык ДАННЫХ (кириллица в метках/колонках → русский), spec.md
+   2026-07-04: раньше сводка была только английской и «протекала» в RU-деки. */
 export function deriveSlideSummary(rows: DataRow[], columns: string[]): string {
   if (!rows.length) return "";
+  const ru     = dataLang(...rows.map(r => r.label), ...(columns ?? [])) === "ru";
   const values = rows.map(r => r.values[0] ?? 0);
   const total  = values.reduce((s, v) => s + v, 0);
   const max    = Math.max(...values);
@@ -395,7 +399,9 @@ export function deriveSlideSummary(rows: DataRow[], columns: string[]): string {
   if (rows.length === 2) {
     const diff = Math.abs(values[0] - values[1]);
     const pct  = values[1] > 0 ? Math.round((values[0] / values[1] - 1) * 100) : 0;
-    return `${rows[0].label} (${fmt(values[0])}) leads ${rows[1].label} (${fmt(values[1])}) by ${fmt(diff)} — a ${Math.abs(pct)}% gap.`;
+    return ru
+      ? `${rows[0].label} (${fmt(values[0])}) опережает ${rows[1].label} (${fmt(values[1])}) на ${fmt(diff)} — разрыв ${Math.abs(pct)}%.`
+      : `${rows[0].label} (${fmt(values[0])}) leads ${rows[1].label} (${fmt(values[1])}) by ${fmt(diff)} — a ${Math.abs(pct)}% gap.`;
   }
 
   /* Multi-column: mention the peak row and period */
@@ -404,7 +410,10 @@ export function deriveSlideSummary(rows: DataRow[], columns: string[]): string {
     const mv  = Math.max(...allVals);
     const mri = rows.findIndex(r => r.values.includes(mv));
     const mci = rows[mri]?.values.indexOf(mv);
-    return `${rows[mri]?.label ?? "Top segment"} peaks at ${fmt(mv)} in ${columns[mci] ?? "period"} — cross-period spread is ${Math.round(((max - min) / (max || 1)) * 100)}%.`;
+    const spread = Math.round(((max - min) / (max || 1)) * 100);
+    return ru
+      ? `${rows[mri]?.label ?? "Лидер"}: пик ${fmt(mv)} в «${columns[mci] ?? "периоде"}» — разброс между периодами ${spread}%.`
+      : `${rows[mri]?.label ?? "Top segment"} peaks at ${fmt(mv)} in ${columns[mci] ?? "period"} — cross-period spread is ${spread}%.`;
   }
 
   /* Single-value rows — concentration analysis */
@@ -415,9 +424,13 @@ export function deriveSlideSummary(rows: DataRow[], columns: string[]): string {
   const botRow  = minRow;
 
   if (rows.length >= 8) {
-    return `${maxRow.label} leads at ${fmt(max)}; top ${topN} categories account for ${topPct}% of total — ${topPct > 70 ? "high concentration" : "moderate spread"}.`;
+    return ru
+      ? `${maxRow.label} лидирует с ${fmt(max)}; топ-${topN} категорий дают ${topPct}% итога — ${topPct > 70 ? "высокая концентрация" : "умеренный разброс"}.`
+      : `${maxRow.label} leads at ${fmt(max)}; top ${topN} categories account for ${topPct}% of total — ${topPct > 70 ? "high concentration" : "moderate spread"}.`;
   }
-  return `${maxRow.label} (${fmt(max)}) to ${botRow.label} (${fmt(min)}) — top ${topN} hold ${topPct}% of the total.`;
+  return ru
+    ? `${maxRow.label} (${fmt(max)}) против ${botRow.label} (${fmt(min)}) — топ-${topN} держит ${topPct}% итога.`
+    : `${maxRow.label} (${fmt(max)}) to ${botRow.label} (${fmt(min)}) — top ${topN} hold ${topPct}% of the total.`;
 }
 
 /* ── Archetype inference from data shape ─────────────────────────────────── */
