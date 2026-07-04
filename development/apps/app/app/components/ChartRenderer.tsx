@@ -116,12 +116,25 @@ function LollipopChart({ rows, expanded, containerWidth, containerHeight }: Char
 
   const mn = Math.min(...data), mx = Math.max(...data);
   const range = mx - mn || 1;
+  /* Минимальная ножка: самое маленькое значение НЕ ложится на ось — и ножка,
+     и точка остаются видимыми (2026-07-04: золотая точка минимума сидела на
+     строке подписей). Шкала сжимается на MIN_STEM сверху вниз. */
+  const MIN_STEM = expanded ? 14 : 12;
   const xv = (i: number) => pl + (i / Math.max(data.length - 1, 1)) * plotW;
-  const yv = (v: number) => pt + plotH - ((v - mn) / range) * plotH;
+  const yv = (v: number) => pt + (plotH - MIN_STEM) * (1 - (v - mn) / range);
 
   const baseline = pt + plotH;
   const lastIdx  = data.length - 1;
   const step     = expanded ? labelStep(data.length, plotW, labels) : Math.max(1, Math.floor(data.length / 4));
+
+  /* Подписи оси X: если последняя подпись показывается (прижата к правому краю,
+     anchor="end"), прячем те, что налезают на неё (ширина символа ≈6px @ fs10). */
+  const lastShown     = lastIdx % step === 0;
+  const lastLabelLeft = xv(lastIdx) - (labels[lastIdx]?.length ?? 0) * 6;
+  const labelVisible  = (i: number) =>
+    i % step === 0 &&
+    (!lastShown || i === lastIdx || i === 0 ||
+      xv(i) + (labels[i].length * 6) / 2 <= lastLabelLeft - 6);
 
   const dotR        = expanded ? 5 : 4;
   const currentDotR = expanded ? 8 : 6;
@@ -154,7 +167,7 @@ function LollipopChart({ rows, expanded, containerWidth, containerHeight }: Char
           {data[lastIdx]}
         </text>
       )}
-      {labels.map((l, i) => i % step === 0 && (
+      {labels.map((l, i) => labelVisible(i) && (
         <text key={i} x={r(xv(i))} y={H - 6}
           textAnchor={i === 0 ? "start" : i === lastIdx ? "end" : "middle"}
           fontSize="10" fill={INK_FAINT} fontFamily={MONO_FAMILY} fontWeight="500">{l}</text>
@@ -192,6 +205,15 @@ function SplineAreaChart({ rows, expanded, containerWidth, containerHeight }: Ch
     ? heroAbove
     : (last ? last.y + dotR + heroSize * 0.72 + 6 : 0);
 
+  /* Подписи оси X — та же защита от налезания на последнюю, что в Lollipop. */
+  const lastI         = data.length - 1;
+  const lastShown     = lastI >= 0 && lastI % step === 0;
+  const lastLabelLeft = (pts[lastI]?.x ?? 0) - (labels[lastI]?.length ?? 0) * 6;
+  const labelVisible  = (i: number) =>
+    i % step === 0 &&
+    (!lastShown || i === lastI || i === 0 ||
+      (pts[i]?.x ?? 0) + (labels[i].length * 6) / 2 <= lastLabelLeft - 6);
+
   return (
     <svg viewBox={`0 0 ${W} ${H}`} fill="none" {...svgAttrs(containerWidth, containerHeight, expanded)}>
       <defs>
@@ -215,7 +237,7 @@ function SplineAreaChart({ rows, expanded, containerWidth, containerHeight }: Ch
           )}
         </>
       )}
-      {labels.map((l, i) => i % step === 0 && (
+      {labels.map((l, i) => labelVisible(i) && (
         <text key={i} x={r(pts[i]?.x ?? 0)} y={H - 4}
           textAnchor={i === 0 ? "start" : i === data.length - 1 ? "end" : "middle"}
           fontSize="10" fill={INK_FAINT} fontFamily={MONO_FAMILY} fontWeight="500">{l}</text>
