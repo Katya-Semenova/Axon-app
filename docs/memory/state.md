@@ -46,6 +46,10 @@ standalone (порт 3101, `tests/e2e/server.sh`) на тестовой БД `ax
 `/init-project` и `/extend-library` + реестр скиллов `.claude/skills/_INDEX.md`; ADR-012
 (переезд в projects/ отложен осознанно). Чужие скиллы (skills.sh) — по требованию через
 `/extend-library`. Известный мелкий долг: 3 варианта save-session в ai-config — слить в один.
+**Задание 15 ✅ (04.07):** сеть README — корневой + docs/ + modules/ (человеческое объяснение
+библиотеки) + .claude/ + development/ + apps/app (заменён шаблонный) + packages/ui. Плюс по
+ревью соседа: одобрен его фикс пречека (ecd2ebf) и починен pre-tool-use-write (не блокирует
+правку файлов-детекторов).
 **Осталось в Уроке 7:** e2e-хвост (IDOR, файл через UI, шаринг, 429 — по мере надобности)
 → 13–14 (/ux-testing + финальный security-check) → 7–10 (библиотека модулей) → 15 (README)
 → 16 (финальный /save-session).

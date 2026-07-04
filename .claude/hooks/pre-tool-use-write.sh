@@ -14,6 +14,12 @@ case "$file" in
     exit 2 ;;
 esac
 
+# Файлы-детекторы (хуки и пречек) ЛЕГАЛЬНО содержат сигнатуры как шаблоны поиска —
+# их правку не блокируем, иначе хук ловит сам себя (замечание чата графиков 04.07).
+case "$file" in
+  */.claude/hooks/*|*scripts/security-precheck.sh) exit 0 ;;
+esac
+
 # Содержимое (для Write — content, для Edit — new_string). Ищем секреты по сигнатурам.
 body="$(printf '%s' "$input" | sed -nE 's/.*"(content|new_string)"[[:space:]]*:[[:space:]]*"(.*)".*/\2/p' | head -1)"
 [ -z "$body" ] && exit 0
