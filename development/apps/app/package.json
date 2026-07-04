@@ -9,6 +9,8 @@
     "lint": "eslint",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:e2e": "playwright test",
+    "test:all": "vitest run && playwright test",
     "email:dev": "email dev --dir emails"
   },
   "dependencies": {
@@ -35,6 +37,7 @@
     "zustand": "^5.0.2"
   },
   "devDependencies": {
+    "@playwright/test": "^1.61.1",
     "@react-email/ui": "^6.6.0",
     "@tailwindcss/postcss": "^4",
     "@types/d3-hierarchy": "^3.1.7",

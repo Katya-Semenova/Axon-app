@@ -15,7 +15,9 @@ KEY="${SSH_KEY_PATH/#\~/$HOME}"
 # ДО заливки кода на сервер. Пропуск РАЗОВО (осознанно): SKIP_TESTS=1 ./scripts/deploy-remote.sh
 if [ "${SKIP_TESTS:-0}" != "1" ]; then
   echo "→ Гейт: прогоняю тесты перед выкатом (пропуск разово: SKIP_TESTS=1)…"
-  (cd development && npm run test -w apps/app)
+  # test:all = Vitest (быстрые) + Playwright e2e (браузерные, против прод-сборки
+  # на тестовой БД; нужен apps/app/.env.test — см. docs/automations.md).
+  (cd development && npm run test:all -w apps/app)
   echo "→ Гейт: тесты зелёные, продолжаю деплой."
 fi
 

@@ -14,9 +14,9 @@
 | **Lint в сборке** | `next build` гоняет ESLint; замечания валят сборку (долг закрыт НАВСЕГДА, коммит `4efc5f6`) | Каждый `npm run build` (локально и в Docker-деплое) | **Да, блокирует сборку** | ~десятки секунд | Не отключать. Крайний случай: `next build --no-lint` разово руками — в конфиг не вносить |
 | **TypeScript-чек перед коммитом** | `npx tsc --noEmit` должен быть чистым (правило CLAUDE.md №4) | Перед каждым коммитом с кодом (дисциплина, не хук) | Да, по договорённости | ~30–60 сек | Для доко-коммитов не нужен; для кода не пропускать |
 | **Спека-первая (правило №1 AGENTS.md)** | Изменение поведения → сначала `docs/spec.md`, потом код | Каждая правка поведения (дисциплина + напоминание хука спеки) | По договорённости | 0 | Не отключается — железное правило |
-| **Гейт тестов pre-push** | `npm run test` (Vitest, 29 тестов) перед push; красные блокируют push. Хук: `scripts/git-hooks/pre-push` | `git push` (любой) | **Да, блокирует push** | ~5 сек | `git push --no-verify` (разово). Подключение на новой машине: `git config core.hooksPath scripts/git-hooks` |
-| **Гейт тестов в deploy** | Тот же прогон тестов ДО заливки кода на сервер (в `scripts/deploy-remote.sh`) | Каждый `./scripts/deploy-remote.sh` | **Да, останавливает выкат** | ~5 сек | `SKIP_TESTS=1 ./scripts/deploy-remote.sh` (разово) |
-| **Playwright e2e** *(планируется, Задание 5.1 ч.2)* | Браузерные тесты главных путей против прод-сборки + тестовой БД | Вручную + перед релизами | — | минуты | — |
+| **Гейт тестов pre-push** | `npm run test` (Vitest, 29 быстрых тестов) перед push; красные блокируют push. Хук: `scripts/git-hooks/pre-push` | `git push` (любой) | **Да, блокирует push** | ~5 сек | `git push --no-verify` (разово). Подключение на новой машине: `git config core.hooksPath scripts/git-hooks` |
+| **Гейт тестов в deploy** | `test:all` = Vitest + Playwright e2e ДО заливки кода на сервер (в `scripts/deploy-remote.sh`) | Каждый `./scripts/deploy-remote.sh` | **Да, останавливает выкат** | ~2–3 мин (сборка + e2e) | `SKIP_TESTS=1 ./scripts/deploy-remote.sh` (разово) |
+| **Playwright e2e** | 4 браузерных теста (регистрация+cookie, единая ошибка входа, гейты гостя) против прод-сборки standalone на тестовой БД `axon_test` (Neon). Запуск: `npm run test:e2e` в `apps/app`; нужен `apps/app/.env.test` (см. `tests/e2e/server.sh`) | В гейте деплоя + вручную | В деплое — да | ~2–3 мин | не запускать `test:e2e`; в деплое — `SKIP_TESTS=1` |
 
 ## Принципы
 

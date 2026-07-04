@@ -65,3 +65,7 @@ test-data/
 
 # локальный кэш хуков Claude (глушилки-маркеры) — не в репо
 .claude/.cache/
+
+# Playwright — отчёты и артефакты прогонов
+test-results/
+playwright-report/
