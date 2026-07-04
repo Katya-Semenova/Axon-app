@@ -125,7 +125,14 @@ function LollipopChart({ rows, expanded, containerWidth, containerHeight }: Char
 
   const dotR        = expanded ? 5 : 4;
   const currentDotR = expanded ? 8 : 6;
-  const heroSize    = expanded ? 20 : 14;
+  /* «Цифра-герой» — единый паттерн со Spline Area (крупно, левее маркера,
+     при пике у верхней кромки — под маркером). */
+  const heroSize    = expanded ? 36 : 14;
+  const heroX       = xv(lastIdx) - currentDotR - 8;
+  const heroAbove   = yv(data[lastIdx] ?? 0) - currentDotR - 8;
+  const heroY       = heroAbove - heroSize * 0.72 >= pt
+    ? heroAbove
+    : yv(data[lastIdx] ?? 0) + currentDotR + heroSize * 0.72 + 6;
 
   return (
     <svg viewBox={`0 0 ${W} ${H}`} fill="none" {...svgAttrs(containerWidth, containerHeight, expanded)}>
@@ -141,7 +148,7 @@ function LollipopChart({ rows, expanded, containerWidth, containerHeight }: Char
           fill={i === lastIdx ? ACCENT : SERIES[1]} />
       ))}
       {data.length > 0 && (
-        <text x={r(xv(lastIdx))} y={r(Math.max(pt + heroSize, yv(data[lastIdx]) - currentDotR - 6))}
+        <text x={r(heroX)} y={r(heroY)}
           textAnchor="end" fontSize={heroSize}
           fontFamily={FONT_DISPLAY} fill={ACCENT}>
           {data[lastIdx]}
@@ -174,6 +181,17 @@ function SplineAreaChart({ rows, expanded, containerWidth, containerHeight }: Ch
     : "";
   const step = expanded ? labelStep(data.length, plotW, labels) : Math.max(1, Math.floor(data.length / 4));
 
+  /* «Цифра-герой» у последней точки: крупно (слайд ×2, просьба 2026-07-04), правый
+     край текста ЛЕВЕЕ маркера (не наезжает на точку и не режется кромкой viewBox);
+     если пик у верхней кромки и сверху не помещается — подпись уходит ПОД маркер. */
+  const dotR      = expanded ? 5 : 4;
+  const heroSize  = expanded ? 36 : 13;
+  const heroX     = last ? last.x - dotR - 8 : 0;
+  const heroAbove = last ? last.y - dotR - 8 : 0;
+  const heroY     = last && heroAbove - heroSize * 0.72 >= pt
+    ? heroAbove
+    : (last ? last.y + dotR + heroSize * 0.72 + 6 : 0);
+
   return (
     <svg viewBox={`0 0 ${W} ${H}`} fill="none" {...svgAttrs(containerWidth, containerHeight, expanded)}>
       <defs>
@@ -187,10 +205,10 @@ function SplineAreaChart({ rows, expanded, containerWidth, containerHeight }: Ch
       {pd    && <path d={pd} stroke={SERIES[0]} strokeWidth="2" strokeLinecap="round" />}
       {last && (
         <>
-          <circle cx={r(last.x)} cy={r(last.y)} r={expanded ? 5 : 4} fill={ACCENT} />
+          <circle cx={r(last.x)} cy={r(last.y)} r={dotR} fill={ACCENT} />
           {data.length > 0 && (
-            <text x={r(last.x)} y={r(Math.max(pt + (expanded ? 16 : 12), last.y - (expanded ? 12 : 9)))}
-              textAnchor="end" fontSize={expanded ? 18 : 13}
+            <text x={r(heroX)} y={r(heroY)}
+              textAnchor="end" fontSize={heroSize}
               fontFamily={FONT_DISPLAY} fill={ACCENT}>
               {data[data.length - 1]}
             </text>
