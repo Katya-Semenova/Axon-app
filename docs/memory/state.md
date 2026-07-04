@@ -41,6 +41,11 @@ standalone (порт 3101, `tests/e2e/server.sh`) на тестовой БД `ax
 `docs/audits/security-check-final-MVP-2026-07-04.md`; восстановлены «всегда-включённые»
 слои: блокирующие хуки pre-tool-use-bash/-write, `scripts/security-precheck.sh` в гейте
 деплоя, `.claude/claude-security-guidance.md`; security-todo.md — post-launch список.
+**Задания 7–10 ✅ (04.07):** библиотека модулей `modules/` — 85 обезличенных промтов курса
+по 5 направлениям + `_INDEX.md` + AGENTS-карты + чекер/хук индексации + скиллы
+`/init-project` и `/extend-library` + реестр скиллов `.claude/skills/_INDEX.md`; ADR-012
+(переезд в projects/ отложен осознанно). Чужие скиллы (skills.sh) — по требованию через
+`/extend-library`. Известный мелкий долг: 3 варианта save-session в ai-config — слить в один.
 **Осталось в Уроке 7:** e2e-хвост (IDOR, файл через UI, шаринг, 429 — по мере надобности)
 → 13–14 (/ux-testing + финальный security-check) → 7–10 (библиотека модулей) → 15 (README)
 → 16 (финальный /save-session).
