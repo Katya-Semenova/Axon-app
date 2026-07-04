@@ -13,3 +13,8 @@ test("не-админ (гость) открывает /admin/users → 404, не
   const resp = await page.goto("/ai-studio/admin/users");
   expect(resp?.status()).toBe(404);
 });
+
+test("не-админ (гость) открывает /storybook на проде → 404 (Задание 12)", async ({ page }) => {
+  const resp = await page.goto("/ai-studio/storybook");
+  expect(resp?.status()).toBe(404);
+});
