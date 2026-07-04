@@ -419,6 +419,14 @@
   тип `DataSetSettings`, `DEFAULT_DATASET_SETTINGS` и экшен `updateDataSetSettings` (`lib/store.ts`)
   больше НЕ используются UI. Оставлены намеренно, чтобы не лезть в сохранённые доски (board JSON).
   Снести можно отдельной аккуратной правкой (с проверкой, что в старых досках поле не мешает).
+  - **+ найдено 2026-07-04:** `ui/ModeToggle.tsx` (старый переключатель «Data Mode/Presentation»,
+    живёт только в `/storybook`) и `build/BuildMode.tsx` (не импортируется никем) + их i18n-неймспейсы
+    `ModeToggle`/`Build` в `messages/*.json`. Сносить вместе с этим пунктом.
+
+- **Лендинг: 6 lint-замечаний (4 errors / 2 warnings) — старый долг, НЕ из правок 2026-07-04.**
+  `react-hooks/set-state-in-effect` (PrototypeShowcase:508, CookieConsent:47, page:287/305) +
+  `no-unused-vars` (page:230) + `no-img-element` (page:933). Лендинг в «lint-уборку навсегда»
+  (apps/app, `4efc5f6`) не входил; сборку не блокирует. Закрыть отдельной уборкой лендинга.
 
 ## Холст / связи и загрузка — UX (2026-06-17)
 
@@ -910,12 +918,13 @@ query-хвоста, ровно один. Или просто кинуть ссы
 - **Файлы:** `lib/insight-engine/ai-plan.ts`, `lib/ai/chat.ts`, `app/api/ai/{extract,chat}/route.ts`,
   `lib/insight-engine/index.ts`, `SlideEditor.tsx`, `SlideArchetypeRenderer.tsx`, `messages/{ru,en}.json`.
 
-## Slides — пустое состояние зовёт в «Data Mode», а вкладка называется «Canvas» (UX-баг, найдено 2026-07-02)
+## Slides — пустое состояние зовёт в «Data Mode» ✅ УЖЕ ЗАКРЫТО (коммит `675188b`, 2026-07-02; сверено 2026-07-04)
 
-- В пустом состоянии редактора слайдов текст советует «switch to **Data Mode** and drag a Data Set…»
-  (`SlideEditor.tsx:337-339`), но вкладка режима называется **CANVAS** (`ModeTabs.tsx:45`) — «Data Mode» не
-  существует. Инструкция указывает на несуществующий контрол → сбивает. Фикс: привести формулировку к «Canvas»
-  (заодно вынести строку в i18n — сейчас английская). Мелкий, но реальный баг терминологии.
+- Ревизия 2026-07-04: строка давно в i18n и говорит «Canvas»/«Холст» (`messages/*.json →
+  SlideEditor.emptyNoSlides`). Оставшиеся упоминания «Data Mode»/«Presentation Mode» живут ТОЛЬКО в
+  мёртвом наследии: `ui/ModeToggle.tsx` (используется лишь витриной `/storybook`) и
+  `build/BuildMode.tsx` (не импортируется никем) + их i18n-неймспейсы `ModeToggle`/`Build`.
+  Пользователь их не видит → не баг; кандидаты на снос — добавлены в пункт «мёртвый код» (Тулинг).
 
 ## Сервис — нет фавикона (иконки во вкладке браузера) ✅ ВЫПОЛНЕНО 2026-07-02 (коммит `3a95bbb`)
 > Скопированы бренд-иконки лендинга в `apps/app/app/` (`icon.svg` + `favicon.ico`, file-convention Next).
