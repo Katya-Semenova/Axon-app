@@ -32,8 +32,11 @@ scripts/git-hooks`) и деплой (`deploy-remote.sh`, обход `SKIP_TESTS=
 **5.1 часть 2 ✅ (04.07):** Playwright e2e — 4 теста (сценарии 1/2/4) против прод-сборки
 standalone (порт 3101, `tests/e2e/server.sh`) на тестовой БД `axon_test` (Neon, `.env.test` —
 не в git); ИИ в тестовом сервере выключен. Гейт деплоя → `test:all` (Vitest+e2e).
+**Задание 6 ✅ (04.07):** безопасная выкатка — правило №4 в AGENTS.md (боевая база
+неприкосновенна) + `docs/rules/production-safety.md` (порядок выката/отката, expand-contract)
++ smoke-проверка прода в конце `deploy-remote.sh` (красный smoke → стоп + подсказка отката).
 **Осталось в Уроке 7:** e2e-хвост (IDOR, файл через UI, шаринг, 429 — по мере надобности)
-→ Задание 6 (безопасная выкатка) → 12 (спрятать /storybook с прода)
+→ 12 (спрятать /storybook с прода)
 → 13–14 (/ux-testing + финальный security-check) → 7–10 (библиотека модулей) → 15 (README)
 → 16 (финальный /save-session).
 

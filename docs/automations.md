@@ -16,6 +16,7 @@
 | **Спека-первая (правило №1 AGENTS.md)** | Изменение поведения → сначала `docs/spec.md`, потом код | Каждая правка поведения (дисциплина + напоминание хука спеки) | По договорённости | 0 | Не отключается — железное правило |
 | **Гейт тестов pre-push** | `npm run test` (Vitest, 29 быстрых тестов) перед push; красные блокируют push. Хук: `scripts/git-hooks/pre-push` | `git push` (любой) | **Да, блокирует push** | ~5 сек | `git push --no-verify` (разово). Подключение на новой машине: `git config core.hooksPath scripts/git-hooks` |
 | **Гейт тестов в deploy** | `test:all` = Vitest + Playwright e2e ДО заливки кода на сервер (в `scripts/deploy-remote.sh`) | Каждый `./scripts/deploy-remote.sh` | **Да, останавливает выкат** | ~2–3 мин (сборка + e2e) | `SKIP_TESTS=1 ./scripts/deploy-remote.sh` (разово) |
+| **Smoke после деплоя** | curl-проверка, что лендинг и `/ai-studio/login` живы сразу после выката (+ напоминание о ручном 2-мин прогоне) | Конец каждого `./scripts/deploy-remote.sh` | **Да**: красный smoke = стоп с подсказкой отката (`docs/rules/production-safety.md`) | ~секунды | никак не отключается (это последний рубеж; выкат уже случился — smoke только сообщает) |
 | **Playwright e2e** | 4 браузерных теста (регистрация+cookie, единая ошибка входа, гейты гостя) против прод-сборки standalone на тестовой БД `axon_test` (Neon). Запуск: `npm run test:e2e` в `apps/app`; нужен `apps/app/.env.test` (см. `tests/e2e/server.sh`) | В гейте деплоя + вручную | В деплое — да | ~2–3 мин | не запускать `test:e2e`; в деплое — `SKIP_TESTS=1` |
 
 ## Принципы

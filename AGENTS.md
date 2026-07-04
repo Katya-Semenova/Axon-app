@@ -28,6 +28,11 @@
 защита от двойного submit, формат дат, i18n, empty states, basePath). Меняется само сквозное
 правило → правь `_global.md` в ТОМ ЖЕ коммите. Паспорт конкретного экрана — `docs/screens/<screen>.md`.
 
+### 4. Боевая база неприкосновенна
+На проде запрещены `prisma migrate reset`, seed с очисткой, массовое удаление — там реальные
+данные людей. Только `prisma migrate deploy` после бэкапа; миграции expand-contract.
+Порядок выката и отката — `docs/rules/production-safety.md`.
+
 ## Правила (читать по триггеру)
 
 | Когда | Файл |
@@ -41,6 +46,7 @@
 | Хуки-страховки (как устроены, как добавить свой) | `docs/rules/hooks-guardrails.md` |
 | Все автоматизации: что срабатывает само и как отключить | `docs/automations.md` |
 | Запуск dev-сервера / автотестов локально | `docs/rules/dev-server.md` |
+| Выкат на прод / миграции БД / откат | `docs/rules/production-safety.md` |
 | Деплой / инфра | `docs/memory/infrastructure.md` |
 
 ## Активная работа
