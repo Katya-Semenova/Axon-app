@@ -193,7 +193,7 @@ export function SlideEditor({ saveButton }: { saveButton?: React.ReactNode }) {
                   <span style={{ fontFamily: "var(--slide-font-mono)", fontSize: 11, color: T3, flexShrink: 0 }}>{serial} /</span>
                   <span style={{
                     fontFamily: "var(--slide-font-display)",
-                    fontSize: 32, fontWeight: 500, color: "var(--slide-title)",
+                    fontSize: 32, fontWeight: "var(--slide-title-weight, 500)" as React.CSSProperties["fontWeight"], color: "var(--slide-title)",
                     lineHeight: 1.05, letterSpacing: "-0.3px",
                     overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
                   }}>
@@ -324,7 +324,7 @@ function SummaryBlock({
           style={{
             width: "100%",
             fontFamily: "var(--slide-font-display)",
-            fontSize: 16.5, fontWeight: 500, lineHeight: 1.4,
+            fontSize: 16.5, fontWeight: "var(--slide-body-weight, 500)" as React.CSSProperties["fontWeight"], lineHeight: 1.4,
             color: "var(--slide-title)",
             background: "transparent",
             border: "none", outline: "none", resize: "vertical",
@@ -336,7 +336,7 @@ function SummaryBlock({
           title={t("clickToEdit")}
           style={{
             fontFamily: "var(--slide-font-display)",
-            fontSize: 16.5, fontWeight: 500, lineHeight: 1.4,
+            fontSize: 16.5, fontWeight: "var(--slide-body-weight, 500)" as React.CSSProperties["fontWeight"], lineHeight: 1.4,
             color: "var(--slide-title)",
             cursor: "text",
           }}

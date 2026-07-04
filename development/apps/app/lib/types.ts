@@ -301,6 +301,10 @@ export const PRESENTATION_THEMES: PresentationTheme[] = [
       /* Heatmap (тема Б): светло-серый → красный акцент. */
       "--slide-heat-from":    "#EFEFEF",
       "--slide-heat-to":      "#D72638",
+      /* «Постерный» контраст веса (план тем 2026-06-28): заголовок-плакат 900,
+         текст сводки лёгкий 300. Другие темы токен не задают → фолбэк 500. */
+      "--slide-title-weight": "900",
+      "--slide-body-weight":  "300",
     },
   },
   {

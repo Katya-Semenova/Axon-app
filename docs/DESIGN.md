@@ -218,6 +218,8 @@ components:
   `--slide-border` (hairline) · `--slide-muted` · `--slide-axis` (оси/сетка) · `--slide-radius` ·
   `--slide-chart-radius` (скругление баров/плиток графиков — отдельно от `--slide-radius` карточки) ·
   `--slide-block-pad` · `--slide-title-align` · `--slide-font-display`/`-body`/`-mono` ·
+  `--slide-title-weight`/`--slide-body-weight` (опц., 2026-07-04: вес заголовка слайда и текста
+  сводки; фолбэк 500 = прежний вид. **Swiss задаёт 900↔300 — «постерный» контраст веса**, ДНК темы) ·
   `--slide-series-1..7` (палитра рядов графиков) · `--slide-tm-ink` (подписи на залитых плитках treemap) ·
   `--slide-heat-from`/`--slide-heat-to` (шкала heatmap low→high; клетки мешаются через CSS `color-mix`;
   фолбэк вне тем — крем→navy) · `--slide-heat-mid` (опц., 2026-07-04: средний стоп шкалы; фолбэк —

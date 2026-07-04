@@ -83,7 +83,8 @@ export function PublicDeckView({ deck }: { deck: PublicDeck | null }) {
             <div style={{ padding: "22px 32px 0", flexShrink: 0 }}>
               <h2 style={{
                 margin: 0, fontFamily: "var(--slide-font-display)", color: "var(--slide-title)",
-                fontSize: 24, lineHeight: 1.15, fontWeight: 500,
+                fontSize: 24, lineHeight: 1.15,
+                fontWeight: "var(--slide-title-weight, 500)" as React.CSSProperties["fontWeight"],
               }}>
                 {ds.title}
               </h2>
@@ -100,7 +101,8 @@ export function PublicDeckView({ deck }: { deck: PublicDeck | null }) {
               padding: "14px 20px",
             }}>
               <div style={{
-                fontFamily: "var(--slide-font-display)", fontSize: 15.5, fontWeight: 500,
+                fontFamily: "var(--slide-font-display)", fontSize: 15.5,
+                fontWeight: "var(--slide-body-weight, 500)" as React.CSSProperties["fontWeight"],
                 lineHeight: 1.4, color: "var(--slide-title)",
               }}>
                 {summary}
