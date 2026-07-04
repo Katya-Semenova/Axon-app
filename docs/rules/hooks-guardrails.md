@@ -78,3 +78,22 @@ PostToolUse не может откатить правку; смысл — что
 (массив `hooks.PreToolUse`, matcher `Read`).
 
 **Как отключить.** Убрать его блок из `hooks.PreToolUse` в `.claude/settings.json`.
+
+---
+
+## pre-tool-use-bash / pre-tool-use-write (PreToolUse, БЛОКИРУЮЩИЕ)
+
+**Зачем.** Урок 7, Задание 14: страховка от разрушительных действий AI. В отличие от
+предупреждающих хуков выше, эти **запрещают** действие (`exit 2`) — Claude видит причину
+и меняет план; нужное «опасное» действие пользователь выполняет руками.
+
+**`pre-tool-use-bash.sh`** (matcher `Bash`) блокирует: `rm -rf` по корню/дому,
+`prisma migrate reset`, `DROP DATABASE/SCHEMA`/`TRUNCATE`, force-push в main, `killall node`.
+Паттерны узкие — обычная работа не задевается.
+
+**`pre-tool-use-write.sh`** (matcher `Edit|Write`) блокирует: правку `.env.production`
+(боевые секреты — руками на сервере), запись приватных ключей (`BEGIN … PRIVATE KEY`)
+и живых API-ключей (`sk-or-v1-…`, `AKIA…`) вне gitignored `.env*`.
+
+**Проверены вживую 04.07** (bash-хук даже заблокировал собственный тест — работает).
+**Как отключить.** Убрать соответствующий блок из `hooks.PreToolUse` — осознанно и временно.

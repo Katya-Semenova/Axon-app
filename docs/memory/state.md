@@ -35,8 +35,13 @@ standalone (порт 3101, `tests/e2e/server.sh`) на тестовой БД `ax
 **Задание 6 ✅ (04.07):** безопасная выкатка — правило №4 в AGENTS.md (боевая база
 неприкосновенна) + `docs/rules/production-safety.md` (порядок выката/отката, expand-contract)
 + smoke-проверка прода в конце `deploy-remote.sh` (красный smoke → стоп + подсказка отката).
+**Задание 12 ✅ (04.07):** /storybook на проде — только админ (ADMIN_EMAIL), чужим 404;
+цепочка spec→test→код, e2e 5/5. **Задания 13–14 ✅ (04.07):** скилл `/ux-testing`
+(.claude/skills) + финальный сводный security-check — критичных НЕТ, отчёт
+`docs/audits/security-check-final-MVP-2026-07-04.md`; восстановлены «всегда-включённые»
+слои: блокирующие хуки pre-tool-use-bash/-write, `scripts/security-precheck.sh` в гейте
+деплоя, `.claude/claude-security-guidance.md`; security-todo.md — post-launch список.
 **Осталось в Уроке 7:** e2e-хвост (IDOR, файл через UI, шаринг, 429 — по мере надобности)
-→ 12 (спрятать /storybook с прода)
 → 13–14 (/ux-testing + финальный security-check) → 7–10 (библиотека модулей) → 15 (README)
 → 16 (финальный /save-session).
 

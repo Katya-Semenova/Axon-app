@@ -9,6 +9,24 @@
             "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/pre-read-suggest.sh\""
           }
         ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/pre-tool-use-bash.sh\""
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/pre-tool-use-write.sh\""
+          }
+        ]
       }
     ],
     "PostToolUse": [

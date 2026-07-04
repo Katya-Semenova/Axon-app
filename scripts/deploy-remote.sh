@@ -11,6 +11,10 @@ cd "$(dirname "$0")/.."
 set -a; source .env.deploy; set +a
 KEY="${SSH_KEY_PATH/#\~/$HOME}"
 
+# Security-precheck (Урок 7, Задание 14): секреты в git → стоп деплой.
+echo "→ Security-precheck…"
+bash scripts/security-precheck.sh
+
 # Гейт тестов перед выкатом (Урок 7, Задание 5.1): красные тесты останавливают деплой
 # ДО заливки кода на сервер. Пропуск РАЗОВО (осознанно): SKIP_TESTS=1 ./scripts/deploy-remote.sh
 if [ "${SKIP_TESTS:-0}" != "1" ]; then
