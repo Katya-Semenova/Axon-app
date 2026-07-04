@@ -43,3 +43,8 @@
 - Реальная загрузка проверяется **на проде** (ключи только на сервере); локально без
   ключей загрузка вернёт понятную ошибку, сборка/типы не страдают.
 - Антиспам загрузок (rate-limit) — Шаг 9.
+
+## IMPL — где решение живёт в коде
+IMPL: development/apps/app/lib/storage.ts
+IMPL: development/apps/app/app/api/files/
+IMPL: development/apps/app/app/api/avatar/

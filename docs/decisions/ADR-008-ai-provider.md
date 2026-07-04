@@ -69,3 +69,8 @@
 - UI-дисклоуз «данные уходят провайдеру» — в бэклог (для MVP зафиксировано здесь).
 - GigaChat-адаптер — заготовка; полная проверка боем при включении на проде.
 - Промт урока `prompts/01-ai-openrouter.md` адаптирован под наш агностичный слой.
+
+## IMPL — где решение живёт в коде
+IMPL: development/apps/app/lib/ai/
+IMPL: development/apps/app/lib/insight-engine/ai-plan.ts
+IMPL: development/apps/app/app/api/ai/

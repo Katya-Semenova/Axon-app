@@ -41,3 +41,8 @@
   общий security-check — **Шаг 13**. Многоагентного ревью `/new-feature` не делали
   (скилл не установлен) → security закрываем на этих шагах.
 - Подтверждение email выключено в v1; включим на Шаге 6 (письма).
+
+## IMPL — где решение живёт в коде
+IMPL: development/apps/app/lib/auth.ts
+IMPL: development/apps/app/lib/auth-client.ts
+IMPL: development/apps/app/app/api/auth/[...all]/route.ts

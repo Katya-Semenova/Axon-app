@@ -64,3 +64,7 @@ ru/en): локаль хранится в cookie, по умолчанию опр�
   путям `/login`,`/api`,`/p`… — теперь всё это ушло под `/ai-studio`, делить нечего).
 - **Cookie входа/языка** по-прежнему общие (тот же origin `axon-app.ru`) — выгода решения сохранена.
 - **Откат:** убрать `basePath` + вернуть `BETTER_AUTH_URL` без префикса; правка маленькая.
+
+## IMPL — где решение живёт в коде
+IMPL: development/apps/app/next.config.ts
+IMPL: development/apps/app/lib/base-path.ts

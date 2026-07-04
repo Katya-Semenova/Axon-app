@@ -73,3 +73,9 @@ axon-app/
   избыточно. Отклонено в пользу «только токены».
 - **Чинить деплой вслепую в Шаге 0** (по букве урока) — риск сломать живой прод без проверки.
   Отклонено в пользу починки вживую в Шаге 1.
+
+## IMPL — где решение живёт в коде
+IMPL: development/package.json
+IMPL: development/packages/ui/
+IMPL: development/apps/app/Dockerfile
+IMPL: development/apps/landing/Dockerfile

@@ -58,3 +58,9 @@
 - Деплой меняется: вместо «git push → Vercel сам» — сборка/деплой на сервере через `deploy.sh`.
 - ADR-001 помечается superseded.
 - Перед закладкой деталей — проверить оплату/доступ Selectel из РФ и завести домен.
+
+## IMPL — где решение живёт в коде
+IMPL: docker-compose.yml
+IMPL: deploy.sh
+IMPL: scripts/deploy-remote.sh
+IMPL: docs/memory/infrastructure.md

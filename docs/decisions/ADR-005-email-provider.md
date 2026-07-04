@@ -43,3 +43,7 @@
 - **Отложено:** подтверждение email (verify-email) — после Урока 5 (переключатель
   `requireEmailVerification` + один шаблон). Rate-limit на `/api/auth/*` против
   email-бомбинга — Шаг 9 (пока дефолтный лимит Better Auth).
+
+## IMPL — где решение живёт в коде
+IMPL: development/apps/app/lib/email.ts
+IMPL: development/apps/app/emails/
