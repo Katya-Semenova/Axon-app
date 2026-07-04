@@ -96,13 +96,13 @@ export function PublicDeckView({ deck }: { deck: PublicDeck | null }) {
             <div style={{
               flexShrink: 0,
               margin: "18px 28px 6px",
-              /* Мягче на ~30% — зеркалит SummaryBlock редактора (2026-07-04). */
-              background: "color-mix(in srgb, var(--slide-muted) 70%, var(--slide-bg, #FBF9F3))",
+              /* Мягче наполовину — зеркалит SummaryBlock редактора (2026-07-04). */
+              background: "color-mix(in srgb, var(--slide-muted) 50%, var(--slide-bg, #FBF9F3))",
               borderLeft: "4px solid var(--slide-accent)",
               padding: "14px 20px",
             }}>
               <div style={{
-                fontFamily: "var(--slide-font-display)", fontSize: 15.5,
+                fontFamily: "var(--slide-font-summary, var(--slide-font-display))", fontSize: 15.5,
                 fontStyle: "var(--slide-summary-style, normal)" as React.CSSProperties["fontStyle"],
                 fontWeight: "var(--slide-body-weight, 500)" as React.CSSProperties["fontWeight"],
                 lineHeight: 1.4, color: "var(--slide-title)",

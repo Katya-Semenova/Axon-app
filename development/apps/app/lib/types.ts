@@ -265,9 +265,13 @@ export const PRESENTATION_THEMES: PresentationTheme[] = [
       "--slide-heat-to":       "#1B2840",
       "--slide-heat-ink-mid":  "#5C6478",
       "--slide-heat-ink-high": "#F5F2EA",
-      /* Журнальный курсив сводки (решение 2026-07-04): сериф-италик — «лид»
-         как в журнале. Только Editorial; гротеск-темам курсив не идёт. */
+      /* Журнальный курсив сводки (решение 2026-07-04): НАСТОЯЩИЙ Old Standard TT
+         Italic (загружен в layout.tsx с кириллицей) — «лид» как в журнале.
+         Вес 400 = единственная реальная гарнитура Old Standard (без фальш-жирного).
+         Только Editorial; гротеск-темам курсив не идёт. */
       "--slide-summary-style": "italic",
+      "--slide-font-summary":  "var(--font-old-standard), 'Old Standard TT', Georgia, serif",
+      "--slide-body-weight":   "400",
     },
   },
   {
