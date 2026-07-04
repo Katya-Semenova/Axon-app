@@ -9,7 +9,7 @@ import { InsightCard } from "./InsightCard";
 import { DataSetCard } from "./DataSetCard";
 import {
   GOLD, NAVY, NAVY_300, BORDER, T2, T3, SURFACE, SURFACE_MUTED,
-  CARD_W, CARD_H_EST, COL_GAP,
+  CARD_W, CARD_H_EST, COL_GAP, CANVAS_HEAT_VARS,
 } from "../ui/tokens";
 import { openOnboarding } from "../ui/OnboardingModal";
 
@@ -252,7 +252,7 @@ export function Canvas({ saveButton }: { saveButton?: React.ReactNode }) {
      so it doesn't "follow" a dataset card that is being dragged. */
 
   return (
-    <section className="flex-1 min-h-0 flex flex-col overflow-hidden">
+    <section className="flex-1 min-h-0 flex flex-col overflow-hidden" style={CANVAS_HEAT_VARS}>
       {/* Toolbar */}
       <div
         className="grid grid-cols-[1fr_auto_1fr] items-center shrink-0 border-b border-border px-6 h-[64px]"

@@ -7,7 +7,7 @@ import { ChartTypeDropdown } from "../ui/ChartTypeDropdown";
 import { DataTable } from "../DataTable";
 import { useWorkspaceStore } from "@/lib/store";
 import type { DataSet, Insight, ChartType } from "@/lib/types";
-import { BORDER, T3, SURFACE, SURFACE_RAISE } from "../ui/tokens";
+import { BORDER, T3, SURFACE, SURFACE_RAISE, CANVAS_HEAT_VARS } from "../ui/tokens";
 import { BackButton } from "../ui/BackButton";
 import { useTranslations } from "next-intl";
 
@@ -55,7 +55,7 @@ function DataSetExpandedView({ dataSet, insights }: {
       exit={{ opacity: 0 }}
       transition={{ duration: 0.2, ease: "easeInOut" }}
       className="absolute inset-0 z-20 flex flex-col"
-      style={{ background: SURFACE_RAISE }}
+      style={{ background: SURFACE_RAISE, ...CANVAS_HEAT_VARS }}
     >
       {/* Header */}
       <div

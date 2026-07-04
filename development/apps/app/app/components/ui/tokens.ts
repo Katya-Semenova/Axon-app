@@ -4,6 +4,7 @@
  * Tailwind utilities (mostly because they animate or compute colors), so
  * they pull these constants instead of repeating hex literals.
  */
+import type { CSSProperties } from "react";
 
 export const NAVY          = "#1B2840";
 /* navy-700 — заливки действий/данных: чат-бабблы, серии графиков (решение 2026-06-22, DESIGN.md).
@@ -38,3 +39,16 @@ export const CARD_W     = 200;   /* insight card width (reduced for compact layo
 export const HERO_W     = 360;
 export const CARD_H_EST = 130;   /* realistic insight card height estimate */
 export const COL_GAP    = 14;
+
+/* Тепловая шкала ПРИЛОЖЕНИЯ (холст / drill-in — вне тем деки): фирменный
+   Editorial-градиент GOLD→крем→NAVY + цвета цифр по зонам. Кладётся style'ом
+   на корни канвасных поверхностей (запрос пользователя 2026-07-04: «холст —
+   как в слайдах»). Темы деки задают СВОИ значения на корне деки и сюда не
+   заглядывают. Словарь токенов — DESIGN.md → `--slide-heat-*`. */
+export const CANVAS_HEAT_VARS = {
+  "--slide-heat-from":     "#B89548",
+  "--slide-heat-mid":      "#E9E4D5",
+  "--slide-heat-to":       "#1B2840",
+  "--slide-heat-ink-mid":  "#5C6478",
+  "--slide-heat-ink-high": "#F5F2EA",
+} as CSSProperties;
