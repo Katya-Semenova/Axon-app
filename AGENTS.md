@@ -40,6 +40,7 @@
 | Старт/конец сессии, сохранение прогресса | `docs/rules/session-continuity.md` |
 | Хуки-страховки (как устроены, как добавить свой) | `docs/rules/hooks-guardrails.md` |
 | Все автоматизации: что срабатывает само и как отключить | `docs/automations.md` |
+| Запуск dev-сервера / автотестов локально | `docs/rules/dev-server.md` |
 | Деплой / инфра | `docs/memory/infrastructure.md` |
 
 ## Активная работа
