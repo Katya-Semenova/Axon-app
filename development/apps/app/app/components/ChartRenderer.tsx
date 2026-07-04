@@ -466,12 +466,20 @@ function StackedBarChart({ rows, columns, expanded, containerWidth, containerHei
 
   const maxTotal = Math.max(...rows.map(row => row.values.reduce((s, v) => s + v, 0)));
 
+  /* Легенда серий: шаг записи считается от доступной ширины (был жёсткий 72px —
+     русские названия колонок въезжали в следующий квадратик), метки режутся с «…». */
+  const LEG_MARKER = 14;                                   // квадратик 10 + зазор 4
+  const legAvail   = W - pl - 8;
+  const legEntryW  = Math.max(46, legAvail / Math.max(1, columns.length));
+  const legMaxCh   = Math.max(3, Math.floor((legEntryW - LEG_MARKER - 8) / (11 * 0.6)));
+  const legLabel   = (c: string) => (c.length > legMaxCh ? c.slice(0, legMaxCh - 1) + "…" : c);
+
   return (
     <svg viewBox={`0 0 ${W} ${H}`} fill="none" {...svgAttrs(containerWidth, containerHeight, expanded)}>
       {columns.map((col, i) => (
-        <g key={i} transform={`translate(${pl + i * 72}, 12)`}>
+        <g key={i} transform={`translate(${pl + i * legEntryW}, 12)`}>
           <rect x="0" y="-7" width="10" height="6" rx="1" fill={SERIES[i % SERIES.length]} />
-          <text x="14" y="0" fontSize="11" fill={INK_MUTED} fontFamily={SANS_FAMILY}>{col}</text>
+          <text x="14" y="0" fontSize="11" fill={INK_MUTED} fontFamily={SANS_FAMILY}>{legLabel(col)}</text>
         </g>
       ))}
       {rows.map((row, i) => {
@@ -1004,10 +1012,16 @@ function DotMatrixChart({ rows, expanded, containerWidth, containerHeight }: Cha
         // Шаг 24px под двухстрочный блок (метка + %), иначе % налезает на метку следующей записи.
         const ly = startY + 6 + ri * 24;
         if (ly > startY + gridH) return null;   // hide overflow rows on tiny canvases
+        /* Бюджет метки: от начала текста до правого края — без обрезки длинные
+           русские метки уезжали за пределы графика. */
+        const legX     = startX + gridW + 16;
+        const legMaxCh = Math.max(3, Math.floor((W - legX - 11 - 6) / (10 * 0.6)));
+        const legLbl   = row.label.length > legMaxCh
+          ? row.label.slice(0, legMaxCh - 1) + "…" : row.label;
         return (
-          <g key={ri} transform={`translate(${r(startX + gridW + 16)}, ${r(ly)})`}>
+          <g key={ri} transform={`translate(${r(legX)}, ${r(ly)})`}>
             <circle cx="3" cy="0" r="3.5" fill={SERIES[ri % SERIES.length]} />
-            <text x="11" y="3" fontSize="10" fill={INK_MUTED} fontFamily={SANS_FAMILY}>{row.label}</text>
+            <text x="11" y="3" fontSize="10" fill={INK_MUTED} fontFamily={SANS_FAMILY}>{legLbl}</text>
             <text x="11" y="15" fontSize="9" fill={INK_FAINT} fontFamily={MONO_FAMILY}>{counts[ri]}%</text>
           </g>
         );
@@ -1061,17 +1075,21 @@ function MapChart({ rows, expanded, containerWidth, containerHeight }: ChartProp
       {/* Legend row */}
       {sorted.slice(0, 6).map((row, ri) => {
         const maxCols  = Math.min(sorted.length, 6);
-        const lx       = padX + ri * Math.floor((W - padX * 2) / maxCols);
+        const colW     = Math.floor((W - padX * 2) / maxCols);
+        const lx       = padX + ri * colW;
         const ly       = H - legendH + 8;
         const pct      = total > 0 ? Math.round((row.values[0] ?? 0) / total * 100) : 0;
-        // −5 символов под « NN%», иначе процент вылезает в соседнюю запись.
-        const maxChars = Math.max(3, Math.floor((W - padX * 2) / maxCols / 5.5) - 5);
+        // Бюджет колонки МИНУС маркер (11px) и зазор; −5 символов под « NN%» —
+        // иначе текст упирался в маркер соседней записи.
+        const maxChars = Math.max(3, Math.floor((colW - 16) / 5.5) - 5);
+        const lbl      = row.label.length > maxChars
+          ? row.label.slice(0, maxChars - 1) + "…" : row.label;
         return (
           <g key={ri}>
             <circle cx={r(lx + dotR)} cy={r(ly + dotR)} r={dotR} fill={SERIES[ri % SERIES.length]} />
             <text x={r(lx + dotR * 2 + 4)} y={r(ly + dotR * 2)}
               fontSize="9" fontFamily={MONO_FAMILY} fill={INK_MUTED}>
-              {row.label.slice(0, maxChars)} {pct}%
+              {lbl} {pct}%
             </text>
           </g>
         );
