@@ -32,7 +32,14 @@
 
 | Когда | Файл |
 |---|---|
-| Перед коммитом | `docs/rules/commits.md` *(появится на следующих уроках)* |
+| UI: страницы / компоненты / стили (запрет хардкода) | `docs/rules/ui-components-first.md` |
+| DESIGN.md / токены / новый цвет или шрифт | `docs/rules/design-system-first.md` |
+| Правка экрана или поведения (перед изменением логики) | `docs/rules/spec-first.md` |
+| Перед «готово» / перед коммитом (что проверить) | `docs/rules/verification.md` |
+| Завершил шаг → коммит (как коммитить; push — за пользователем) | `docs/rules/commits.md` |
+| Старт/конец сессии, сохранение прогресса | `docs/rules/session-continuity.md` |
+| Хуки-страховки (как устроены, как добавить свой) | `docs/rules/hooks-guardrails.md` |
+| Все автоматизации: что срабатывает само и как отключить | `docs/automations.md` |
 | Деплой / инфра | `docs/memory/infrastructure.md` |
 
 ## Активная работа
