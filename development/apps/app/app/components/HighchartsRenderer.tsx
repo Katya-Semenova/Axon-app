@@ -24,6 +24,7 @@ import "highcharts/highcharts-more";      // база для dumbbell/lollipop (
 import "highcharts/modules/dumbbell";     // lollipop построен поверх dumbbell
 import "highcharts/modules/lollipop";
 import "highcharts/modules/treemap";      // волна 2
+import "highcharts/modules/item-series";  // волна 2: Dot Matrix (тип item)
 import "highcharts/modules/accessibility"; // клавиатура/скринридеры для Interactive-дашборда
 import type { DataRow, ChartType } from "@/lib/mockData";
 
@@ -611,6 +612,76 @@ function treemapOptions(
   };
 }
 
+/* ── Dot Matrix (волна 2) — тип item, прямоугольная сетка 10×10 = 100 точек.
+   Доли считаем как родной DotMatrixChart: floor от процента, остаток до 100
+   раздаётся строкам с наибольшей дробной частью — сумма точек всегда 100.
+   Цвета series-1…6 по кругу, легенда справа «метка · N%». */
+function dotMatrixOptions(
+  t: SlideTokens, base: Highcharts.Options,
+  rows: DataRow[],
+): Highcharts.Options {
+  if (!rows.length) {
+    return {
+      ...base,
+      subtitle: {
+        text: "No data",
+        align: "center", verticalAlign: "middle",
+        style: { color: t.inkFaint, fontSize: "11px", fontFamily: t.fontMono },
+      },
+      series: [],
+    };
+  }
+
+  const total = rows.reduce((s, row) => s + (row.values[0] ?? 0), 0) || 1;
+  const shares = rows.map((row) => ((row.values[0] ?? 0) / total) * 100);
+  const counts = shares.map((s) => Math.floor(s));
+  const remainder = 100 - counts.reduce((s, c) => s + c, 0);
+  const fracs = shares.map((s, i) => ({ frac: s - Math.floor(s), idx: i }))
+    .sort((a, b) => b.frac - a.frac);
+  for (let i = 0; i < remainder && fracs.length; i++) {
+    counts[fracs[i % fracs.length].idx]++;
+  }
+
+  const data = rows.map((row, ri) => ({
+    name: row.label,
+    y: counts[ri],
+    color: t.series[ri % t.series.length],
+  }));
+
+  return {
+    ...base,
+    legend: {
+      enabled: true,
+      align: "right", verticalAlign: "middle", layout: "vertical",
+      itemStyle: { color: t.inkMuted, fontSize: "11px", fontFamily: t.fontBody, fontWeight: "normal" },
+      itemHoverStyle: { color: t.ink },
+      labelFormatter: function () {
+        const p = this as Highcharts.Point;
+        return `${p.name} · ${p.y ?? 0}%`;
+      },
+    },
+    tooltip: {
+      ...base.tooltip,
+      pointFormatter: function () {
+        return `<b>${this.y ?? 0}%</b>`;
+      },
+    },
+    series: [{
+      type: "item",
+      name: "Share",
+      data,
+      layout: "horizontal",
+      rows: 10,                    // 10×10 — сетка родного рендера
+      itemPadding: 0.25,
+      /* Плоские точки, как у родного: у item обводка задаётся на серии (как у pie). */
+      borderWidth: 0,
+      marker: { symbol: "circle", lineWidth: 0 },
+      dataLabels: { enabled: false },
+      showInLegend: true,
+    } as Highcharts.SeriesOptionsType],
+  };
+}
+
 function columnOptions(
   t: SlideTokens, base: Highcharts.Options,
   rows: DataRow[], columns: string[],
@@ -679,6 +750,9 @@ export function HighchartsRenderer({ rows, columns, chartType, expanded, contain
         break;
       case "Treemap":
         options = treemapOptions(el, t, base, rows, columns);
+        break;
+      case "Dot Matrix":
+        options = dotMatrixOptions(t, base, rows);
         break;
       default:
         options = columnOptions(t, base, rows, columns);
