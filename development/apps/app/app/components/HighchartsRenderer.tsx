@@ -23,6 +23,7 @@ import "highcharts/modules/heatmap";
 import "highcharts/highcharts-more";      // база для dumbbell/lollipop (и radar позже)
 import "highcharts/modules/dumbbell";     // lollipop построен поверх dumbbell
 import "highcharts/modules/lollipop";
+import "highcharts/modules/treemap";      // волна 2
 import "highcharts/modules/accessibility"; // клавиатура/скринридеры для Interactive-дашборда
 import type { DataRow, ChartType } from "@/lib/mockData";
 
@@ -532,6 +533,84 @@ function splineAreaOptions(
   };
 }
 
+/* ── Treemap (волна 2) — как у родного: раскладка squarified (та же семья,
+   что d3 treemapSquarify), сортировка по убыванию (дефолт Highcharts),
+   заливки series-1…7 по кругу; чернила подписи — единый --slide-tm-ink на
+   темах, Editorial-fallback — свой цвет под каждую заливку (крем на тёмных
+   плитках, navy на светлых). Подпись/число прячутся на мелких плитках —
+   пороги 26/24 и 44/40 px, как у родного рендера. */
+const TM_TEXT_ON_DARK = ["#F5F2EA", "#F5F2EA", NAVY, NAVY, NAVY, NAVY, "#F5F2EA"];
+
+const fmtTmVal = (v: number) =>
+  v >= 1000 ? `${(v / 1000).toFixed(1)}K` : (Number.isInteger(v) ? String(v) : v.toFixed(1));
+
+/* Подписи treemap идут через useHTML (двухстрочный блок) — метки из данных
+   пользователя экранируем. */
+const escHtml = (s: string) =>
+  s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+function treemapOptions(
+  el: HTMLElement, t: SlideTokens, base: Highcharts.Options,
+  rows: DataRow[], columns: string[],
+): Highcharts.Options {
+  /* series-7 нужен только treemap — читаем локально (в SlideTokens 6 цветов,
+     расширять нельзя: сдвинется цикл цветов у доната/матрицы). */
+  const series7 = getComputedStyle(el).getPropertyValue("--slide-series-7").trim() || NAVY_700;
+  const fills = [...t.series, series7];
+
+  const data = rows.map((row, i) => ({
+    name: row.label,
+    value: row.values[0] ?? 0,
+    color: fills[i % fills.length],
+    custom: {
+      ink: resolveCssColor(el, `var(--slide-tm-ink, ${TM_TEXT_ON_DARK[i % TM_TEXT_ON_DARK.length]})`),
+    },
+  }));
+
+  return {
+    ...base,
+    tooltip: {
+      ...base.tooltip,
+      pointFormatter: function () {
+        const p = this as Highcharts.Point & { value?: number };
+        return `${escHtml(p.name ?? "")}: <b>${fmtTmVal(p.value ?? 0)}</b>`;
+      },
+    },
+    series: [{
+      type: "treemap",
+      layoutAlgorithm: "squarified",
+      name: columns[0] ?? "Value",
+      data,
+      borderWidth: 1,
+      borderColor: "transparent",   // 1px зазор между плитками, как padding(1) у родного
+      borderRadius: t.chartRadius,
+      dataLabels: {
+        enabled: true,
+        useHTML: true,
+        align: "left",
+        verticalAlign: "top",
+        style: { textOutline: "none" },
+        formatter: function () {
+          const p = this as Highcharts.Point & {
+            value?: number;
+            shapeArgs?: { width?: number; height?: number };
+          };
+          const lw = p.shapeArgs?.width ?? 0;
+          const lh = p.shapeArgs?.height ?? 0;
+          if (lh < 26 || lw < 24) return "";
+          const ink = (p.options.custom as { ink?: string } | undefined)?.ink ?? "";
+          const val = lh >= 44 && lw >= 40
+            ? `<div style="font-family:${t.fontDisplay};font-size:${Math.min(19, lw * 0.26)}px;opacity:.78;">${fmtTmVal(p.value ?? 0)}</div>`
+            : "";
+          return `<div style="color:${ink};text-align:left;line-height:1.25;padding:2px 0 0 2px;">`
+            + `<div style="font-family:${t.fontBody};font-weight:500;font-size:${Math.min(16, lw * 0.3)}px;">${escHtml(p.name ?? "")}</div>`
+            + val + `</div>`;
+        },
+      },
+    } as Highcharts.SeriesOptionsType],
+  };
+}
+
 function columnOptions(
   t: SlideTokens, base: Highcharts.Options,
   rows: DataRow[], columns: string[],
@@ -597,6 +676,9 @@ export function HighchartsRenderer({ rows, columns, chartType, expanded, contain
       case "Line":
       case "Area":
         options = splineAreaOptions(t, base, rows, columns, expanded);
+        break;
+      case "Treemap":
+        options = treemapOptions(el, t, base, rows, columns);
         break;
       default:
         options = columnOptions(t, base, rows, columns);

@@ -25,10 +25,11 @@
   `RENDER_ENGINE` в `lib/renderEngine.ts` (сейчас `"native"`, включается сменой одной строки;
   на прод — только после презентации ~11.07). Покрытые Highcharts типы — список
   `HIGHCHARTS_TYPES` там же (бары со спайка + волна 1: Heatmap, Lollipop, Scatter, Radar,
-  Donut, Line/Area/Spline Area); новый тип = запись в список + кейс в `HighchartsRenderer.tsx`.
+  Donut, Line/Area/Spline Area + волна 2: Treemap); новый тип = запись в список + кейс
+  в `HighchartsRenderer.tsx`.
   Цвета/шрифты Highcharts берёт из токенов темы `--slide-*` (мост через getComputedStyle,
   без хардкода хексов); рендерер живёт только на клиенте (`next/dynamic ssr:false`).
-  Родной путь при флаге `native` не затронут. Волна 2 (Treemap, Dot Matrix, Map) — в backlog 🎯.
+  Родной путь при флаге `native` не затронут. Остаток волны 2 (Dot Matrix, Map) — в backlog 🎯.
 - **Разведение типов при авто-подборе (2026-07-04):** соседние по порядку дата-сеты/слайды не получают
   один и тот же тип графика, если у их формы данных есть совместимая альтернатива (ранжирование
   совместимых типов — `chart-rules.ts → rankChartTypes`). Работает в обоих путях: в движке правил и
