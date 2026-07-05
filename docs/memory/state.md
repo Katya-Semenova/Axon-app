@@ -8,11 +8,12 @@
 1. **Basic Auth ВОЗВРАЩЁН 2026-07-05** (показы преподавателю прошли; `/ai-studio` → 401).
    Снять в день презентации команде ~11.07, после — вернуть. Шпаргалка со всеми командами
    (и через Клода, и руками) — `docs/promotion/demo-stand-howto.md`.
-2. **Демо-режим ВЫКАЧЕН НА ПРОД 2026-07-05 и проверен** (кнопка на /login за замком,
+2. **Демо-режим ВЫКАЧЕН НА ПРОД 2026-07-05, проверен и НАПОЛНЕН** (кнопка на /login за замком,
    demo-login 200; аккаунт `demo-stand@axon-app.ru` — `demo@` занят чужим, не использовать;
-   коммит `4968971` — проброс флага в build.args+Dockerfile). **ОСТАЛОСЬ: наполнить
-   демо-аккаунт показательным проектом** (`test-data/gym-traffic.csv` → золотой heatmap,
-   + `marketing-channels.csv`) — руками или сказать Клоду «наполни демо-проект».
+   коммит `4968971` — проброс флага в build.args+Dockerfile). ✅ Демо-аккаунт наполнен двумя
+   проектами (`gym-traffic.csv` → золотой heatmap; `marketing-channels.csv` →
+   treemap/scatter/radar/lollipop), проверено с телефона 2026-07-05. Осталось только в день
+   стенда ~11.07 снять/вернуть Basic Auth (см. п.1 выше + `docs/promotion/demo-stand-howto.md`).
    QR для презентации: `docs/promotion/qr-demo-stand.png` (ведёт на /ai-studio/login).
 3. **Слияние сделано 04.07:** main передвинут (fast-forward) на вершину `feature/highcharts-spike`,
    обе ветки на одном коммите. Пуш обеих — за пользователем (`git push -u origin main` +
