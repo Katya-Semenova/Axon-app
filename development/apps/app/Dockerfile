@@ -13,6 +13,9 @@ RUN npm install --no-audit --no-fund
 # нужен ИМЕННО здесь. Не секрет; приходит из .env.production через compose build.args.
 ARG NEXT_PUBLIC_YM_ID
 ENV NEXT_PUBLIC_YM_ID=${NEXT_PUBLIC_YM_ID}
+# Кнопка «Попробовать демо» на /login — тоже клиентский флаг, впекается на сборке.
+ARG NEXT_PUBLIC_DEMO_ENABLED
+ENV NEXT_PUBLIC_DEMO_ENABLED=${NEXT_PUBLIC_DEMO_ENABLED}
 # Prisma: клиент генерируем до сборки (заглушка-URL — подключение к базе не нужно).
 ENV DATABASE_URL="postgresql://placeholder:placeholder@localhost:5432/placeholder"
 RUN npx prisma generate --schema=apps/app/prisma/schema.prisma

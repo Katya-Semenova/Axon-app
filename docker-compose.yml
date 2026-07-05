@@ -25,6 +25,8 @@ services:
       dockerfile: apps/app/Dockerfile
       args:
         NEXT_PUBLIC_YM_ID: ${NEXT_PUBLIC_YM_ID}
+        # Кнопка «Попробовать демо» впекается на сборке; без переменной — выключена.
+        NEXT_PUBLIC_DEMO_ENABLED: ${NEXT_PUBLIC_DEMO_ENABLED:-false}
     environment:
       DATABASE_URL: ${DATABASE_URL}             # адрес базы (из .env.production)
       BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET} # секрет сессий входа
@@ -42,6 +44,9 @@ services:
       AI_MODEL: ${AI_MODEL}                      # напр. anthropic/claude-sonnet-4.6
       # ── Админка (Урок 5, Шаг 2) — owner-панель по email ──
       ADMIN_EMAIL: ${ADMIN_EMAIL}
+      # ── Демо-режим (стенд/презентация, Урок 7) — кнопка на /login: build.args выше ──
+      DEMO_USER_EMAIL: ${DEMO_USER_EMAIL}         # почта демо-аккаунта; включает лимит ИИ по IP
+      DEMO_USER_PASSWORD: ${DEMO_USER_PASSWORD}   # пароль демо-аккаунта (только сервер)
       # Аналитика: реально нужен на сборке (выше build.args); тут продублирован для ясности.
       NEXT_PUBLIC_YM_ID: ${NEXT_PUBLIC_YM_ID}
     ports:
