@@ -20,13 +20,16 @@
 import { useEffect, useRef } from "react";
 import Highcharts from "highcharts";
 import "highcharts/modules/heatmap";
+import "highcharts/highcharts-more";      // база для dumbbell/lollipop (и radar позже)
+import "highcharts/modules/dumbbell";     // lollipop построен поверх dumbbell
+import "highcharts/modules/lollipop";
 import type { DataRow, ChartType } from "@/lib/mockData";
 
 /* Типы, которые уже умеет этот движок. Диспетчер в ChartRenderer.tsx сверяется
    с этим списком — новый тип добавляется здесь + кейсом в switch ниже. */
 export const HIGHCHARTS_TYPES: ChartType[] = [
   "Bar", "Clean Columns", "Stacked Bar",
-  "Heatmap",
+  "Heatmap", "Lollipop",
 ];
 
 /* Editorial fallbacks — только внутри var()-fallback'ов ниже, не для прямого
@@ -51,6 +54,7 @@ export interface SlideTokens {
   series: string[];   // категориальная палитра, 6 цветов
   fontBody: string;
   fontMono: string;
+  fontDisplay: string;  // крупные цифры в графике (цифра-герой, итог доната)
   chartRadius: number; // скругление баров/плиток, px
 }
 
@@ -79,6 +83,7 @@ export function readSlideTokens(el: HTMLElement): SlideTokens {
     ],
     fontBody: read("--slide-font-body", "Inter, sans-serif"),
     fontMono: read("--slide-font-mono", "'JetBrains Mono', monospace"),
+    fontDisplay: read("--slide-font-display", "'Instrument Serif', 'GT Sectra', 'Fraunces', Georgia, serif"),
     chartRadius: parseFloat(read("--slide-chart-radius", "2")) || 0,
   };
 }
@@ -221,6 +226,54 @@ function heatmapOptions(
   };
 }
 
+/* ── Lollipop — как у родного: ножки series-4, точки series-2, последняя
+   точка крупнее + accent, рядом «цифра-герой» display-шрифтом. */
+function lollipopOptions(
+  t: SlideTokens, base: Highcharts.Options,
+  rows: DataRow[], columns: string[], expanded?: boolean,
+): Highcharts.Options {
+  const lastIdx = rows.length - 1;
+  const data = rows.map((row, i) => {
+    const v = row.values[0] ?? 0;
+    if (i !== lastIdx) return { y: v };
+    return {
+      y: v,
+      marker: { radius: expanded ? 8 : 6, fillColor: t.accent },
+      dataLabels: {
+        enabled: true,
+        format: "{y}",
+        style: {
+          color: t.accent,
+          fontFamily: t.fontDisplay,
+          fontSize: expanded ? "36px" : "14px",
+          fontWeight: "normal",
+          textOutline: "none",
+        },
+      },
+    };
+  });
+
+  return {
+    ...base,
+    chart: { ...base.chart, type: "lollipop" },
+    xAxis: {
+      ...base.xAxis,
+      categories: rows.map((row) => row.label),
+      lineWidth: 0, tickWidth: 0,
+      labels: { style: { color: t.inkFaint, fontSize: "10px", fontFamily: t.fontMono } },
+    },
+    series: [{
+      type: "lollipop",
+      name: columns[1] ?? columns[0] ?? "Value",
+      data,
+      connectorColor: t.series[3],
+      connectorWidth: 1.5,
+      marker: { radius: expanded ? 5 : 4, fillColor: t.series[1] },
+      dataLabels: { enabled: false },
+    } as Highcharts.SeriesOptionsType],
+  };
+}
+
 function columnOptions(
   t: SlideTokens, base: Highcharts.Options,
   rows: DataRow[], columns: string[],
@@ -268,6 +321,9 @@ export function HighchartsRenderer({ rows, columns, chartType, expanded, contain
     switch (chartType) {
       case "Heatmap":
         options = heatmapOptions(el, t, base, rows, columns);
+        break;
+      case "Lollipop":
+        options = lollipopOptions(t, base, rows, columns, expanded);
         break;
       default:
         options = columnOptions(t, base, rows, columns);
