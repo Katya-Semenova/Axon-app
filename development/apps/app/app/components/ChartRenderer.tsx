@@ -4,7 +4,7 @@ import { hierarchy, treemap, treemapSquarify } from "d3-hierarchy";
 import { makePoints, smoothPath, roundTo } from "@/lib/charts";
 import type { DataRow, ChartType } from "@/lib/mockData";
 import { RENDER_ENGINE } from "@/lib/renderEngine";
-import { HighchartsRenderer } from "./HighchartsRenderer";
+import { HighchartsRenderer, HIGHCHARTS_TYPES } from "./HighchartsRenderer";
 
 const r = roundTo;
 
@@ -1111,14 +1111,11 @@ export function ChartRenderer({
 }) {
   const props = { rows, columns, expanded, containerWidth, containerHeight };
 
-  /* SPIKE: за фича-флагом bar-типы рисует движок Highcharts. По умолчанию
-     RENDER_ENGINE === 'native', поэтому этот блок не активен и старый путь
-     ниже работает как раньше. */
-  if (
-    RENDER_ENGINE === "highcharts" &&
-    (chartType === "Bar" || chartType === "Clean Columns" || chartType === "Stacked Bar")
-  ) {
-    return <HighchartsRenderer {...props} />;
+  /* За фича-флагом покрытые типы рисует движок Highcharts (режим Interactive).
+     Список покрытого — HIGHCHARTS_TYPES в HighchartsRenderer.tsx. По умолчанию
+     RENDER_ENGINE === 'native' — блок не активен, старый путь работает как раньше. */
+  if (RENDER_ENGINE === "highcharts" && HIGHCHARTS_TYPES.includes(chartType)) {
+    return <HighchartsRenderer {...props} chartType={chartType} />;
   }
 
   switch (chartType) {

@@ -19,7 +19,15 @@
 
 import { useEffect, useRef } from "react";
 import Highcharts from "highcharts";
-import type { DataRow } from "@/lib/mockData";
+import "highcharts/modules/heatmap";
+import type { DataRow, ChartType } from "@/lib/mockData";
+
+/* Типы, которые уже умеет этот движок. Диспетчер в ChartRenderer.tsx сверяется
+   с этим списком — новый тип добавляется здесь + кейсом в switch ниже. */
+export const HIGHCHARTS_TYPES: ChartType[] = [
+  "Bar", "Clean Columns", "Stacked Bar",
+  "Heatmap",
+];
 
 /* Editorial fallbacks — только внутри var()-fallback'ов ниже, не для прямого
    использования (единственный источник правды тем — токены --slide-*). */
@@ -75,6 +83,19 @@ export function readSlideTokens(el: HTMLElement): SlideTokens {
   };
 }
 
+/* Вычисляет ЛЮБОЙ CSS-цвет (var-цепочки, color-mix) в готовый rgb: браузер
+   резолвит его на временном невидимом элементе внутри контейнера графика.
+   Нужен там, где токен темы — не простой хекс (heat-шкала на color-mix). */
+function resolveCssColor(el: HTMLElement, value: string): string {
+  const probe = document.createElement("span");
+  probe.style.display = "none";
+  probe.style.color = value;
+  el.appendChild(probe);
+  const resolved = getComputedStyle(probe).color;
+  probe.remove();
+  return resolved || value;
+}
+
 /* Базовые опции, общие для всех типов: прозрачный фон, без титула/легенды/
    копирайта, шрифт темы. Конкретные рендеры дополняют своим. */
 export function baseOptions(t: SlideTokens, height: number, width?: number): Highcharts.Options {
@@ -103,49 +124,162 @@ export function baseOptions(t: SlideTokens, height: number, width?: number): Hig
   };
 }
 
+/* ── Heat-шкала — те же токены и логика, что heatFill/heatInk в ChartRenderer.
+   Highcharts не резолвит var()/color-mix → отдаём через resolveCssColor. */
+const HEAT_FROM = "var(--slide-heat-from, #E9E4D5)";
+const HEAT_TO   = "var(--slide-heat-to, #1B2840)";
+const HEAT_MID  = `var(--slide-heat-mid, color-mix(in srgb, ${HEAT_TO} 50%, ${HEAT_FROM}))`;
+
+function fmtHeatV(v: number): string {
+  return Math.abs(v) < 10
+    ? (Number.isInteger(v) ? String(v) : v.toFixed(2))
+    : Math.round(v).toString();
+}
+
+/* Цвет цифры в клетке — копия порогов heatInk (флип на тёмной половине шкалы). */
+function heatInkVar(t: number): string {
+  if (t >= 0.62) return `var(--slide-heat-ink-high, ${HEAT_FROM})`;
+  if (t >= 0.35) return `var(--slide-heat-ink-mid, ${t < 0.5 ? HEAT_TO : HEAT_FROM})`;
+  return HEAT_TO;
+}
+
+function heatmapOptions(
+  el: HTMLElement, t: SlideTokens, base: Highcharts.Options,
+  rows: DataRow[], columns: string[],
+): Highcharts.Options {
+  const allVals = rows.flatMap((row) => row.values);
+  const minVal = allVals.length ? Math.min(...allVals) : 0;
+  const maxVal = allVals.length ? Math.max(...allVals) : 1;
+  const span = maxVal - minVal || 1;
+
+  const data = rows.flatMap((row, ri) =>
+    columns.map((_, ci) => {
+      const v = row.values[ci] ?? 0;
+      const tv = (v - minVal) / span;
+      return {
+        x: ci, y: ri, value: v,
+        dataLabels: { style: { color: resolveCssColor(el, heatInkVar(tv)) } },
+      };
+    }),
+  );
+
+  return {
+    ...base,
+    chart: { ...base.chart, type: "heatmap" },
+    colorAxis: {
+      min: minVal,
+      max: maxVal,
+      stops: [
+        [0,   resolveCssColor(el, HEAT_FROM)],
+        [0.5, resolveCssColor(el, HEAT_MID)],
+        [1,   resolveCssColor(el, HEAT_TO)],
+      ],
+      labels: { style: { color: t.inkFaint, fontSize: "9px", fontFamily: t.fontMono } },
+    },
+    /* Градиентная плашка сверху справа — как у родного рендера */
+    legend: {
+      enabled: true,
+      align: "right", verticalAlign: "top", layout: "horizontal",
+      symbolWidth: 68, symbolHeight: 6, margin: 6, padding: 0,
+    },
+    xAxis: {
+      ...base.xAxis,
+      categories: columns,
+      lineWidth: 0, tickWidth: 0,
+      labels: { style: { color: t.inkMuted, fontSize: "11px" } },
+    },
+    yAxis: {
+      ...base.yAxis,
+      categories: rows.map((row) => row.label),
+      reversed: true,           // строка 0 сверху, как в родном рендере
+      gridLineWidth: 0,
+      title: { text: undefined },
+      labels: { style: { color: t.inkMuted, fontSize: "11px" } },
+    },
+    tooltip: {
+      ...base.tooltip,
+      formatter: function () {
+        const p = this as Highcharts.Point & { value?: number };
+        return `${columns[p.x ?? 0]} · ${rows[p.y ?? 0]?.label}: <b>${fmtHeatV(p.value ?? 0)}</b>`;
+      },
+    },
+    series: [{
+      type: "heatmap",
+      name: columns[0] ?? "Value",
+      data,
+      borderWidth: 1,
+      borderColor: "transparent",   // 1px зазор между клетками, как cw-1 у родного
+      dataLabels: {
+        enabled: true,
+        formatter: function () {
+          const p = this as Highcharts.Point & { value?: number };
+          return fmtHeatV(p.value ?? 0);
+        },
+        style: { fontFamily: t.fontMono, fontSize: "11px", fontWeight: "normal", textOutline: "none" },
+      },
+    }],
+  };
+}
+
+function columnOptions(
+  t: SlideTokens, base: Highcharts.Options,
+  rows: DataRow[], columns: string[],
+): Highcharts.Options {
+  const categories = rows.map((row) => row.label);
+  const data = rows.map((row) => row.values[0] ?? 0);
+  const seriesName = columns[1] ?? columns[0] ?? "Value";
+  return {
+    ...base,
+    chart: { ...base.chart, type: "column" },
+    xAxis: { ...base.xAxis, categories },
+    plotOptions: {
+      column: {
+        borderRadius: t.chartRadius,
+        color: t.series[0],
+        states: { hover: { color: t.accent } },
+      },
+    },
+    series: [{ type: "column", name: seriesName, data }],
+  };
+}
+
 interface Props {
   rows: DataRow[];
   columns: string[];
+  chartType: ChartType;
   expanded?: boolean;
   containerWidth?: number;
   containerHeight?: number;
 }
 
-export function HighchartsRenderer({ rows, columns, expanded, containerWidth, containerHeight }: Props) {
+export function HighchartsRenderer({ rows, columns, chartType, expanded, containerWidth, containerHeight }: Props) {
   const elRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<Highcharts.Chart | null>(null);
 
   useEffect(() => {
     if (!elRef.current) return;
 
-    const t = readSlideTokens(elRef.current);
-    const categories = rows.map((row) => row.label);
-    const data = rows.map((row) => row.values[0] ?? 0);
-    const seriesName = columns[1] ?? columns[0] ?? "Value";
+    const el = elRef.current;
+    const t = readSlideTokens(el);
     const height = containerHeight ?? (expanded ? 220 : 148);
-
     const base = baseOptions(t, height, containerWidth);
-    const options: Highcharts.Options = {
-      ...base,
-      chart: { ...base.chart, type: "column" },
-      xAxis: { ...base.xAxis, categories },
-      plotOptions: {
-        column: {
-          borderRadius: t.chartRadius,
-          color: t.series[0],
-          states: { hover: { color: t.accent } },
-        },
-      },
-      series: [{ type: "column", name: seriesName, data }],
-    };
 
-    chartRef.current = Highcharts.chart(elRef.current, options);
+    let options: Highcharts.Options;
+    switch (chartType) {
+      case "Heatmap":
+        options = heatmapOptions(el, t, base, rows, columns);
+        break;
+      default:
+        options = columnOptions(t, base, rows, columns);
+    }
+
+    chartRef.current = Highcharts.chart(el, options);
 
     return () => {
       chartRef.current?.destroy();
       chartRef.current = null;
     };
-  }, [rows, columns, expanded, containerWidth, containerHeight]);
+  }, [rows, columns, chartType, expanded, containerWidth, containerHeight]);
 
   return (
     <div
