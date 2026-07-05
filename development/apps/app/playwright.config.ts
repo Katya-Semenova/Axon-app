@@ -17,6 +17,9 @@ export default defineConfig({
     // ВАЖНО: приставку /ai-studio пишем в самих goto() — путь с ведущим «/»
     // затирает путь из baseURL (правило new URL()), и тест бьёт мимо приложения.
     baseURL: "http://localhost:3101",
+    // Локаль резолвится по Accept-Language (i18n/request.ts, fallback en) —
+    // фиксируем ru, чтобы ярлыки в тестах были детерминированно русскими.
+    locale: "ru-RU",
     trace: "retain-on-failure",
   },
   webServer: {
