@@ -30,6 +30,7 @@ import type { DataRow, ChartType } from "@/lib/mockData";
 export const HIGHCHARTS_TYPES: ChartType[] = [
   "Bar", "Clean Columns", "Stacked Bar",
   "Heatmap", "Lollipop", "Scatter", "Scatter Plot", "Radar", "Donut",
+  "Spline Area", "Line", "Area",
 ];
 
 /* Editorial fallbacks — только внутри var()-fallback'ов ниже, не для прямого
@@ -485,6 +486,56 @@ function donutOptions(
   };
 }
 
+/* ── Spline Area / Line / Area — все три имени рисуются areaspline, как у
+   родного SplineAreaChart: линия series-1, заливка series-1 op.18, маркер
+   только на последней точке (accent) + «цифра-герой» display-шрифтом. */
+function splineAreaOptions(
+  t: SlideTokens, base: Highcharts.Options,
+  rows: DataRow[], columns: string[], expanded?: boolean,
+): Highcharts.Options {
+  const lastIdx = rows.length - 1;
+  const data = rows.map((row, i) => {
+    const v = row.values[0] ?? 0;
+    if (i !== lastIdx) return { y: v };
+    return {
+      y: v,
+      marker: { enabled: true, radius: expanded ? 5 : 4, fillColor: t.accent },
+      dataLabels: {
+        enabled: true,
+        format: "{y}",
+        style: {
+          color: t.accent,
+          fontFamily: t.fontDisplay,
+          fontSize: expanded ? "36px" : "13px",
+          fontWeight: "normal",
+          textOutline: "none",
+        },
+      },
+    };
+  });
+
+  return {
+    ...base,
+    chart: { ...base.chart, type: "areaspline" },
+    xAxis: {
+      ...base.xAxis,
+      categories: rows.map((row) => row.label),
+      lineWidth: 0, tickWidth: 0,
+      labels: { style: { color: t.inkFaint, fontSize: "10px", fontFamily: t.fontMono } },
+    },
+    series: [{
+      type: "areaspline",
+      name: columns[1] ?? columns[0] ?? "Value",
+      data,
+      color: t.series[0],
+      fillColor: Highcharts.color(t.series[0]).setOpacity(0.18).get() as string,
+      lineWidth: 2,
+      marker: { enabled: false },
+      dataLabels: { enabled: false },
+    }],
+  };
+}
+
 function columnOptions(
   t: SlideTokens, base: Highcharts.Options,
   rows: DataRow[], columns: string[],
@@ -545,6 +596,11 @@ export function HighchartsRenderer({ rows, columns, chartType, expanded, contain
         break;
       case "Donut":
         options = donutOptions(t, base, rows, columns);
+        break;
+      case "Spline Area":
+      case "Line":
+      case "Area":
+        options = splineAreaOptions(t, base, rows, columns, expanded);
         break;
       default:
         options = columnOptions(t, base, rows, columns);
