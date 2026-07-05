@@ -29,7 +29,7 @@ import type { DataRow, ChartType } from "@/lib/mockData";
    с этим списком — новый тип добавляется здесь + кейсом в switch ниже. */
 export const HIGHCHARTS_TYPES: ChartType[] = [
   "Bar", "Clean Columns", "Stacked Bar",
-  "Heatmap", "Lollipop",
+  "Heatmap", "Lollipop", "Scatter", "Scatter Plot",
 ];
 
 /* Editorial fallbacks — только внутри var()-fallback'ов ниже, не для прямого
@@ -274,6 +274,59 @@ function lollipopOptions(
   };
 }
 
+/* ── Scatter — как у родного: если второй величины нет (одно число на строку),
+   Y = значение, X = порядок строк; первая точка accent и крупнее, остальные
+   чередуют series-1/series-2; в expanded — подписи точек с прореживанием. */
+function scatterOptions(
+  t: SlideTokens, base: Highcharts.Options,
+  rows: DataRow[], columns: string[], expanded?: boolean,
+): Highcharts.Options {
+  const metric1 = rows.map((row) => row.values[1] ?? 0);
+  const yVaries = Math.max(...metric1) !== Math.min(...metric1);
+  const xLabel = yVaries ? (columns[0] ?? "X") : "";
+  const yLabel = yVaries ? (columns[1] ?? "Y") : (columns[0] ?? "Y");
+  const lblStep = Math.max(1, Math.ceil(rows.length / (expanded ? 8 : 4)));
+
+  const data = rows.map((row, i) => ({
+    x: yVaries ? (row.values[0] ?? 0) : i,
+    y: yVaries ? (row.values[1] ?? 0) : (row.values[0] ?? 0),
+    name: row.label,
+    marker: {
+      radius: i === 0 ? 7 : 5.5,
+      fillColor: i === 0 ? t.accent : (i % 2 === 0 ? t.series[0] : t.series[1]),
+    },
+    dataLabels: { enabled: !!expanded && i % lblStep === 0 },
+  }));
+
+  const axisTitleStyle = { color: t.inkFaint, fontSize: "8.5px", fontFamily: t.fontMono };
+  return {
+    ...base,
+    chart: { ...base.chart, type: "scatter" },
+    xAxis: {
+      ...base.xAxis,
+      title: { text: xLabel || undefined, style: axisTitleStyle },
+      labels: { enabled: yVaries, style: { color: t.inkFaint, fontSize: "9px", fontFamily: t.fontMono } },
+    },
+    yAxis: {
+      ...base.yAxis,
+      title: { text: yLabel || undefined, style: axisTitleStyle },
+    },
+    tooltip: {
+      ...base.tooltip,
+      pointFormat: "{point.name}: <b>{point.y}</b>",
+    },
+    series: [{
+      type: "scatter",
+      name: yLabel || "Value",
+      data,
+      dataLabels: {
+        style: { color: t.inkMuted, fontSize: "9.5px", fontFamily: t.fontBody, fontWeight: "normal", textOutline: "none" },
+        format: "{point.name}",
+      },
+    }],
+  };
+}
+
 function columnOptions(
   t: SlideTokens, base: Highcharts.Options,
   rows: DataRow[], columns: string[],
@@ -324,6 +377,10 @@ export function HighchartsRenderer({ rows, columns, chartType, expanded, contain
         break;
       case "Lollipop":
         options = lollipopOptions(t, base, rows, columns, expanded);
+        break;
+      case "Scatter":
+      case "Scatter Plot":
+        options = scatterOptions(t, base, rows, columns, expanded);
         break;
       default:
         options = columnOptions(t, base, rows, columns);
