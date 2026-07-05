@@ -269,12 +269,7 @@ export function ChatRail({ onBack }: { onBack: () => void }) {
         {isBuild ? (
           /* ── Build mode messages ── */
           buildMessages.length === 0 ? (
-            <div className="flex gap-[3px] items-center text-[13px] text-t3">
-              {[0, 1, 2].map((i) => (
-                <div key={i} className="w-[5px] h-[5px] rounded-full bg-t3 animate-pulse-dot"
-                  style={{ animationDelay: `${i * 0.2}s` }} />
-              ))}
-            </div>
+            <div className="text-[12px] text-t3 leading-[1.6] italic">{t("emptyBuild")}</div>
           ) : (
             buildMessages.map(msg => (
               <div key={msg.id}>
