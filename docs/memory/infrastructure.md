@@ -93,15 +93,20 @@ grep -nE 'X-Real-IP|X-Forwarded-For' /etc/nginx/sites-available/axon-app
 серверный `POST /ai-studio/api/demo/login`, который логинит общий демо-аккаунт силами сервера —
 **пароль в браузер не попадает**. Расход ИИ под этим аккаунтом режется лимитом по IP (5/час).
 
+**✅ УЖЕ СДЕЛАНО 2026-07-05:** демо-аккаунт создан и наполнен двумя проектами (`gym-traffic.csv` →
+золотой heatmap; `marketing-channels.csv` → treemap/scatter/radar/lollipop). Реальная почта —
+**`demo-stand@axon-app.ru`**. ⚠️ `demo@axon-app.ru` оказался ЗАНЯТ кем-то ранее (регистрация была
+открыта), пароль неизвестен — НЕ использовать. Рецепт ниже — для пересоздания, если аккаунт сломают.
+
 **Создать демо-аккаунт (один раз, на проде):**
-1. Открыть `https://axon-app.ru/ai-studio/register`, зарегистрировать, напр. `demo@axon-app.ru`
+1. Открыть `https://axon-app.ru/ai-studio/register`, зарегистрировать `demo-stand@axon-app.ru`
    с любым паролем (запомни — он же пойдёт в env `DEMO_USER_PASSWORD`).
 2. Подтверждение почты не требуется (`requireEmailVerification: false`) — вход сразу работает.
 
 **Env для демо** (`development/apps/app/.env` на сервере, затем пересобрать/перезапустить контейнер):
 | Переменная | Зачем | Значение на показе |
 |---|---|---|
-| `DEMO_USER_EMAIL` | почта демо-аккаунта; включает лимит ИИ по IP | `demo@axon-app.ru` |
+| `DEMO_USER_EMAIL` | почта демо-аккаунта; включает лимит ИИ по IP | `demo-stand@axon-app.ru` |
 | `DEMO_USER_PASSWORD` | пароль демо-аккаунта (только сервер) | тот, что задал в шаге 1 |
 | `NEXT_PUBLIC_DEMO_ENABLED` | показывает кнопку «Попробовать демо» на входе | `true` |
 | `AI_IP_RATE_MAX` _(опц.)_ | запросов ИИ на IP в окне | дефолт `5` |
