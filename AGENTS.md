@@ -50,7 +50,7 @@
 | Деплой / инфра | `docs/memory/infrastructure.md` |
 
 ## Библиотека модулей (переносимый AI-стек)
-`modules/` — 85 обезличенных промтов по 5 направлениям (ai-config / product / design /
+`modules/` — 83 обезличенных промта по 5 направлениям (ai-config / product / design /
 development / seo-geo). Реестр и триггеры «когда звать» — `modules/_INDEX.md`. Точки входа:
 скилл `/init-project` (новый проект) и `/extend-library` (пополнение). [ADR-012].
 

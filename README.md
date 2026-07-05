@@ -15,7 +15,7 @@
 |---|---|---|
 | [development/](development/) | весь код: сервис + лендинг + общий UI-пакет (монорепо) | [README](development/README.md) |
 | [docs/](docs/) | вся документация: спека, экраны, решения, память, правила | [README](docs/README.md) |
-| [modules/](modules/) | 📚 личная библиотека из 85 переносимых AI-промтов | [README](modules/README.md) |
+| [modules/](modules/) | 📚 личная библиотека из 83 переносимых AI-промтов | [README](modules/README.md) |
 | [.claude/](.claude/) | настройки AI-помощника: скиллы, хуки-страховки | [README](.claude/README.md) |
 | [scripts/](scripts/) | деплой, security-precheck, git-хуки, чекер библиотеки | комментарии в файлах |
 | `lessons/` | материалы учебного курса (не в git) | — |

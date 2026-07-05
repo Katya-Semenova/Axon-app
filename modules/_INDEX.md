@@ -1,6 +1,6 @@
 # Библиотека модулей — общий реестр
 
-> Переносимый AI-стек: 85 обезличенных промтов курса, работают в любом проекте.
+> Переносимый AI-стек: 83 обезличенных промта курса, работают в любом проекте.
 > **Правило:** промт без строки здесь — «слепой», AI его не найдёт. Новый промт → строка сюда
 > (+ карта модуля `<модуль>/AGENTS.md`). Проверка: `bash scripts/check-modules-indexed.sh`.
 > Точки входа: скилл `/init-project` (новый проект одной фразой) · `/extend-library` (пополнение).
@@ -16,9 +16,7 @@
 | ai-config/prompts/memory-setup.md | заполнить память проекта (state, ADR+IMPL, INDEX) |
 | ai-config/prompts/memory-search.md | «почему выбрали X / было ли Y» — поиск по памяти |
 | ai-config/prompts/memory-system.md | спроектировать/апгрейдить систему памяти (+agentmemory) |
-| ai-config/prompts/save-session.md | конец этапа: журнал сессии + state + INDEX |
-| ai-config/prompts/session-progress-save.md | вариант save-session (ранняя редакция; предпочитай save-session) |
-| ai-config/prompts/memory-update-session-save.md | вариант save-session после бэкенд-этапа (предпочитай save-session) |
+| ai-config/prompts/save-session.md | конец этапа: журнал сессии + state + INDEX (вкл. каркас памяти с нуля и закрытие инфра-этапа) |
 | ai-config/prompts/how-to-build-your-prompt.md | оформить только что сделанное как свой промт (6 секций) |
 | ai-config/prompts/build-modules-library.md | собрать/пересобрать личную библиотеку модулей |
 | ai-config/prompts/maintain-modules.md | вынести наработку / вобрать чужой подход из git |
