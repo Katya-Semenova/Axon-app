@@ -29,7 +29,7 @@ import type { DataRow, ChartType } from "@/lib/mockData";
    с этим списком — новый тип добавляется здесь + кейсом в switch ниже. */
 export const HIGHCHARTS_TYPES: ChartType[] = [
   "Bar", "Clean Columns", "Stacked Bar",
-  "Heatmap", "Lollipop", "Scatter", "Scatter Plot", "Radar",
+  "Heatmap", "Lollipop", "Scatter", "Scatter Plot", "Radar", "Donut",
 ];
 
 /* Editorial fallbacks — только внутри var()-fallback'ов ниже, не для прямого
@@ -386,6 +386,105 @@ function radarOptions(
   };
 }
 
+/* ── Donut — pie + innerSize 58%; легенда = ДОЛЯ сектора (value/total, «%»
+   правдив — см. follow-up 9c), центр = компактный итог (1.3M/4.2K) + TOTAL.
+   Центр рисуем в событии render по фактическому центру пончика (при легенде
+   справа он смещён влево от центра всего графика). */
+const compactNum = (v: number) => {
+  const a = Math.abs(v);
+  if (a >= 1e6) return `${(v / 1e6).toFixed(1)}M`;
+  if (a >= 1e3) return `${(v / 1e3).toFixed(1)}K`;
+  return `${Math.round(v)}`;
+};
+
+function donutOptions(
+  t: SlideTokens, base: Highcharts.Options,
+  rows: DataRow[], columns: string[],
+): Highcharts.Options {
+  /* Guard совместимости — как у родного: одна колонка, без отрицательных */
+  const donutCompatible =
+    columns.length <= 1 && rows.every((row) => (row.values[0] ?? 0) >= 0);
+  if (!donutCompatible) {
+    return {
+      ...base,
+      subtitle: {
+        text: "Chart type unsupported<br/>for this data shape",
+        align: "center", verticalAlign: "middle",
+        style: { color: t.inkFaint, fontSize: "10px", fontFamily: t.fontMono },
+      },
+      series: [],
+    };
+  }
+
+  const total = rows.reduce((s, row) => s + (row.values[0] ?? 0), 0) || 1;
+  const data = rows.map((row, i) => ({
+    name: row.label,
+    y: row.values[0] ?? 0,
+    color: t.series[i % t.series.length],
+  }));
+
+  return {
+    ...base,
+    chart: {
+      ...base.chart,
+      events: {
+        render() {
+          type WithCenter = Highcharts.Chart & {
+            __center?: Highcharts.SVGElement[];
+          };
+          const chart = this as WithCenter;
+          chart.__center?.forEach((elmt) => elmt.destroy());
+          const series = chart.series[0];
+          if (!series?.points.length) return;
+          const [cx, cy, size] = (series as unknown as { center: number[] }).center;
+          const x = chart.plotLeft + cx;
+          const y = chart.plotTop + cy;
+          const numSize = Math.max(13, (size / 2) * 0.38);
+          const gap = Math.max(5, numSize * 0.3);
+          const num = chart.renderer
+            .text(compactNum(total), x, y - gap / 2)
+            .attr({ align: "center" })
+            .css({ color: t.ink, fontSize: `${numSize}px`, fontFamily: t.fontDisplay })
+            .add();
+          const cap = chart.renderer
+            .text("TOTAL", x, y + gap + 7.5)
+            .attr({ align: "center" })
+            .css({ color: t.inkFaint, fontSize: "7.5px", fontFamily: t.fontMono, letterSpacing: "0.08em" })
+            .add();
+          chart.__center = [num, cap];
+        },
+      },
+    },
+    legend: {
+      enabled: true,
+      align: "right", verticalAlign: "middle", layout: "vertical",
+      symbolRadius: 0,
+      itemStyle: { color: t.inkMuted, fontSize: "11px", fontFamily: t.fontBody, fontWeight: "normal" },
+      itemHoverStyle: { color: t.ink },
+      labelFormatter: function () {
+        const p = this as Highcharts.Point;
+        return `${p.name} · ${Math.round(((p.y ?? 0) / total) * 100)}%`;
+      },
+    },
+    tooltip: {
+      ...base.tooltip,
+      pointFormatter: function () {
+        return `<b>${this.y}</b> (${Math.round(((this.y ?? 0) / total) * 100)}%)`;
+      },
+    },
+    series: [{
+      type: "pie",
+      name: columns[0] ?? "Value",
+      data,
+      innerSize: "58%",
+      borderWidth: 2,
+      borderColor: "transparent",   // зазоры между секторами, как ±1° у родного
+      dataLabels: { enabled: false },
+      showInLegend: true,
+    }],
+  };
+}
+
 function columnOptions(
   t: SlideTokens, base: Highcharts.Options,
   rows: DataRow[], columns: string[],
@@ -443,6 +542,9 @@ export function HighchartsRenderer({ rows, columns, chartType, expanded, contain
         break;
       case "Radar":
         options = radarOptions(t, base, rows, columns);
+        break;
+      case "Donut":
+        options = donutOptions(t, base, rows, columns);
         break;
       default:
         options = columnOptions(t, base, rows, columns);
