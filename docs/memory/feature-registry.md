@@ -36,6 +36,7 @@
 - Node-граф Insight → Connection → DataSet; отсоединение/переподключение связей → `lib/store.ts`, `Canvas.tsx`
 - Drill-in инсайта и дата-сета → `docs/screens/insight-drill-in.md`, `dataset-drill-in.md`
 - 10 типов графиков (Treemap, Heatmap, Map, Donut, Scatter, Radar, Lollipop, Stacked Bar, Dot Matrix, Spline Area) → `ChartRenderer.tsx`
+- Второй движок рендера — Highcharts ЗА ФЛАГОМ `RENDER_ENGINE` (сейчас `native`, на проде НЕ включён): бары + волна 1 (Heatmap, Lollipop, Scatter, Radar, Donut, Line/Area/Spline), тема из токенов `--slide-*`, только клиент → spec: `docs/spec.md` («Движок рендера»); код: `lib/renderEngine.ts` (`HIGHCHARTS_TYPES`), `HighchartsRenderer.tsx`
 - Авто-пан к новым узлам; текст-инсайты (pull-quote)
 
 ## Слайды (Slides mode)
