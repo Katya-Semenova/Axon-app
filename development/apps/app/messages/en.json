@@ -316,8 +316,8 @@
         "tagline": "Static dashboard"
       },
       "interactive": {
-        "title": "Interactive",
-        "tagline": "Live dashboard"
+        "title": "Web-dashboard",
+        "tagline": "Interactive"
       }
     },
     "addSlidesFirst": "Add slides before building",

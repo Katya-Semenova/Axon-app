@@ -316,8 +316,8 @@
         "tagline": "Статичный дашборд"
       },
       "interactive": {
-        "title": "Интерактив",
-        "tagline": "Живой дашборд"
+        "title": "Web-dashboard",
+        "tagline": "Интерактив"
       }
     },
     "addSlidesFirst": "Добавьте слайды перед сборкой",
