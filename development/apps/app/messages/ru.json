@@ -6,6 +6,7 @@
   },
   "Public": {
     "unavailable": "Презентация недоступна",
+    "slideTab": "Слайд {n}",
     "unavailableHint": "Ссылка недействительна, отозвана или презентация была удалена.",
     "backHome": "На главную AXON",
     "prev": "Предыдущий слайд",
@@ -324,6 +325,7 @@
     "buildStats": "{count, plural, one {# слайд} few {# слайда} many {# слайдов} other {# слайдов}} · ~{mb} МБ · {narr}",
     "fileOutput": "Файл",
     "shareableLink": "Ссылка для доступа",
+    "dashboardLink": "Веб-дашборд: закладки по слайдам",
     "narrNone": "без озвучки",
     "narrVoiceover": "с голосовой озвучкой",
     "narrIncluded": "с озвучкой",

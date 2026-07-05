@@ -46,7 +46,8 @@
 
 ## Показ / шаринг (Present)
 - In-app показ + публичная ссылка `/p/[token]` (read-only, отзыв ссылки) → ADR-007; `app/p/`
-- PDF / PPTX / Interactive — «скоро» (заглушки); PNG нет
+- Web-dashboard (Interactive) — таб-дашборд по той же публичной ссылке с `?view=dashboard` (закладки по слайдам, без скролла; 05.07) → spec: `docs/spec.md` («Веб-дашборд»); код: `app/p/[id]/PublicDeckView.tsx`, `PresentExport.tsx`
+- PDF / PPTX — «скоро» (заглушки); PNG нет
 - noindex на сервисе и публичных деках
 
 ## Админка

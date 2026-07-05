@@ -6,6 +6,7 @@
   },
   "Public": {
     "unavailable": "Presentation unavailable",
+    "slideTab": "Slide {n}",
     "unavailableHint": "The link is invalid, has been revoked, or the presentation was removed.",
     "backHome": "Go to AXON",
     "prev": "Previous slide",
@@ -324,6 +325,7 @@
     "buildStats": "{count, plural, one {# slide} other {# slides}} · ~{mb} MB · {narr}",
     "fileOutput": "File output",
     "shareableLink": "Shareable link",
+    "dashboardLink": "Web dashboard: a tab per slide",
     "narrNone": "no narration",
     "narrVoiceover": "voiceover included",
     "narrIncluded": "narration included",

@@ -119,18 +119,21 @@ export function PresentExport({ boardId, onBoardSaved, saveButton }: {
   const [authOpen, setAuthOpen] = useState(false);
 
   const slideCount = slideOrder.length;
-  const isLink = format === "View Link";
+  /* Оба «ссылочных» формата используют один ShareLink-токен; Interactive
+     дописывает ?view=dashboard — публичная страница открывается таб-дашбордом. */
+  const isShare = format === "View Link" || format === "Interactive";
+  const displayUrl = shareUrl && format === "Interactive" ? `${shareUrl}?view=dashboard` : shareUrl;
 
   /* Если доску уже расшаривали — подтянуть активную ссылку. */
   useEffect(() => {
     let cancel = false;
-    if (isLink && boardId) {
+    if (isShare && boardId) {
       getActiveShareToken(boardId)
         .then((tok) => { if (!cancel && tok) setShareUrl(`${window.location.origin}${BASE_PATH}/p/${tok}`); })
         .catch(() => {});
     }
     return () => { cancel = true; };
-  }, [isLink, boardId]);
+  }, [isShare, boardId]);
 
   function changeFormat(f: OutputFormat) {
     setFormat(f);
@@ -287,8 +290,8 @@ export function PresentExport({ boardId, onBoardSaved, saveButton }: {
             onReorder={(from, to) => reorderSlide(from, to)}
           />
 
-          {/* ── 3. Поделиться (View Link) / результат · PPTX·PDF·Interactive — «скоро» ── */}
-          {isLink ? (
+          {/* ── 3. Поделиться (View Link / Interactive-дашборд) / PPTX·PDF — «скоро» ── */}
+          {isShare ? (
             <AnimatePresence mode="wait">
               {!shareUrl ? (
                 <motion.div
@@ -307,7 +310,7 @@ export function PresentExport({ boardId, onBoardSaved, saveButton }: {
                       {slideCount === 0 ? t("addSlidesFirst") : t("slidesReady", { count: slideCount })}
                     </span>
                     <span style={{ fontFamily: mono, fontSize: 9.5, color: T3, letterSpacing: "0.05em" }}>
-                      {t("shareableLink")} · {t("noLoginToView")}
+                      {format === "Interactive" ? t("dashboardLink") : t("shareableLink")} · {t("noLoginToView")}
                     </span>
                   </div>
                   <button
@@ -345,10 +348,10 @@ export function PresentExport({ boardId, onBoardSaved, saveButton }: {
                   <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16 }}>
                     <div style={{ display: "flex", flexDirection: "column", gap: 8, minWidth: 0, flex: 1 }}>
                       <span style={{ fontFamily: mono, fontSize: 9.5, letterSpacing: "0.11em", textTransform: "uppercase", color: NAVY, fontWeight: 500 }}>
-                        {t("readyFormat", { format })}
+                        {t("readyFormat", { format: t(`format.${FORMAT_KEY[format]}.title`) })}
                       </span>
                       <span style={{ fontFamily: mono, fontSize: 12, color: NAVY, wordBreak: "break-all" }}>
-                        {shareUrl}
+                        {displayUrl}
                       </span>
                       <span style={{ fontFamily: mono, fontSize: 10, color: T3 }}>{t("linkLifetime")}</span>
                     </div>
@@ -356,14 +359,14 @@ export function PresentExport({ boardId, onBoardSaved, saveButton }: {
                       <ResultButton
                         primary
                         onClick={() => {
-                          navigator.clipboard.writeText(shareUrl!).catch(() => {});
+                          navigator.clipboard.writeText(displayUrl!).catch(() => {});
                           setCopied(true);
                           setTimeout(() => setCopied(false), 1600);
                         }}
                       >
                         {copied ? t("copied") : t("copyLink")}
                       </ResultButton>
-                      <ResultButton onClick={() => window.open(shareUrl!, "_blank")}>
+                      <ResultButton onClick={() => window.open(displayUrl!, "_blank")}>
                         {t("open")}
                       </ResultButton>
                       <button

@@ -16,8 +16,13 @@ const ACCENT: Record<ColorAccent, string> = {
  * Read-only показ публичной деки (Шаг 12). Листание ←/→ (кнопки, точки, клавиши),
  * логотип, счётчик. Слайд рендерим тем же SlideArchetypeRenderer, что и редактор —
  * показ 1-в-1. deck=null или пустая дека → «Презентация недоступна».
+ *
+ * dashboard=true (`?view=dashboard`, формат «Web-dashboard (Interactive)» — 05.07):
+ * вместо стрелок/точек внизу — закладки-табы сверху (название дата-сета или «Слайд N»),
+ * один слайд на экране, переключение кликом, без скролла. Табы — токенами `--slide-*`
+ * темы деки (см. spec.md «Веб-дашборд»). Клавиши ←/→ работают в обоих видах.
  */
-export function PublicDeckView({ deck }: { deck: PublicDeck | null }) {
+export function PublicDeckView({ deck, dashboard = false }: { deck: PublicDeck | null; dashboard?: boolean }) {
   const t = useTranslations("Public");
   const [i, setI] = useState(0);
 
@@ -65,8 +70,52 @@ export function PublicDeckView({ deck }: { deck: PublicDeck | null }) {
         <span className="font-mono text-[11px] text-t3">{i + 1} / {total}</span>
       </div>
 
+      {/* Таб-бар дашборда — закладки по слайдам (только dashboard-вид).
+          Стили — токены --slide-* темы (theme.vars задан на <main>), без хардкода.
+          flexWrap: при множестве слайдов табы переносятся на вторую строку — не скроллим. */}
+      {dashboard && (
+        <div
+          className="shrink-0"
+          style={{
+            display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 8,
+            width: "100%", maxWidth: 1008, margin: "0 auto", padding: "0 24px 6px",
+          }}
+        >
+          {deck.slides.map((s, idx) => {
+            const tabDs = s.dataSetIds[0] ? deck.dataSetsById[s.dataSetIds[0]] : null;
+            const label = tabDs?.title?.trim() || t("slideTab", { n: idx + 1 });
+            const on = idx === i;
+            return (
+              <button
+                key={s.id}
+                onClick={() => setI(idx)}
+                aria-current={on ? "page" : undefined}
+                title={label}
+                style={{
+                  fontFamily: "var(--slide-font-mono, var(--slide-font-body))",
+                  fontSize: 11, lineHeight: 1.2, letterSpacing: "0.02em",
+                  padding: "7px 14px",
+                  maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                  background: on ? "var(--slide-muted)" : "transparent",
+                  color: on ? "var(--slide-title)" : "var(--slide-text)",
+                  opacity: on ? 1 : 0.72,
+                  border: `1px solid ${on ? "var(--slide-accent)" : "var(--slide-border)"}`,
+                  borderRadius: "var(--slide-chart-radius, 3px)",
+                  cursor: on ? "default" : "pointer",
+                  transition: "opacity 150ms, border-color 150ms, background 150ms",
+                }}
+                onMouseEnter={(e) => { if (!on) e.currentTarget.style.opacity = "1"; }}
+                onMouseLeave={(e) => { if (!on) e.currentTarget.style.opacity = "0.72"; }}
+              >
+                {label}
+              </button>
+            );
+          })}
+        </div>
+      )}
+
       {/* Слайд — заполняет доступную высоту; SlideArchetypeRenderer меряет родителя */}
-      <div className="flex-1 min-h-0 flex items-center justify-center px-6">
+      <div className={`flex-1 min-h-0 flex items-center justify-center px-6 ${dashboard ? "pb-6" : ""}`}>
         <div
           className="w-full overflow-hidden flex flex-col"
           style={{
@@ -126,7 +175,8 @@ export function PublicDeckView({ deck }: { deck: PublicDeck | null }) {
         </div>
       </div>
 
-      {/* Навигация: стрелки + точки-прогресс */}
+      {/* Навигация: стрелки + точки-прогресс (в dashboard-виде её заменяют табы сверху) */}
+      {!dashboard && (
       <div className="flex items-center justify-center gap-5 py-6 shrink-0">
         <button
           onClick={() => go(-1)}
@@ -155,6 +205,7 @@ export function PublicDeckView({ deck }: { deck: PublicDeck | null }) {
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M5 2l5 5-5 5" /></svg>
         </button>
       </div>
+      )}
     </main>
   );
 }
