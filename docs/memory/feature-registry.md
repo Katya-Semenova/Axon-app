@@ -30,7 +30,7 @@
 - AI-чат по данным в Data-рейле + «Построить инсайт» (Apply через executePlan) → `lib/ai/chat.ts`, `app/api/ai/chat`
 - Провайдер-агностично: дефолт OpenRouter, GigaChat — опция-адаптер
 - Fallback на правила при сбое/без ключа; приватность: провайдеру — схема + выборка
-- Демо-режим для стенда: лимит ИИ 5/час на IP + демо-кнопка (код готов, НЕ выкачен — backlog п.0)
+- Демо-режим для стенда — ВЫКАЧЕН на прод 05.07: кнопка на /login (за Basic Auth), лимит ИИ 5/час на IP, аккаунт `demo-stand@axon-app.ru` наполнен двумя проектами → `docs/promotion/demo-stand-howto.md`
 
 ## Холст (Data mode)
 - Node-граф Insight → Connection → DataSet; отсоединение/переподключение связей → `lib/store.ts`, `Canvas.tsx`
@@ -67,9 +67,12 @@
 - VPS Selectel + Docker (3 юнита: landing/web/db) + nginx по пути (`/` лендинг, `/ai-studio` сервис) → ADR-002/009/010; `docker-compose.yml`, `deploy.sh`
 - Zero-downtime деплой + бэкапы БД → `docs/memory/infrastructure.md`
 - Письма — Resend + React Email (prod) → ADR-005
-- ⚠️ Времянка: Basic Auth на /ai-studio СНЯТ под показ 2026-06-28 — ВЕРНУТЬ (infrastructure.md)
+- ⚠️ Времянка: Basic Auth на /ai-studio ВОЗВРАЩЁН 2026-07-05; снять в день показа команде ~11.07 и вернуть после (`docs/promotion/demo-stand-howto.md`, infrastructure.md)
 
 ## Документация / качество
 - spec.md, DESIGN.md, паспорта всех экранов + `_global.md`, app-map (+HTML), test-cases (BDD, прогнаны на проде вручную)
 - Хуки-страховки + реестр `docs/automations.md`; lint в сборке (0 замечаний)
-- Автотесты (Playwright/Vitest) — НЕ сделаны (Урок 7, Задание 5.1)
+- Автотесты (Урок 7, 5.1): Vitest 35 шт. (разбор файлов, регрессии, IDOR-интеграция) + Playwright e2e 8 шт. (все 6 BDD-сценариев + 429) на тестовой БД axon_test; гейты pre-push + деплой (test:all) + smoke прода → `apps/app/tests/`, `docs/test-cases.md`
+- /storybook на проде — только админ, чужим 404 (Задание 12); дев-страницы скрыты
+- Сеть README (корень, docs/, modules/, .claude/, development/) + финальный security-check `docs/audits/security-check-final-MVP-2026-07-04.md` (критичных нет)
+- Библиотека модулей `modules/` (83 промта, 5 направлений) + 12 скиллов `.claude/skills/` (вкл. шесть скиллов силы, ADR-013)
