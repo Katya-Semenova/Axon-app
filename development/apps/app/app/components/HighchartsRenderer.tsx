@@ -29,7 +29,7 @@ import type { DataRow, ChartType } from "@/lib/mockData";
    с этим списком — новый тип добавляется здесь + кейсом в switch ниже. */
 export const HIGHCHARTS_TYPES: ChartType[] = [
   "Bar", "Clean Columns", "Stacked Bar",
-  "Heatmap", "Lollipop", "Scatter", "Scatter Plot",
+  "Heatmap", "Lollipop", "Scatter", "Scatter Plot", "Radar",
 ];
 
 /* Editorial fallbacks — только внутри var()-fallback'ов ниже, не для прямого
@@ -327,6 +327,65 @@ function scatterOptions(
   };
 }
 
+/* ── Radar — polar-режим (highcharts-more): кольца-полигоны как у родного,
+   заливка series-1 с прозрачностью 0.22, первая вершина accent. */
+function radarOptions(
+  t: SlideTokens, base: Highcharts.Options,
+  rows: DataRow[], columns: string[],
+): Highcharts.Options {
+  if (rows.length < 3) {
+    return {
+      ...base,
+      subtitle: {
+        text: "Radar needs ≥ 3 categories",
+        align: "center", verticalAlign: "middle",
+        style: { color: t.inkFaint, fontSize: "11px", fontFamily: t.fontMono },
+      },
+      series: [],
+    };
+  }
+
+  const values = rows.map((row) => row.values[0] ?? 0);
+  const mx = Math.max(...values) || 1;
+  const data = values.map((v, i) => ({
+    y: v,
+    marker: {
+      radius: i === 0 ? 4 : 3,
+      fillColor: i === 0 ? t.accent : t.series[0],
+    },
+  }));
+
+  return {
+    ...base,
+    chart: { ...base.chart, polar: true },
+    xAxis: {
+      categories: rows.map((row) => row.label),
+      tickmarkPlacement: "on",
+      lineWidth: 0,
+      gridLineColor: t.axis,   // спицы
+      labels: { style: { color: t.inkMuted, fontSize: "10px", fontFamily: t.fontBody } },
+    },
+    yAxis: {
+      gridLineInterpolation: "polygon",   // кольца тем же многоугольником
+      gridLineColor: t.axis,
+      lineWidth: 0,
+      min: 0,
+      max: mx,
+      tickAmount: 5,                      // кольца на 25/50/75/100 %
+      labels: { enabled: false },
+      title: { text: undefined },
+    },
+    series: [{
+      type: "area",
+      name: columns[1] ?? columns[0] ?? "Value",
+      data,
+      color: t.series[0],
+      fillColor: Highcharts.color(t.series[0]).setOpacity(0.22).get() as string,
+      lineWidth: 1.5,
+    }],
+  };
+}
+
 function columnOptions(
   t: SlideTokens, base: Highcharts.Options,
   rows: DataRow[], columns: string[],
@@ -381,6 +440,9 @@ export function HighchartsRenderer({ rows, columns, chartType, expanded, contain
       case "Scatter":
       case "Scatter Plot":
         options = scatterOptions(t, base, rows, columns, expanded);
+        break;
+      case "Radar":
+        options = radarOptions(t, base, rows, columns);
         break;
       default:
         options = columnOptions(t, base, rows, columns);
