@@ -3,8 +3,15 @@
 import { hierarchy, treemap, treemapSquarify } from "d3-hierarchy";
 import { makePoints, smoothPath, roundTo } from "@/lib/charts";
 import type { DataRow, ChartType } from "@/lib/mockData";
-import { RENDER_ENGINE } from "@/lib/renderEngine";
-import { HighchartsRenderer, HIGHCHARTS_TYPES } from "./HighchartsRenderer";
+import dynamic from "next/dynamic";
+import { RENDER_ENGINE, HIGHCHARTS_TYPES } from "@/lib/renderEngine";
+
+/* Highcharts — только клиент (ssr:false): его модули (heatmap и др.) при
+   импорте трогают объекты браузера и падают на серверном рендере. */
+const HighchartsRenderer = dynamic(
+  () => import("./HighchartsRenderer").then((m) => m.HighchartsRenderer),
+  { ssr: false },
+);
 
 const r = roundTo;
 

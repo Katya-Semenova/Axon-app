@@ -23,15 +23,11 @@ import "highcharts/modules/heatmap";
 import "highcharts/highcharts-more";      // база для dumbbell/lollipop (и radar позже)
 import "highcharts/modules/dumbbell";     // lollipop построен поверх dumbbell
 import "highcharts/modules/lollipop";
+import "highcharts/modules/accessibility"; // клавиатура/скринридеры для Interactive-дашборда
 import type { DataRow, ChartType } from "@/lib/mockData";
 
-/* Типы, которые уже умеет этот движок. Диспетчер в ChartRenderer.tsx сверяется
-   с этим списком — новый тип добавляется здесь + кейсом в switch ниже. */
-export const HIGHCHARTS_TYPES: ChartType[] = [
-  "Bar", "Clean Columns", "Stacked Bar",
-  "Heatmap", "Lollipop", "Scatter", "Scatter Plot", "Radar", "Donut",
-  "Spline Area", "Line", "Area",
-];
+/* Список покрытых типов — HIGHCHARTS_TYPES в lib/renderEngine.ts (этот файл
+   грузится только на клиенте через next/dynamic, список нужен и серверу). */
 
 /* Editorial fallbacks — только внутри var()-fallback'ов ниже, не для прямого
    использования (единственный источник правды тем — токены --slide-*). */
