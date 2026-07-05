@@ -195,7 +195,8 @@ export function SlideEditor({ saveButton }: { saveButton?: React.ReactNode }) {
                     fontFamily: "var(--slide-font-display)",
                     fontSize: 32, fontWeight: "var(--slide-title-weight, 500)" as React.CSSProperties["fontWeight"], color: "var(--slide-title)",
                     lineHeight: 1.05, letterSpacing: "-0.3px",
-                    overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                    display: "-webkit-box", WebkitLineClamp: 2,
+                    WebkitBoxOrient: "vertical" as const, overflow: "hidden",
                   }}>
                     {activeDs.title}
                   </span>
