@@ -340,6 +340,7 @@
     "noSlidesReorder": "No slides to reorder — switch to CANVAS and send a Data Set to the data set tray first.",
     "deckOrder": "Deck order",
     "dragReorder": "drag to reorder",
+    "position": "position {n}",
     "shareBtn": "Share",
     "sharing": "Creating link…",
     "noLoginToView": "Opens without sign-in",
