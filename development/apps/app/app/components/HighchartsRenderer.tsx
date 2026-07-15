@@ -600,11 +600,14 @@ function treemapOptions(
           const lh = p.shapeArgs?.height ?? 0;
           if (lh < 26 || lw < 24) return "";
           const ink = (p.options.custom as { ink?: string } | undefined)?.ink ?? "";
+          /* Текст не должен вылезать за плитку (баг №3 🎯): жёсткая ширина
+             по плитке + обрезка с «…» — как slice(…)+«…» у родного. */
+          const clip = `max-width:${Math.max(0, lw - 8)}px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;`;
           const val = lh >= 44 && lw >= 40
-            ? `<div style="font-family:${t.fontDisplay};font-size:${Math.min(19, lw * 0.26)}px;opacity:.78;">${fmtTmVal(p.value ?? 0)}</div>`
+            ? `<div style="font-family:${t.fontDisplay};font-size:${Math.min(19, lw * 0.26)}px;opacity:.78;${clip}">${fmtTmVal(p.value ?? 0)}</div>`
             : "";
           return `<div style="color:${ink};text-align:left;line-height:1.25;padding:2px 0 0 2px;">`
-            + `<div style="font-family:${t.fontBody};font-weight:500;font-size:${Math.min(16, lw * 0.3)}px;">${escHtml(p.name ?? "")}</div>`
+            + `<div style="font-family:${t.fontBody};font-weight:500;font-size:${Math.min(16, lw * 0.3)}px;${clip}">${escHtml(p.name ?? "")}</div>`
             + val + `</div>`;
         },
       },
