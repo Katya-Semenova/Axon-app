@@ -13,9 +13,9 @@
    в опциях, поэтому перед каждой отрисовкой читаем те же токены с контейнера
    через getComputedStyle (readSlideTokens). Fallback-значения — Editorial,
    1:1 с константами ChartRenderer.tsx: вне деки (канвас, drill-in) вид не
-   меняется. Смена темы деки меняет CSS-переменные без смены пропсов — если
-   понадобится живая перерисовка при переключении темы, обвязка Interactive
-   передаст ключ; для дашборда, монтируемого заново, чтения на маунте хватает. */
+   меняется. Смена темы деки меняет CSS-переменные БЕЗ смены пропсов — поэтому
+   ChartRenderer передаёт themeKey (presentationThemeId из store): его смена
+   перезапускает effect, и токены читаются заново (баг №1 из backlog 🎯). */
 
 import { useEffect, useRef } from "react";
 import Highcharts from "highcharts";
@@ -711,9 +711,12 @@ interface Props {
   expanded?: boolean;
   containerWidth?: number;
   containerHeight?: number;
+  /** Ключ темы деки: значение не используется, но его смена перезапускает
+      effect — токены --slide-* перечитываются после переключения темы. */
+  themeKey?: string;
 }
 
-export function HighchartsRenderer({ rows, columns, chartType, expanded, containerWidth, containerHeight }: Props) {
+export function HighchartsRenderer({ rows, columns, chartType, expanded, containerWidth, containerHeight, themeKey }: Props) {
   const elRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<Highcharts.Chart | null>(null);
 
@@ -764,7 +767,7 @@ export function HighchartsRenderer({ rows, columns, chartType, expanded, contain
       chartRef.current?.destroy();
       chartRef.current = null;
     };
-  }, [rows, columns, chartType, expanded, containerWidth, containerHeight]);
+  }, [rows, columns, chartType, expanded, containerWidth, containerHeight, themeKey]);
 
   return (
     <div

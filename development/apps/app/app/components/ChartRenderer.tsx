@@ -5,6 +5,7 @@ import { makePoints, smoothPath, roundTo } from "@/lib/charts";
 import type { DataRow, ChartType } from "@/lib/mockData";
 import dynamic from "next/dynamic";
 import { RENDER_ENGINE, HIGHCHARTS_TYPES } from "@/lib/renderEngine";
+import { useWorkspaceStore } from "@/lib/store";
 
 /* Highcharts — только клиент (ssr:false): его модули (heatmap и др.) при
    импорте трогают объекты браузера и падают на серверном рендере. */
@@ -1118,11 +1119,18 @@ export function ChartRenderer({
 }) {
   const props = { rows, columns, expanded, containerWidth, containerHeight };
 
+  /* Ключ темы деки для Highcharts-ветки: смена темы меняет CSS-переменные
+     БЕЗ смены пропсов, и Highcharts (читающий токены в effect) не узнаёт о ней.
+     Подписка на store дёргает перерисовку; на публичной странице /p/[id]
+     store не меняется (значение по умолчанию) — лишних перерисовок нет.
+     Родным SVG-графикам ключ не нужен: у них var() резолвит браузер сам. */
+  const themeKey = useWorkspaceStore((s) => s.presentationThemeId);
+
   /* За фича-флагом покрытые типы рисует движок Highcharts (режим Interactive).
      Список покрытого — HIGHCHARTS_TYPES в HighchartsRenderer.tsx. По умолчанию
      RENDER_ENGINE === 'native' — блок не активен, старый путь работает как раньше. */
   if (RENDER_ENGINE === "highcharts" && HIGHCHARTS_TYPES.includes(chartType)) {
-    return <HighchartsRenderer {...props} chartType={chartType} />;
+    return <HighchartsRenderer {...props} chartType={chartType} themeKey={themeKey} />;
   }
 
   switch (chartType) {
