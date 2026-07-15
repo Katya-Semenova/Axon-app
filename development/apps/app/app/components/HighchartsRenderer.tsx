@@ -682,25 +682,99 @@ function dotMatrixOptions(
   };
 }
 
-function columnOptions(
+/* ── Bar / Clean Columns — как родной CleanColumnsChart: вертикальные колонки
+   series-2, колонка-максимум подсвечена accent; подписи категорий mono с
+   прореживанием (компакт — каждая ~4-я, как у родного). Родной диспетчер
+   рисует "Bar" и "Clean Columns" одним рендером — повторяем. */
+function cleanColumnsOptions(
   t: SlideTokens, base: Highcharts.Options,
-  rows: DataRow[], columns: string[],
+  rows: DataRow[], columns: string[], expanded?: boolean,
 ): Highcharts.Options {
-  const categories = rows.map((row) => row.label);
-  const data = rows.map((row) => row.values[0] ?? 0);
-  const seriesName = columns[1] ?? columns[0] ?? "Value";
+  const values = rows.map((row) => row.values[0] ?? 0);
+  const mx = Math.max(...values);
+  const data = values.map((v) => ({
+    y: v,
+    color: v === mx ? t.accent : t.series[1],
+  }));
+
   return {
     ...base,
     chart: { ...base.chart, type: "column" },
-    xAxis: { ...base.xAxis, categories },
-    plotOptions: {
-      column: {
-        borderRadius: t.chartRadius,
-        color: t.series[0],
-        states: { hover: { color: t.accent } },
+    xAxis: {
+      ...base.xAxis,
+      categories: rows.map((row) => row.label),
+      lineWidth: 0, tickWidth: 0,
+      labels: {
+        step: expanded ? undefined : Math.max(1, Math.floor(rows.length / 4)),
+        style: { color: t.inkFaint, fontSize: "10px", fontFamily: t.fontMono },
       },
     },
-    series: [{ type: "column", name: seriesName, data }],
+    plotOptions: {
+      column: { borderRadius: t.chartRadius, borderWidth: 0 },
+    },
+    series: [{
+      type: "column",
+      name: columns[1] ?? columns[0] ?? "Value",
+      data,
+    }],
+  };
+}
+
+/* ── Stacked Bar — как родной StackedBarChart: ГОРИЗОНТАЛЬНЫЙ стек, серия на
+   каждую колонку данных (цвета series-1…6 по порядку колонок), легенда колонок
+   сверху, метка строки слева, итог строки числом в конце стека (stackLabels).
+   reversedStacks:false — первая колонка у основания, как рисует родной. */
+function stackedBarOptions(
+  t: SlideTokens, base: Highcharts.Options,
+  rows: DataRow[], columns: string[],
+): Highcharts.Options {
+  const series = columns.map((col, j) => ({
+    type: "bar" as const,
+    name: col,
+    color: t.series[j % t.series.length],
+    data: rows.map((row) => row.values[j] ?? 0),
+  }));
+
+  return {
+    ...base,
+    chart: { ...base.chart, type: "bar" },
+    legend: {
+      enabled: columns.length > 1,
+      align: "left", verticalAlign: "top", layout: "horizontal",
+      symbolRadius: 1, symbolHeight: 8, margin: 8, padding: 0,
+      itemStyle: { color: t.inkMuted, fontSize: "11px", fontFamily: t.fontBody, fontWeight: "normal" },
+      itemHoverStyle: { color: t.ink },
+    },
+    xAxis: {
+      ...base.xAxis,
+      categories: rows.map((row) => row.label),
+      lineWidth: 0, tickWidth: 0,
+      labels: { style: { color: t.inkMuted, fontSize: "9.5px", fontFamily: t.fontBody } },
+    },
+    yAxis: {
+      ...base.yAxis,
+      reversedStacks: false,
+      gridLineWidth: 0,
+      labels: { enabled: false },
+      stackLabels: {
+        enabled: true,
+        style: { color: t.ink, fontSize: "11px", fontFamily: t.fontMono, fontWeight: "500", textOutline: "none" },
+      },
+    },
+    plotOptions: {
+      bar: {
+        stacking: "normal",
+        borderRadius: t.chartRadius,
+        borderWidth: 1,
+        borderColor: "transparent",   // 1px зазор между сегментами, как у родного
+        dataLabels: { enabled: false },
+      },
+    },
+    tooltip: {
+      ...base.tooltip,
+      pointFormat: "{series.name}: <b>{point.y}</b>",
+    },
+    series,
   };
 }
 
@@ -757,8 +831,12 @@ export function HighchartsRenderer({ rows, columns, chartType, expanded, contain
       case "Dot Matrix":
         options = dotMatrixOptions(t, base, rows);
         break;
+      case "Stacked Bar":
+        options = stackedBarOptions(t, base, rows, columns);
+        break;
+      /* "Bar" и "Clean Columns" — один рендер, как у родного диспетчера */
       default:
-        options = columnOptions(t, base, rows, columns);
+        options = cleanColumnsOptions(t, base, rows, columns, expanded);
     }
 
     chartRef.current = Highcharts.chart(el, options);
