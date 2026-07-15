@@ -689,6 +689,87 @@ function dotMatrixOptions(
    series-2, колонка-максимум подсвечена accent; подписи категорий mono с
    прореживанием (компакт — каждая ~4-я, как у родного). Родной диспетчер
    рисует "Bar" и "Clean Columns" одним рендером — повторяем. */
+/* ── Map (сетка точек) — наш «Map» НЕ гео-карта (решение 2026-07-05): та же
+   пропорциональная сетка точек по регионам, что у родного MapChart. Тип item,
+   как Dot Matrix, но: число точек = размер сетки из габаритов контейнера
+   (шаг 10px, как dotR 3.5 + зазор 3 у родного), регионы отсортированы по
+   убыванию, распределение точек — floor-логика родного (последнему — остаток).
+   Легенда — снизу в строку, «метка NN%». */
+function mapOptions(
+  t: SlideTokens, base: Highcharts.Options,
+  rows: DataRow[], width?: number, height?: number, expanded?: boolean,
+): Highcharts.Options {
+  if (!rows.length) {
+    return {
+      ...base,
+      subtitle: {
+        text: "No data",
+        align: "center", verticalAlign: "middle",
+        style: { color: t.inkFaint, fontSize: "11px", fontFamily: t.fontMono },
+      },
+      series: [],
+    };
+  }
+
+  const W = width ?? (expanded ? 600 : 360);
+  const H = height ?? (expanded ? 320 : 200);
+  const STEP = 10, PAD_X = 20, PAD_Y = 14, LEGEND_H = 38;
+  const cols = Math.max(4, Math.floor((W - PAD_X * 2) / STEP));
+  const gridRows = Math.max(2, Math.floor((H - LEGEND_H - PAD_Y * 2) / STEP));
+  const totalDots = cols * gridRows;
+
+  const sorted = [...rows].sort((a, b) => (b.values[0] ?? 0) - (a.values[0] ?? 0));
+  const total = sorted.reduce((s, row) => s + (row.values[0] ?? 0), 0) || 1;
+  let allocated = 0;
+  const data = sorted.map((row, ri) => {
+    const count = ri < sorted.length - 1
+      ? Math.max(1, Math.round(((row.values[0] ?? 0) / total) * totalDots))
+      : Math.max(0, totalDots - allocated);
+    allocated += count;
+    return {
+      name: row.label,
+      y: count,
+      custom: { pct: Math.round(((row.values[0] ?? 0) / total) * 100) },
+      color: t.series[ri % t.series.length],
+    };
+  });
+
+  return {
+    ...base,
+    legend: {
+      enabled: true,
+      align: "left", verticalAlign: "bottom", layout: "horizontal",
+      margin: 6, padding: 0,
+      itemStyle: { color: t.inkMuted, fontSize: "9px", fontFamily: t.fontMono, fontWeight: "normal" },
+      itemHoverStyle: { color: t.ink },
+      labelFormatter: function () {
+        const p = this as Highcharts.Point & { options?: { custom?: { pct?: number } } };
+        return `${p.name} ${p.options?.custom?.pct ?? 0}%`;
+      },
+    },
+    tooltip: {
+      ...base.tooltip,
+      pointFormatter: function () {
+        const c = (this.options.custom as { pct?: number } | undefined)?.pct ?? 0;
+        return `<b>${c}%</b>`;
+      },
+    },
+    series: [{
+      type: "item",
+      name: "Share",
+      data,
+      layout: "horizontal",
+      rows: gridRows,
+      itemPadding: 0.15,            // плотная сетка, зазор ~3px при шаге 10
+      opacity: 0.8,                 // как fillOpacity 0.8 у родного
+      borderWidth: 0,
+      marker: { symbol: "circle", lineWidth: 0 },
+      dataLabels: { enabled: false },
+      showInLegend: true,
+    } as Highcharts.SeriesOptionsType],
+  };
+}
+
 function cleanColumnsOptions(
   t: SlideTokens, base: Highcharts.Options,
   rows: DataRow[], columns: string[], expanded?: boolean,
@@ -836,6 +917,9 @@ export function HighchartsRenderer({ rows, columns, chartType, expanded, contain
         break;
       case "Stacked Bar":
         options = stackedBarOptions(t, base, rows, columns);
+        break;
+      case "Map":
+        options = mapOptions(t, base, rows, containerWidth, containerHeight, expanded);
         break;
       /* "Bar" и "Clean Columns" — один рендер, как у родного диспетчера */
       default:

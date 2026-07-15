@@ -19,5 +19,5 @@ export const HIGHCHARTS_TYPES: ChartType[] = [
   "Bar", "Clean Columns", "Stacked Bar",
   "Heatmap", "Lollipop", "Scatter", "Scatter Plot", "Radar", "Donut",
   "Spline Area", "Line", "Area",
-  "Treemap", "Dot Matrix",
+  "Treemap", "Dot Matrix", "Map",
 ];
