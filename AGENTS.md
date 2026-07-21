@@ -49,10 +49,10 @@
 | Выкат на прод / миграции БД / откат | `docs/rules/production-safety.md` |
 | Деплой / инфра | `docs/memory/infrastructure.md` |
 
-## Библиотека модулей (переносимый AI-стек)
-`modules/` — 83 обезличенных промта по 5 направлениям (ai-config / product / design /
-development / seo-geo). Реестр и триггеры «когда звать» — `modules/_INDEX.md`. Точки входа:
-скилл `/init-project` (новый проект) и `/extend-library` (пополнение). [ADR-012].
+## Библиотека модулей (переносимый AI-стек) — вынесена в `../stack`
+Переносимый стек (`modules/`, скиллы `/init-project` и `/extend-library`, чекер и хук
+индексации) вынесен из axon-app в отдельный репозиторий `../stack` — общий для всех
+проектов. Здесь его больше нет. См. `../stack/AGENTS.md` и [ADR-012].
 
 ## Активная работа
 См. `docs/memory/state.md` (текущий этап) и `docs/decisions/sessions/` (журнал сессий).
