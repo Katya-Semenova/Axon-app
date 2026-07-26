@@ -7,7 +7,9 @@
 - **Прод:** лендинг [axon-app.ru](https://axon-app.ru) · сервис [axon-app.ru/ai-studio](https://axon-app.ru/ai-studio)
 - **Стек:** Next.js (App Router) + TypeScript + Tailwind · PostgreSQL + Prisma · Better Auth ·
   OpenRouter (ИИ) · Selectel S3 · Docker + nginx на VPS
+- **Node:** версия 24 (зафиксирована в [.nvmrc](.nvmrc) — `nvm use` подхватит сам)
 - **Полное описание продукта:** [docs/spec.md](docs/spec.md) → раздел «Продукт»
+- **Передача проекта другому разработчику:** [docs/handover.md](docs/handover.md)
 
 ## Что где лежит
 
