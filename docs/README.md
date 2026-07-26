@@ -20,4 +20,5 @@
 ## Человеческое
 - [glossary.md](glossary.md) — словарь терминов простыми словами
 - [terminal-cheatsheet.md](terminal-cheatsheet.md) — шпаргалка команд терминала
+- [prompting-cheatsheet.md](prompting-cheatsheet.md) — шпаргалка: как ставить задачу Claude (2 приёма)
 - [01-app-map.md](01-app-map.md) + [app-map.html](app-map.html) — карта экранов (HTML — интерактивная)
